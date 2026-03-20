@@ -10,8 +10,8 @@
 
 #include "Basic.hpp"
 
-#include "Engine_structs.hpp"
 #include "CoreUObject_structs.hpp"
+#include "Engine_structs.hpp"
 #include "KuroRenderingRuntimeBPPlugin_classes.hpp"
 
 
@@ -42,8 +42,8 @@ public:
 	bool                                          HiddenState;                                       // 0x0632(0x0001)(Edit, BlueprintVisible, ZeroConstructor, DisableEditOnInstance, IsPlainOldData, NoDestructor)
 
 public:
-	void ExecuteUbergraph_BP_FloatingStaticMesh(int32 EntryPoint);
 	void ReceiveBeginPlay();
+	void ExecuteUbergraph_BP_FloatingStaticMesh(int32 EntryPoint);
 	void UserConstructionScript();
 	void SetMaterialParams();
 	void RefreshChildActors();

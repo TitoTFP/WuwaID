@@ -10,9 +10,9 @@
 
 #include "Basic.hpp"
 
+#include "EWanderDirectionType_structs.hpp"
 #include "SMovementSetting_Posture_structs.hpp"
 #include "GameplayTags_structs.hpp"
-#include "EWanderDirectionType_structs.hpp"
 
 
 namespace SDK

@@ -56,7 +56,7 @@ public:
 	TArray<float>                                 TrailRadius;                                       // 0x04B0(0x0010)(Edit, BlueprintVisible, DisableEditOnInstance)
 	TArray<float>                                 Rotation;                                          // 0x04C0(0x0010)(Edit, BlueprintVisible, DisableEditOnInstance)
 	TArray<struct FVector2D>                      TrailsLocation;                                    // 0x04D0(0x0010)(Edit, BlueprintVisible, DisableEditOnInstance)
-	float                                         TrailFadeStart;                                    // 0x04E0(0x0004)(Edit, BlueprintVisible, ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
+	float                                         TrailFadeStart;                                    // 0x04E0(0x0004)(Edit, BlueprintVisible, ZeroConstructor, DisableEditOnInstance, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
 	float                                         TrailAttenuation;                                  // 0x04E4(0x0004)(Edit, BlueprintVisible, ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
 	bool                                          bEnable;                                           // 0x04E8(0x0001)(Edit, BlueprintVisible, ZeroConstructor, DisableEditOnInstance, IsPlainOldData, NoDestructor)
 	uint8                                         Pad_4E9[0x3];                                      // 0x04E9(0x0003)(Fixing Size After Last Property [ Dumper-7 ])

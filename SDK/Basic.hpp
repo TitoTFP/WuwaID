@@ -33,12 +33,14 @@ using namespace UC;
 */
 namespace Offsets
 {
-	constexpr int32 GObjects          = 0x08DB8858;
-	constexpr int32 AppendString      = 0x029A8460;
-	constexpr int32 GNames            = 0x08D57C00;
-	constexpr int32 GWorld            = 0x08C6A980;
-	constexpr int32 ProcessEvent      = 0x02BA9F80;
-	constexpr int32 ProcessEventIdx   = 0x00000049;
+	// Changed from constexpr to inline: resolved dynamically at runtime via DynamicResolver.
+	// Values below are fallbacks for the last known game version.
+	inline int32 GObjects          = 0x08EE2F98;
+	inline int32 AppendString      = 0x02A39360;
+	inline int32 GNames            = 0x08E82340;
+	inline int32 GWorld            = 0x08D90290;
+	inline int32 ProcessEvent      = 0x02C3B010;
+	inline int32 ProcessEventIdx   = 0x00000049;
 }
 
 namespace InSDKUtils

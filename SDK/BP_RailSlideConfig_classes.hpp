@@ -10,8 +10,8 @@
 
 #include "Basic.hpp"
 
-#include "SFloatCurve_structs.hpp"
 #include "GameplayTags_structs.hpp"
+#include "SFloatCurve_structs.hpp"
 #include "Engine_classes.hpp"
 
 

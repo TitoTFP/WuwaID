@@ -10,8 +10,8 @@
 
 #include "Basic.hpp"
 
-#include "ETagLogicType_structs.hpp"
 #include "GameplayTags_structs.hpp"
+#include "ETagLogicType_structs.hpp"
 
 
 namespace SDK

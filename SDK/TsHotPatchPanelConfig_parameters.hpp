@@ -14,14 +14,5 @@
 namespace SDK::Params
 {
 
-// Function TsHotPatchPanelConfig.TsHotPatchPanelConfig_C.ExecuteUbergraph_TsHotPatchPanelConfig
-// 0x0004 (0x0004 - 0x0000)
-struct TsHotPatchPanelConfig_C_ExecuteUbergraph_TsHotPatchPanelConfig final
-{
-public:
-	int32                                         EntryPoint;                                        // 0x0000(0x0004)(BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
-};
-DUMPER7_ASSERTS_TsHotPatchPanelConfig_C_ExecuteUbergraph_TsHotPatchPanelConfig;
-
 }
 

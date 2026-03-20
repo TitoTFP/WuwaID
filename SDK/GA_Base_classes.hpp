@@ -12,9 +12,9 @@
 
 #include "Engine_structs.hpp"
 #include "SSkillInfo_structs.hpp"
-#include "KuroGAS_classes.hpp"
-#include "EPawnChannel_structs.hpp"
 #include "EAimViewState_structs.hpp"
+#include "EPawnChannel_structs.hpp"
+#include "KuroGAS_classes.hpp"
 
 
 namespace SDK

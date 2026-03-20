@@ -11,10 +11,10 @@
 #include "Basic.hpp"
 
 #include "EDetachType_structs.hpp"
-#include "EInputAction_structs.hpp"
 #include "Engine_structs.hpp"
 #include "Engine_classes.hpp"
 #include "BPEEnableFollowShooter_structs.hpp"
+#include "EInputAction_structs.hpp"
 #include "EInputState_structs.hpp"
 #include "ERelation_structs.hpp"
 #include "EPawnChannel_structs.hpp"
@@ -188,6 +188,8 @@ public:
 	static void RemovePlayerFollowerCustomEntityId(const class FString& customKey, class UObject* __WorldContext);
 	static void ShowTipsByTextId(const class FString& textId, class UObject* __WorldContext);
 	static void SetPlayerFollowerEnable(bool enable, EBPEEnableFollowShooter enableType, class UObject* __WorldContext);
+	static bool IsBulletCreateByFollowShooter(int32 bulletId1, class UObject* __WorldContext);
+	static bool CheckIsRoleTriggerActor(class AActor* actor, class UObject* __WorldContext);
 
 public:
 	static class UClass* StaticClass()

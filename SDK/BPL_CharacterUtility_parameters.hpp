@@ -10,13 +10,13 @@
 
 #include "Basic.hpp"
 
-#include "SCharacterPart_structs.hpp"
 #include "Engine_structs.hpp"
-#include "SReBulletDataMain_structs.hpp"
-#include "SCaughtInfo_structs.hpp"
-#include "EMovementDirection_structs.hpp"
 #include "SVisionData_structs.hpp"
+#include "SReBulletDataMain_structs.hpp"
+#include "EMovementDirection_structs.hpp"
+#include "SCaughtInfo_structs.hpp"
 #include "CoreUObject_structs.hpp"
+#include "SCharacterPart_structs.hpp"
 #include "SSkillInfo_structs.hpp"
 #include "SEffectData_structs.hpp"
 #include "SAttributeModifierData_structs.hpp"

@@ -12,9 +12,9 @@
 
 #include "GameplayTags_structs.hpp"
 #include "CoreUObject_structs.hpp"
+#include "ECaughtResultType_structs.hpp"
 #include "SHitInformation_structs.hpp"
 #include "ECharacterState_structs.hpp"
-#include "ECaughtResultType_structs.hpp"
 
 
 namespace SDK::Params

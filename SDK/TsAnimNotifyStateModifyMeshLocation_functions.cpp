@@ -18,7 +18,7 @@ namespace SDK
 {
 
 // Function TsAnimNotifyStateModifyMeshLocation.TsAnimNotifyStateModifyMeshLocation_C.K2_NotifyBegin
-// (Native, Event, Public, HasOutParams, BlueprintCallable, BlueprintEvent)
+// (Event, Public, HasOutParams, BlueprintCallable, BlueprintEvent)
 // Parameters:
 // class USkeletalMeshComponent*           MeshComp                                               (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, InstancedReference, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
 // class UAnimSequenceBase*                Animation                                              (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
@@ -38,12 +38,7 @@ bool UTsAnimNotifyStateModifyMeshLocation_C::K2_NotifyBegin(class USkeletalMeshC
 	Parms.Animation = Animation;
 	Parms.TotalDuration = TotalDuration;
 
-	auto Flgs = Func->FunctionFlags;
-	Func->FunctionFlags |= 0x400;
-
 	UObject::ProcessEvent(Func, &Parms);
-
-	Func->FunctionFlags = Flgs;
 
 	return Parms.ReturnValue;
 }

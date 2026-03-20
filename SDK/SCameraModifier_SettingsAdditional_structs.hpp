@@ -11,8 +11,8 @@
 #include "Basic.hpp"
 
 #include "SFloatCurve_structs.hpp"
-#include "CoreUObject_structs.hpp"
 #include "SCameraModifier_Lens_structs.hpp"
+#include "CoreUObject_structs.hpp"
 
 
 namespace SDK

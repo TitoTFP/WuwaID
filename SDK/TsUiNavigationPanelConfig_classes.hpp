@@ -10,10 +10,10 @@
 
 #include "Basic.hpp"
 
-#include "Engine_structs.hpp"
-#include "LGUI_classes.hpp"
 #include "SNavigationGroup_structs.hpp"
+#include "Engine_structs.hpp"
 #include "SNavigationDynamicListenerConfig_structs.hpp"
+#include "LGUI_classes.hpp"
 
 
 namespace SDK
@@ -42,11 +42,11 @@ public:
 
 public:
 	void ExecuteUbergraph_TsUiNavigationPanelConfig(int32 EntryPoint);
+	void OnPreDestroyBP();
 	void StartBP();
 	void OnDisableBP();
 	void OnEnableBP();
 	void AwakeBP();
-	void OnDestroyBP();
 
 public:
 	static class UClass* StaticClass()

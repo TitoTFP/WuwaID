@@ -188,3 +188,7 @@ $RECYCLE.BIN/
 
 # Build output directories
 export_localization_db/export_l.*/
+ConfigDB/
+export_quest_ordered/*
+Javascript/*
+WuwaDBExport/

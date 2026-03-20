@@ -10,11 +10,11 @@
 
 #include "Basic.hpp"
 
-#include "SInt64Array_structs.hpp"
 #include "GameplayTags_structs.hpp"
 #include "SGameplayTagArray_structs.hpp"
-#include "SFloatThresholdAndCameraShake_structs.hpp"
+#include "SInt64Array_structs.hpp"
 #include "Engine_classes.hpp"
+#include "SFloatThresholdAndCameraShake_structs.hpp"
 
 
 namespace SDK

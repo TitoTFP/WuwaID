@@ -10,10 +10,10 @@
 
 #include "Basic.hpp"
 
-#include "SCameraConfig_structs.hpp"
 #include "KuroGameBudget_structs.hpp"
 #include "CoreUObject_structs.hpp"
 #include "Engine_structs.hpp"
+#include "SCameraConfig_structs.hpp"
 #include "KuroSimpleCombat_structs.hpp"
 
 
@@ -57,8 +57,9 @@ public:
 	class UAnimSequenceBase*                      None_14;                                           // 0x0000(0x0008)(ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
 	class UAnimationAsset*                        None_15;                                           // 0x0000(0x0008)(ZeroConstructor, IsPlainOldData, NoDestructor, HasGetValueTypeHash)
 	class FString                                 None_16;                                           // 0x0000(0x0010)(ZeroConstructor, HasGetValueTypeHash)
+	class FString                                 None_17;                                           // 0x0000(0x0010)(ZeroConstructor, HasGetValueTypeHash)
 };
-// DUMPER7_ASSERTS_FPropertyMetaRoot; // Disabled: union-like struct with overlapping members at offset 0
+// DUMPER7_ASSERTS_FPropertyMetaRoot; // Disabled: all members at offset 0 (union-like) but generated as struct
 
 // ScriptStruct JsEnv.ArrayBuffer
 // 0x0010 (0x0010 - 0x0000)
