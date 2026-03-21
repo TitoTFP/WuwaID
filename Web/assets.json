@@ -9,21 +9,6 @@
       "name": "bg-video.mp4",
       "url": "https://raw.githubusercontent.com/CallMeDangDev/WuwaVH/refs/heads/main/Web/Video/bg-video.mp4",
       "sha256": "07bd8a64bdb2129694e35ce9e78c3d3d13715e96c6ecc8feb234e218b0a88e6e"
-    },
-    {
-      "name": "version.dll",
-      "url": "https://github.com/CallMeDangDev/WuwaVH/releases/download/3.2/version.dll",
-      "sha256": "3766654339a1e4e8a52b382f0ad278153a95d80041cb317ceff727691fd3dd84"
-    },
-    {
-      "name": "UTMAlexander_100_P.pak",
-      "url": "https://github.com/CallMeDangDev/WuwaVH/releases/download/3.2/UTMAlexander_100_P.pak",
-      "sha256": "e7c639b4b4a8dbe422d6f92ca459f9f8e979fc5658ba7ae65abd2a52d1e97015"
-    },
-    {
-      "name": "WuWaVH_99_P.pak",
-      "url": "https://github.com/CallMeDangDev/WuwaVH/releases/download/3.2/WuWaVH_99_P.pak",
-      "sha256": "da5be79493c980e0aeb83a653753e3d796c8fd5247f1e2b82bf5ea4c7782e39b"
     }
   ]
 }
