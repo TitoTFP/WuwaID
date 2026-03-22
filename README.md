@@ -7,6 +7,20 @@ Bản Việt hóa cho **Wuthering Waves**.
 
 ## Hướng dẫn cài đặt
 
+### Phương thức 1: Cài đặt tự động qua Launcher *(Khuyến nghị)*
+
+Tải **WuwaVH Launcher** — ứng dụng tự động tải và cài đặt bản Việt hóa vào đúng thư mục:
+
+[![Download Launcher](https://img.shields.io/badge/Tải%20WuwaVH%20Launcher-Latest-blue?style=for-the-badge&logo=github)](https://github.com/CallMeDangDev/WuwaVHLauncher/releases/latest)
+
+1. Tải file `.zip` từ link trên và giải nén.
+2. Chạy `WuwaVHLauncher.exe`.
+3. Chọn thư mục cài đặt game rồi nhấn **Cài đặt** — Launcher sẽ tự xử lý phần còn lại.
+
+---
+
+### Phương thức 2: Cài đặt thủ công
+
 ### 1. Tải file
 
 Vào trang [**Releases**](../../releases) và tải về các file sau:
@@ -14,9 +28,8 @@ Vào trang [**Releases**](../../releases) và tải về các file sau:
 | File | Mô tả |
 |------|--------|
 | `WuWaVH_99_P.pak` | File Việt hóa chính |
-| `VongXuyen_100_P.pak` | Font tiếng Việt |
+| `UTMAlexander_100_P.pak` | Font tiếng Việt |
 | `version.dll` | Loader tự động mount bản dịch |
-| `antiCheatOffForSteam_99_P.pak` | Tắt anti-cheat cho bản Steam *(tùy chọn nếu dùng ver Steam)* |
 
 ### 2. Cài đặt
 
@@ -42,8 +55,7 @@ Client\Binaries\Win64\
 ├── Client-Win64-Shipping.exe
 └── wuwaVietHoa\
     ├── WuWaVH_99_P.pak
-    ├── VongXuyen_100_P.pak
-    └── antiCheatOffForSteam_99_P.pak   ← tùy chọn
+    └── UTMAlexander_100_P.pak
 ```
 
 ### 3. Gỡ cài đặt
@@ -59,7 +71,7 @@ Xóa file `version.dll` và thư mục `wuwaVietHoa` là xong.
 
 ## Credits
 
-- **[Lai-Hoang](https://github.com/Lai-Hoang)** — Cảm ơn bạn và repo [wuwa-viet-hoa](https://github.com/Lai-Hoang/wuwa-viet-hoa) cho code injector method và `antiCheatOffForSteam_99_P.pak`.
+- **[Lai-Hoang](https://github.com/Lai-Hoang)** — Cảm ơn bạn và repo [wuwa-viet-hoa](https://github.com/Lai-Hoang/wuwa-viet-hoa) cho code injector method.
 
 ## License
 
