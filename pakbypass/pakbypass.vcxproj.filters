@@ -30,6 +30,9 @@
     <ClInclude Include="EventRecorder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DynamicResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="PakBypass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

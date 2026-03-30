@@ -158,6 +158,7 @@
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="PatternScanner.hpp" />
     <ClInclude Include="EventRecorder.hpp" />
+    <ClInclude Include="DynamicResolver.hpp" />
     <ClInclude Include="PakBypass.hpp" />
     <ClInclude Include="VersionProxy.hpp" />
   </ItemGroup>

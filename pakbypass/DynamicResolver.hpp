@@ -459,13 +459,16 @@ static bool IsProcessEventCandidate(uintptr_t fn, uintptr_t textBase, size_t tex
 // Walk forward from an address to find next function start (after CC/C3 padding)
 static uintptr_t FindNextFunctionStart(uintptr_t addr)
 {
+    // Scan forward for INT3 (CC) or RET (C3) padding then function start
     for (size_t i = 0; i < 0x1000; i++)
     {
         uint8_t b = *(uint8_t*)(addr + i);
         if (b == 0xC3 || b == 0xCC)
         {
+            // Skip all CC padding
             size_t j = i + 1;
             while (j < i + 0x20 && *(uint8_t*)(addr + j) == 0xCC) j++;
+            // Align to 16-byte boundary
             uintptr_t candidate = addr + j;
             if (candidate % 0x10 != 0)
                 candidate = candidate + (0x10 - (candidate % 0x10));
@@ -567,6 +570,7 @@ static bool ValidateAppendString(uintptr_t appendStringAddr, uintptr_t gobjectsA
         auto** chunks = *(void***)(gobjectsAddr);
         if (!chunks || !chunks[0]) return false;
 
+        // Find a valid object (skip index 0 which may be null)
         uintptr_t obj = 0;
         for (int k = 1; k <= 10; k++)
         {
@@ -576,14 +580,18 @@ static bool ValidateAppendString(uintptr_t appendStringAddr, uintptr_t gobjectsA
         }
         if (!obj) return false;
 
+        // FName is at offset 0x18 in UObject
         const void* fnamePtr = (const void*)(obj + 0x18);
 
+        // Prepare a stack-based FString (wchar_t buffer)
         wchar_t buffer[512] = {};
         struct { wchar_t* Data; int32_t Count; int32_t Max; } tempStr = { buffer, 0, 512 };
 
+        // Call AppendString: void (*)(const FName*, FString&)
         auto fn = reinterpret_cast<void(*)(const void*, void*)>(appendStringAddr);
         fn(fnamePtr, &tempStr);
 
+        // Check: Count > 0, reasonable length, printable first char
         if (tempStr.Count > 0 && tempStr.Count < 500 && buffer[0] >= 0x20)
         {
             if (log)
@@ -611,16 +619,17 @@ static bool ValidateAppendString(uintptr_t appendStringAddr, uintptr_t gobjectsA
 // ========================================================================
 // Phase order: GObjects first (has wait loop ensuring game init),
 // then AppendString (code is loaded), then ProcessEventIdx.
-// Returns true if SDK is usable.
 
 static bool ResolveAndInitSDK(int timeoutSeconds,
                               void (*log)(const char*, ...) = nullptr,
-                              SDK::TUObjectArrayWrapper& GObjects = SDK::UObject::GObjects)
+                              SDK::TUObjectArrayWrapper& GObjects = SDK::UObject::GObjects,
+                              int stabilizeMs = 2000)
 {
     uintptr_t moduleBase = (uintptr_t)GetModuleHandleA(nullptr);
     if (log) log("[Resolver] Module base: 0x%p", (void*)moduleBase);
 
     // --- Phase 1: Find GObjects + wait for initialization ---
+    // Runs first: its wait loop ensures game code sections are fully loaded.
     if (log) log("[Resolver] Phase 1: Scanning for GObjects (waiting for game init)...");
     uintptr_t gobjects = 0;
     uintptr_t gobjectsCandidate = 0;
@@ -677,6 +686,7 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
     if (log) log("[Resolver] Phase 2: Scanning for FName::AppendString...");
     uintptr_t appendStr = FindAppendString(log);
 
+    // Retry once after delay if not found
     if (!appendStr)
     {
         if (log) log("  First scan failed, retrying after 2s...");
@@ -701,6 +711,7 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
 
     if (!appendStr)
     {
+        // Fallback A: estimate from GObjects offset shift
         int32_t oldGObjectsRVA = 0x08EE2F98;
         int32_t oldAppendStringRVA = 0x02A39360;
         int32_t shift = SDK::Offsets::GObjects - oldGObjectsRVA;
@@ -720,6 +731,7 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
             }
         }
 
+        // Fallback B: try raw hardcoded fallback with validation
         if (!appendStr)
         {
             uintptr_t fallbackAddr = moduleBase + oldAppendStringRVA;
@@ -746,6 +758,7 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
     {
         SDK::Offsets::ProcessEventIdx = peIdx;
 
+        // Also resolve ProcessEvent absolute RVA
         __try
         {
             auto** chunks = *(void***)(gobjects);
@@ -774,10 +787,14 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
         if (log) log("  ProcessEventIdx not found, using fallback 0x%X", SDK::Offsets::ProcessEventIdx);
     }
 
-    // Let game stabilize after init
-    if (log) log("[Resolver] All offsets resolved. Waiting for game to stabilize...");
-    Sleep(15000);
+    // Brief stabilization wait
+    if (stabilizeMs > 0)
+    {
+        if (log) log("[Resolver] All offsets resolved. Stabilizing (%dms)...", stabilizeMs);
+        Sleep(stabilizeMs);
+    }
 
+    if (log) log("[Resolver] SDK initialization complete.");
     return true;
 }
 

@@ -19,6 +19,7 @@
 #include "SDK/KuroHotPatch_parameters.hpp"
 #include "SDK/KuroHotPatch_functions.cpp"
 #include "SDK/Basic.cpp"
+#include "DynamicResolver.hpp"
 
 namespace SDK
 {
@@ -41,8 +42,12 @@ namespace fs = std::filesystem;
 
 static bool CheckMountPak()
 {
-    SDK::UFunction* Func = SDK::UKuroPakMountStatic::StaticClass()->GetFunction("KuroPakMountStatic", "MountPak");
-    return Func != nullptr;
+    __try
+    {
+        SDK::UFunction* Func = SDK::UKuroPakMountStatic::StaticClass()->GetFunction("KuroPakMountStatic", "MountPak");
+        return Func != nullptr;
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 
 static bool ProcessPakFiles(const std::string& folderPath)
@@ -80,6 +85,17 @@ static std::string GetDllDirectory(HMODULE hModule)
     return fs::path(buffer).parent_path().string();
 }
 
+// Logging adapter for DynamicResolver
+static void ResolverLog(const char* fmt, ...)
+{
+    char buf[2048];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    LOG_INFO("Resolver", "%s", buf);
+}
+
 DWORD WINAPI MainThread(LPVOID lpParam)
 {
     HMODULE hModule = reinterpret_cast<HMODULE>(lpParam);
@@ -89,6 +105,17 @@ DWORD WINAPI MainThread(LPVOID lpParam)
 #endif
 
     LOG_INFO("Init", "Dang cho game khoi tao...");
+
+    // Phase 1: Dynamically resolve SDK offsets (GObjects, AppendString, ProcessEventIdx)
+    // Uses Dumper-7 strategies: .data section scanning, string XREF, VTable analysis
+    if (!DynamicResolver::ResolveAndInitSDK(120, ResolverLog, SDK::UObject::GObjects, 2000))
+    {
+        LOG_ERROR("Init", "Khong the tim offset SDK! Thoat sau 5 giay...");
+        Sleep(5000);
+        ExitProcess(1);
+    }
+
+    // Phase 2: Wait for KuroPakMountStatic::MountPak to become available
     while (!CheckMountPak())
         Sleep(100);
     LOG_INFO("Init", "Game da san sang!");
