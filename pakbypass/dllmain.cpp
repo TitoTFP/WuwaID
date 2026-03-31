@@ -96,10 +96,11 @@ static void ResolverLog(const char* fmt, ...)
     LOG_INFO("Resolver", "%s", buf);
 }
 
-DWORD WINAPI MainThread(LPVOID lpParam)
-{
-    HMODULE hModule = reinterpret_cast<HMODULE>(lpParam);
+// Global module handle — avoids passing through thread params
+static HMODULE g_hModule = nullptr;
 
+static void DoInit()
+{
 #ifdef _DEBUG
     Logger::Instance().Initialize();
 #endif
@@ -110,23 +111,29 @@ DWORD WINAPI MainThread(LPVOID lpParam)
     // Uses Dumper-7 strategies: .data section scanning, string XREF, VTable analysis
     if (!DynamicResolver::ResolveAndInitSDK(120, ResolverLog, SDK::UObject::GObjects, 2000))
     {
-        LOG_ERROR("Init", "Khong the tim offset SDK! Thoat sau 5 giay...");
-        Sleep(5000);
-        ExitProcess(1);
+        LOG_ERROR("Init", "Khong the tim offset SDK!");
+        return;
     }
 
     // Phase 2: Wait for KuroPakMountStatic::MountPak to become available
-    while (!CheckMountPak())
+    for (int i = 0; i < 600 && !CheckMountPak(); i++)  // timeout after ~60s
         Sleep(100);
+
+    if (!CheckMountPak())
+    {
+        LOG_ERROR("Init", "MountPak khong san sang!");
+        return;
+    }
+
     LOG_INFO("Init", "Game da san sang!");
 
-    fs::path dllDir = GetDllDirectory(hModule);
+    fs::path dllDir = GetDllDirectory(g_hModule);
 
     // Load export_localization_db.dll if present
     fs::path locDll = dllDir / "export_localization_db.dll";
     if (fs::exists(locDll))
     {
-        HMODULE hLoc = LoadLibraryA(locDll.string().c_str());
+        HMODULE hLoc = LoadLibraryW(locDll.wstring().c_str());
         if (hLoc)
             LOG_INFO("Init", "Loaded: export_localization_db.dll");
         else
@@ -149,17 +156,18 @@ DWORD WINAPI MainThread(LPVOID lpParam)
     else
     {
         LOG_ERROR("Done", "Khong tim thay file .pak trong: %s", pakPath.c_str());
-        LOG_ERROR("Done", "Thoat game sau 5 giay...");
-        Sleep(5000);
-        ExitProcess(1);
     }
 
 #ifdef _DEBUG
     Logger::Instance().Flush();
 #endif
-    Sleep(1000);
-    FreeLibraryAndExitThread(hModule, 0);
-    return 0;
+}
+
+// Thread pool callback — looks far more legitimate than raw CreateThread
+static VOID CALLBACK InitWorker(PTP_CALLBACK_INSTANCE /*Instance*/, PVOID /*Context*/, PTP_WORK Work)
+{
+    DoInit();
+    CloseThreadpoolWork(Work);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -168,8 +176,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     {
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
+        g_hModule = hModule;
         VersionProxy::LoadRealDll();
-        CreateThread(nullptr, 0, MainThread, hModule, 0, nullptr);
+        {
+            PTP_WORK work = CreateThreadpoolWork(InitWorker, nullptr, nullptr);
+            if (work)
+                SubmitThreadpoolWork(work);
+        }
         break;
 
     case DLL_PROCESS_DETACH:

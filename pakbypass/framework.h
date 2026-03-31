@@ -5,7 +5,6 @@
 
 // Windows Header Files
 #include <windows.h>
-#include <psapi.h>
 
 // C++ Standard Library
 #include <string>
@@ -20,5 +19,3 @@
 #include <unordered_map>
 #include <cstdint>
 #include <iomanip>
-
-#pragma comment(lib, "psapi.lib")
