@@ -1,3 +1,5 @@
+# Đã archive, toàn bộ bản dịch bây giờ sẽ nằm ở repo [Lai-Hoang/wuwa-viet-hoa](https://github.com/Lai-Hoang/wuwa-viet-hoa)
+
 # WuWa Việt Hóa
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=plastic&logo=discord&logoColor=white)](https://discord.gg/KGqfAyzXBb)
 
