@@ -27,9 +27,13 @@ jobs:
           $dllmain = "export_localization_db/dllmain.cpp"
           $content = Get-Content $dllmain -Raw
 
-          # Add VersionProxy include after pch.h.
+          # Add required std::wstring include + VersionProxy include after pch.h.
+          if ($content -notmatch '#include <string>') {
+            $content = $content -replace '#include "pch\.h"', "#include `"pch.h`"`r`n#include <string>"
+          }
+
           if ($content -notmatch 'VersionProxy\.hpp') {
-            $content = $content -replace '#include "pch\.h"', "#include `"pch.h`"`r`n#include `"VersionProxy.hpp`""
+            $content = $content -replace '#include <string>', "#include <string>`r`n#include `"VersionProxy.hpp`""
           }
 
           # Add F9 wrapper before DllMain.
@@ -58,7 +62,10 @@ jobs:
           }
 
           # Replace direct WorkerThread start with F9-gated wrapper.
-          $content = $content -replace 'CreateThread\(nullptr,\s*0,\s*WorkerThread,\s*hModule,\s*0,\s*nullptr\);', 'CreateThread(nullptr, 0, WaitForF9ThenStart, hModule, 0, nullptr);'
+          # Handles both nullptr-style and NULL-style CreateThread calls.
+          $content = $content -replace 'CreateThread\(\s*nullptr\s*,\s*0\s*,\s*WorkerThread\s*,\s*hModule\s*,\s*0\s*,\s*nullptr\s*\);', 'CreateThread(nullptr, 0, WaitForF9ThenStart, hModule, 0, nullptr);'
+          $content = $content -replace 'CreateThread\(\s*NULL\s*,\s*0\s*,\s*WorkerThread\s*,\s*NULL\s*,\s*0\s*,\s*NULL\s*\);', 'CreateThread(NULL, 0, WaitForF9ThenStart, NULL, 0, NULL);'
+          $content = $content -replace 'CreateThread\(\s*NULL\s*,\s*0\s*,\s*WorkerThread\s*,\s*hModule\s*,\s*0\s*,\s*NULL\s*\);', 'CreateThread(NULL, 0, WaitForF9ThenStart, hModule, 0, NULL);'
 
           # Unload real version.dll on detach.
           if ($content -notmatch 'VersionProxy::Unload\(\)') {
@@ -68,8 +75,8 @@ jobs:
           Set-Content -Path $dllmain -Value $content -Encoding UTF8
 
           Write-Host "Patched dllmain.cpp:"
-          Select-String -Path $dllmain -Pattern "VersionProxy|WaitForF9ThenStart|WorkerThread|DLL_PROCESS_ATTACH|DLL_PROCESS_DETACH|LoadRealDll|Unload|CreateThread"
-
+          Select-String -Path $dllmain -Pattern "#include <string>|VersionProxy|WaitForF9ThenStart|WorkerThread|DLL_PROCESS_ATTACH|DLL_PROCESS_DETACH|LoadRealDll|Unload|CreateThread"
+          
       - name: Patch vcxproj paths, toolset, output name, and .def file
         shell: pwsh
         run: |
