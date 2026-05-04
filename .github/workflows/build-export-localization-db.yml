@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout repo
@@ -17,13 +17,24 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build export_localization_db
+        shell: cmd
         run: |
-          msbuild export_localization_db/export_localization_db.vcxproj /p:Configuration=Release /p:Platform=x64
+          msbuild export_localization_db\export_localization_db.vcxproj ^
+            /p:Configuration=Release ^
+            /p:Platform=x64 ^
+            /p:PlatformToolset=v143 ^
+            /p:WindowsTargetPlatformVersion=10.0 ^
+            /m ^
+            /v:minimal
+
+      - name: Find DLL
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter "*.dll" | Select-Object FullName
 
       - name: Upload DLL artifact
         uses: actions/upload-artifact@v4
         with:
           name: export_localization_db-dll
           path: |
-            **/Release/**/*.dll
-            **/x64/Release/**/*.dll
+            **/*.dll
