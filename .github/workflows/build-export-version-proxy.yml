@@ -2,9 +2,9 @@ name: Build export toolkit as version.dll with F9 trigger
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   build:
@@ -76,7 +76,7 @@ jobs:
 
           Write-Host "Patched dllmain.cpp:"
           Select-String -Path $dllmain -Pattern "#include <string>|VersionProxy|WaitForF9ThenStart|WorkerThread|DLL_PROCESS_ATTACH|DLL_PROCESS_DETACH|LoadRealDll|Unload|CreateThread"
-          
+
       - name: Patch vcxproj paths, toolset, output name, and .def file
         shell: pwsh
         run: |

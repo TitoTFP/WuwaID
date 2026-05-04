@@ -2,9 +2,9 @@ name: Build export_localization_db
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   build:
