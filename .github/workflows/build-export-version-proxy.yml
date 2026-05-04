@@ -1,0 +1,203 @@
+name: Build export toolkit as version.dll with F9 trigger
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Show MSBuild version
+        shell: cmd
+        run: msbuild -version
+
+      - name: Patch dllmain.cpp to use version.dll proxy and F9 trigger
+        shell: pwsh
+        run: |
+          $dllmain = "export_localization_db/dllmain.cpp"
+          $content = Get-Content $dllmain -Raw
+
+          # Add VersionProxy include after pch.h.
+          if ($content -notmatch 'VersionProxy\.hpp') {
+            $content = $content -replace '#include "pch\.h"', "#include `"pch.h`"`r`n#include `"VersionProxy.hpp`""
+          }
+
+          # Add F9 wrapper before DllMain.
+          if ($content -notmatch 'WaitForF9ThenStart') {
+            $wrapper = @'
+
+          DWORD WINAPI WaitForF9ThenStart(LPVOID lpParam)
+          {
+              // Wait until the user is already inside the game/world.
+              // Press F9 to start the export toolkit.
+              while (!(GetAsyncKeyState(VK_F9) & 1)) {
+                  Sleep(100);
+              }
+
+              return WorkerThread(lpParam);
+          }
+
+          '@
+
+            $content = $content -replace 'BOOL APIENTRY DllMain', "$wrapper`r`nBOOL APIENTRY DllMain"
+          }
+
+          # Load real system version.dll on attach.
+          if ($content -notmatch 'VersionProxy::LoadRealDll\(\)') {
+            $content = $content -replace 'DisableThreadLibraryCalls\(hModule\);', "DisableThreadLibraryCalls(hModule);`r`n        VersionProxy::LoadRealDll();"
+          }
+
+          # Replace direct WorkerThread start with F9-gated wrapper.
+          $content = $content -replace 'CreateThread\(nullptr,\s*0,\s*WorkerThread,\s*hModule,\s*0,\s*nullptr\);', 'CreateThread(nullptr, 0, WaitForF9ThenStart, hModule, 0, nullptr);'
+
+          # Unload real version.dll on detach.
+          if ($content -notmatch 'VersionProxy::Unload\(\)') {
+            $content = $content -replace 'case DLL_PROCESS_DETACH:\s*break;', "case DLL_PROCESS_DETACH:`r`n        VersionProxy::Unload();`r`n        break;"
+          }
+
+          Set-Content -Path $dllmain -Value $content -Encoding UTF8
+
+          Write-Host "Patched dllmain.cpp:"
+          Select-String -Path $dllmain -Pattern "VersionProxy|WaitForF9ThenStart|WorkerThread|DLL_PROCESS_ATTACH|DLL_PROCESS_DETACH|LoadRealDll|Unload|CreateThread"
+
+      - name: Patch vcxproj paths, toolset, output name, and .def file
+        shell: pwsh
+        run: |
+          $proj = "export_localization_db/export_localization_db.vcxproj"
+
+          [xml]$xml = Get-Content $proj
+          $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+          $ns.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003")
+
+          # Force MSVC 2022 toolset.
+          $toolsets = $xml.SelectNodes("//msb:PlatformToolset", $ns)
+          foreach ($node in $toolsets) {
+            $node.InnerText = "v143"
+          }
+
+          # Make output target version.dll.
+          $propertyGroups = $xml.SelectNodes("//msb:PropertyGroup", $ns)
+          foreach ($pg in $propertyGroups) {
+            $targetName = $pg.SelectSingleNode("msb:TargetName", $ns)
+            if ($null -eq $targetName) {
+              $targetName = $xml.CreateElement("TargetName", "http://schemas.microsoft.com/developer/msbuild/2003")
+              [void]$pg.AppendChild($targetName)
+            }
+            $targetName.InnerText = "version"
+          }
+
+          # Include dirs:
+          # ..              -> root repo, SDK.hpp
+          # ..\SDK          -> SDK folder
+          # .               -> export_localization_db
+          # ..\pakbypass    -> VersionProxy.hpp
+          $clSettings = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
+          foreach ($cl in $clSettings) {
+            $inc = $cl.SelectSingleNode("msb:AdditionalIncludeDirectories", $ns)
+
+            if ($null -eq $inc) {
+              $inc = $xml.CreateElement("AdditionalIncludeDirectories", "http://schemas.microsoft.com/developer/msbuild/2003")
+              [void]$cl.AppendChild($inc)
+            }
+
+            $inc.InnerText = "..;..\SDK;.;..\pakbypass;%(AdditionalIncludeDirectories)"
+          }
+
+          function Fix-SdkPath($path) {
+            if ([string]::IsNullOrWhiteSpace($path)) {
+              return $path
+            }
+
+            $p = $path.Replace("/", "\")
+
+            if ($p -like "SDK\*") {
+              return "..\" + $p
+            }
+
+            if ($p -like "`$(SolutionDir)SDK\*") {
+              return $p.Replace("`$(SolutionDir)SDK\", "..\SDK\")
+            }
+
+            if ($p -like "*\export_localization_db\SDK\*") {
+              $file = Split-Path $p -Leaf
+              return "..\SDK\$file"
+            }
+
+            return $p
+          }
+
+          # Fix C++ source paths.
+          $compileItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClCompile", $ns)
+          foreach ($item in $compileItems) {
+            $include = $item.GetAttribute("Include")
+            $fixed = Fix-SdkPath $include
+            $item.SetAttribute("Include", $fixed)
+          }
+
+          # Fix header paths.
+          $includeItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClInclude", $ns)
+          foreach ($item in $includeItems) {
+            $include = $item.GetAttribute("Include")
+            $fixed = Fix-SdkPath $include
+            $item.SetAttribute("Include", $fixed)
+          }
+
+          # Add version.def so version.dll exports the expected Windows version.dll symbols.
+          $linkSettings = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:Link", $ns)
+          foreach ($link in $linkSettings) {
+            $moduleDef = $link.SelectSingleNode("msb:ModuleDefinitionFile", $ns)
+            if ($null -eq $moduleDef) {
+              $moduleDef = $xml.CreateElement("ModuleDefinitionFile", "http://schemas.microsoft.com/developer/msbuild/2003")
+              [void]$link.AppendChild($moduleDef)
+            }
+
+            $moduleDef.InnerText = "..\pakbypass\version.def"
+          }
+
+          $xml.Save($proj)
+
+          Write-Host "Patched project file:"
+          Select-String -Path $proj -Pattern "PlatformToolset|TargetName|AdditionalIncludeDirectories|ModuleDefinitionFile|ClCompile Include|ClInclude Include"
+
+      - name: Build version.dll proxy export toolkit
+        shell: cmd
+        run: |
+          msbuild export_localization_db\export_localization_db.vcxproj ^
+            /p:Configuration=Release ^
+            /p:Platform=x64 ^
+            /p:WindowsTargetPlatformVersion=10.0 ^
+            /p:TargetName=version ^
+            /m ^
+            /v:normal
+
+      - name: Find build outputs
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "Current directory:"
+          Get-Location
+
+          Write-Host "DLL / LIB / EXP / PDB outputs:"
+          Get-ChildItem -Recurse -Include *.dll,*.lib,*.exp,*.pdb |
+            Select-Object FullName
+
+      - name: Upload version.dll artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-toolkit-version-dll-f9
+          path: |
+            **/version.dll
+            **/version.pdb
+            **/version.lib
+            **/version.exp
