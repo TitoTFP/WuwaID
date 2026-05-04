@@ -142,6 +142,11 @@ _ReSharper*/
 *.VC.nativecodeanalysis.all.xml
 
 # ============================================================
+# Python compiled files
+# ============================================================
+__pycache__/
+
+# ============================================================
 # CMake
 # ============================================================
 CMakeLists.txt.user
@@ -189,6 +194,7 @@ $RECYCLE.BIN/
 # Build output directories
 export_localization_db/export_l.*/
 ConfigDB/
-export_quest_ordered/*
+export_quest_ordered/
 Javascript/*
 WuwaDBExport/
+export_quest_raw_all/
