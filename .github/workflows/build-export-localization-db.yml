@@ -1,0 +1,29 @@
+name: Build export_localization_db
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build export_localization_db
+        run: |
+          msbuild export_localization_db/export_localization_db.vcxproj /p:Configuration=Release /p:Platform=x64
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: export_localization_db-dll
+          path: |
+            **/Release/**/*.dll
+            **/x64/Release/**/*.dll
