@@ -3,7 +3,8 @@ name: Build export_localization_db
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -16,6 +17,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Show MSBuild version
+        shell: cmd
+        run: msbuild -version
+
       - name: Build export_localization_db
         shell: cmd
         run: |
@@ -24,13 +29,20 @@ jobs:
             /p:Platform=x64 ^
             /p:PlatformToolset=v143 ^
             /p:WindowsTargetPlatformVersion=10.0 ^
+            /p:AdditionalIncludeDirectories="%CD%;%CD%\SDK;%CD%\export_localization_db;%%(AdditionalIncludeDirectories)" ^
             /m ^
-            /v:minimal
+            /v:normal
 
-      - name: Find DLL
+      - name: Find build outputs
+        if: always()
         shell: pwsh
         run: |
-          Get-ChildItem -Recurse -Filter "*.dll" | Select-Object FullName
+          Write-Host "Current directory:"
+          Get-Location
+
+          Write-Host "DLL / LIB / EXP / PDB outputs:"
+          Get-ChildItem -Recurse -Include *.dll,*.lib,*.exp,*.pdb |
+            Select-Object FullName
 
       - name: Upload DLL artifact
         uses: actions/upload-artifact@v4
