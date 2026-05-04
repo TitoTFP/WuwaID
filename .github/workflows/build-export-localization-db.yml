@@ -21,15 +21,51 @@ jobs:
         shell: cmd
         run: msbuild -version
 
+      - name: Patch vcxproj include paths and toolset
+        shell: pwsh
+        run: |
+          $proj = "export_localization_db/export_localization_db.vcxproj"
+
+          [xml]$xml = Get-Content $proj
+          $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+          $ns.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003")
+
+          # Force MSVC 2022 toolset
+          $toolsets = $xml.SelectNodes("//msb:PlatformToolset", $ns)
+          foreach ($node in $toolsets) {
+            $node.InnerText = "v143"
+          }
+
+          # Add include directories to every ClCompile section
+          $clCompiles = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
+          foreach ($cl in $clCompiles) {
+            $inc = $cl.SelectSingleNode("msb:AdditionalIncludeDirectories", $ns)
+
+            if ($null -eq $inc) {
+              $inc = $xml.CreateElement("AdditionalIncludeDirectories", "http://schemas.microsoft.com/developer/msbuild/2003")
+              [void]$cl.AppendChild($inc)
+            }
+
+            $needed = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
+            if ([string]::IsNullOrWhiteSpace($inc.InnerText)) {
+              $inc.InnerText = $needed
+            } elseif ($inc.InnerText -notlike "*..;..\SDK;.*") {
+              $inc.InnerText = "..;..\SDK;.;" + $inc.InnerText
+            }
+          }
+
+          $xml.Save($proj)
+
+          Write-Host "Patched project file:"
+          Select-String -Path $proj -Pattern "PlatformToolset|AdditionalIncludeDirectories"
+
       - name: Build export_localization_db
         shell: cmd
         run: |
           msbuild export_localization_db\export_localization_db.vcxproj ^
             /p:Configuration=Release ^
             /p:Platform=x64 ^
-            /p:PlatformToolset=v143 ^
             /p:WindowsTargetPlatformVersion=10.0 ^
-            /p:AdditionalIncludeDirectories="%CD%;%CD%\SDK;%CD%\export_localization_db;%%(AdditionalIncludeDirectories)" ^
             /m ^
             /v:normal
 
@@ -45,8 +81,12 @@ jobs:
             Select-Object FullName
 
       - name: Upload DLL artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: export_localization_db-dll
+          name: export_localization_db-build-output
           path: |
             **/*.dll
+            **/*.lib
+            **/*.exp
+            **/*.pdb
