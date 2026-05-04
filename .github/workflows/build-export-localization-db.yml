@@ -21,7 +21,7 @@ jobs:
         shell: cmd
         run: msbuild -version
 
-      - name: Patch vcxproj include paths and toolset
+      - name: Patch vcxproj paths and toolset
         shell: pwsh
         run: |
           $proj = "export_localization_db/export_localization_db.vcxproj"
@@ -36,9 +36,9 @@ jobs:
             $node.InnerText = "v143"
           }
 
-          # Add include directories to every ClCompile section
-          $clCompiles = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
-          foreach ($cl in $clCompiles) {
+          # Add include directories to every ClCompile settings block
+          $clSettings = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
+          foreach ($cl in $clSettings) {
             $inc = $cl.SelectSingleNode("msb:AdditionalIncludeDirectories", $ns)
 
             if ($null -eq $inc) {
@@ -46,18 +46,40 @@ jobs:
               [void]$cl.AppendChild($inc)
             }
 
-            $needed = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
             if ([string]::IsNullOrWhiteSpace($inc.InnerText)) {
-              $inc.InnerText = $needed
-            } elseif ($inc.InnerText -notlike "*..;..\SDK;.*") {
+              $inc.InnerText = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
+            } elseif ($inc.InnerText -notlike "*..\SDK*") {
               $inc.InnerText = "..;..\SDK;.;" + $inc.InnerText
+            }
+          }
+
+          # Fix SDK .cpp paths.
+          # The project is inside export_localization_db/, so SDK/foo.cpp must become ../SDK/foo.cpp.
+          $compileItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClCompile", $ns)
+          foreach ($item in $compileItems) {
+            $include = $item.GetAttribute("Include")
+
+            if ($include -like "SDK/*" -or $include -like "SDK\*") {
+              $fixed = "..\" + $include.Replace("/", "\")
+              $item.SetAttribute("Include", $fixed)
+            }
+          }
+
+          # Fix SDK header paths too, just in case the project lists them.
+          $includeItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClInclude", $ns)
+          foreach ($item in $includeItems) {
+            $include = $item.GetAttribute("Include")
+
+            if ($include -like "SDK/*" -or $include -like "SDK\*") {
+              $fixed = "..\" + $include.Replace("/", "\")
+              $item.SetAttribute("Include", $fixed)
             }
           }
 
           $xml.Save($proj)
 
           Write-Host "Patched project file:"
-          Select-String -Path $proj -Pattern "PlatformToolset|AdditionalIncludeDirectories"
+          Select-String -Path $proj -Pattern "PlatformToolset|AdditionalIncludeDirectories|ClCompile Include|ClInclude Include"
 
       - name: Build export_localization_db
         shell: cmd
