@@ -20,6 +20,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path minimal_proxy | Out-Null
 
           Copy-Item pakbypass/VersionProxy.hpp minimal_proxy/VersionProxy.hpp
+          Copy-Item pakbypass/Logger.hpp minimal_proxy/Logger.hpp
           Copy-Item pakbypass/version.def minimal_proxy/version.def
 
           @'
