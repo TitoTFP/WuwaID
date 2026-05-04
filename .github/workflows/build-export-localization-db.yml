@@ -36,7 +36,7 @@ jobs:
             $node.InnerText = "v143"
           }
 
-          # Add include directories to every ClCompile settings block
+          # Add include dirs
           $clSettings = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
           foreach ($cl in $clSettings) {
             $inc = $cl.SelectSingleNode("msb:AdditionalIncludeDirectories", $ns)
@@ -46,34 +46,46 @@ jobs:
               [void]$cl.AppendChild($inc)
             }
 
-            if ([string]::IsNullOrWhiteSpace($inc.InnerText)) {
-              $inc.InnerText = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
-            } elseif ($inc.InnerText -notlike "*..\SDK*") {
-              $inc.InnerText = "..;..\SDK;.;" + $inc.InnerText
-            }
+            $inc.InnerText = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
           }
 
-          # Fix SDK .cpp paths.
-          # The project is inside export_localization_db/, so SDK/foo.cpp must become ../SDK/foo.cpp.
+          function Fix-SdkPath($path) {
+            if ([string]::IsNullOrWhiteSpace($path)) {
+              return $path
+            }
+
+            $p = $path.Replace("/", "\")
+
+            if ($p -like "SDK\*") {
+              return "..\" + $p
+            }
+
+            if ($p -like "`$(SolutionDir)SDK\*") {
+              return $p.Replace("`$(SolutionDir)SDK\", "..\SDK\")
+            }
+
+            if ($p -like "*\export_localization_db\SDK\*") {
+              $file = Split-Path $p -Leaf
+              return "..\SDK\$file"
+            }
+
+            return $p
+          }
+
+          # Fix C++ source paths
           $compileItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClCompile", $ns)
           foreach ($item in $compileItems) {
             $include = $item.GetAttribute("Include")
-
-            if ($include -like "SDK/*" -or $include -like "SDK\*") {
-              $fixed = "..\" + $include.Replace("/", "\")
-              $item.SetAttribute("Include", $fixed)
-            }
+            $fixed = Fix-SdkPath $include
+            $item.SetAttribute("Include", $fixed)
           }
 
-          # Fix SDK header paths too, just in case the project lists them.
+          # Fix header paths
           $includeItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClInclude", $ns)
           foreach ($item in $includeItems) {
             $include = $item.GetAttribute("Include")
-
-            if ($include -like "SDK/*" -or $include -like "SDK\*") {
-              $fixed = "..\" + $include.Replace("/", "\")
-              $item.SetAttribute("Include", $fixed)
-            }
+            $fixed = Fix-SdkPath $include
+            $item.SetAttribute("Include", $fixed)
           }
 
           $xml.Save($proj)
