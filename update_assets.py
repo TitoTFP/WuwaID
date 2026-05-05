@@ -1,7 +1,7 @@
 """
-Script cập nhật Web/assets.json:
-- Tính SHA256 cho bgm.mp3 và bg-video.mp4 từ file local
-- Lấy SHA256 và URL của 3 file release từ GitHub API
+Script to update Web/assets.json:
+- Calculate SHA256 for bgm.mp3 and bg-video.mp4 from local files
+- Get SHA256 and URLs of 3 release files from GitHub API
 """
 
 import hashlib
@@ -61,24 +61,24 @@ def fetch_release_assets() -> list[dict]:
             }
         )
 
-    # Giữ thứ tự cố định theo RELEASE_FILES
+    # Keep fixed order according to RELEASE_FILES
     order = list(RELEASE_FILES)
     assets.sort(key=lambda a: order.index(a["name"]) if a["name"] in order else 999)
     return assets
 
 
 def main():
-    print("Đang tính SHA256 cho file local...")
+    print("Calculating SHA256 for local files...")
     local_entries = []
     for item in LOCAL_FILES:
         if not item["path"].exists():
-            print(f"  [SKIP] Không tìm thấy: {item['path']}")
+            print(f"  [SKIP] Not found: {item['path']}")
             continue
         sha = sha256_file(item["path"])
         print(f"  {item['name']}: {sha}")
         local_entries.append({"name": item["name"], "url": item["url"], "sha256": sha})
 
-    print(f"\nĐang gọi GitHub API: {REPO_API}")
+    print(f"\nCalling GitHub API: {REPO_API}")
     release_entries = fetch_release_assets()
     for e in release_entries:
         print(f"  {e['name']}: {e['sha256']}")
@@ -87,7 +87,7 @@ def main():
     output = {"assets": all_entries}
 
     ASSETS_JSON.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"\nĐã lưu vào {ASSETS_JSON}")
+    print(f"\nSaved to {ASSETS_JSON}")
 
 
 if __name__ == "__main__":
