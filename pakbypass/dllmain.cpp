@@ -1,7 +1,7 @@
-// dllmain.cpp - WuWa Viet Hoa Pak Loader (version.dll proxy)
+// dllmain.cpp - WuWa Indonesia Pak Loader (version.dll proxy)
 //
 // Mounts translation .pak files and removes SHA1 checks using the game's SDK.
-// Place as "version.dll" next to the game exe, put .pak files in "wuwaVietHoa" folder.
+// Place as "version.dll" next to the game exe, put .pak files in "wuwaIndonesia" folder.
 
 #include "pch.h"
 
@@ -140,7 +140,7 @@ static void DoInit()
             LOG_WARN("Init", "export_localization_db.dll load that bai (error: %lu)", GetLastError());
     }
 
-    fs::path pakDir = dllDir / "wuwaVietHoa";
+    fs::path pakDir = dllDir / "wuwaIndonesia";
     std::string pakPath = pakDir.string();
 
     if (!fs::exists(pakPath))

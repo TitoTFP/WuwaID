@@ -17,13 +17,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "WuwaVH"
+            VALUE "CompanyName", "WuwaID"
             VALUE "FileDescription", "Version Information Helper Library"
             VALUE "FileVersion", "1.0.0.0"
             VALUE "InternalName", "version"
-            VALUE "LegalCopyright", "Copyright (C) 2024-2026 WuwaVH"
+            VALUE "LegalCopyright", "Copyright (C) 2024-2026 WuwaID"
             VALUE "OriginalFilename", "version.dll"
-            VALUE "ProductName", "WuWa Vietnamese Localization"
+            VALUE "ProductName", "WuWa Indonesian Localization"
             VALUE "ProductVersion", "1.0.0.0"
         END
     END

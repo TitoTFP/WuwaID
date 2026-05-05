@@ -40,10 +40,10 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 **Langkah 1** — Salin file `.pak` ke folder berikut:
 
 ```text
-{Folder game}\Client\Binaries\Win64\wuwaVietHoa\
+{Folder game}\Client\Binaries\Win64\wuwaIndonesia\
 ```
 
-> Jika folder `wuwaVietHoa` belum ada, buat folder baru dengan nama tersebut.
+> Jika folder `wuwaIndonesia` belum ada, buat folder baru dengan nama tersebut.
 
 **Langkah 2** — Salin `version.dll` ke folder yang sama dengan file `.exe` game:
 
@@ -57,14 +57,14 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 Client\Binaries\Win64\
 ├── version.dll
 ├── Client-Win64-Shipping.exe
-└── wuwaVietHoa\
+└── wuwaIndonesia\
     ├── WuWaID_99_P.pak
     └── UTMAlexander_100_P.pak
 ```
 
 ### 3. Uninstall
 
-Hapus file `version.dll` dan folder `wuwaVietHoa`.
+Hapus file `version.dll` dan folder `wuwaIndonesia`.
 
 ---
 

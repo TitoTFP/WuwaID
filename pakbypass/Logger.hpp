@@ -1,5 +1,5 @@
 #pragma once
-// Logger.hpp - Console & file logging for WuWa Viet Hoa
+// Logger.hpp - Console & file logging for WuWa Indonesia
 // Only active in Debug builds; completely stripped in Release.
 
 #ifdef _DEBUG
@@ -122,7 +122,7 @@ private:
 
     void WriteHeader()
     {
-        m_logFile << "WuWa Viet Hoa - Log started: " << GetTimestamp() << "\n";
+        m_logFile << "WuWa Indonesia - Log started: " << GetTimestamp() << "\n";
         m_logFile.flush();
     }
 
@@ -192,7 +192,7 @@ private:
         freopen_s(&fp, "CONOUT$", "w", stderr);
         freopen_s(&fp, "CONIN$", "r", stdin);
 
-        SetConsoleTitleA("WuWa Viet Hoa");
+        SetConsoleTitleA("WuWa Indonesia");
 
         // Enable ANSI / virtual terminal if available (Windows 10+)
         DWORD consoleMode = 0;
@@ -208,7 +208,7 @@ private:
         // Print banner
         SetConsoleTextAttribute(m_hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
         printf("========================================\n");
-        printf("  WuWa Viet Hoa - Pak Loader\n");
+        printf("  WuWa Indonesia - Pak Loader\n");
         printf("========================================\n");
         SetConsoleTextAttribute(m_hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
