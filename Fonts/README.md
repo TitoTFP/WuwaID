@@ -1,26 +1,26 @@
-# 🎨 Font Việt Hóa cho Wuthering Waves
+# Font Indonesia untuk Wuthering Waves
 
-Các font thay thế cho bản Việt Hóa Wuthering Waves. Mỗi file `.pak` tương ứng với một font — chỉ cần chọn **một** file và đặt vào thư mục mod để thay đổi font trong game.
+Font pengganti untuk versi Indonesia Wuthering Waves. Setiap file `.pak` mewakili satu font. Pilih **satu** file saja, lalu letakkan di folder mod untuk mengubah font di dalam game.
 
-## Hướng dẫn cài đặt
+## Panduan pemasangan
 
-1. Chọn font yêu thích từ danh sách bên dưới.
-2. Sao chép file `.pak` tương ứng vào thư mục `Fonts/Fonts/Client/` (hoặc theo hướng dẫn cài đặt mod).
-3. Khởi động lại game để áp dụng.
+1. Pilih font favorit dari daftar di bawah.
+2. Salin file `.pak` yang sesuai ke folder `Fonts/Fonts/Client/` (atau ikuti panduan pemasangan mod).
+3. Mulai ulang game untuk menerapkan perubahan.
 
-> **Lưu ý:** Chỉ sử dụng **một** file font `.pak` tại một thời điểm.
+> **Catatan:** Gunakan hanya **satu** file font `.pak` dalam satu waktu.
 
 ---
 
-## Danh sách Font
+## Daftar Font
 
 ### Philosopher
 
 ![Philosopher](Philosopher.png)
 
 - **File:** `Philosopher_100_P.pak`
-- **Phong cách:** Serif cổ điển, thanh lịch
-- **Mô tả:** Font chữ có chân (serif) mang phong cách hàn lâm, trang nhã. Các nét chữ có độ tương phản vừa phải giữa nét mảnh và nét đậm, tạo cảm giác đẳng cấp và truyền thống. Phù hợp cho người thích phong cách cổ điển, nghiêm túc.
+- **Gaya:** Serif klasik, elegan
+- **Deskripsi:** Font berkait (serif) dengan nuansa akademis dan anggun. Bentuk hurufnya memiliki kontras yang cukup seimbang antara goresan tipis dan tebal, sehingga memberi kesan berkelas dan tradisional. Cocok untuk pemain yang menyukai gaya klasik dan serius.
 
 ---
 
@@ -29,8 +29,8 @@ Các font thay thế cho bản Việt Hóa Wuthering Waves. Mỗi file `.pak` t�
 ![Quicksand](Quicksand.png)
 
 - **File:** `Quicksand_100_P.pak`
-- **Phong cách:** Sans-serif bo tròn, hiện đại
-- **Mô tả:** Font không chân (sans-serif) với các đầu nét bo tròn mềm mại, mang hơi hướng hình học. Chữ thanh mảnh, thoáng đãng, dễ đọc trên mọi kích thước. Tạo cảm giác hiện đại, trẻ trung và thân thiện — rất phù hợp với giao diện game.
+- **Gaya:** Sans-serif membulat, modern
+- **Deskripsi:** Font tanpa kait (sans-serif) dengan ujung goresan yang membulat lembut dan sentuhan geometris. Hurufnya ramping, lega, dan mudah dibaca dalam berbagai ukuran. Memberi kesan modern, muda, dan ramah, sangat cocok untuk antarmuka game.
 
 ---
 
@@ -39,8 +39,8 @@ Các font thay thế cho bản Việt Hóa Wuthering Waves. Mỗi file `.pak` t�
 ![Signika Bold](Signika.png)
 
 - **File:** `Signika-Bold_100_P.pak`
-- **Phong cách:** Sans-serif đậm, rõ ràng
-- **Mô tả:** Font không chân (sans-serif) với nét dày, đậm và sắc nét. Được thiết kế chuyên cho biển báo và giao diện, đảm bảo độ dễ đọc cao ngay cả ở kích thước nhỏ. Chữ hiển thị đậm, nổi bật — lý tưởng cho ai thích text in đậm, dứt khoát và dễ nhìn.
+- **Gaya:** Sans-serif tebal, jelas
+- **Deskripsi:** Font tanpa kait (sans-serif) dengan goresan yang tebal, kuat, dan tajam. Dirancang untuk papan informasi dan antarmuka, sehingga tetap sangat mudah dibaca bahkan dalam ukuran kecil. Tampilannya tegas dan menonjol, ideal untuk pemain yang menyukai teks tebal, lugas, dan mudah dilihat.
 
 ---
 
@@ -49,8 +49,8 @@ Các font thay thế cho bản Việt Hóa Wuthering Waves. Mỗi file `.pak` t�
 ![SRN CookieRun Regular](SRNCookieRun.png)
 
 - **File:** `SRNCookieRun-Regular_100_P.pak`
-- **Phong cách:** Tròn, vui nhộn, năng động
-- **Mô tả:** Font lấy cảm hứng từ game CookieRun, mang phong cách dễ thương và tràn đầy năng lượng. Các nét chữ bo tròn, hơi phồng, tạo cảm giác vui tươi và ngộ nghĩnh. Thích hợp cho người chơi muốn giao diện game trở nên đáng yêu, nhẹ nhàng hơn.
+- **Gaya:** Membulat, ceria, dinamis
+- **Deskripsi:** Font yang terinspirasi dari game CookieRun, dengan gaya yang imut dan penuh energi. Goresan hurufnya membulat dan sedikit menggembung, menciptakan kesan ceria dan menggemaskan. Cocok untuk pemain yang ingin membuat antarmuka game terasa lebih manis dan ringan.
 
 ---
 
@@ -59,32 +59,32 @@ Các font thay thế cho bản Việt Hóa Wuthering Waves. Mỗi file `.pak` t�
 ![UTM Alexander](UTMAlexander.png)
 
 - **File:** `UTMAlexander_100_P.pak`
-- **Phong cách:** Serif trang trí, cầu kỳ
-- **Mô tả:** Font chữ Việt có chân (serif) với nét vẽ mang tính trang trí cao. Các ký tự có độ cong uốn lượn tinh tế, phảng phất nét thư pháp phương Tây. Tạo cảm giác sang trọng, cổ kính — phù hợp cho ai yêu thích phong cách hoa mỹ, nghệ thuật.
+- **Gaya:** Serif dekoratif, berornamen
+- **Deskripsi:** Font berkait (serif) dengan goresan yang sangat dekoratif. Karakternya memiliki lengkungan halus yang memberi nuansa kaligrafi Barat. Menghadirkan kesan mewah dan klasik, cocok untuk pemain yang menyukai gaya indah, artistik, dan kaya detail.
 
 ---
 
-### Vòng Xuyến
+### Vong Xuyen
 
 ![Vong Xuyên](VongXuyen.png)
 
 - **File:** `VongXuyen_100_P.pak`
-- **Phong cách:** Thư pháp Việt, bay bổng
-- **Mô tả:** Font chữ viết tay mang đậm nét thư pháp Việt Nam. Các nét thanh nét đậm uyển chuyển, nối liền tự nhiên như chữ viết tay thực sự. Ký tự hơi nghiêng, mềm mại, tạo cảm giác bay bổng và lãng mạn. Độc đáo và đậm bản sắc Việt — lựa chọn hoàn hảo cho ai muốn trải nghiệm game với phong cách chữ truyền thống.
+- **Gaya:** Kaligrafi Vietnam, mengalir
+- **Deskripsi:** Font tulisan tangan yang sangat kental dengan nuansa kaligrafi Vietnam. Goresan tipis dan tebalnya lentur, tersambung alami seperti tulisan tangan sungguhan. Karakternya sedikit miring dan lembut, memberi kesan mengalir serta romantis. Unik dan bernuansa tradisional, pilihan tepat untuk pemain yang ingin menikmati game dengan gaya huruf klasik.
 
 ---
 
-## So sánh nhanh
+## Perbandingan cepat
 
-| Font | Kiểu chữ | Độ đậm | Cảm giác |
-|------|-----------|--------|----------|
-| Philosopher | Serif | Trung bình | Cổ điển, hàn lâm |
-| Quicksand | Sans-serif tròn | Nhẹ | Hiện đại, trẻ trung |
-| Signika Bold | Sans-serif | Đậm | Rõ ràng, dứt khoát |
-| SRN CookieRun | Tròn | Trung bình | Vui nhộn, dễ thương |
-| UTM Alexander | Serif trang trí | Trung bình | Sang trọng, cầu kỳ |
-| Vòng Xuyến | Thư pháp | Biến đổi | Bay bổng, lãng mạn |
+| Font | Jenis huruf | Ketebalan | Kesan |
+|------|-------------|-----------|-------|
+| Philosopher | Serif | Sedang | Klasik, akademis |
+| Quicksand | Sans-serif membulat | Ringan | Modern, muda |
+| Signika Bold | Sans-serif | Tebal | Jelas, tegas |
+| SRN CookieRun | Membulat | Sedang | Ceria, imut |
+| UTM Alexander | Serif dekoratif | Sedang | Mewah, berornamen |
+| Vong Xuyen | Kaligrafi | Bervariasi | Mengalir, romantis |
 
 ---
 
-*Tất cả font đều hỗ trợ đầy đủ tiếng Việt có dấu.*
+*Semua font mendukung penuh karakter bahasa Indonesia.*
