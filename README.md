@@ -13,7 +13,7 @@ Patch terjemahan Bahasa Indonesia untuk **Wuthering Waves**.
 
 Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasang patch terjemahan ke folder yang sesuai:
 
-[![Download Launcher](https://img.shields.io/badge/Download%20WuwaVH%20Launcher-Latest-blue?style=for-the-badge&logo=github)](https://github.com/TitoTFP/WuwaID/releases/latest)
+[![Download Launcher](https://img.shields.io/badge/Download%20WuwaID%20Launcher-Latest-blue?style=for-the-badge&logo=github)](https://github.com/TitoTFP/WuwaID/releases/latest)
 
 1. Unduh file `.zip` dari link di atas, lalu ekstrak.
 2. Jalankan `WuwaIDLauncher.exe`.
