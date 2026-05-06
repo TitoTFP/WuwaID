@@ -11,12 +11,12 @@ Patch terjemahan Bahasa Indonesia untuk **Wuthering Waves**.
 
 ### Metode 1: Instalasi Otomatis melalui Launcher *(Direkomendasikan)*
 
-Unduh **WuwaVH Launcher** — aplikasi yang secara otomatis mengunduh dan memasang patch terjemahan ke folder yang sesuai:
+Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasang patch terjemahan ke folder yang sesuai:
 
-[![Download Launcher](https://img.shields.io/badge/Download%20WuwaVH%20Launcher-Latest-blue?style=for-the-badge&logo=github)](https://github.com/CallMeDangDev/WuwaVHLauncher/releases/latest)
+[![Download Launcher](https://img.shields.io/badge/Download%20WuwaVH%20Launcher-Latest-blue?style=for-the-badge&logo=github)](https://github.com/TitoTFP/WuwaID/releases/latest)
 
 1. Unduh file `.zip` dari link di atas, lalu ekstrak.
-2. Jalankan `WuwaVHLauncher.exe`.
+2. Jalankan `WuwaIDLauncher.exe`.
 3. Pilih folder instalasi game, lalu klik **Install**. Launcher akan menangani proses sisanya secara otomatis.
 
 ---
@@ -30,7 +30,6 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 | File | Deskripsi |
 |------|-----------|
 | `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia |
-| `UTMAlexander_100_P.pak` | Font pendukung |
 | `version.dll` | Loader untuk me-mount patch terjemahan secara otomatis |
 
 <!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaVH_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
