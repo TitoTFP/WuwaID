@@ -57,8 +57,7 @@ Client\Binaries\Win64\
 ├── version.dll
 ├── Client-Win64-Shipping.exe
 └── wuwaIndonesia\
-    ├── WuWaID_99_P.pak
-    └── UTMAlexander_100_P.pak
+    └── WuWaID_99_P.pak
 ```
 
 ### 3. Uninstall
