@@ -32,7 +32,7 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 | `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia |
 | `version.dll` | Loader untuk me-mount patch terjemahan secara otomatis |
 
-<!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaVH_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
+<!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaID_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
 
 ### 2. Instalasi
 
