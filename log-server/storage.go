@@ -101,6 +101,11 @@ func (s *Storage) SaveLogUpload(appVersion, timestamp, osName string, zipData []
 		fileCount++
 	}
 
+	// If all entries were filtered out (e.g., path traversal), return error
+	if fileCount == 0 {
+		return LogMeta{}, fmt.Errorf("zip archive contains no processable files")
+	}
+
 	meta := LogMeta{
 		ID:          id,
 		AppVersion:  appVersion,
