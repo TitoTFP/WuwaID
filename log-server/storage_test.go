@@ -228,3 +228,35 @@ func TestStorageConcurrentSaves(t *testing.T) {
 		t.Errorf("expected 5 uploads after concurrent saves, got %d", len(uploads))
 	}
 }
+
+func TestSaveLogUploadWithSubfolders(t *testing.T) {
+	dir := t.TempDir()
+	store := NewStorage(dir)
+
+	zipData := makeLogZip(t, map[string]string{
+		"launcher/launcher-20260516.log": "[2026-05-16] INFO launcher started",
+		"game/engine.log":                "[2026-05-16] WARN slow frame detected",
+	})
+
+	meta, err := store.SaveLogUpload("v2.0.0", "now", "Linux", zipData)
+	if err != nil {
+		t.Fatalf("SaveLogUpload() with subfolders unexpected error: %v", err)
+	}
+
+	if meta.FileCount != 2 {
+		t.Errorf("meta.FileCount = %d; want 2", meta.FileCount)
+	}
+
+	// Verify files exist with correct paths
+	filesDir := filepath.Join(dir, "logs", "v2.0.0", "now", meta.ID)
+
+	launcherPath := filepath.Join(filesDir, "launcher", "launcher-20260516.log")
+	if _, err := os.Stat(launcherPath); os.IsNotExist(err) {
+		t.Errorf("expected launcher log at %s to exist", launcherPath)
+	}
+
+	gamePath := filepath.Join(filesDir, "game", "engine.log")
+	if _, err := os.Stat(gamePath); os.IsNotExist(err) {
+		t.Errorf("expected game log at %s to exist", gamePath)
+	}
+}

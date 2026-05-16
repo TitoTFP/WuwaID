@@ -94,6 +94,11 @@ func (s *Storage) SaveLogUpload(appVersion, timestamp, osName string, zipData []
 			continue
 		}
 
+		// Create parent directory for entries in subfolders (e.g., launcher/, game/)
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return LogMeta{}, fmt.Errorf("creating parent directory: %w", err)
+		}
+
 		if err := os.WriteFile(destPath, entry.Data, 0644); err != nil {
 			return LogMeta{}, fmt.Errorf("writing log file: %w", err)
 		}

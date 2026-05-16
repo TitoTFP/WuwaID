@@ -2,7 +2,7 @@
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/TitoTFP/wuwaid-log-server)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen)]()
 
 A lightweight, zero-dependency log upload server built in Go. Designed to receive compressed log archives from the [WuwaIDLauncher](https://github.com/TitoTFP/WuwaIDLauncher) (Wuthering Waves Indonesian patch launcher) and store them on disk with configurable retention.
 
@@ -15,6 +15,7 @@ A lightweight, zero-dependency log upload server built in Go. Designed to receiv
 - **Configurable Retention** — Auto-cleanup of logs older than N days
 - **Configurable Size Limit** — Max upload size in MB
 - **Path Traversal Protection** — Zip entries with `../` are rejected
+- **Subdirectory Support** — Zip entries organized in subfolders (e.g., `launcher/*`, `game/*`) are preserved with their directory structure
 - **Concurrent Safe** — Handles multiple simultaneous uploads
 - **Graceful Shutdown** — Clean stop via SIGINT/SIGTERM
 - **No Dependencies** — Single binary, pure Go standard library
@@ -220,10 +221,10 @@ The test suite includes:
 |---------|-------|----------|
 | Configuration | 6 | Defaults, env vars, computed fields |
 | Handlers | 12 | Upload, list, health, CORS, method validation, content-type, path traversal |
-| Storage | 9 | Save, list, get, concurrent saves, empty/invalid data, path traversal |
+| Storage | 10 | Save, list, get, concurrent saves, empty/invalid data, path traversal, **subfolder entries** |
 | Cleanup | 7 | Retention, boundary, empty storage, non-log file preservation, scheduler |
 | Security | 3 | Path traversal prevention, Content-Type validation |
-| **Total** | **36** | — |
+| **Total** | **38** | — |
 
 ### Build
 
