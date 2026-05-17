@@ -4,12 +4,12 @@
     {
       "name": "bgm.mp3",
       "url": "https://raw.githubusercontent.com/CallMeDangDev/WuwaVH/refs/heads/main/Web/Audio/bgm.mp3",
-      "sha256": "a44b0614ec000aec4e97e2dc5cbe8cfc3623f577681db2a4edb23413507765b1"
+      "sha256": "42d084794552aa4fa90e2355b8c0e563a13565f6281028587115726b7ab4bfa6"
     },
     {
       "name": "bg-video.mp4",
       "url": "https://raw.githubusercontent.com/CallMeDangDev/WuwaVH/refs/heads/main/Web/Video/bg-video.mp4",
-      "sha256": "766c506f057fb8b7143dbb34ddd5fe7de92227c3dde4a5f8b7dc2c63a58847df"
+      "sha256": "c49c588f90fd5c83001752c4e301881d3c50d965ca5e5e4f508837942e27b791"
     }
   ]
 }
