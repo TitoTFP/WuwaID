@@ -40,6 +40,11 @@ import sys
 import shutil
 from dataclasses import dataclass
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -571,6 +576,53 @@ def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> list[tuple[str,
     return sorted(found)
 
 
+def get_all_referenced_flows(qnode_cur: sqlite3.Cursor) -> set[tuple[str, int]]:
+    """Collect every flow directly referenced by quest node data."""
+    qnode_cur.execute("SELECT BinData FROM questnodedata")
+    found: set[tuple[str, int]] = set()
+    for (bindata,) in qnode_cur.fetchall():
+        if not bindata:
+            continue
+        obj = extract_json_from_bindata(bindata)
+        if obj is not None:
+            _collect_flows_from_json(obj, found)
+    return found
+
+
+def get_unreferenced_dialogue_flows(
+    flow_names: set[str],
+    state_index: dict[tuple[str, int], list[tuple[str, int, bytes]]],
+    referenced_flows: set[tuple[str, int]],
+    exported_flows: set[tuple[str, int]],
+    lang_packs: list[LangPack],
+) -> list[tuple[str, int, list[dict]]]:
+    """Find dialogue-bearing flow states that questnodedata does not reference.
+
+    Some quest dialogue is triggered by scene logic rather than explicit
+    questnodedata PlayFlow entries. If the quest already references the same
+    FlowListName, these orphan states are still part of that story flow.
+    """
+    result: list[tuple[str, int, list[dict]]] = []
+    for flow_name, state_id in sorted(state_index):
+        flow_key = (flow_name, state_id)
+        if flow_name not in flow_names:
+            continue
+        if flow_key in referenced_flows or flow_key in exported_flows:
+            continue
+
+        flow_lines = []
+        entries = state_index.get(flow_key, [])
+        for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+            lines = extract_dialogue_from_flowstate(state_key, bindata, lang_packs)
+            flow_lines.extend(lines)
+
+        if flow_lines and has_available_dialogue(flow_lines):
+            result.append((flow_name, state_id, flow_lines))
+            exported_flows.add(flow_key)
+
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Dialogue extraction from flowState BinData
 # ---------------------------------------------------------------------------
@@ -794,6 +846,11 @@ def main():
 
     print(f"  Indexed {len(state_index)} flow list/state combinations")
 
+    print("Indexing quest-referenced flows...")
+    referenced_flows = get_all_referenced_flows(qnode_cur)
+    exported_unreferenced_flows: set[tuple[str, int]] = set()
+    print(f"  Found {len(referenced_flows)} quest-referenced flow states")
+
     # -----------------------------------------------------------------------
     # 5. Create output directory (clean stale files from prior runs first)
     # -----------------------------------------------------------------------
@@ -881,6 +938,25 @@ def main():
                             "state_id": state_id,
                             "dialogue": flow_lines,
                         })
+                    all_lines.extend(flow_lines)
+
+                supplemental_flows = get_unreferenced_dialogue_flows(
+                    {flow_name for flow_name, _ in flows},
+                    state_index,
+                    referenced_flows,
+                    exported_unreferenced_flows,
+                    lang_packs,
+                )
+                if supplemental_flows:
+                    print(f"         Supplemental unreferenced flows: {len(supplemental_flows)}")
+                for flow_name, state_id, flow_lines in supplemental_flows:
+                    flow_details.append({
+                        "flow_list_name": flow_name,
+                        "flow_id": state_id,
+                        "state_id": state_id,
+                        "source": "unreferenced_flowstate",
+                        "dialogue": flow_lines,
+                    })
                     all_lines.extend(flow_lines)
 
                 if not all_lines:
@@ -980,6 +1056,23 @@ def main():
                     "state_id": state_id,
                     "dialogue": flow_lines,
                 })
+            all_lines.extend(flow_lines)
+
+        supplemental_flows = get_unreferenced_dialogue_flows(
+            {flow_name for flow_name, _ in flows},
+            state_index,
+            referenced_flows,
+            exported_unreferenced_flows,
+            lang_packs,
+        )
+        for flow_name, state_id, flow_lines in supplemental_flows:
+            flow_details.append({
+                "flow_list_name": flow_name,
+                "flow_id": state_id,
+                "state_id": state_id,
+                "source": "unreferenced_flowstate",
+                "dialogue": flow_lines,
+            })
             all_lines.extend(flow_lines)
 
         if not all_lines:
