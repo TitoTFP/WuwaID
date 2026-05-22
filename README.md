@@ -30,7 +30,7 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 | File | Deskripsi |
 |------|-----------|
 | `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia |
-| `version.dll` | Loader untuk me-mount patch terjemahan secara otomatis |
+| `hid.dll` | Loader untuk me-mount patch terjemahan secara otomatis |
 
 <!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaID_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
 
@@ -44,7 +44,7 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 
 > Jika folder `wuwaIndonesia` belum ada, buat folder baru dengan nama tersebut.
 
-**Langkah 2** — Salin `version.dll` ke folder yang sama dengan file `.exe` game:
+**Langkah 2** — Salin `hid.dll` ke folder yang sama dengan file `.exe` game:
 
 ```text
 {Folder game}\Client\Binaries\Win64\
@@ -54,7 +54,7 @@ Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 
 ```text
 Client\Binaries\Win64\
-├── version.dll
+├── hid.dll
 ├── Client-Win64-Shipping.exe
 └── wuwaIndonesia\
     └── WuWaID_99_P.pak
@@ -62,13 +62,13 @@ Client\Binaries\Win64\
 
 ### 3. Uninstall
 
-Hapus file `version.dll` dan folder `wuwaIndonesia`.
+Hapus file `hid.dll` dan folder `wuwaIndonesia`.
 
 ---
 
 ## Catatan
 
-- Patch terjemahan bekerja dengan cara me-mount file `.pak` tambahan melalui proxy `version.dll`.
+- Patch terjemahan bekerja dengan cara me-mount file `.pak` tambahan melalui proxy `hid.dll`.
 - Patch ini **tidak mengubah file asli game**.
 - Setelah game mendapatkan update, kamu mungkin perlu mengunduh ulang patch terjemahan terbaru dari halaman Releases.
 - Gunakan patch ini dengan risiko masing-masing.

@@ -31,6 +31,6 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: version.dll
-        path: pakbypass/x64/Release/version.dll
+        name: hid.dll
+        path: pakbypass/x64/Release/hid.dll
         if-no-files-found: error

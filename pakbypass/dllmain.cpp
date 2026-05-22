@@ -1,12 +1,12 @@
-// dllmain.cpp - WuWa Indonesia Pak Loader (version.dll proxy)
+// dllmain.cpp - WuWa Indonesia Pak Loader (hid.dll proxy)
 //
 // Mounts translation .pak files and removes SHA1 checks using the game's SDK.
-// Place as "version.dll" next to the game exe, put .pak files in "wuwaIndonesia" folder.
+// Place as "hid.dll" next to the game exe, put .pak files in "wuwaIndonesia" folder.
 
 #include "pch.h"
 
 #include "Logger.hpp"
-#include "VersionProxy.hpp"
+#include "HidProxy.hpp"
 #include "SDK/Basic.hpp"
 #include "SDK/CoreUObject_structs.hpp"
 #include "SDK/CoreUObject_classes.hpp"
@@ -177,7 +177,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
         g_hModule = hModule;
-        VersionProxy::LoadRealDll();
+        HidProxy::LoadRealDll();
         {
             PTP_WORK work = CreateThreadpoolWork(InitWorker, nullptr, nullptr);
             if (work)
@@ -186,7 +186,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         break;
 
     case DLL_PROCESS_DETACH:
-        VersionProxy::Unload();
+        HidProxy::Unload();
         break;
     }
 
