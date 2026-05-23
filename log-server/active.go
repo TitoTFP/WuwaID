@@ -66,7 +66,18 @@ func (s *Storage) SaveActiveHeartbeat(h ActiveHeartbeat, now time.Time) error {
 		LastSeen:        now.UTC().Format(time.RFC3339),
 	}
 
-	return s.writeActiveState(state)
+	if err := s.writeActiveState(state); err != nil {
+		return err
+	}
+
+	// Record to history (non-fatal)
+	event := h.Event
+	if event == "" {
+		event = "unknown"
+	}
+	_ = s.RecordHeartbeat(h.ClientID, event, now)
+
+	return nil
 }
 
 func (s *Storage) ActiveSummary(now time.Time, window time.Duration) (ActiveSummary, error) {

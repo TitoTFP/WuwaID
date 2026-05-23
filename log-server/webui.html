@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WuwaID Log Server — Dashboard</title>
-<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --bg: #0d1117;
@@ -134,6 +134,31 @@ tr:hover td { background: var(--bg-hover); }
 .spin { animation: spin 1s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Chart ── */
+.chart-container {
+  position: relative; height: 300px; padding: 16px 20px;
+}
+.range-selector {
+  display: flex; gap: 4px; align-items: center;
+}
+.range-selector button {
+  background: var(--bg-hover); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 4px 12px; border-radius: 6px; font-size: .8em; cursor: pointer;
+}
+.range-selector button.active, .range-selector button:hover {
+  color: var(--text); border-color: var(--accent); background: var(--accent-glow);
+}
+.chart-legend {
+  display: flex; gap: 16px; flex-wrap: wrap; padding: 8px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.chart-legend-item {
+  display: flex; align-items: center; gap: 6px; font-size: .8em; color: var(--text-muted);
+}
+.chart-legend-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .header { flex-direction: column; gap: 12px; }
@@ -163,6 +188,7 @@ tr:hover td { background: var(--bg-hover); }
     <div class="logo">⚡ WuwaID <span>Dashboard</span></div>
     <div class="nav">
       <a href="#" id="nav-active" class="active" onclick="showTab('active'); return false;">Active Players</a>
+      <a href="#" id="nav-history" onclick="showTab('history'); return false;">History</a>
       <a href="#" id="nav-logs" onclick="showTab('logs'); return false;">Log Uploads</a>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -247,6 +273,25 @@ tr:hover td { background: var(--bg-hover); }
         </table>
       </div>
     </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" style="display:none">
+      <div class="panel" style="margin-bottom:24px">
+        <div class="panel-header">
+          <h2>📈 Active Player History</h2>
+          <div class="range-selector">
+            <button id="range-1h" onclick="setRange('1h')">1h</button>
+            <button id="range-24h" class="active" onclick="setRange('24h')">24h</button>
+            <button id="range-7d" onclick="setRange('7d')">7d</button>
+            <button id="range-30d" onclick="setRange('30d')">30d</button>
+          </div>
+        </div>
+        <div id="chart-legend" class="chart-legend"></div>
+        <div class="chart-container">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -286,16 +331,20 @@ function doLogout() {
 function showTab(tab) {
   currentTab = tab;
   document.getElementById('tab-active').style.display = tab === 'active' ? '' : 'none';
+  document.getElementById('tab-history').style.display = tab === 'history' ? '' : 'none';
   document.getElementById('tab-logs').style.display = tab === 'logs' ? '' : 'none';
   document.getElementById('nav-active').classList.toggle('active', tab === 'active');
+  document.getElementById('nav-history').classList.toggle('active', tab === 'history');
   document.getElementById('nav-logs').classList.toggle('active', tab === 'logs');
   if (tab === 'logs') loadLogs();
+  if (tab === 'history') loadHistory();
 }
 
 function refreshAll() {
   loadActive();
   loadPlayers();
   if (currentTab === 'logs') loadLogs();
+  if (currentTab === 'history') loadHistory();
 }
 
 // ── ACTIVE SUMMARY ──
@@ -364,6 +413,125 @@ function loadLogs() {
     .catch(() => {
       document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="6" class="empty" style="color:var(--red)">Gagal load</td></tr>';
     });
+}
+
+// ── HISTORY CHART ──
+let historyChart = null;
+let currentRange = '24h';
+
+const EVENT_COLORS = {
+  total: '#58a6ff',
+  game_start: '#3fb950',
+  game_exit: '#f85149',
+  launcher_open: '#bc8cff',
+  launcher_close: '#d29922',
+  unknown: '#8b949e',
+};
+const FALLBACK_COLORS = ['#58a6ff','#3fb950','#f85149','#bc8cff','#d29922','#39d2c0','#db6d28','#8b949e'];
+
+function getEventColor(key, idx) {
+  if (EVENT_COLORS[key]) return EVENT_COLORS[key];
+  return FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
+}
+
+function setRange(range) {
+  currentRange = range;
+  document.querySelectorAll('.range-selector button').forEach(b => b.classList.remove('active'));
+  document.getElementById('range-' + range).classList.add('active');
+  loadHistory();
+}
+
+function loadHistory() {
+  fetch('/admin/api/active/history?range=' + currentRange, { headers: { 'X-Admin-Token': currentToken } })
+    .then(r => r.json())
+    .then(d => {
+      renderHistoryChart(d);
+    })
+    .catch(() => {});
+}
+
+function renderHistoryChart(d) {
+  const ctx = document.getElementById('historyChart').getContext('2d');
+  const labels = d.points.map(p => {
+    try { return fmtTime(p.timestamp); } catch { return p.timestamp; }
+  });
+
+  // Build datasets: total first, then each event type
+  const eventKeys = d.event_keys || [];
+  const datasets = [];
+
+  // Total line (always first, thicker)
+  datasets.push({
+    label: 'Total',
+    data: d.points.map(p => p.total || 0),
+    borderColor: EVENT_COLORS.total,
+    backgroundColor: EVENT_COLORS.total + '20',
+    borderWidth: 2.5,
+    tension: 0.3,
+    fill: true,
+    pointRadius: 0,
+    pointHoverRadius: 5,
+  });
+
+  // Per-event lines
+  eventKeys.forEach((key, idx) => {
+    datasets.push({
+      label: key,
+      data: d.points.map(p => (p.events && p.events[key]) || 0),
+      borderColor: getEventColor(key, idx),
+      backgroundColor: getEventColor(key, idx) + '10',
+      borderWidth: 1.5,
+      tension: 0.3,
+      fill: false,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+    });
+  });
+
+  if (historyChart) {
+    historyChart.destroy();
+  }
+
+  historyChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#e6edf3',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 10,
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: '#30363d', drawBorder: false },
+          ticks: { color: '#8b949e', maxTicksLimit: 12, font: { size: 11 } },
+        },
+        y: {
+          grid: { color: '#30363d', drawBorder: false },
+          ticks: { color: '#8b949e', stepSize: 1, font: { size: 11 } },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+
+  // Build custom legend
+  const legendEl = document.getElementById('chart-legend');
+  legendEl.innerHTML = datasets.map(ds => `
+    <div class="chart-legend-item">
+      <div class="chart-legend-dot" style="background:${ds.borderColor}"></div>
+      ${esc(ds.label)}
+    </div>
+  `).join('');
 }
 
 // ── HELPERS ──

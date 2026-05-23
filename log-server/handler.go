@@ -33,6 +33,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/api/active", s.handleActive)
 	mux.HandleFunc("/api/active/players", s.handleActivePlayers)
 	mux.HandleFunc("/api/active/heartbeat", s.handleActiveHeartbeat)
+	mux.HandleFunc("/api/active/history", s.handleActiveHistory)
 	mux.HandleFunc("/admin", s.handleAdmin)
 	mux.HandleFunc("/admin/", s.handleAdmin)
 	mux.HandleFunc("/admin/api/", s.handleAdminAPI)
@@ -233,9 +234,53 @@ func (s *Server) handleAdminAPI(w http.ResponseWriter, r *http.Request) {
 		s.handleActive(w, r)
 	case "/api/active/players":
 		s.handleActivePlayers(w, r)
+	case "/api/active/history":
+		s.handleActiveHistory(w, r)
 	case "/api/logs":
 		s.handleLogs(w, r)
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (s *Server) handleActiveHistory(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.authorizeAdmin(r) {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+
+	// Parse range param, default 24h
+	rangeParam := r.URL.Query().Get("range")
+	var window time.Duration
+	switch rangeParam {
+	case "1h":
+		window = time.Hour
+	case "24h", "":
+		window = 24 * time.Hour
+	case "7d":
+		window = 7 * 24 * time.Hour
+	case "30d":
+		window = 30 * 24 * time.Hour
+	default:
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid range: use 1h, 24h, 7d, 30d"})
+		return
+	}
+
+	points, err := s.store.GetHistory(s.now(), window)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	resp := HistoryResponse{
+		Points:    points,
+		Window:    rangeParam,
+		Interval:  historyInterval.String(),
+		EventKeys: CollectEventKeys(points),
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
