@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WuwaID Log Server — Dashboard</title>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-hover: #1c2333;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-glow: rgba(88,166,255,.15);
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --orange: #db6d28;
+  --purple: #bc8cff;
+  --cyan: #39d2c0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Login ── */
+.login-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+}
+.login-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 40px; width: 100%; max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.login-box h1 { font-size: 1.4em; margin-bottom: 8px; }
+.login-box .sub { color: var(--text-muted); margin-bottom: 24px; font-size: .9em; }
+.login-box input[type=password] {
+  width: 100%; padding: 10px 14px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+  font-size: 1em; margin-bottom: 16px; outline: none;
+}
+.login-box input[type=password]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.login-box button {
+  width: 100%; padding: 10px; background: var(--accent); color: #000;
+  border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer;
+}
+.login-box button:hover { filter: brightness(1.1); }
+.login-box .err { color: var(--red); font-size: .85em; margin-top: 12px; }
+
+/* ── Layout ── */
+.app { display: none; }
+.app.active { display: block; }
+
+/* ── Header ── */
+.header {
+  background: var(--bg-card); border-bottom: 1px solid var(--border);
+  padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.header .logo { font-size: 1.1em; font-weight: 700; }
+.header .logo span { color: var(--accent); }
+.header .nav { display: flex; gap: 8px; }
+.header .nav a {
+  padding: 6px 14px; border-radius: 6px; font-size: .85em; font-weight: 500;
+  color: var(--text-muted); border: 1px solid transparent;
+}
+.header .nav a:hover, .header .nav a.active {
+  color: var(--text); background: var(--bg-hover); border-color: var(--border);
+}
+
+/* ── Content ── */
+.content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+/* ── Stats Cards ── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px;
+}
+.stat-card .label { font-size: .8em; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+.stat-card .value { font-size: 2em; font-weight: 700; margin-top: 4px; }
+.stat-card .value.green { color: var(--green); }
+.stat-card .value.blue { color: var(--accent); }
+.stat-card .value.purple { color: var(--purple); }
+.stat-card .sub { font-size: .8em; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Table ── */
+.panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 24px; overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-header h2 { font-size: 1em; font-weight: 600; }
+.panel-header .badge {
+  background: var(--bg-hover); border: 1px solid var(--border);
+  padding: 2px 10px; border-radius: 20px; font-size: .8em; color: var(--text-muted);
+}
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 16px; font-size: .75em; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); background: var(--bg-hover); border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: .9em; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .75em; font-weight: 500;
+}
+.tag.blue { background: rgba(88,166,255,.15); color: var(--accent); }
+.tag.green { background: rgba(63,185,80,.15); color: var(--green); }
+.tag.yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+.tag.purple { background: rgba(188,140,255,.15); color: var(--purple); }
+.tag.red { background: rgba(248,81,73,.15); color: var(--red); }
+.tag.cyan { background: rgba(57,210,192,.15); color: var(--cyan); }
+.empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: .9em; }
+.mono { font-family: 'SF Mono', SFMono-Regular, Consolas, monospace; font-size: .85em; }
+
+/* ── Refresh indicator ── */
+.refresh-btn {
+  background: var(--bg-hover); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 4px 10px; border-radius: 6px; font-size: .8em; cursor: pointer;
+}
+.refresh-btn:hover { color: var(--text); }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 12px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .content { padding: 16px; }
+  td, th { padding: 8px 10px; font-size: .8em; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-view" class="login-wrap">
+  <div class="login-box">
+    <h1>⚡ WuwaID <span>Dashboard</span></h1>
+    <p class="sub">Masukkan admin token untuk mengakses</p>
+    <input type="password" id="token-input" placeholder="Admin Token" autofocus
+           onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Masuk</button>
+    <div id="login-err" class="err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app-view" class="app">
+  <div class="header">
+    <div class="logo">⚡ WuwaID <span>Dashboard</span></div>
+    <div class="nav">
+      <a href="#" id="nav-active" class="active" onclick="showTab('active'); return false;">Active Players</a>
+      <a href="#" id="nav-logs" onclick="showTab('logs'); return false;">Log Uploads</a>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="refresh-indicator"></span>
+      <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
+      <button class="refresh-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- ACTIVE TAB -->
+    <div id="tab-active">
+      <div class="stats" id="active-stats">
+        <div class="stat-card">
+          <div class="label">Active Players</div>
+          <div class="value green" id="stat-active-count">—</div>
+          <div class="sub">10 menit terakhir</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Window</div>
+          <div class="value blue" id="stat-window">—</div>
+          <div class="sub">detik</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Updated</div>
+          <div class="value" id="stat-updated" style="font-size:1em">—</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>👥 Player List</h2>
+          <span class="badge" id="player-count">0 players</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Client ID</th>
+              <th>Launcher</th>
+              <th>Install</th>
+              <th>Event</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="players-tbody">
+            <tr><td colspan="5" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="tab-logs" style="display:none">
+      <div class="stats" id="logs-stats">
+        <div class="stat-card">
+          <div class="label">Total Uploads</div>
+          <div class="value purple" id="stat-total-uploads">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Size</div>
+          <div class="value cyan" id="stat-total-size">—</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>📦 Log Uploads</h2>
+          <span class="badge" id="logs-count">0 uploads</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>App Version</th>
+              <th>OS</th>
+              <th>Files</th>
+              <th>Size</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentToken = '';
+let currentTab = 'active';
+
+function doLogin() {
+  const t = document.getElementById('token-input').value.trim();
+  if (!t) return;
+  currentToken = t;
+  // Test auth
+  fetch('/admin/api/active', { headers: { 'X-Admin-Token': currentToken } })
+    .then(r => {
+      if (r.ok) {
+        document.getElementById('login-view').style.display = 'none';
+        document.getElementById('app-view').classList.add('active');
+        refreshAll();
+      } else {
+        document.getElementById('login-err').textContent = 'Token salah!';
+        currentToken = '';
+      }
+    })
+    .catch(() => {
+      document.getElementById('login-err').textContent = 'Gagal konek ke server';
+    });
+}
+
+function doLogout() {
+  currentToken = '';
+  document.getElementById('app-view').classList.remove('active');
+  document.getElementById('login-view').style.display = 'flex';
+  document.getElementById('token-input').value = '';
+  document.getElementById('login-err').textContent = '';
+}
+
+function showTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-active').style.display = tab === 'active' ? '' : 'none';
+  document.getElementById('tab-logs').style.display = tab === 'logs' ? '' : 'none';
+  document.getElementById('nav-active').classList.toggle('active', tab === 'active');
+  document.getElementById('nav-logs').classList.toggle('active', tab === 'logs');
+  if (tab === 'logs') loadLogs();
+}
+
+function refreshAll() {
+  loadActive();
+  loadPlayers();
+  if (currentTab === 'logs') loadLogs();
+}
+
+// ── ACTIVE SUMMARY ──
+function loadActive() {
+  fetch('/admin/api/active', { headers: { 'X-Admin-Token': currentToken } })
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('stat-active-count').textContent = d.active;
+      document.getElementById('stat-window').textContent = d.window_seconds;
+      document.getElementById('stat-updated').textContent = fmtTime(d.updated_at);
+    })
+    .catch(() => {});
+}
+
+// ── PLAYERS ──
+function loadPlayers() {
+  fetch('/admin/api/active/players', { headers: { 'X-Admin-Token': currentToken } })
+    .then(r => r.json())
+    .then(d => {
+      const tbody = document.getElementById('players-tbody');
+      document.getElementById('player-count').textContent = d.length + ' players';
+      if (!d.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada active player</td></tr>';
+        return;
+      }
+      tbody.innerHTML = d.map(p => `
+        <tr>
+          <td class="mono">${esc(p.client_id)}</td>
+          <td>${p.launcher_version ? '<span class="tag blue">'+esc(p.launcher_version)+'</span>' : '—'}</td>
+          <td>${p.install_method ? '<span class="tag green">'+esc(p.install_method)+'</span>' : '—'}</td>
+          <td>${p.event ? '<span class="tag yellow">'+esc(p.event)+'</span>' : '—'}</td>
+          <td style="color:var(--text-muted);font-size:.85em">${fmtTime(p.last_seen)}</td>
+        </tr>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('players-tbody').innerHTML = '<tr><td colspan="5" class="empty" style="color:var(--red)">Gagal load</td></tr>';
+    });
+}
+
+// ── LOGS ──
+function loadLogs() {
+  fetch('/admin/api/logs', { headers: { 'X-Admin-Token': currentToken } })
+    .then(r => r.json())
+    .then(d => {
+      const tbody = document.getElementById('logs-tbody');
+      document.getElementById('logs-count').textContent = d.length + ' uploads';
+      const totalBytes = d.reduce((s, l) => s + (l.total_bytes || 0), 0);
+      document.getElementById('stat-total-uploads').textContent = d.length;
+      document.getElementById('stat-total-size').textContent = fmtBytes(totalBytes);
+      if (!d.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Belum ada log upload</td></tr>';
+        return;
+      }
+      tbody.innerHTML = d.map(l => `
+        <tr>
+          <td class="mono" style="font-size:.8em">${esc(l.id)}</td>
+          <td><span class="tag blue">${esc(l.app_version)}</span></td>
+          <td><span class="tag purple">${esc(l.os)}</span></td>
+          <td>${l.file_count}</td>
+          <td>${fmtBytes(l.total_bytes)}</td>
+          <td style="color:var(--text-muted);font-size:.85em">${fmtTime(l.timestamp)}</td>
+        </tr>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="6" class="empty" style="color:var(--red)">Gagal load</td></tr>';
+    });
+}
+
+// ── HELPERS ──
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+  } catch { return iso; }
+}
+function fmtBytes(b) {
+  if (!b) return '0 B';
+  const u = ['B','KB','MB','GB'];
+  let i = 0;
+  while (b >= 1024 && i < u.length-1) { b /= 1024; i++; }
+  return b.toFixed(1) + ' ' + u[i];
+}
+
+// Auto-refresh every 15s
+setInterval(() => {
+  if (currentToken) { loadActive(); loadPlayers(); }
+}, 15000);
+</script>
+</body>
+</html>

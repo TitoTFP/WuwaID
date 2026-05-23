@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,9 @@ import (
 	"strings"
 	"time"
 )
+
+//go:embed webui.html
+var webUIHTML []byte
 
 // Server holds dependencies for HTTP handlers.
 type Server struct {
@@ -29,6 +33,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/api/active", s.handleActive)
 	mux.HandleFunc("/api/active/players", s.handleActivePlayers)
 	mux.HandleFunc("/api/active/heartbeat", s.handleActiveHeartbeat)
+	mux.HandleFunc("/admin", s.handleAdmin)
+	mux.HandleFunc("/admin/", s.handleAdmin)
+	mux.HandleFunc("/admin/api/", s.handleAdminAPI)
 	return withCORS(mux)
 }
 
@@ -209,4 +216,26 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
+}
+
+func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write(webUIHTML)
+}
+
+func (s *Server) handleAdminAPI(w http.ResponseWriter, r *http.Request) {
+	// Strip /admin prefix and proxy to the real API
+	trimmed := strings.TrimPrefix(r.URL.Path, "/admin")
+	r.URL.Path = trimmed
+	switch trimmed {
+	case "/api/active":
+		s.handleActive(w, r)
+	case "/api/active/players":
+		s.handleActivePlayers(w, r)
+	case "/api/logs":
+		s.handleLogs(w, r)
+	default:
+		http.NotFound(w, r)
+	}
 }
