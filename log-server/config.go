@@ -12,6 +12,7 @@ type Config struct {
 	DataDir       string
 	MaxUploadMB   int
 	RetentionDays int
+	AdminToken    string
 }
 
 // DefaultConfig returns a Config with sensible defaults.
@@ -54,6 +55,9 @@ func ConfigFromEnv() Config {
 		if d, err := strconv.Atoi(v); err == nil {
 			cfg.RetentionDays = d
 		}
+	}
+	if v := os.Getenv("WUWAID_ADMIN_TOKEN"); v != "" {
+		cfg.AdminToken = v
 	}
 
 	return cfg

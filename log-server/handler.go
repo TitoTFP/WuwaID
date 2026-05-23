@@ -6,17 +6,19 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Server holds dependencies for HTTP handlers.
 type Server struct {
 	cfg   Config
 	store *Storage
+	now   func() time.Time
 }
 
 // NewServer creates a new Server with the given config and storage.
 func NewServer(cfg Config, store *Storage) *Server {
-	return &Server{cfg: cfg, store: store}
+	return &Server{cfg: cfg, store: store, now: time.Now}
 }
 
 // Handler returns an http.Handler with all routes registered.
@@ -24,6 +26,9 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/api/logs", s.handleLogs)
+	mux.HandleFunc("/api/active", s.handleActive)
+	mux.HandleFunc("/api/active/players", s.handleActivePlayers)
+	mux.HandleFunc("/api/active/heartbeat", s.handleActiveHeartbeat)
 	return withCORS(mux)
 }
 
@@ -32,7 +37,7 @@ func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Admin-Token")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
@@ -41,6 +46,64 @@ func withCORS(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (s *Server) handleActiveHeartbeat(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var heartbeat ActiveHeartbeat
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&heartbeat); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json"})
+		return
+	}
+	if err := s.store.SaveActiveHeartbeat(heartbeat, s.now()); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (s *Server) handleActive(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.authorizeAdmin(r) {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	summary, err := s.store.ActiveSummary(s.now(), defaultActiveWindow)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, summary)
+}
+
+func (s *Server) handleActivePlayers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.authorizeAdmin(r) {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	players, err := s.store.ListActivePlayers(s.now(), defaultActiveWindow)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, players)
+}
+
+func (s *Server) authorizeAdmin(r *http.Request) bool {
+	if s.cfg.AdminToken == "" {
+		return true
+	}
+	return r.Header.Get("X-Admin-Token") == s.cfg.AdminToken
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {

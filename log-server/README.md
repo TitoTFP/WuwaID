@@ -11,6 +11,7 @@ A lightweight, zero-dependency log upload server built in Go. Designed to receiv
 - **Log Upload** — Accepts multipart ZIP uploads via `POST /api/logs`
 - **Log Listing** — Lists all uploaded logs via `GET /api/logs` (JSON)
 - **Health Check** — `GET /health` endpoint for monitoring
+- **Active Player Count** — Anonymous launcher heartbeat via `POST /api/active/heartbeat`
 - **CORS Support** — Cross-origin headers for browser-based launcher access
 - **Configurable Retention** — Auto-cleanup of logs older than N days
 - **Configurable Size Limit** — Max upload size in MB
@@ -114,6 +115,38 @@ Simple health check.
 { "status": "ok" }
 ```
 
+### `POST /api/active/heartbeat`
+
+Receives anonymous launcher heartbeat events. No personal data, Windows user name,
+or game path is required.
+
+```json
+{
+  "client_id": "anonymous-random-id",
+  "launcher_version": "2.2.0",
+  "install_method": "method1",
+  "event": "open"
+}
+```
+
+### `GET /api/active`
+
+Returns anonymous active launcher count for clients seen in the last 10 minutes.
+If `WUWAID_ADMIN_TOKEN` is configured, pass it as `X-Admin-Token`.
+
+```json
+{
+  "active": 12,
+  "window_seconds": 600,
+  "updated_at": "2026-05-24T00:00:00Z"
+}
+```
+
+### `GET /api/active/players`
+
+Returns active anonymous clients. Intended for private developer use. If
+`WUWAID_ADMIN_TOKEN` is configured, pass it as `X-Admin-Token`.
+
 ## Configuration
 
 The server is configured via environment variables:
@@ -124,6 +157,7 @@ The server is configured via environment variables:
 | `WUWAID_DATA_DIR` | `~/wuwaid-log-data/` | Data storage directory |
 | `WUWAID_MAX_UPLOAD_MB` | `10` | Maximum upload size in MB |
 | `WUWAID_RETENTION_DAYS` | `30` | Days to keep logs before auto-cleanup |
+| `WUWAID_ADMIN_TOKEN` | empty | Optional token for active player read endpoints |
 
 Example:
 

@@ -29,11 +29,13 @@ func TestConfigFromEnv(t *testing.T) {
 	os.Setenv("WUWAID_DATA_DIR", "/tmp/wuwaid-test-data")
 	os.Setenv("WUWAID_MAX_UPLOAD_MB", "20")
 	os.Setenv("WUWAID_RETENTION_DAYS", "14")
+	os.Setenv("WUWAID_ADMIN_TOKEN", "secret")
 	defer func() {
 		os.Unsetenv("WUWAID_PORT")
 		os.Unsetenv("WUWAID_DATA_DIR")
 		os.Unsetenv("WUWAID_MAX_UPLOAD_MB")
 		os.Unsetenv("WUWAID_RETENTION_DAYS")
+		os.Unsetenv("WUWAID_ADMIN_TOKEN")
 	}()
 
 	cfg := ConfigFromEnv()
@@ -49,6 +51,9 @@ func TestConfigFromEnv(t *testing.T) {
 	}
 	if cfg.RetentionDays != 14 {
 		t.Errorf("env RetentionDays = %d; want 14", cfg.RetentionDays)
+	}
+	if cfg.AdminToken != "secret" {
+		t.Errorf("env AdminToken = %q; want secret", cfg.AdminToken)
 	}
 }
 
