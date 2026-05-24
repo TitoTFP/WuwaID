@@ -33,6 +33,7 @@ const statActiveCount = document.getElementById('stat-active-count') as HTMLDivE
 const statTotalUploads = document.getElementById('stat-total-uploads') as HTMLDivElement;
 const statTotalSize = document.getElementById('stat-total-size') as HTMLDivElement;
 const statWindowText = document.getElementById('stat-window-text') as HTMLDivElement;
+const statTotalPlayers30d = document.getElementById('total-players-30d') as HTMLElement;
 
 // Tab content sections
 const tabActiveView = document.getElementById('tab-active-view') as HTMLElement;
@@ -259,6 +260,9 @@ function loadActive() {
   .then(d => {
     statActiveCount.textContent = d.active.toString();
     statWindowText.textContent = `${d.window_seconds}s / 30 Hari`;
+    if (statTotalPlayers30d && d.total_30d !== undefined) {
+      statTotalPlayers30d.textContent = d.total_30d.toString();
+    }
   })
   .catch(() => {});
 }

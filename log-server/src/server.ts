@@ -231,12 +231,19 @@ app.post('/api/active/heartbeat', (req: Request, res: Response) => {
   }
 });
 
-// Active Summary (GET /api/active)
 const handleActiveSummary = (req: Request, res: Response) => {
   try {
+    const now = new Date();
     const defaultWindowMs = 10 * 60 * 1000; // 10 minutes
-    const summary = db.getActiveSummary(new Date(), defaultWindowMs);
-    res.json(summary);
+    const summary10m = db.getActiveSummary(now, defaultWindowMs);
+    const summary30d = db.getActiveSummary(now, 30 * 24 * 60 * 60 * 1000); // 30 days
+    
+    res.json({
+      active: summary10m.active,
+      window_seconds: summary10m.window_seconds,
+      total_30d: summary30d.active,
+      updated_at: now.toISOString()
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

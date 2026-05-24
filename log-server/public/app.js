@@ -27,6 +27,7 @@ const statActiveCount = document.getElementById('stat-active-count');
 const statTotalUploads = document.getElementById('stat-total-uploads');
 const statTotalSize = document.getElementById('stat-total-size');
 const statWindowText = document.getElementById('stat-window-text');
+const statTotalPlayers30d = document.getElementById('total-players-30d');
 // Tab content sections
 const tabActiveView = document.getElementById('tab-active-view');
 const tabLogsView = document.getElementById('tab-logs-view');
@@ -233,6 +234,9 @@ function loadActive() {
         .then(d => {
         statActiveCount.textContent = d.active.toString();
         statWindowText.textContent = `${d.window_seconds}s / 30 Hari`;
+        if (statTotalPlayers30d && d.total_30d !== undefined) {
+            statTotalPlayers30d.textContent = d.total_30d.toString();
+        }
     })
         .catch(() => { });
 }

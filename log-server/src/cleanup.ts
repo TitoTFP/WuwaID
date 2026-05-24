@@ -66,10 +66,7 @@ export function runCleanup(cfg: Config, db: DatabaseManager) {
       console.log(`[cleanup] Cleanup completed: removed ${deletedCount} old upload(s)`);
     }
 
-    // Also prune history events older than 30 days
-    const historyRetentionMs = 30 * 24 * 60 * 60 * 1000;
-    const historyCutoff = new Date(now.getTime() - historyRetentionMs);
-    db.pruneHistory(historyCutoff);
+
 
   } catch (err) {
     console.error('[cleanup] Error during cleanup execution:', err);

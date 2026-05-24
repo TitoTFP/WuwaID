@@ -20,6 +20,7 @@ export interface ActivePlayer {
 export interface ActiveSummary {
   active: number;
   window_seconds: number;
+  total_30d?: number;
   updated_at: string;
 }
 
