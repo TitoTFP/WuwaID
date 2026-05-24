@@ -1,196 +1,161 @@
 # WuwaID Log Server
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/TitoTFP/wuwaid-log-server)](https://go.dev/)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-green.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
 
-A lightweight, zero-dependency log upload server built in Go. Designed to receive compressed log archives from the [WuwaIDLauncher](https://github.com/TitoTFP/WuwaIDLauncher) (Wuthering Waves Indonesian patch launcher) and store them on disk with configurable retention.
+A modern, fullstack log upload server built using **TypeScript**, **Express**, and **SQLite**. It is designed to receive compressed log archives from the [WuwaIDLauncher](https://github.com/TitoTFP/WuwaIDLauncher) (Wuthering Waves Indonesian patch launcher), store them on disk, index metadata in SQLite, and present a premium, interactive administrative dashboard with glassmorphic Web UI elements.
+
+---
 
 ## Features
 
-- **Log Upload** — Accepts multipart ZIP uploads via `POST /api/logs`
-- **Log Listing** — Lists all uploaded logs via `GET /api/logs` (JSON)
-- **Health Check** — `GET /health` endpoint for monitoring
-- **Active Player Count** — Anonymous launcher heartbeat via `POST /api/active/heartbeat`
-- **CORS Support** — Cross-origin headers for browser-based launcher access
-- **Configurable Retention** — Auto-cleanup of logs older than N days
-- **Configurable Size Limit** — Max upload size in MB
-- **Path Traversal Protection** — Zip entries with `../` are rejected
-- **Subdirectory Support** — Zip entries organized in subfolders (e.g., `launcher/*`, `game/*`) are preserved with their directory structure
-- **Concurrent Safe** — Handles multiple simultaneous uploads
-- **Graceful Shutdown** — Clean stop via SIGINT/SIGTERM
-- **No Dependencies** — Single binary, pure Go standard library
+- **Robust Backend (TypeScript + Express)** — High performance endpoints for uploads and queries.
+- **Structured Storage (SQLite)** — Log metadata is stored in SQL tables (`wuwaid.db`), replacing flat JSON files.
+- **Log Upload** — Accepts multipart ZIP uploads via `POST /api/logs`.
+- **Automatic Migration** — Automatically imports old JSON-based player and history lists into the SQLite database on server startup.
+- **Interactive Web UI Dashboard** — Rich dashboard with dark-mode glassmorphism styling (`/admin` panel):
+  - **Live Search & Filter** — Fast client-side search by Client ID, version, or OS.
+  - **Interactive Log Viewer** — Admins can browse files inside any upload, inspect log text content in-browser, and download the logs as a zip built on-the-fly.
+  - **Interactive Chart** — Active events timeline visualization using Chart.js.
+- **Retention & Cleanup** — Automated scheduler that prunes files and DB records older than N days.
+- **Path Traversal Protection** — Validates and sanitizes paths in ZIP archives to prevent security breaches.
+- **Concurrent Safe** — Backed by SQLite transactions and Node asynchronous file I/O.
+
+---
 
 ## Quick Start
 
-### 1. Build
+### 1. Prerequisites
+
+- **Node.js** v20.0.0 or higher
+- **npm** or yarn
+
+### 2. Installation & Build
 
 ```bash
 git clone https://github.com/TitoTFP/wuwaid-log-server.git
 cd wuwaid-log-server
-go build -ldflags="-X main.BuildInfo=$(git describe --tags --always 2>/dev/null || echo dev)" -o wuwaid-log-server .
+
+# Install dependencies
+npm install
+
+# Compile TypeScript backend and frontend bundle
+npm run build
 ```
 
-### 2. Run
+### 3. Running the Server
 
+#### Development Mode (Hot Reload)
 ```bash
-./wuwaid-log-server
+npm run dev
 ```
 
-Default: listens on `:8080`, stores data in `~/wuwaid-log-data/`.
-
-### 3. Test
-
+#### Production Mode
 ```bash
-# Upload a log archive
-curl -X POST http://localhost:8080/api/logs \
-  -F "logs=@logs.zip" \
-  -F "appVersion=v2.0.0" \
-  -F "timestamp=20260516T143022" \
-  -F "os=Windows 10"
-
-# List uploaded logs
-curl http://localhost:8080/api/logs
-
-# Health check
-curl http://localhost:8080/health
+npm run start
 ```
 
-## API
+Default: listens on `:8080`, stores databases and extracted logs in `~/wuwaid-log-data/`.
+
+### 4. Running Tests
+
+Runs config, database schema, active player migrations, and mock endpoint upload tests:
+```bash
+npm test
+```
+
+---
+
+## API Documentation
 
 ### `POST /api/logs`
-
 Upload a compressed log archive.
 
 **Request** (multipart/form-data):
+- `logs` (file): ZIP file containing log files.
+- `appVersion` (string): Launcher version (e.g., `v2.5.0`).
+- `timestamp` (string): Upload timestamp (e.g., `20260525T040000`).
+- `os` (string): Operating system (e.g., `Windows 11`).
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `logs` | file | ✅ | ZIP file containing `.log` files |
-| `appVersion` | string | ✅ | Launcher version (e.g., `v2.0.0`) |
-| `timestamp` | string | ✅ | Upload timestamp (e.g., `20260516T143022`) |
-| `os` | string | ✅ | Operating system (e.g., `Windows 10`) |
-
-**Response `200 OK`:**
-
+**Response `200 OK`**:
 ```json
 {
   "status": "ok",
-  "id": "a1b2c3d4e5f6g7h8",
-  "file_count": 3,
-  "total_bytes": 15360
+  "id": "7cd47eb0491b03b1",
+  "file_count": 2,
+  "total_bytes": 10240
 }
 ```
 
-**Errors:**
-
-| Status | Description |
-|--------|-------------|
-| `400` | Missing fields, invalid zip, path traversal detected |
-| `413` | Upload exceeds max size |
-
-### `GET /api/logs`
-
-List all uploaded logs, sorted by timestamp descending (newest first).
-
-```json
-[
-  {
-    "id": "a1b2c3d4e5f6g7h8",
-    "app_version": "v2.0.0",
-    "timestamp": "20260516T143022",
-    "os": "Windows 10",
-    "file_count": 3,
-    "total_bytes": 15360,
-    "created_at": "20260516T143022"
-  }
-]
-```
-
-### `GET /health`
-
-Simple health check.
-
-```json
-{ "status": "ok" }
-```
+---
 
 ### `POST /api/active/heartbeat`
+Receives anonymous launcher heartbeat events.
 
-Receives anonymous launcher heartbeat events. No personal data, Windows user name,
-or game path is required.
-
+**Request JSON**:
 ```json
 {
-  "client_id": "anonymous-random-id",
-  "launcher_version": "2.2.0",
+  "client_id": "anonymous-guid",
+  "launcher_version": "v2.5.0",
   "install_method": "method1",
-  "event": "open"
+  "event": "launch"
 }
 ```
 
-### `GET /api/active`
+---
 
-Returns anonymous active launcher count for clients seen in the last 10 minutes.
-If `WUWAID_ADMIN_TOKEN` is configured, pass it as `X-Admin-Token`.
+### `GET /admin/api/logs` (Requires X-Admin-Token)
+Lists all log metadata records.
 
-```json
-{
-  "active": 12,
-  "window_seconds": 600,
-  "updated_at": "2026-05-24T00:00:00Z"
-}
-```
+---
 
-### `GET /api/active/players`
+### `GET /admin/api/logs/:id/files` (Requires X-Admin-Token)
+Lists files extracted inside a specific log upload.
 
-Returns active anonymous clients. Intended for private developer use. If
-`WUWAID_ADMIN_TOKEN` is configured, pass it as `X-Admin-Token`.
+---
+
+### `GET /admin/api/logs/:id/files/:filename` (Requires X-Admin-Token)
+Retrieves the raw text contents of an extracted log file.
+
+---
+
+### `GET /admin/api/logs/:id/download` (Requires X-Admin-Token)
+Re-compresses log files inside the upload folder into a ZIP archive on-the-fly and downloads it.
+
+---
 
 ## Configuration
 
-The server is configured via environment variables:
+Set the following environment variables to customize behavior:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WUWAID_PORT` | `8080` | Server port |
-| `WUWAID_DATA_DIR` | `~/wuwaid-log-data/` | Data storage directory |
-| `WUWAID_MAX_UPLOAD_MB` | `10` | Maximum upload size in MB |
-| `WUWAID_RETENTION_DAYS` | `30` | Days to keep logs before auto-cleanup |
-| `WUWAID_ADMIN_TOKEN` | empty | Optional token for active player read endpoints |
+| `WUWAID_PORT` | `8080` | Port server listens on |
+| `WUWAID_DATA_DIR` | `~/wuwaid-log-data/` | Root directory for logs and SQLite database |
+| `WUWAID_MAX_UPLOAD_MB` | `10` | Maximum size of upload ZIP files in MB |
+| `WUWAID_RETENTION_DAYS` | `30` | Number of days to keep uploaded logs before cleanup |
+| `WUWAID_ADMIN_TOKEN` | empty | Token matching the `X-Admin-Token` header for admin routes |
 
-Example:
-
-```bash
-WUWAID_PORT=9090 WUWAID_MAX_UPLOAD_MB=50 ./wuwaid-log-server
-```
-
-## Storage Structure
-
-Uploaded logs are stored on disk as follows:
-
-```
-{dataDir}/
-└── logs/
-    └── {appVersion}/
-        └── {YYYYMMDD}/
-            └── {uploadId}/
-                ├── metadata.json     # Upload metadata
-                └── launcher-*.log    # Extracted log files
-```
+---
 
 ## Deployment
 
 ### Systemd Service
 
+Create a service file at `/etc/systemd/system/wuwaid-log-server.service`:
+
 ```ini
 [Unit]
-Description=WuwaID Log Server
+Description=WuwaID Log Server (TypeScript Node App)
 After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/path/to/wuwaid-log-server
+User=ai
+WorkingDirectory=/home/ai/wuwaid-log-server
+Environment=WUWAID_PORT=8080 WUWAID_DATA_DIR=/home/ai/wuwaid-log-data/ WUWAID_ADMIN_TOKEN=your-secure-token
+ExecStart=/usr/bin/node dist/src/server.js
 Restart=on-failure
 RestartSec=5
 
@@ -198,97 +163,14 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-### Cloudflare Tunnel (Recommended)
-
-Expose the server publicly without opening ports:
-
+Reload and start the service:
 ```bash
-# 1. Authenticate
-cloudflared tunnel login
-
-# 2. Create tunnel
-cloudflared tunnel create wuwaid-log
-
-# 3. Configure (~/.cloudflared/config.yml)
-tunnel: <TUNNEL_ID>
-credentials-file: /home/user/.cloudflared/<TUNNEL_ID>.json
-ingress:
-  - hostname: logs.yourdomain.com
-    service: http://localhost:8080
-  - service: http_status:404
-
-# 4. Route DNS
-cloudflared tunnel route dns wuwaid-log logs.yourdomain.com
-
-# 5. Run
-cloudflared tunnel run wuwaid-log
+sudo systemctl daemon-reload
+sudo systemctl enable wuwaid-log-server
+sudo systemctl start wuwaid-log-server
 ```
 
-### Quick Tunnel (Ephemeral, No Domain Needed)
-
-```bash
-cloudflared tunnel --url http://localhost:8080
-```
-
-## Development
-
-### Prerequisites
-
-- [Go](https://go.dev/dl/) 1.26+
-- Make (optional)
-
-### Test
-
-The project follows **Test-Driven Development (TDD)**:
-
-```bash
-# Run all tests
-go test ./... -v -count=1
-
-# Run specific test
-go test ./... -run TestSaveLogUpload -v
-```
-
-The test suite includes:
-
-| Package | Tests | Coverage |
-|---------|-------|----------|
-| Configuration | 6 | Defaults, env vars, computed fields |
-| Handlers | 12 | Upload, list, health, CORS, method validation, content-type, path traversal |
-| Storage | 10 | Save, list, get, concurrent saves, empty/invalid data, path traversal, **subfolder entries** |
-| Cleanup | 7 | Retention, boundary, empty storage, non-log file preservation, scheduler |
-| Security | 3 | Path traversal prevention, Content-Type validation |
-| **Total** | **38** | — |
-
-### Build
-
-```bash
-go build -ldflags="-X main.BuildInfo=$(git describe --tags --always 2>/dev/null || echo dev)" -o wuwaid-log-server .
-```
-
-## Architecture
-
-```
-┌──────────────┐     POST /api/logs (multipart ZIP)
-│  Launcher/   │ ──────────────────────────────────> ┌──────────────────────┐
-│  Client      │                                      │                      │
-│              │     GET /api/logs (JSON)             │   WuwaID Log Server  │
-│              │ ──────────────────────────────────> │                      │
-│              │                                      │   ┌──────────────┐   │
-│              │     GET /health (JSON)               │   │  Storage     │   │
-│              │ ──────────────────────────────────> │   │  (Disk)      │   │
-└──────────────┘                                      │   └──────────────┘   │
-                                                      │                      │
-                                                      │   ┌──────────────┐   │
-                                                      │   │  Cleanup     │   │
-                                                      │   │  Scheduler   │   │
-                                                      │   └──────────────┘   │
-                                                      └──────────────────────┘
-```
-
-## Why This Exists
-
-The [WuwaIDLauncher](https://github.com/TitoTFP/WuwaIDLauncher) is a WPF application for installing the Indonesian language patch in Wuthering Waves. The launcher includes an optional **anonymous log upload** feature — when users encounter bugs, the logs are automatically sent to this server so developers can diagnose issues without asking users to manually find and send log files.
+---
 
 ## License
 
