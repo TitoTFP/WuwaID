@@ -880,14 +880,14 @@ static void LoadSpeakerMap(const std::wstring& baseDbDir)
     }
 
     sqlite3_stmt* stmt = nullptr;
-    if (sqlite3_prepare_v2(db, "SELECT Id, NameStringKey, Name FROM speaker", -1, &stmt, nullptr) == SQLITE_OK)
+    if (sqlite3_prepare_v2(db, "SELECT Id, NameStringKey FROM speaker", -1, &stmt, nullptr) == SQLITE_OK)
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
             int id = sqlite3_column_int(stmt, 0);
             SpeakerInfo si;
             si.nameStringKey = sqlite3_column_int(stmt, 1);
-            si.nameIdx = sqlite3_column_int(stmt, 2);
+            si.nameIdx = -1; // No longer present in db_speaker.db schema
             g_speakerMap[id] = si;
         }
         sqlite3_finalize(stmt);
@@ -919,24 +919,16 @@ static void GetSpeakerML(int whoId, LangPack packs[], std::string names[/*NUM_LA
     }
 
     auto sit = g_speakerMap.find(whoId);
-    if (sit == g_speakerMap.end())
+    bool hasSpeakerInfo = (sit != g_speakerMap.end());
+
+    std::string zhTextKey = "";
+    bool zhKeyValid = false;
+    if (hasSpeakerInfo)
     {
-        for (int i = 0; i < NUM_LANGS; i++)
-        {
-            char buf[64]; snprintf(buf, sizeof(buf), "[?Speaker:%d]", whoId);
-            names[i] = buf;
-        }
-        return;
+        const SpeakerInfo& si = sit->second;
+        zhTextKey = packs[ZH_IDX].GetSpeakerName(si.nameStringKey);
+        zhKeyValid = !zhTextKey.empty() && zhTextKey.find("_Name") != std::string::npos;
     }
-
-    const SpeakerInfo& si = sit->second;
-
-    // Priority 1: use zh-Hans lang_speaker to get the stable text key
-    // (zh-Hans stores "Speaker_X_Name" at NameStringKey positions; EN/JA are empty there).
-    // Then look up that key in each language's lang_multi_text — bypasses lang_speaker
-    // row-count misalignment across locales (EN=6501, ZH/JA=6500).
-    std::string zhTextKey = packs[ZH_IDX].GetSpeakerName(si.nameStringKey);
-    bool zhKeyValid = !zhTextKey.empty() && zhTextKey.find("_Name") != std::string::npos;
 
     for (int i = 0; i < NUM_LANGS; i++)
     {
@@ -957,10 +949,14 @@ static void GetSpeakerML(int whoId, LangPack packs[], std::string names[/*NUM_LA
         // Last resort for NPCs that are only in lang_speaker, not lang_multi_text.
         // Note: en/ja lang_speaker IDs may be misaligned vs zh-Hans; this can
         // still give wrong names for recently-added speakers in those locales.
-        if (si.nameIdx >= 0)
+        if (hasSpeakerInfo)
         {
-            std::string direct = packs[i].GetSpeakerName(si.nameIdx);
-            if (!direct.empty()) { names[i] = direct; continue; }
+            const SpeakerInfo& si = sit->second;
+            if (si.nameIdx >= 0)
+            {
+                std::string direct = packs[i].GetSpeakerName(si.nameIdx);
+                if (!direct.empty()) { names[i] = direct; continue; }
+            }
         }
 
         char buf[64]; snprintf(buf, sizeof(buf), "[Speaker:%d]", whoId);
