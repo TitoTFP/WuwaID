@@ -50,7 +50,7 @@ if hasattr(sys.stderr, "reconfigure"):
 # ---------------------------------------------------------------------------
 
 # Path to where ConfigDB databases are stored
-CONFIG_DB_DIR = "ConfigDB"
+CONFIG_DB_DIR = "WuwaDBExport"
 # Output folder (created next to this script)
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "export_quest_ordered")
 # Languages to export
@@ -62,7 +62,7 @@ LANGUAGES = ["zh-Hans", "en", "ja"]
 # ---------------------------------------------------------------------------
 
 def open_db(rel_path: str) -> sqlite3.Connection:
-    path = os.path.join(CONFIG_DB_DIR, rel_path)
+    path = os.path.join(CONFIG_DB_DIR, "base", rel_path)
     if not os.path.isfile(path):
         raise FileNotFoundError(f"Database not found: {path}")
     return sqlite3.connect(path)
@@ -70,11 +70,11 @@ def open_db(rel_path: str) -> sqlite3.Connection:
 
 def open_db_first_existing(*rel_paths: str) -> sqlite3.Connection:
     for rel_path in rel_paths:
-        path = os.path.join(CONFIG_DB_DIR, rel_path)
+        path = os.path.join(CONFIG_DB_DIR, "base", rel_path)
         if os.path.isfile(path):
             return sqlite3.connect(path)
     raise FileNotFoundError(
-        "Database not found: " + ", ".join(os.path.join(CONFIG_DB_DIR, p) for p in rel_paths)
+        "Database not found: " + ", ".join(os.path.join(CONFIG_DB_DIR, "base", p) for p in rel_paths)
     )
 
 
@@ -363,7 +363,7 @@ def _load_speaker_base():
     global _speaker_name_index, _speaker_text_key
     if _speaker_name_index:
         return
-    path = os.path.join(CONFIG_DB_DIR, "db_speaker.db")
+    path = os.path.join(CONFIG_DB_DIR, "base", "db_speaker.db")
     if not os.path.isfile(path):
         return
     db = sqlite3.connect(path)

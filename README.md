@@ -73,6 +73,34 @@ Hapus file `hid.dll` dan folder `wuwaIndonesia`.
 - Setelah game mendapatkan update, kamu mungkin perlu mengunduh ulang patch terjemahan terbaru dari halaman Releases.
 - Gunakan patch ini dengan risiko masing-masing.
 
+---
+
+## Pengembangan (Development)
+
+Untuk kontributor yang ingin mengembangkan terjemahan atau mengekstrak data dialog game:
+
+### 1. Ekstraksi Database Game (`export_localization_db`)
+Proyek C++ (DLL) untuk mengekstrak data SQLite dari virtual filesystem game (PAK) secara dinamis saat game berjalan.
+* Hasil ekstraksi disimpan di folder `WuwaDBExport/`.
+* Direktori `base/` berisi database konfigurasi utama (`db_flowState.db`, `db_QuestData.db`, dll).
+* Direktori `zh-Hans/`, `en/`, `ja/` berisi database bahasa (`lang_multi_text.db`, `lang_speaker.db`).
+
+### 2. Ekspor Dialog Terstruktur (`export_quest_ordered.py`)
+Skrip Python untuk mengekstrak dialog/percakapan game dan menyusunnya rapi per chapter.
+* Membaca basis data dari folder `WuwaDBExport/`.
+* Menggunakan skema urutan quest dari `QUEST_ORDERED.json`.
+* Jalankan dengan:
+  ```bash
+  python3 export_quest_ordered.py
+  ```
+* Hasil ekspor berupa file `dialogue.json` per quest yang disimpan di folder `export_quest_ordered/`.
+* **Catatan Perbedaan Skema `QUEST_ORDERED.json` dengan Database Game:**
+  * **Nama Act vs Nama Quest:** Beberapa quest utama di Journey Log menggunakan nama Act/Chapter sebagai display name (misal: `"By Moon's Grace"` dan `"To the Shore's End"`), sedangkan di basis data (`db_QuestData.db`) nama quest aslinya adalah `"Moonlit Reunion"` dan `"From the Echoes of Destruction"`. `QUEST_ORDERED.json` mengikuti nama tampilan di Journey Log.
+  * **Pemisahan Quest UI:** Quest seperti `"Grand Warstorm"` dibagi menjadi `"Part I"` dan `"Part II"` di UI, serta sub-quest dropdown seperti `"Morning Star"` (Morning Star I - IV & Epilogue) tidak memiliki relasi parent-child langsung di database melainkan melalui `"A Stranger in a Strange Land"`.
+  * **Placeholder:** Quest `"New journey awaits"` merupakan placeholder (`QuestTree_ToBeContinued`) untuk menandai kelanjutan cerita.
+
+---
+
 ## Credits
 
 - **[Lai-Hoang](https://github.com/Lai-Hoang)** — Terima kasih untuk repo [wuwa-viet-hoa](https://github.com/Lai-Hoang/wuwa-viet-hoa) dan metode code injector.
