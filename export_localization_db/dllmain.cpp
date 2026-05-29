@@ -1975,95 +1975,15 @@ static void ExportQuestOrderedFlows()
 }
 
 // ========================================================================
-// VFS Tree Structure Mapping (tree command format)
+// VFS SQLite Database Export
 // ========================================================================
-struct VFSNode {
-    std::wstring name;
-    bool isDirectory = false;
-    std::map<std::wstring, VFSNode> children;
-};
-
-static void InsertVFSPathComponent(VFSNode& parent, const std::vector<std::wstring>& components, size_t index, bool isDir)
-{
-    if (index >= components.size()) return;
-    const auto& name = components[index];
-    auto it = parent.children.find(name);
-    if (it == parent.children.end())
-    {
-        VFSNode child;
-        child.name = name;
-        child.isDirectory = (index < components.size() - 1) ? true : isDir;
-        parent.children[name] = child;
-        InsertVFSPathComponent(parent.children[name], components, index + 1, isDir);
-    }
-    else
-    {
-        if (index == components.size() - 1 && isDir)
-            it->second.isDirectory = true;
-        InsertVFSPathComponent(it->second, components, index + 1, isDir);
-    }
-}
-
-static void BuildTreeString(const VFSNode& node, const std::wstring& prefix, bool isLast, std::string& out)
-{
-    if (!node.name.empty())
-    {
-        std::string utf8Name = WToUtf8(node.name);
-        out += WToUtf8(prefix);
-        out += isLast ? "└── " : "├── ";
-        out += utf8Name;
-        if (node.isDirectory) out += "/";
-        out += "\n";
-    }
-
-    std::wstring newPrefix = prefix;
-    if (!node.name.empty())
-    {
-        newPrefix += isLast ? L"    " : L"│   ";
-    }
-
-    size_t i = 0;
-    for (const auto& pair : node.children)
-    {
-        bool lastChild = (i == node.children.size() - 1);
-        BuildTreeString(pair.second, newPrefix, lastChild, out);
-        i++;
-    }
-}
-
-static std::vector<std::wstring> SplitPath(const std::wstring& path)
-{
-    std::vector<std::wstring> result;
-    std::wstring current;
-    for (wchar_t c : path)
-    {
-        if (c == L'/' || c == L'\\')
-        {
-            if (!current.empty())
-            {
-                result.push_back(current);
-                current.clear();
-            }
-        }
-        else
-        {
-            current += c;
-        }
-    }
-    if (!current.empty())
-    {
-        result.push_back(current);
-    }
-    return result;
-}
-
-static void ExportVFSTree()
+static void ExportVFSTreeDB()
 {
     std::wstring exportDir = GetOutputDir();
     CreateDirRecursive(exportDir);
 
     Log("===============================================");
-    Log("  VFS Tree Structure Mapping");
+    Log("  VFS SQLite Database Export");
     Log("===============================================");
 
     // Get virtual content directory
@@ -2081,9 +2001,36 @@ static void ExportVFSTree()
         return;
     }
 
-    VFSNode root;
-    root.name = L"Content";
-    root.isDirectory = true;
+    std::wstring dbPath = exportDir + L"\\vfs_tree.db";
+    std::string dbPathUtf8 = WToUtf8(dbPath);
+
+    // Delete existing DB file to overwrite cleanly
+    DeleteFileW(dbPath.c_str());
+
+    sqlite3* db = nullptr;
+    if (sqlite3_open_v2(dbPathUtf8.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) != SQLITE_OK)
+    {
+        Log("ERROR: Cannot create VFS SQLite database at %ls", dbPath.c_str());
+        return;
+    }
+
+    // Set synchronous off and journal mode WAL/MEMORY for maximum performance
+    sqlite3_exec(db, "PRAGMA synchronous = OFF", nullptr, nullptr, nullptr);
+    sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", nullptr, nullptr, nullptr);
+
+    // Create table
+    sqlite3_exec(db, "CREATE TABLE vfs (path TEXT, is_dir INTEGER)", nullptr, nullptr, nullptr);
+
+    Log("Writing VFS items to SQLite database...");
+    sqlite3_exec(db, "BEGIN TRANSACTION", nullptr, nullptr, nullptr);
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, "INSERT INTO vfs (path, is_dir) VALUES (?, ?)", -1, &stmt, nullptr) != SQLITE_OK)
+    {
+        Log("ERROR: Cannot prepare insert statement!");
+        sqlite3_close(db);
+        return;
+    }
 
     int filesCount = 0;
     int dirsCount = 0;
@@ -2118,40 +2065,28 @@ static void ExportVFSTree()
         if (isDir) dirsCount++;
         else filesCount++;
 
-        auto components = SplitPath(rawPath);
-        if (!components.empty())
+        std::string pathUtf8 = WToUtf8(rawPath);
+        sqlite3_bind_text(stmt, 1, pathUtf8.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_int(stmt, 2, isDir ? 1 : 0);
+        sqlite3_step(stmt);
+        sqlite3_reset(stmt);
+
+        if (i % 100000 == 0 && i > 0)
         {
-            InsertVFSPathComponent(root, components, 0, isDir);
-        }
-
-        if (i % 1000 == 0 && i > 0)
-        {
-            Log("  ... processed %d/%d items", i, allPaths.Num());
+            Log("  ... saved %d/%d items", i, allPaths.Num());
         }
     }
 
-    Log("Building tree layout...");
-    std::string treeStr;
-    treeStr = "Wuthering Waves VFS Tree Mapping\n";
-    treeStr += "Root: " + WToUtf8(contentDir) + "\n";
-    treeStr += "Items scanned: " + std::to_string(filesCount) + " files, " + std::to_string(dirsCount) + " directories\n";
-    treeStr += "========================================================================\n\n";
+    sqlite3_finalize(stmt);
+    sqlite3_exec(db, "COMMIT TRANSACTION", nullptr, nullptr, nullptr);
 
-    BuildTreeString(root, L"", true, treeStr);
+    Log("Creating database index for fast queries...");
+    sqlite3_exec(db, "CREATE INDEX idx_path ON vfs (path)", nullptr, nullptr, nullptr);
 
-    std::wstring outPath = exportDir + L"\\vfs_tree.txt";
-    FILE* f = nullptr;
-    _wfopen_s(&f, outPath.c_str(), L"wb");
-    if (f)
-    {
-        fwrite(treeStr.c_str(), 1, treeStr.size(), f);
-        fclose(f);
-        Log("SUCCESS: Tree saved to %ls", outPath.c_str());
-    }
-    else
-    {
-        Log("ERROR: Cannot create output file %ls", outPath.c_str());
-    }
+    sqlite3_close(db);
+
+    Log("SUCCESS: Database saved to %ls", dbPath.c_str());
+    Log("Total items: %d files, %d directories", filesCount, dirsCount);
     Log("===============================================");
 }
 
@@ -2195,7 +2130,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     printf("  [2] Export ConfigDB only\n");
     printf("  [3] Quest-Ordered Dialogue Export (new gen)\n");
     printf("  [4] Full: ConfigDB + Quest-Ordered Export\n");
-    printf("  [5] Map VFS Tree Structure\n");
+    printf("  [5] Export VFS to SQLite DB\n");
     printf("  [0] Exit\n");
     printf("  ==========================================\n");
     printf("  Choice: ");
@@ -2243,11 +2178,11 @@ static DWORD WINAPI WorkerThread(LPVOID)
         break;
 
     case 5:
-        printf("\n[WuwaVH] Starting VFS tree mapping...\n");
-        ExportVFSTree();
-        printf("\n[WuwaVH] VFS tree mapping complete! Output: Desktop\\WuwaDBExport\\vfs_tree.txt\n");
+        printf("\n[WuwaVH] Starting VFS SQLite DB export...\n");
+        ExportVFSTreeDB();
+        printf("\n[WuwaVH] VFS SQLite DB export complete! Output: Desktop\\WuwaDBExport\\vfs_tree.db\n");
         MessageBoxW(NULL,
-            L"VFS Tree Mapping complete!\nOutput: Desktop\\WuwaDBExport\\vfs_tree.txt",
+            L"VFS SQLite DB Export complete!\nOutput: Desktop\\WuwaDBExport\\vfs_tree.db",
             L"WuwaVH", MB_OK | MB_ICONINFORMATION);
         break;
 
