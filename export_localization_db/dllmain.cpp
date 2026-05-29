@@ -2123,6 +2123,11 @@ static void ExportVFSTree()
         {
             InsertVFSPathComponent(root, components, 0, isDir);
         }
+
+        if (i % 1000 == 0 && i > 0)
+        {
+            Log("  ... processed %d/%d items", i, allPaths.Num());
+        }
     }
 
     Log("Building tree layout...");
