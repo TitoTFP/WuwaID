@@ -1975,6 +1975,182 @@ static void ExportQuestOrderedFlows()
 }
 
 // ========================================================================
+// VFS Tree Structure Mapping (tree command format)
+// ========================================================================
+struct VFSNode {
+    std::wstring name;
+    bool isDirectory = false;
+    std::map<std::wstring, VFSNode> children;
+};
+
+static void InsertVFSPathComponent(VFSNode& parent, const std::vector<std::wstring>& components, size_t index, bool isDir)
+{
+    if (index >= components.size()) return;
+    const auto& name = components[index];
+    auto it = parent.children.find(name);
+    if (it == parent.children.end())
+    {
+        VFSNode child;
+        child.name = name;
+        child.isDirectory = (index < components.size() - 1) ? true : isDir;
+        parent.children[name] = child;
+        InsertVFSPathComponent(parent.children[name], components, index + 1, isDir);
+    }
+    else
+    {
+        if (index == components.size() - 1 && isDir)
+            it->second.isDirectory = true;
+        InsertVFSPathComponent(it->second, components, index + 1, isDir);
+    }
+}
+
+static void BuildTreeString(const VFSNode& node, const std::wstring& prefix, bool isLast, std::string& out)
+{
+    if (!node.name.empty())
+    {
+        std::string utf8Name = WToUtf8(node.name);
+        out += WToUtf8(prefix);
+        out += isLast ? "└── " : "├── ";
+        out += utf8Name;
+        if (node.isDirectory) out += "/";
+        out += "\n";
+    }
+
+    std::wstring newPrefix = prefix;
+    if (!node.name.empty())
+    {
+        newPrefix += isLast ? L"    " : L"│   ";
+    }
+
+    size_t i = 0;
+    for (const auto& pair : node.children)
+    {
+        bool lastChild = (i == node.children.size() - 1);
+        BuildTreeString(pair.second, newPrefix, lastChild, out);
+        i++;
+    }
+}
+
+static std::vector<std::wstring> SplitPath(const std::wstring& path)
+{
+    std::vector<std::wstring> result;
+    std::wstring current;
+    for (wchar_t c : path)
+    {
+        if (c == L'/' || c == L'\\')
+        {
+            if (!current.empty())
+            {
+                result.push_back(current);
+                current.clear();
+            }
+        }
+        else
+        {
+            current += c;
+        }
+    }
+    if (!current.empty())
+    {
+        result.push_back(current);
+    }
+    return result;
+}
+
+static void ExportVFSTree()
+{
+    std::wstring exportDir = GetOutputDir();
+    CreateDirRecursive(exportDir);
+
+    Log("===============================================");
+    Log("  VFS Tree Structure Mapping");
+    Log("===============================================");
+
+    // Get virtual content directory
+    FString contentDirFS = UKismetSystemLibrary::GetProjectContentDirectory();
+    std::wstring contentDir = contentDirFS.ToWString();
+    Log("Content virtual root: %ls", contentDir.c_str());
+
+    Log("Scanning VFS recursively... (this may take a moment)");
+    TArray<FString> allPaths = UKuroStaticLibrary::GetFilesRecursive(contentDirFS, FString(L""), true, true);
+    Log("Scan complete. Found %d VFS items", allPaths.Num());
+
+    if (allPaths.Num() == 0)
+    {
+        Log("ERROR: VFS scan returned no items!");
+        return;
+    }
+
+    VFSNode root;
+    root.name = L"Content";
+    root.isDirectory = true;
+
+    int filesCount = 0;
+    int dirsCount = 0;
+
+    for (int32 i = 0; i < allPaths.Num(); i++)
+    {
+        std::wstring rawPath = allPaths[i].ToWString();
+        // Remove virtual content root prefix if present
+        if (rawPath.find(contentDir) == 0)
+        {
+            rawPath = rawPath.substr(contentDir.length());
+        }
+        // Normalize path separators
+        for (auto& c : rawPath) if (c == L'/') c = L'\\';
+        
+        // Remove leading backslashes
+        while (!rawPath.empty() && rawPath.front() == L'\\')
+        {
+            rawPath = rawPath.substr(1);
+        }
+        // Remove trailing backslashes
+        while (!rawPath.empty() && rawPath.back() == L'\\')
+        {
+            rawPath.pop_back();
+        }
+
+        if (rawPath.empty()) continue;
+
+        std::wstring fullPath = contentDir + rawPath;
+        FString fFullPath(fullPath.c_str());
+        bool isDir = UKuroStaticLibrary::DirectoryExists(fFullPath);
+        if (isDir) dirsCount++;
+        else filesCount++;
+
+        auto components = SplitPath(rawPath);
+        if (!components.empty())
+        {
+            InsertVFSPathComponent(root, components, 0, isDir);
+        }
+    }
+
+    Log("Building tree layout...");
+    std::string treeStr;
+    treeStr = "Wuthering Waves VFS Tree Mapping\n";
+    treeStr += "Root: " + WToUtf8(contentDir) + "\n";
+    treeStr += "Items scanned: " + std::to_string(filesCount) + " files, " + std::to_string(dirsCount) + " directories\n";
+    treeStr += "========================================================================\n\n";
+
+    BuildTreeString(root, L"", true, treeStr);
+
+    std::wstring outPath = exportDir + L"\\vfs_tree.txt";
+    FILE* f = nullptr;
+    _wfopen_s(&f, outPath.c_str(), L"wb");
+    if (f)
+    {
+        fwrite(treeStr.c_str(), 1, treeStr.size(), f);
+        fclose(f);
+        Log("SUCCESS: Tree saved to %ls", outPath.c_str());
+    }
+    else
+    {
+        Log("ERROR: Cannot create output file %ls", outPath.c_str());
+    }
+    Log("===============================================");
+}
+
+// ========================================================================
 // Worker thread
 // ========================================================================
 static DWORD WINAPI WorkerThread(LPVOID)
@@ -2014,6 +2190,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     printf("  [2] Export ConfigDB only\n");
     printf("  [3] Quest-Ordered Dialogue Export (new gen)\n");
     printf("  [4] Full: ConfigDB + Quest-Ordered Export\n");
+    printf("  [5] Map VFS Tree Structure\n");
     printf("  [0] Exit\n");
     printf("  ==========================================\n");
     printf("  Choice: ");
@@ -2057,6 +2234,15 @@ static DWORD WINAPI WorkerThread(LPVOID)
         printf("\n[WuwaVH] Full quest-ordered export complete! Output: Desktop\\WuwaDBExport\\\n");
         MessageBoxW(NULL,
             L"Full Export (ConfigDB + Quest-Ordered Dialogue) complete!\nOutput: Desktop\\WuwaDBExport\\",
+            L"WuwaVH", MB_OK | MB_ICONINFORMATION);
+        break;
+
+    case 5:
+        printf("\n[WuwaVH] Starting VFS tree mapping...\n");
+        ExportVFSTree();
+        printf("\n[WuwaVH] VFS tree mapping complete! Output: Desktop\\WuwaDBExport\\vfs_tree.txt\n");
+        MessageBoxW(NULL,
+            L"VFS Tree Mapping complete!\nOutput: Desktop\\WuwaDBExport\\vfs_tree.txt",
             L"WuwaVH", MB_OK | MB_ICONINFORMATION);
         break;
 

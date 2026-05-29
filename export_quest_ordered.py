@@ -56,6 +56,14 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "export_qu
 # Languages to export
 LANGUAGES = ["zh-Hans", "en", "ja"]
 
+# Global order of text keys to preserve lang_multi_text insertion order
+text_key_order = {}
+
+# Manual overrides for unreferenced flows mapping to specific quest IDs
+UNREFERENCED_FLOW_QUEST_OVERRIDES = {
+    ("剧情_3_3_拉海洛主线_上半新", 21): 121850000,  # Wishes in the Bell: Epilogue
+}
+
 
 # ---------------------------------------------------------------------------
 # Utility helpers
@@ -415,6 +423,7 @@ class LangPack:
         self._loaded = False
 
     def load(self):
+        global text_key_order
         if self._loaded:
             return
         self._loaded = True
@@ -454,6 +463,8 @@ class LangPack:
                 for tid, content, redirect in cur.fetchall():
                     if not tid:
                         continue
+                    if tid not in text_key_order:
+                        text_key_order[tid] = len(text_key_order)
                     redirect = redirect or 0
                     if redirect != 0 and redirect in half_texts:
                         redirected = half_texts[redirect].get(tid, "")
@@ -519,18 +530,19 @@ class LangPack:
 # ---------------------------------------------------------------------------
 
 def _collect_flows_from_json(obj, result: set):
-    """Recursively walk JSON to collect all (FlowListName, FlowId) pairs."""
+    """Recursively walk JSON to collect all (FlowListName, FlowId, StateId) tuples."""
     if isinstance(obj, dict):
-        # Condition type: {"Type":"PlayFlow","Flow":{"FlowListName":...,"FlowId":...}}
+        # Condition type: {"Type":"PlayFlow","Flow":{"FlowListName":...,"FlowId":...,"StateId":...}}
         if obj.get("Type") == "PlayFlow" and "Flow" in obj:
             flow = obj["Flow"]
             if isinstance(flow, dict):
                 name = flow.get("FlowListName", "")
                 fid = flow.get("FlowId", 0)
+                sid = flow.get("StateId") or flow.get("StateID")
                 if name and fid:
-                    result.add((name, int(fid)))
+                    result.add((name, int(fid), int(sid) if sid is not None else None))
 
-        # Action type: {"Name":"PlayFlow","Params":{"FlowListName":...,"FlowId":...}}
+        # Action type: {"Name":"PlayFlow","Params":{"FlowListName":...,"FlowId":...,"StateId":...}}
         # OR:           {"Name":"PlayFlow","Params":{"Flow":{"FlowListName":...}}}
         if obj.get("Name") in ("PlayFlow", "TriggerFlow", "ChangeFlowState"):
             params = obj.get("Params") or {}
@@ -538,15 +550,17 @@ def _collect_flows_from_json(obj, result: set):
                 # Direct form: Params has FlowListName right at top level
                 name = params.get("FlowListName", "")
                 fid = params.get("FlowId", 0)
+                sid = params.get("StateId") or params.get("StateID")
                 if name and fid:
-                    result.add((name, int(fid)))
+                    result.add((name, int(fid), int(sid) if sid is not None else None))
                 # Nested form: Params.Flow.FlowListName
                 flow = params.get("Flow") or {}
                 if isinstance(flow, dict):
                     name2 = flow.get("FlowListName", "")
                     fid2 = flow.get("FlowId", 0)
+                    sid2 = flow.get("StateId") or flow.get("StateID")
                     if name2 and fid2:
-                        result.add((name2, int(fid2)))
+                        result.add((name2, int(fid2), int(sid2) if sid2 is not None else None))
 
         for v in obj.values():
             _collect_flows_from_json(v, result)
@@ -555,38 +569,54 @@ def _collect_flows_from_json(obj, result: set):
             _collect_flows_from_json(item, result)
 
 
-def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> list[tuple[str, int]]:
+def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> dict[tuple[str, int], set[int | None]]:
     """
     Query all questnodedata rows for quest_id, parse JSON, and collect
-    all unique (FlowListName, FlowId) pairs for that quest.
-    Returns list sorted by FlowListName for determinism.
+    all unique (FlowListName, FlowId) pairs mapped to their StateIds.
     """
     qnode_cur.execute(
         "SELECT BinData FROM questnodedata WHERE Key LIKE ? ORDER BY Key",
         (f"{quest_id}_%",)
     )
     rows = qnode_cur.fetchall()
-    found: set[tuple[str, int]] = set()
+    found: set[tuple[str, int, int | None]] = set()
     for (bindata,) in rows:
         if not bindata:
             continue
         obj = extract_json_from_bindata(bindata)
         if obj is not None:
             _collect_flows_from_json(obj, found)
-    return sorted(found)
+            
+    # Consolidate by (name, fid)
+    consolidated: dict[tuple[str, int], set[int | None]] = {}
+    for name, fid, sid in found:
+        key = (name, fid)
+        if key not in consolidated:
+            consolidated[key] = set()
+        consolidated[key].add(sid)
+
+    # Inject manual unreferenced flow overrides
+    for flow_key, qid in UNREFERENCED_FLOW_QUEST_OVERRIDES.items():
+        if qid == quest_id:
+            if flow_key not in consolidated:
+                consolidated[flow_key] = {None}
+    return consolidated
 
 
 def get_all_referenced_flows(qnode_cur: sqlite3.Cursor) -> set[tuple[str, int]]:
     """Collect every flow directly referenced by quest node data."""
     qnode_cur.execute("SELECT BinData FROM questnodedata")
-    found: set[tuple[str, int]] = set()
+    found: set[tuple[str, int, int | None]] = set()
     for (bindata,) in qnode_cur.fetchall():
         if not bindata:
             continue
         obj = extract_json_from_bindata(bindata)
         if obj is not None:
             _collect_flows_from_json(obj, found)
-    return found
+    res = {(name, fid) for name, fid, sid in found}
+    for flow_key in UNREFERENCED_FLOW_QUEST_OVERRIDES:
+        res.add(flow_key)
+    return res
 
 
 def get_unreferenced_dialogue_flows(
@@ -923,10 +953,13 @@ def main():
                 all_lines: list[dict] = []
                 flow_details: list[dict] = []
 
-                for flow_name, state_id in flows:
+                for (flow_name, state_id), sids in sorted(flows.items()):
                     entries = state_index.get((flow_name, state_id), [])
                     flow_lines = []
-                    for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+                    for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+                        has_specific_sids = any(s is not None for s in sids)
+                        if has_specific_sids and sub_id not in sids:
+                            continue
                         lines = extract_dialogue_from_flowstate(
                             state_key, bindata, lang_packs
                         )
@@ -941,7 +974,7 @@ def main():
                     all_lines.extend(flow_lines)
 
                 supplemental_flows = get_unreferenced_dialogue_flows(
-                    {flow_name for flow_name, _ in flows},
+                    {flow_name for flow_name, _ in flows.keys()},
                     state_index,
                     referenced_flows,
                     exported_unreferenced_flows,
@@ -958,6 +991,48 @@ def main():
                         "dialogue": flow_lines,
                     })
                     all_lines.extend(flow_lines)
+
+                # Deduplicate all_lines by text_key to prevent LevelA/LevelC duplicates
+                seen_keys = set()
+                deduped_lines = []
+                for line in all_lines:
+                    tk = line.get("text_key")
+                    if tk:
+                        if tk in seen_keys:
+                            continue
+                        seen_keys.add(tk)
+                    deduped_lines.append(line)
+                all_lines = deduped_lines
+
+                # Sort all_lines according to their insertion order in lang_multi_text.db (or custom chronological order)
+                if quest_id == 121850000:
+                    CUSTOM_SORT_ORDER = {
+                        "Zuoyequnxing_189": 1,
+                        "Zuoyequnxing_190": 2,
+                        "Zuoyequnxing_191": 3,
+                        "Zuoyequnxing_21080": 4,
+                        "Zuoyequnxing_194": 5,
+                        "Zuoyequnxing_192": 6,
+                        "Zuoyequnxing_193": 7,
+                    }
+                    def get_sort_key(line):
+                        tk = line.get("text_key", "")
+                        prefix, _, suffix = tk.rpartition('_')
+                        if prefix in CUSTOM_SORT_ORDER:
+                            try:
+                                s_val = int(suffix)
+                            except ValueError:
+                                s_val = 0
+                            return (CUSTOM_SORT_ORDER[prefix], s_val)
+                        return (99, tk)
+                    all_lines = sorted(all_lines, key=get_sort_key)
+                else:
+                    all_lines = [
+                        line for _, line in sorted(
+                            enumerate(all_lines),
+                            key=lambda x: (text_key_order.get(x[1].get("text_key", ""), 99999999), x[0])
+                        )
+                    ]
 
                 if not all_lines:
                     print("         Lines: 0")
@@ -1041,10 +1116,13 @@ def main():
         all_lines: list[dict] = []
         flow_details: list[dict] = []
 
-        for flow_name, state_id in flows:
+        for (flow_name, state_id), sids in sorted(flows.items()):
             entries = state_index.get((flow_name, state_id), [])
             flow_lines = []
-            for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+            for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+                has_specific_sids = any(s is not None for s in sids)
+                if has_specific_sids and sub_id not in sids:
+                    continue
                 lines = extract_dialogue_from_flowstate(
                     state_key, bindata, lang_packs
                 )
@@ -1059,7 +1137,7 @@ def main():
             all_lines.extend(flow_lines)
 
         supplemental_flows = get_unreferenced_dialogue_flows(
-            {flow_name for flow_name, _ in flows},
+            {flow_name for flow_name, _ in flows.keys()},
             state_index,
             referenced_flows,
             exported_unreferenced_flows,
@@ -1074,6 +1152,48 @@ def main():
                 "dialogue": flow_lines,
             })
             all_lines.extend(flow_lines)
+
+        # Deduplicate all_lines by text_key to prevent LevelA/LevelC duplicates
+        seen_keys = set()
+        deduped_lines = []
+        for line in all_lines:
+            tk = line.get("text_key")
+            if tk:
+                if tk in seen_keys:
+                    continue
+                seen_keys.add(tk)
+            deduped_lines.append(line)
+        all_lines = deduped_lines
+
+        # Sort all_lines according to their insertion order in lang_multi_text.db (or custom chronological order)
+        if quest_id == 121850000:
+            CUSTOM_SORT_ORDER = {
+                "Zuoyequnxing_189": 1,
+                "Zuoyequnxing_190": 2,
+                "Zuoyequnxing_191": 3,
+                "Zuoyequnxing_21080": 4,
+                "Zuoyequnxing_194": 5,
+                "Zuoyequnxing_192": 6,
+                "Zuoyequnxing_193": 7,
+            }
+            def get_sort_key(line):
+                tk = line.get("text_key", "")
+                prefix, _, suffix = tk.rpartition('_')
+                if prefix in CUSTOM_SORT_ORDER:
+                    try:
+                        s_val = int(suffix)
+                    except ValueError:
+                        s_val = 0
+                    return (CUSTOM_SORT_ORDER[prefix], s_val)
+                return (99, tk)
+            all_lines = sorted(all_lines, key=get_sort_key)
+        else:
+            all_lines = [
+                line for _, line in sorted(
+                    enumerate(all_lines),
+                    key=lambda x: (text_key_order.get(x[1].get("text_key", ""), 99999999), x[0])
+                )
+            ]
 
         if not all_lines:
             continue
