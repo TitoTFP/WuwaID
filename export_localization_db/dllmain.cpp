@@ -2072,7 +2072,7 @@ static void ExportVFSTree()
     Log("Content virtual root: %ls", contentDir.c_str());
 
     Log("Scanning VFS recursively... (this may take a moment)");
-    TArray<FString> allPaths = UKuroStaticLibrary::GetFilesRecursive(contentDirFS, FString(L""), true, true);
+    TArray<FString> allPaths = UKuroStaticLibrary::GetFilesRecursive(contentDirFS, FString(L"*"), true, true);
     Log("Scan complete. Found %d VFS items", allPaths.Num());
 
     if (allPaths.Num() == 0)
