@@ -56,8 +56,6 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "export_qu
 # Languages to export
 LANGUAGES = ["zh-Hans", "en", "ja"]
 
-# Global order of text keys to preserve lang_multi_text insertion order
-text_key_order = {}
 
 # Manual overrides for unreferenced flows mapping to specific quest IDs
 UNREFERENCED_FLOW_QUEST_OVERRIDES = {
@@ -282,30 +280,23 @@ _json_decoder = json.JSONDecoder()
 
 
 def extract_json_from_bindata(bindata: bytes) -> dict | list | None:
-    """Find the first JSON object or array in BinData and parse it.
-    Uses raw_decode so trailing binary garbage after the JSON is ignored.
-    """
+    """Find the first JSON object or array in BinData and parse it successfully."""
     if not bindata:
         return None
-    # Look for first '{' or '[{' - prefer '[{' if it comes first
-    idx = bindata.find(b'{')
-    idx2 = bindata.find(b'[{')
-    if idx == -1 and idx2 == -1:
-        return None
-    if idx2 != -1 and (idx == -1 or idx2 < idx):
-        idx = idx2
-    try:
-        raw = bindata[idx:].decode('utf-8', errors='replace')
-        obj, _ = _json_decoder.raw_decode(raw)
-        return obj
-    except Exception:
-        # Fallback: trim to first null terminator
-        try:
-            null_pos = bindata.index(b'\x00', idx)
-            raw = bindata[idx:null_pos].decode('utf-8', errors='replace')
-            return json.loads(raw)
-        except Exception:
+    pos = 0
+    while True:
+        idx = bindata.find(b'{', pos)
+        idx2 = bindata.find(b'[{', pos)
+        if idx == -1 and idx2 == -1:
             return None
+        if idx2 != -1 and (idx == -1 or idx2 < idx):
+            idx = idx2
+        try:
+            raw = bindata[idx:].decode('utf-8', errors='replace')
+            obj, _ = _json_decoder.raw_decode(raw)
+            return obj
+        except Exception:
+            pos = idx + 1
 
 
 def find_quest_ids_in_bindata(bindata: bytes, valid_ids: set[int] | None = None) -> list[int]:
@@ -423,7 +414,6 @@ class LangPack:
         self._loaded = False
 
     def load(self):
-        global text_key_order
         if self._loaded:
             return
         self._loaded = True
@@ -463,8 +453,7 @@ class LangPack:
                 for tid, content, redirect in cur.fetchall():
                     if not tid:
                         continue
-                    if tid not in text_key_order:
-                        text_key_order[tid] = len(text_key_order)
+
                     redirect = redirect or 0
                     if redirect != 0 and redirect in half_texts:
                         redirected = half_texts[redirect].get(tid, "")
@@ -532,35 +521,19 @@ class LangPack:
 def _collect_flows_from_json(obj, result: set):
     """Recursively walk JSON to collect all (FlowListName, FlowId, StateId) tuples."""
     if isinstance(obj, dict):
-        # Condition type: {"Type":"PlayFlow","Flow":{"FlowListName":...,"FlowId":...,"StateId":...}}
-        if obj.get("Type") == "PlayFlow" and "Flow" in obj:
-            flow = obj["Flow"]
-            if isinstance(flow, dict):
-                name = flow.get("FlowListName", "")
-                fid = flow.get("FlowId", 0)
+        name = obj.get("FlowListName")
+        fid = obj.get("FlowId")
+        if name and fid is not None:
+            sid = obj.get("StateId") or obj.get("StateID")
+            result.add((name, int(fid), int(sid) if sid is not None else None))
+        
+        flow = obj.get("Flow")
+        if isinstance(flow, dict):
+            name = flow.get("FlowListName")
+            fid = flow.get("FlowId")
+            if name and fid is not None:
                 sid = flow.get("StateId") or flow.get("StateID")
-                if name and fid:
-                    result.add((name, int(fid), int(sid) if sid is not None else None))
-
-        # Action type: {"Name":"PlayFlow","Params":{"FlowListName":...,"FlowId":...,"StateId":...}}
-        # OR:           {"Name":"PlayFlow","Params":{"Flow":{"FlowListName":...}}}
-        if obj.get("Name") in ("PlayFlow", "TriggerFlow", "ChangeFlowState"):
-            params = obj.get("Params") or {}
-            if isinstance(params, dict):
-                # Direct form: Params has FlowListName right at top level
-                name = params.get("FlowListName", "")
-                fid = params.get("FlowId", 0)
-                sid = params.get("StateId") or params.get("StateID")
-                if name and fid:
-                    result.add((name, int(fid), int(sid) if sid is not None else None))
-                # Nested form: Params.Flow.FlowListName
-                flow = params.get("Flow") or {}
-                if isinstance(flow, dict):
-                    name2 = flow.get("FlowListName", "")
-                    fid2 = flow.get("FlowId", 0)
-                    sid2 = flow.get("StateId") or flow.get("StateID")
-                    if name2 and fid2:
-                        result.add((name2, int(fid2), int(sid2) if sid2 is not None else None))
+                result.add((name, int(fid), int(sid) if sid is not None else None))
 
         for v in obj.values():
             _collect_flows_from_json(v, result)
@@ -569,10 +542,146 @@ def _collect_flows_from_json(obj, result: set):
             _collect_flows_from_json(item, result)
 
 
+def _extract_playflows_from_actions(node: dict) -> list[tuple[str, int, int | None]]:
+    """Extract PlayFlow references from a node's Condition, EnterActions then FinishActions."""
+    flows = []
+    
+    # 1. Condition PlayFlow
+    cond = node.get("Condition")
+    if isinstance(cond, dict) and cond.get("Type") == "PlayFlow":
+        flow = cond.get("Flow", {})
+        name = flow.get("FlowListName", "")
+        fid = flow.get("FlowId") or flow.get("FlowID")
+        sid = flow.get("StateId") or flow.get("StateID")
+        if name and fid is not None:
+            flows.append((name, int(fid), int(sid) if sid is not None else None))
+            
+    # 2. Action PlayFlows
+    for action_list in ["EnterActions", "FinishActions"]:
+        for action in node.get(action_list, []):
+            if not isinstance(action, dict) or action.get("Name") != "PlayFlow":
+                continue
+            params = action.get("Params", {})
+            name = params.get("FlowListName", "")
+            fid = params.get("FlowId") or params.get("FlowID")
+            sid = params.get("StateId") or params.get("StateID")
+            if name and fid is not None:
+                flows.append((name, int(fid), int(sid) if sid is not None else None))
+    return flows
+
+
+def _walk_node(
+    node_id: int,
+    nodes: dict[int, dict],
+    children_map: dict[int, list[int]],
+    main_flows: list[tuple[str, int, int | None]],
+    alt_flows: list[tuple[str, int, int | None]],
+    is_alternative: bool = False,
+):
+    """Recursively walk the behavior tree in execution order."""
+    node = nodes.get(node_id)
+    if node is None:
+        return
+    ntype = node.get("Type", "")
+    target = alt_flows if is_alternative else main_flows
+
+    if ntype == "ChildQuest":
+        for flow_ref in _extract_playflows_from_actions(node):
+            target.append(flow_ref)
+
+    kids = sorted(children_map.get(node_id, []))
+
+    if ntype == "ParallelSelect":
+        main_kids = [k for k in kids if nodes.get(k, {}).get("Type") != "AlwaysFalse"]
+        alt_kids = [k for k in kids if nodes.get(k, {}).get("Type") == "AlwaysFalse"]
+        for kid in main_kids:
+            _walk_node(kid, nodes, children_map, main_flows, alt_flows, is_alternative)
+        for kid in alt_kids:
+            _walk_node(kid, nodes, children_map, main_flows, alt_flows, is_alternative=True)
+    elif ntype == "AlwaysFalse":
+        for kid in kids:
+            _walk_node(kid, nodes, children_map, main_flows, alt_flows, is_alternative=True)
+    else:
+        for kid in kids:
+            _walk_node(kid, nodes, children_map, main_flows, alt_flows, is_alternative)
+
+
+def walk_quest_tree(
+    quest_id: int, qnode_cur: sqlite3.Cursor
+) -> tuple[list[tuple[str, int, int | None]], list[tuple[str, int, int | None]]]:
+    """Walk the QuestNodeData behavior tree and return PlayFlow refs in execution order.
+
+    Returns:
+        (main_flows, alt_flows) where each is an ordered list of
+        (FlowListName, FlowId, StateId) tuples — one per PlayFlow action.
+        FlowId maps to state_id in the flowstate index.
+        StateId maps to sub_id in the flowstate entries.
+    """
+    qnode_cur.execute(
+        "SELECT Key, BinData FROM questnodedata WHERE Key LIKE ? ORDER BY Key",
+        (f"{quest_id}_%",)
+    )
+    rows = qnode_cur.fetchall()
+    if not rows:
+        return [], []
+
+    nodes: dict[int, dict] = {}
+    for key, bindata in rows:
+        obj = extract_json_from_bindata(bindata)
+        if obj and isinstance(obj, dict):
+            nid = obj.get("Id")
+            if nid is not None:
+                nodes[nid] = obj
+
+    if not nodes:
+        return [], []
+
+    children_map: dict[int, list[int]] = {}
+    for nid, node in nodes.items():
+        pid = node.get("ParentNodeId")
+        if pid is not None:
+            children_map.setdefault(pid, []).append(nid)
+
+    root_ids = sorted(
+        nid for nid, node in nodes.items()
+        if node.get("ParentNodeId") not in nodes
+    )
+
+    main_flow_refs: list[tuple[str, int, int | None]] = []
+    alt_flow_refs: list[tuple[str, int, int | None]] = []
+    for rid in root_ids:
+        _walk_node(rid, nodes, children_map, main_flow_refs, alt_flow_refs)
+
+    def dedup(refs):
+        seen = set()
+        result = []
+        for ref in refs:
+            if ref not in seen:
+                seen.add(ref)
+                result.append(ref)
+        return result
+
+    main_flow_refs = dedup(main_flow_refs)
+    alt_flow_refs = dedup(alt_flow_refs)
+
+    main_set = set(main_flow_refs)
+    alt_flow_refs = [r for r in alt_flow_refs if r not in main_set]
+
+    for flow_key, qid in UNREFERENCED_FLOW_QUEST_OVERRIDES.items():
+        if qid == quest_id:
+            name, fid = flow_key
+            ref = (name, fid, None)
+            if ref not in main_set:
+                main_flow_refs.append(ref)
+
+    return main_flow_refs, alt_flow_refs
+
+
 def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> dict[tuple[str, int], set[int | None]]:
     """
     Query all questnodedata rows for quest_id, parse JSON, and collect
     all unique (FlowListName, FlowId) pairs mapped to their StateIds.
+    (Legacy function — kept for get_all_referenced_flows compatibility.)
     """
     qnode_cur.execute(
         "SELECT BinData FROM questnodedata WHERE Key LIKE ? ORDER BY Key",
@@ -799,8 +908,17 @@ def main():
     lang_packs = [LangPack(lang) for lang in LANGUAGES]
     print(f"Languages: {LANGUAGES}")
 
-    # Load chapter names from lang packs (zh-Hans only for folder naming)
-    lang_zh = lang_packs[0]
+    # Load display names prioritizing English (en) with fallback to Chinese (zh-Hans)
+    lang_en = next(pack for pack in lang_packs if pack.lang == "en")
+    lang_zh = next(pack for pack in lang_packs if pack.lang == "zh-Hans")
+
+    def get_display_name(tid_key: str) -> str:
+        if not tid_key:
+            return ""
+        name = lang_en.get_text(tid_key)
+        if not name:
+            name = lang_zh.get_text(tid_key)
+        return name
 
     # -----------------------------------------------------------------------
     # 1. Load quest tree chapters from the authoritative flatbuffer config
@@ -876,9 +994,9 @@ def main():
 
     print(f"  Indexed {len(state_index)} flow list/state combinations")
 
-    print("Indexing quest-referenced flows...")
     referenced_flows = get_all_referenced_flows(qnode_cur)
     exported_unreferenced_flows: set[tuple[str, int]] = set()
+    exported_flows: set[tuple[str, int]] = set()
     print(f"  Found {len(referenced_flows)} quest-referenced flow states")
 
     # -----------------------------------------------------------------------
@@ -909,7 +1027,7 @@ def main():
             print(f"\nSkipping hidden placeholder chapter {ch_id}: {ch_name_key}")
             continue
 
-        ch_name = lang_zh.get_text(ch_name_key) if ch_name_key else ""
+        ch_name = get_display_name(ch_name_key) if ch_name_key else ""
         ch_name = ch_name or ch_name_key or f"Chapter_{ch_id}"
         print(f"\n{'='*50}")
         print(f"Chapter {ch_id}: {ch_name}")
@@ -940,41 +1058,65 @@ def main():
                 qdata = questdata_map.get(quest_id, {})
                 quest_type = qdata.get("Type", 0)
                 tid_name = qdata.get("TidName", "")
-                quest_name = lang_zh.get_text(tid_name) if tid_name else f"Quest_{quest_id}"
+                quest_name = get_display_name(tid_name) if tid_name else f"Quest_{quest_id}"
                 quest_name = quest_name or f"Quest_{quest_id}"
 
                 print(f"  [{quest_idx+1:03d}] Quest {quest_id}: {quest_name}")
 
-                # Find all flows for this quest
-                flows = get_quest_flows(quest_id, qnode_cur)
-                print(f"         Flows: {len(flows)}")
+                # Find all flows for this quest via behavior tree walk
+                main_flows, alt_flows = walk_quest_tree(quest_id, qnode_cur)
+                print(f"         Flows: {len(main_flows)} main, {len(alt_flows)} alt")
 
                 # Collect all dialogue lines from flowstate
                 all_lines: list[dict] = []
                 flow_details: list[dict] = []
 
-                for (flow_name, state_id), sids in sorted(flows.items()):
-                    entries = state_index.get((flow_name, state_id), [])
+                all_flow_names: set[str] = set()
+                for flow_name, flow_id, sid in main_flows:
+                    all_flow_names.add(flow_name)
+                    entries = state_index.get((flow_name, flow_id), [])
                     flow_lines = []
                     for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                        has_specific_sids = any(s is not None for s in sids)
-                        if has_specific_sids and sub_id not in sids:
+                        if sid is not None and sub_id != sid:
                             continue
                         lines = extract_dialogue_from_flowstate(
                             state_key, bindata, lang_packs
                         )
                         flow_lines.extend(lines)
                     if flow_lines:
+                        exported_flows.add((flow_name, flow_id))
                         flow_details.append({
                             "flow_list_name": flow_name,
-                            "flow_id": state_id,
-                            "state_id": state_id,
+                            "flow_id": flow_id,
+                            "state_id": sid if sid is not None else flow_id,
+                            "dialogue": flow_lines,
+                        })
+                    all_lines.extend(flow_lines)
+
+                for flow_name, flow_id, sid in alt_flows:
+                    all_flow_names.add(flow_name)
+                    entries = state_index.get((flow_name, flow_id), [])
+                    flow_lines = []
+                    for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+                        if sid is not None and sub_id != sid:
+                            continue
+                        lines = extract_dialogue_from_flowstate(
+                            state_key, bindata, lang_packs
+                        )
+                        flow_lines.extend(lines)
+                    if flow_lines:
+                        exported_flows.add((flow_name, flow_id))
+                        flow_details.append({
+                            "flow_list_name": flow_name,
+                            "flow_id": flow_id,
+                            "state_id": sid if sid is not None else flow_id,
+                            "source": "alternative_branch",
                             "dialogue": flow_lines,
                         })
                     all_lines.extend(flow_lines)
 
                 supplemental_flows = get_unreferenced_dialogue_flows(
-                    {flow_name for flow_name, _ in flows.keys()},
+                    all_flow_names,
                     state_index,
                     referenced_flows,
                     exported_unreferenced_flows,
@@ -983,6 +1125,7 @@ def main():
                 if supplemental_flows:
                     print(f"         Supplemental unreferenced flows: {len(supplemental_flows)}")
                 for flow_name, state_id, flow_lines in supplemental_flows:
+                    exported_flows.add((flow_name, state_id))
                     flow_details.append({
                         "flow_list_name": flow_name,
                         "flow_id": state_id,
@@ -1004,35 +1147,7 @@ def main():
                     deduped_lines.append(line)
                 all_lines = deduped_lines
 
-                # Sort all_lines according to their insertion order in lang_multi_text.db (or custom chronological order)
-                if quest_id == 121850000:
-                    CUSTOM_SORT_ORDER = {
-                        "Zuoyequnxing_189": 1,
-                        "Zuoyequnxing_190": 2,
-                        "Zuoyequnxing_191": 3,
-                        "Zuoyequnxing_21080": 4,
-                        "Zuoyequnxing_194": 5,
-                        "Zuoyequnxing_192": 6,
-                        "Zuoyequnxing_193": 7,
-                    }
-                    def get_sort_key(line):
-                        tk = line.get("text_key", "")
-                        prefix, _, suffix = tk.rpartition('_')
-                        if prefix in CUSTOM_SORT_ORDER:
-                            try:
-                                s_val = int(suffix)
-                            except ValueError:
-                                s_val = 0
-                            return (CUSTOM_SORT_ORDER[prefix], s_val)
-                        return (99, tk)
-                    all_lines = sorted(all_lines, key=get_sort_key)
-                else:
-                    all_lines = [
-                        line for _, line in sorted(
-                            enumerate(all_lines),
-                            key=lambda x: (text_key_order.get(x[1].get("text_key", ""), 99999999), x[0])
-                        )
-                    ]
+
 
                 if not all_lines:
                     print("         Lines: 0")
@@ -1101,49 +1216,74 @@ def main():
             skipped_main_type += 1
             continue
 
-        if quest_type not in visible_quest_type_ids:
-            skipped_hidden_type += 1
-            continue
+        # Export all quest types regardless of whether they are visible in the quest panel,
+        # as long as they contain dialogue.
+        pass
 
         tid_name = qdata.get("TidName", "")
-        quest_name = lang_zh.get_text(tid_name) if tid_name else f"Quest_{quest_id}"
+        quest_name = get_display_name(tid_name) if tid_name else f"Quest_{quest_id}"
         quest_name = quest_name or f"Quest_{quest_id}"
 
-        flows = get_quest_flows(quest_id, qnode_cur)
-        if not flows:
+        main_flows, alt_flows = walk_quest_tree(quest_id, qnode_cur)
+        if not main_flows and not alt_flows:
             continue  # Skip quests with no flow data at all
 
         all_lines: list[dict] = []
         flow_details: list[dict] = []
 
-        for (flow_name, state_id), sids in sorted(flows.items()):
-            entries = state_index.get((flow_name, state_id), [])
+        all_flow_names: set[str] = set()
+        for flow_name, flow_id, sid in main_flows:
+            all_flow_names.add(flow_name)
+            entries = state_index.get((flow_name, flow_id), [])
             flow_lines = []
             for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                has_specific_sids = any(s is not None for s in sids)
-                if has_specific_sids and sub_id not in sids:
+                if sid is not None and sub_id != sid:
                     continue
                 lines = extract_dialogue_from_flowstate(
                     state_key, bindata, lang_packs
                 )
                 flow_lines.extend(lines)
             if flow_lines:
+                exported_flows.add((flow_name, flow_id))
                 flow_details.append({
                     "flow_list_name": flow_name,
-                    "flow_id": state_id,
-                    "state_id": state_id,
+                    "flow_id": flow_id,
+                    "state_id": sid if sid is not None else flow_id,
+                    "dialogue": flow_lines,
+                })
+            all_lines.extend(flow_lines)
+
+        for flow_name, flow_id, sid in alt_flows:
+            all_flow_names.add(flow_name)
+            entries = state_index.get((flow_name, flow_id), [])
+            flow_lines = []
+            for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+                if sid is not None and sub_id != sid:
+                    continue
+                lines = extract_dialogue_from_flowstate(
+                    state_key, bindata, lang_packs
+                )
+                flow_lines.extend(lines)
+            if flow_lines:
+                exported_flows.add((flow_name, flow_id))
+                flow_details.append({
+                    "flow_list_name": flow_name,
+                    "flow_id": flow_id,
+                    "state_id": sid if sid is not None else flow_id,
+                    "source": "alternative_branch",
                     "dialogue": flow_lines,
                 })
             all_lines.extend(flow_lines)
 
         supplemental_flows = get_unreferenced_dialogue_flows(
-            {flow_name for flow_name, _ in flows.keys()},
+            all_flow_names,
             state_index,
             referenced_flows,
             exported_unreferenced_flows,
             lang_packs,
         )
         for flow_name, state_id, flow_lines in supplemental_flows:
+            exported_flows.add((flow_name, state_id))
             flow_details.append({
                 "flow_list_name": flow_name,
                 "flow_id": state_id,
@@ -1165,35 +1305,7 @@ def main():
             deduped_lines.append(line)
         all_lines = deduped_lines
 
-        # Sort all_lines according to their insertion order in lang_multi_text.db (or custom chronological order)
-        if quest_id == 121850000:
-            CUSTOM_SORT_ORDER = {
-                "Zuoyequnxing_189": 1,
-                "Zuoyequnxing_190": 2,
-                "Zuoyequnxing_191": 3,
-                "Zuoyequnxing_21080": 4,
-                "Zuoyequnxing_194": 5,
-                "Zuoyequnxing_192": 6,
-                "Zuoyequnxing_193": 7,
-            }
-            def get_sort_key(line):
-                tk = line.get("text_key", "")
-                prefix, _, suffix = tk.rpartition('_')
-                if prefix in CUSTOM_SORT_ORDER:
-                    try:
-                        s_val = int(suffix)
-                    except ValueError:
-                        s_val = 0
-                    return (CUSTOM_SORT_ORDER[prefix], s_val)
-                return (99, tk)
-            all_lines = sorted(all_lines, key=get_sort_key)
-        else:
-            all_lines = [
-                line for _, line in sorted(
-                    enumerate(all_lines),
-                    key=lambda x: (text_key_order.get(x[1].get("text_key", ""), 99999999), x[0])
-                )
-            ]
+
 
         if not all_lines:
             continue
@@ -1225,6 +1337,92 @@ def main():
     print(f"  Exported {side_count} side/extra quests with dialogue")
 
     # -----------------------------------------------------------------------
+    # 7b. Export remaining unreferenced flows from db_flowState.db
+    # -----------------------------------------------------------------------
+    print(f"\n{'='*50}")
+    print("Collecting remaining unreferenced flows in flowState...")
+    unref_dir = os.path.join(OUTPUT_DIR, "unreferenced_flows")
+    unref_count = 0
+    unref_total_lines = 0
+
+    # Group unexported dialogue-bearing flows by flow_list_name
+    grouped_unexported = {}
+
+    for (flow_name, state_id), entries in sorted(state_index.items()):
+        if (flow_name, state_id) in exported_flows:
+            continue
+
+        flow_lines = []
+        for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+            lines = extract_dialogue_from_flowstate(
+                state_key, bindata, lang_packs
+            )
+            flow_lines.extend(lines)
+
+        if flow_lines and has_available_dialogue(flow_lines):
+            # Deduplicate by text_key
+            seen_keys = set()
+            deduped_lines = []
+            for line in flow_lines:
+                tk = line.get("text_key")
+                if tk:
+                    if tk in seen_keys:
+                        continue
+                    seen_keys.add(tk)
+                deduped_lines.append(line)
+            flow_lines = deduped_lines
+
+
+
+            if flow_name not in grouped_unexported:
+                grouped_unexported[flow_name] = []
+            grouped_unexported[flow_name].append({
+                "flow_id": state_id,
+                "state_id": state_id,
+                "dialogue": flow_lines,
+            })
+
+    # Write grouped unreferenced flows to JSON
+    for flow_name, flows_list in sorted(grouped_unexported.items()):
+        safe_makedirs(unref_dir)
+        flow_dir = os.path.join(unref_dir, sanitize_filename(flow_name))
+        safe_makedirs(flow_dir)
+
+        all_lines = []
+        for f in flows_list:
+            all_lines.extend(f["dialogue"])
+
+        # Deduplicate all_lines again
+        seen_keys = set()
+        deduped_lines = []
+        for line in all_lines:
+            tk = line.get("text_key")
+            if tk:
+                if tk in seen_keys:
+                    continue
+                seen_keys.add(tk)
+            deduped_lines.append(line)
+        all_lines = deduped_lines
+
+
+
+        unref_total_lines += len(all_lines)
+        unref_count += 1
+
+        output = {
+            "flow_list_name": flow_name,
+            "languages": LANGUAGES,
+            "total_lines": len(all_lines),
+            "flows": flows_list,
+            "all_lines": all_lines,
+        }
+        out_path = os.path.join(flow_dir, "dialogue.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print(f"  Exported {unref_count} unreferenced flow lists with dialogue ({unref_total_lines} lines)")
+
+    # -----------------------------------------------------------------------
     # 8. Summary
     # -----------------------------------------------------------------------
     print(f"\n{'='*60}")
@@ -1232,6 +1430,8 @@ def main():
     print(f"  Output: {OUTPUT_DIR}")
     print(f"  Main story total lines: {chapter_total_lines}")
     print(f"  Side quests exported: {side_count}")
+    print(f"  Unreferenced flow lists exported: {unref_count} ({unref_total_lines} lines)")
+    print(f"  Grand total dialogue lines: {chapter_total_lines + unref_total_lines} lines")
     print(f"{'='*60}")
 
     db_tree.close()
