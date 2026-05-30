@@ -178,6 +178,14 @@ def _fb_vec_i32(bindata: bytes, root: int, vtable: int, field_index: int) -> lis
     return [struct.unpack_from('<i', bindata, vector_pos + 4 + 4 * idx)[0] for idx in range(count)]
 
 
+def decode_flow_state_order(bindata: bytes) -> list[int]:
+    if not bindata or len(bindata) < 4:
+        return []
+    root = _fb_root_offset(bindata)
+    vtable = _fb_vtable_offset(bindata, root)
+    return _fb_vec_i32(bindata, root, vtable, 8)
+
+
 def decode_questtree_chapter(bindata: bytes) -> QuestTreeChapterInfo | None:
     if not bindata:
         return None
@@ -677,6 +685,50 @@ def walk_quest_tree(
     return main_flow_refs, alt_flow_refs
 
 
+def group_and_sort_flow_refs(
+    refs: list[tuple[str, int, int | None]],
+    state_index: dict[tuple[str, int], list[tuple[str, int, bytes]]],
+    flow_orders: dict[str, list[int]]
+) -> list[tuple[str, int, list[int]]]:
+    groups = []
+    seen_groups = set()
+    group_referenced_sids = {}
+    
+    for flow_name, flow_id, sid in refs:
+        gkey = (flow_name, flow_id)
+        if gkey not in seen_groups:
+            seen_groups.add(gkey)
+            groups.append(gkey)
+        if sid is not None:
+            group_referenced_sids.setdefault(gkey, set()).add(sid)
+            
+    result = []
+    for gkey in groups:
+        flow_name, flow_id = gkey
+        entries = state_index.get(gkey, [])
+        all_indexed_sids = [sub_id for _, sub_id, _ in entries]
+        
+        ref_sids = group_referenced_sids.get(gkey)
+        if ref_sids:
+            target_sids = [sid for sid in ref_sids if sid in all_indexed_sids]
+        else:
+            target_sids = all_indexed_sids
+            
+        flow_key = f"{flow_name}_{flow_id}"
+        order_vector = flow_orders.get(flow_key, [])
+        
+        def sort_key(sid):
+            if sid in order_vector:
+                return (0, order_vector.index(sid))
+            else:
+                return (1, sid)
+                
+        sorted_sids = sorted(target_sids, key=sort_key)
+        result.append((flow_name, flow_id, sorted_sids))
+        
+    return result
+
+
 def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> dict[tuple[str, int], set[int | None]]:
     """
     Query all questnodedata rows for quest_id, parse JSON, and collect
@@ -734,6 +786,7 @@ def get_unreferenced_dialogue_flows(
     referenced_flows: set[tuple[str, int]],
     exported_flows: set[tuple[str, int]],
     lang_packs: list[LangPack],
+    flow_orders: dict[str, list[int]],
 ) -> list[tuple[str, int, list[dict]]]:
     """Find dialogue-bearing flow states that questnodedata does not reference.
 
@@ -751,7 +804,15 @@ def get_unreferenced_dialogue_flows(
 
         flow_lines = []
         entries = state_index.get(flow_key, [])
-        for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+        flow_key_str = f"{flow_name}_{state_id}"
+        order_vector = flow_orders.get(flow_key_str, [])
+        def sort_key(item):
+            sub_id = item[1]
+            if sub_id in order_vector:
+                return (0, order_vector.index(sub_id))
+            else:
+                return (1, sub_id)
+        for state_key, _, bindata in sorted(entries, key=sort_key):
             lines = extract_dialogue_from_flowstate(state_key, bindata, lang_packs)
             flow_lines.extend(lines)
 
@@ -897,12 +958,23 @@ def main():
     db_qtype = open_db("db_questtype.db")
     db_qnode = open_db("db_QuestNodeData.db")
     db_fstate = open_db("db_flowState.db")
+    db_flow = open_db("db_flow.db")
 
     tree_cur = db_tree.cursor()
     qdata_cur = db_qdata.cursor()
     qtype_cur = db_qtype.cursor()
     qnode_cur = db_qnode.cursor()
     fstate_cur = db_fstate.cursor()
+    flow_cur = db_flow.cursor()
+
+    print("Loading flow order vectors...")
+    flow_cur.execute("SELECT Id, BinData FROM flow")
+    flow_orders: dict[str, list[int]] = {}
+    for fid, bindata in flow_cur.fetchall():
+        order = decode_flow_state_order(bindata)
+        if order:
+            flow_orders[fid] = order
+    db_flow.close()
 
     # Initialise language packs
     lang_packs = [LangPack(lang) for lang in LANGUAGES]
@@ -1072,44 +1144,55 @@ def main():
                 flow_details: list[dict] = []
 
                 all_flow_names: set[str] = set()
-                for flow_name, flow_id, sid in main_flows:
+
+                # Extract dialogue from main path flows (grouped and sorted by order vector)
+                sorted_main_flows = group_and_sort_flow_refs(main_flows, state_index, flow_orders)
+                for flow_name, flow_id, sids in sorted_main_flows:
                     all_flow_names.add(flow_name)
                     entries = state_index.get((flow_name, flow_id), [])
+                    entry_map = {sub_id: (state_key, bindata) for state_key, sub_id, bindata in entries}
                     flow_lines = []
-                    for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                        if sid is not None and sub_id != sid:
+                    for sub_id in sids:
+                        if sub_id not in entry_map:
                             continue
+                        state_key, bindata = entry_map[sub_id]
                         lines = extract_dialogue_from_flowstate(
                             state_key, bindata, lang_packs
                         )
                         flow_lines.extend(lines)
                     if flow_lines:
                         exported_flows.add((flow_name, flow_id))
+                        rep_state_id = sids[0] if sids else flow_id
                         flow_details.append({
                             "flow_list_name": flow_name,
                             "flow_id": flow_id,
-                            "state_id": sid if sid is not None else flow_id,
+                            "state_id": rep_state_id,
                             "dialogue": flow_lines,
                         })
                     all_lines.extend(flow_lines)
 
-                for flow_name, flow_id, sid in alt_flows:
+                # Extract dialogue from alternative branches (appended at end)
+                sorted_alt_flows = group_and_sort_flow_refs(alt_flows, state_index, flow_orders)
+                for flow_name, flow_id, sids in sorted_alt_flows:
                     all_flow_names.add(flow_name)
                     entries = state_index.get((flow_name, flow_id), [])
+                    entry_map = {sub_id: (state_key, bindata) for state_key, sub_id, bindata in entries}
                     flow_lines = []
-                    for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                        if sid is not None and sub_id != sid:
+                    for sub_id in sids:
+                        if sub_id not in entry_map:
                             continue
+                        state_key, bindata = entry_map[sub_id]
                         lines = extract_dialogue_from_flowstate(
                             state_key, bindata, lang_packs
                         )
                         flow_lines.extend(lines)
                     if flow_lines:
                         exported_flows.add((flow_name, flow_id))
+                        rep_state_id = sids[0] if sids else flow_id
                         flow_details.append({
                             "flow_list_name": flow_name,
                             "flow_id": flow_id,
-                            "state_id": sid if sid is not None else flow_id,
+                            "state_id": rep_state_id,
                             "source": "alternative_branch",
                             "dialogue": flow_lines,
                         })
@@ -1121,6 +1204,7 @@ def main():
                     referenced_flows,
                     exported_unreferenced_flows,
                     lang_packs,
+                    flow_orders,
                 )
                 if supplemental_flows:
                     print(f"         Supplemental unreferenced flows: {len(supplemental_flows)}")
@@ -1232,44 +1316,53 @@ def main():
         flow_details: list[dict] = []
 
         all_flow_names: set[str] = set()
-        for flow_name, flow_id, sid in main_flows:
+
+        sorted_main_flows = group_and_sort_flow_refs(main_flows, state_index, flow_orders)
+        for flow_name, flow_id, sids in sorted_main_flows:
             all_flow_names.add(flow_name)
             entries = state_index.get((flow_name, flow_id), [])
+            entry_map = {sub_id: (state_key, bindata) for state_key, sub_id, bindata in entries}
             flow_lines = []
-            for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                if sid is not None and sub_id != sid:
+            for sub_id in sids:
+                if sub_id not in entry_map:
                     continue
+                state_key, bindata = entry_map[sub_id]
                 lines = extract_dialogue_from_flowstate(
                     state_key, bindata, lang_packs
                 )
                 flow_lines.extend(lines)
             if flow_lines:
                 exported_flows.add((flow_name, flow_id))
+                rep_state_id = sids[0] if sids else flow_id
                 flow_details.append({
                     "flow_list_name": flow_name,
                     "flow_id": flow_id,
-                    "state_id": sid if sid is not None else flow_id,
+                    "state_id": rep_state_id,
                     "dialogue": flow_lines,
                 })
             all_lines.extend(flow_lines)
 
-        for flow_name, flow_id, sid in alt_flows:
+        sorted_alt_flows = group_and_sort_flow_refs(alt_flows, state_index, flow_orders)
+        for flow_name, flow_id, sids in sorted_alt_flows:
             all_flow_names.add(flow_name)
             entries = state_index.get((flow_name, flow_id), [])
+            entry_map = {sub_id: (state_key, bindata) for state_key, sub_id, bindata in entries}
             flow_lines = []
-            for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                if sid is not None and sub_id != sid:
+            for sub_id in sids:
+                if sub_id not in entry_map:
                     continue
+                state_key, bindata = entry_map[sub_id]
                 lines = extract_dialogue_from_flowstate(
                     state_key, bindata, lang_packs
                 )
                 flow_lines.extend(lines)
             if flow_lines:
                 exported_flows.add((flow_name, flow_id))
+                rep_state_id = sids[0] if sids else flow_id
                 flow_details.append({
                     "flow_list_name": flow_name,
                     "flow_id": flow_id,
-                    "state_id": sid if sid is not None else flow_id,
+                    "state_id": rep_state_id,
                     "source": "alternative_branch",
                     "dialogue": flow_lines,
                 })
@@ -1281,6 +1374,7 @@ def main():
             referenced_flows,
             exported_unreferenced_flows,
             lang_packs,
+            flow_orders,
         )
         for flow_name, state_id, flow_lines in supplemental_flows:
             exported_flows.add((flow_name, state_id))
@@ -1353,7 +1447,15 @@ def main():
             continue
 
         flow_lines = []
-        for state_key, sub_id, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
+        flow_key_str = f"{flow_name}_{state_id}"
+        order_vector = flow_orders.get(flow_key_str, [])
+        def sort_key(item):
+            sub_id = item[1]
+            if sub_id in order_vector:
+                return (0, order_vector.index(sub_id))
+            else:
+                return (1, sub_id)
+        for state_key, sub_id, bindata in sorted(entries, key=sort_key):
             lines = extract_dialogue_from_flowstate(
                 state_key, bindata, lang_packs
             )
