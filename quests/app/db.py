@@ -1,6 +1,7 @@
 """SQLite FTS5 wrapper for quest search."""
 from __future__ import annotations
 
+import json
 import re
 import sqlite3
 from pathlib import Path
@@ -234,3 +235,108 @@ def get_quest(qid: int) -> dict | None:
     if row is None:
         return None
     return dict(row)
+
+
+# ---------------------------------------------------------------------------
+# Editor: overlay merge
+# ---------------------------------------------------------------------------
+
+# Field-name translation: storage column -> JSON key in the line dict.
+# (zh-Hans uses a hyphen in JSON; we use zh_hans in the SQL column for SQL-safety.)
+_EDIT_FIELD_MAP = {
+    "type": "type",
+    "state_key": "state_key",
+    "speaker_en": "speaker_en",
+    "speaker_zh_hans": "speaker_zh-Hans",
+    "speaker_ja": "speaker_ja",
+    "text_en": "text_en",
+    "text_zh_hans": "text_zh-Hans",
+    "text_ja": "text_ja",
+}
+
+
+def apply_edits(qid: int, quest: dict) -> dict:
+    """Merge approved edits/inserts/reorders into a quest dict.
+
+    Mutates and returns `quest`. Idempotent: re-running on a quest that
+    already reflects all edits is a no-op.
+    """
+    con = _con()
+    try:
+        # 1. Field overlay
+        for row in con.execute(
+            "SELECT * FROM edits WHERE qid = ?", (qid,)
+        ).fetchall():
+            line = next(
+                (l for l in quest["all_lines"] if l.get("id") == row["line_id"]),
+                None,
+            )
+            if line is None:
+                continue
+            for col, json_key in _EDIT_FIELD_MAP.items():
+                if row[col] is not None:
+                    line[json_key] = row[col]
+            if row["options_json"] is not None:
+                line["options"] = json.loads(row["options_json"])
+
+        # 2. Inserted lines (splice in by position_after; ties broken by approved_at, line_id)
+        insertions = con.execute(
+            "SELECT * FROM inserted_lines WHERE qid = ? "
+            "ORDER BY position_after, approved_at, line_id",
+            (qid,),
+        ).fetchall()
+        for ins in insertions:
+            new_line = json.loads(ins["line_json"])
+            anchor_id = ins["position_after"]
+            if anchor_id is None:
+                idx = len(quest["all_lines"])
+            else:
+                anchor = next(
+                    (l for l in quest["all_lines"] if l.get("id") == anchor_id),
+                    None,
+                )
+                idx = (quest["all_lines"].index(anchor) + 1) if anchor else len(quest["all_lines"])
+            quest["all_lines"].insert(idx, new_line)
+
+        # 3. Reorder overrides: each row says "line_id should appear immediately
+        #    after the line with id=position_after". Rebuild the sequence by
+        #    walking original order and splicing followers in after their anchor.
+        #    Lines with an override are skipped at their original spot and
+        #    re-emitted right after their anchor.
+        overrides = con.execute(
+            "SELECT line_id, position_after FROM line_order WHERE qid = ?", (qid,)
+        ).fetchall()
+        if overrides:
+            by_id = {l["id"]: l for l in quest["all_lines"]}
+            following: dict[int, list[dict]] = {}
+            overridden_ids: set[int] = set()
+            for row in overrides:
+                overridden_ids.add(row["line_id"])
+                anchor = row["position_after"]
+                if anchor is None:
+                    continue
+                follower = by_id.get(row["line_id"])
+                if follower is None:
+                    continue
+                following.setdefault(anchor, []).append(follower)
+
+            new_order: list[dict] = []
+            visited: set[int] = set()
+
+            def _add(line: dict) -> None:
+                if line["id"] in visited:
+                    return
+                visited.add(line["id"])
+                new_order.append(line)
+                for f in following.get(line["id"], []):
+                    _add(f)
+
+            for line in quest["all_lines"]:
+                if line["id"] in overridden_ids:
+                    continue
+                _add(line)
+            quest["all_lines"] = new_order
+
+    finally:
+        con.close()
+    return quest
