@@ -273,9 +273,9 @@ def api_get_draft(draft_id: int, request: Request, role: str = Depends(get_role)
 
 
 @app.post("/api/drafts/{draft_id}/approve")
-def api_approve_draft(draft_id: int, _role: str = Depends(require_editor)):
+def api_approve_draft(draft_id: int, role: str = Depends(require_editor)):
     try:
-        db.approve_draft(draft_id, approver=_role)
+        db.approve_draft(draft_id, approver=role)
     except ValueError as e:
         msg = str(e)
         if "branch target" in msg or "state_key" in msg:
@@ -289,9 +289,9 @@ def api_approve_draft(draft_id: int, _role: str = Depends(require_editor)):
 
 
 @app.post("/api/drafts/{draft_id}/reject")
-def api_reject_draft(draft_id: int, _role: str = Depends(require_editor)):
+def api_reject_draft(draft_id: int, role: str = Depends(require_editor)):
     try:
-        db.reject_draft(draft_id, approver=_role)
+        db.reject_draft(draft_id, approver=role)
     except ValueError as e:
         msg = str(e)
         if "already" in msg:
