@@ -170,6 +170,137 @@ def api_me(role: str = Depends(get_role)):
 
 
 # ---------------------------------------------------------------------------
+# Editor: lines + drafts
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/editor/quest/{qid}")
+def api_editor_quest(qid: int):
+    p = QUESTS_DIR / f"{qid}.json"
+    if not p.is_file():
+        raise HTTPException(404, f"quest {qid} not found")
+    quest = json.loads(p.read_text(encoding="utf-8"))
+    return JSONResponse(db.apply_edits(qid, quest))
+
+
+@app.get("/api/editor/quest/{qid}/lines")
+def api_editor_quest_lines(qid: int):
+    p = QUESTS_DIR / f"{qid}.json"
+    if not p.is_file():
+        raise HTTPException(404, f"quest {qid} not found")
+    quest = json.loads(p.read_text(encoding="utf-8"))
+    db.apply_edits(qid, quest)
+    con = db.connect()
+    try:
+        edited = {
+            r["line_id"]
+            for r in con.execute("SELECT line_id FROM edits WHERE qid = ?", (qid,)).fetchall()
+        }
+    finally:
+        con.close()
+    items = [
+        {
+            "id": l.get("id"),
+            "type": l.get("type"),
+            "state_key": l.get("state_key"),
+            "speaker_en": l.get("speaker_en", ""),
+            "text_en": l.get("text_en", ""),
+            "is_edited": l.get("id") in edited,
+        }
+        for l in quest["all_lines"]
+    ]
+    return JSONResponse(items)
+
+
+def _author_label(request: Request) -> str | None:
+    return request.headers.get("X-Author-Label") or None
+
+
+@app.post("/api/editor/drafts")
+def api_create_draft(payload: dict, request: Request):
+    qid = int(payload["qid"])
+    line_id = int(payload["line_id"])
+    patch = payload.get("patch", {})
+    if not isinstance(patch, dict):
+        raise HTTPException(422, "patch must be an object")
+    position_after = payload.get("position_after")
+    if position_after is not None:
+        position_after = int(position_after)
+    did = db.create_draft(
+        qid=qid,
+        line_id=line_id,
+        patch=patch,
+        author_label=_author_label(request),
+        note=payload.get("note"),
+        position_after=position_after,
+    )
+    return {"id": did}
+
+
+@app.put("/api/editor/drafts/{draft_id}")
+def api_update_draft(draft_id: int, payload: dict, request: Request):
+    db.update_draft(
+        draft_id,
+        author_label=_author_label(request),
+        patch=payload.get("patch", {}),
+    )
+    return {"ok": True}
+
+
+@app.delete("/api/editor/drafts/{draft_id}")
+def api_delete_draft(draft_id: int, request: Request):
+    db.delete_draft(draft_id, author_label=_author_label(request))
+    return {"ok": True}
+
+
+@app.get("/api/drafts")
+def api_list_drafts(request: Request, role: str = Depends(get_role)):
+    if role == "editor":
+        return JSONResponse(db.list_drafts(scope="all", author_label=None))
+    return JSONResponse(
+        db.list_drafts(scope="mine", author_label=_author_label(request))
+    )
+
+
+@app.get("/api/drafts/{draft_id}")
+def api_get_draft(draft_id: int, request: Request, role: str = Depends(get_role)):
+    d = db.get_draft(draft_id)
+    if d is None:
+        raise HTTPException(404, "draft not found")
+    if role != "editor" and d["author_label"] != _author_label(request):
+        raise HTTPException(403, "not your draft")
+    return JSONResponse(d)
+
+
+@app.post("/api/drafts/{draft_id}/approve")
+def api_approve_draft(draft_id: int, _role: str = Depends(require_editor)):
+    try:
+        db.approve_draft(draft_id, approver=_role)
+    except ValueError as e:
+        msg = str(e)
+        if "branch target" in msg or "state_key" in msg:
+            raise HTTPException(422, msg)
+        if "target line" in msg:
+            raise HTTPException(409, msg)
+        if "already" in msg:
+            raise HTTPException(409, msg)
+        raise HTTPException(400, msg)
+    return {"ok": True}
+
+
+@app.post("/api/drafts/{draft_id}/reject")
+def api_reject_draft(draft_id: int, _role: str = Depends(require_editor)):
+    try:
+        db.reject_draft(draft_id, approver=_role)
+    except ValueError as e:
+        msg = str(e)
+        if "already" in msg:
+            raise HTTPException(409, msg)
+        raise HTTPException(400, msg)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
 # Static (web/dist if built)
 # ---------------------------------------------------------------------------
 
