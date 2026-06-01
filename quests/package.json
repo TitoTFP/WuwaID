@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev-check.js && concurrently -k -n web,api -c blue,green \"cd web && vite\" \"uvicorn app.main:app --reload --reload-dir app --port 8000 --app-dir .\"",
+    "dev": "node scripts/dev-check.js && concurrently -k -n web,api -c blue,green \"cd web && vite\" \"uv run uvicorn app.main:app --reload --reload-dir app --port 8000 --app-dir .\"",
     "dev:web": "cd web && vite",
-    "dev:api": "uvicorn app.main:app --reload --reload-dir app --port 8000 --app-dir .",
+    "dev:api": "uv run uvicorn app.main:app --reload --reload-dir app --port 8000 --app-dir .",
     "build": "cd web && vite build",
     "preview": "cd web && vite preview",
-    "serve": "node scripts/serve-check.js && uvicorn app.main:app --port 8000 --app-dir .",
+    "serve": "node scripts/serve-check.js && uv run uvicorn app.main:app --port 8000 --app-dir .",
     "build:index": "python scripts/build_index.py"
   },
   "dependencies": {
