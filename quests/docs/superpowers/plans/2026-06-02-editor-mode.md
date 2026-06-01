@@ -636,16 +636,44 @@ def apply_edits(qid: int, quest: dict) -> dict:
                 idx = (quest["all_lines"].index(anchor) + 1) if anchor else len(quest["all_lines"])
             quest["all_lines"].insert(idx, new_line)
 
-        # 3. Reorder overrides. Stable sort by (overridden_position_after, original_index).
+        # 3. Reorder overrides. Each row says "line_id should appear immediately
+        #    after the line with id=position_after". Walk original order, skip
+        #    overridden lines at their original spot, splice followers in after
+        #    their anchor (recursively for chains). Idempotent: already-placed
+        #    lines are guarded by `visited`.
         overrides = con.execute(
             "SELECT line_id, position_after FROM line_order WHERE qid = ?", (qid,)
         ).fetchall()
         if overrides:
-            orig_index = {l["id"]: i for i, l in enumerate(quest["all_lines"])}
-            pos = {row["line_id"]: row["position_after"] for row in overrides}
-            quest["all_lines"].sort(
-                key=lambda l: (pos.get(l["id"], 10**9), orig_index[l["id"]])
-            )
+            by_id = {l["id"]: l for l in quest["all_lines"]}
+            following: dict[int, list[dict]] = {}
+            overridden_ids: set[int] = set()
+            for row in overrides:
+                overridden_ids.add(row["line_id"])
+                anchor = row["position_after"]
+                if anchor is None:
+                    continue
+                follower = by_id.get(row["line_id"])
+                if follower is None:
+                    continue
+                following.setdefault(anchor, []).append(follower)
+
+            new_order: list[dict] = []
+            visited: set[int] = set()
+
+            def _add(line: dict) -> None:
+                if line["id"] in visited:
+                    return
+                visited.add(line["id"])
+                new_order.append(line)
+                for f in following.get(line["id"], []):
+                    _add(f)
+
+            for line in quest["all_lines"]:
+                if line["id"] in overridden_ids:
+                    continue
+                _add(line)
+            quest["all_lines"] = new_order
 
     finally:
         con.close()
