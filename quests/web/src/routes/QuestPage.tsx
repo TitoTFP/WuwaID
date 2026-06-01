@@ -70,9 +70,14 @@ export default function QuestPage() {
   return (
     <div className="container-narrow space-y-5">
       <div>
-        <Link to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`} className="link text-xs">
-          ← {quest.side === 1 ? "side quests" : (quest.chapter_name ?? "chapter")}
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`} className="link text-xs">
+            ← {quest.side === 1 ? "side quests" : (quest.chapter_name ?? "chapter")}
+          </Link>
+          <Link to={`/editor/${quest.quest_id}`} className="btn text-xs">
+            Edit
+          </Link>
+        </div>
         <h1 className="mt-1 font-serif text-2xl text-slate-100">
           {quest.quest_name}
         </h1>

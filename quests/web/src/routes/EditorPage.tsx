@@ -6,6 +6,7 @@ import { getAuthorLabel } from "../lib/session";
 import type { DraftPatch } from "../lib/types";
 import LineList from "../components/editor/LineList";
 import LineForm from "../components/editor/LineForm";
+import DraftBanner from "../components/editor/DraftBanner";
 
 export default function EditorPage() {
   const { qid = "0" } = useParams();
@@ -52,6 +53,7 @@ export default function EditorPage() {
         <h1 className="mt-1 font-serif text-2xl text-slate-100">
           Editor · quest #{qidN}
         </h1>
+        <DraftBanner qid={qidN} />
       </div>
       <div className="grid grid-cols-[18rem_1fr] gap-4 min-h-[60vh]">
         <aside className="card p-2 overflow-auto max-h-[80vh]">
