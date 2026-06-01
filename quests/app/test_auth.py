@@ -153,3 +153,27 @@ def test_session_secret_unset_end_to_end(tmp_path, monkeypatch):
     finally:
         db.set_db_path(None)
         auth._FALLBACK_SECRET = None  # noqa: SLF001
+
+
+def test_ensure_editor_schema_migrates_legacy_session_table(tmp_path, monkeypatch):
+    db_path = tmp_path / "index.db"
+    con = sqlite3.connect(db_path)
+    con.executescript("""
+        CREATE TABLE editor_session (
+            token TEXT PRIMARY KEY,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL
+        );
+    """)
+    con.commit()
+    con.close()
+    db.set_db_path(db_path)
+    monkeypatch.setenv("EDITOR_PASSWORD", "s3cr3t")
+    monkeypatch.setenv("SESSION_SECRET", "test-secret-1234567890")
+
+    try:
+        db.ensure_editor_schema()
+        tok = auth.make_session_token("editor")
+        assert auth.read_session_cookie(tok) == "editor"
+    finally:
+        db.set_db_path(None)

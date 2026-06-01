@@ -36,6 +36,9 @@ def ensure_editor_schema() -> None:
             )
             """
         )
+        cols = {r["name"] for r in con.execute("PRAGMA table_info(editor_session)").fetchall()}
+        if "role" not in cols:
+            con.execute("ALTER TABLE editor_session ADD COLUMN role TEXT NOT NULL DEFAULT 'editor'")
         con.commit()
     finally:
         con.close()
