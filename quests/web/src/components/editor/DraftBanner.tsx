@@ -5,11 +5,13 @@ import { useMe } from "../../lib/auth";
 import { getAuthorLabel } from "../../lib/session";
 
 export default function DraftBanner({ qid }: { qid: number }) {
-  useMe();
-  getAuthorLabel();
+  const meQ = useMe();
+  const role = meQ.data?.role ?? "anon";
+  const authorLabel = getAuthorLabel();
   const draftsQ = useQuery({
-    queryKey: ["drafts"],
-    queryFn: () => api.listDrafts(),
+    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel, qid],
+    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    enabled: !!meQ.data,
   });
   const count = (draftsQ.data ?? []).filter(
     (draft) => draft.qid === qid && draft.status === "pending",

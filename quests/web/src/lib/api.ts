@@ -12,8 +12,11 @@ import type {
 
 const BASE = "/api";
 
-async function get<T>(path: string): Promise<T> {
-  const r = await fetch(BASE + path, { credentials: "include" });
+async function get<T>(path: string, extraHeaders?: Record<string, string>): Promise<T> {
+  const r = await fetch(BASE + path, {
+    credentials: "include",
+    headers: extraHeaders,
+  });
   if (!r.ok) throw new Error(`${r.status} ${path}`);
   return (await r.json()) as T;
 }
@@ -96,8 +99,10 @@ export const api = {
     send<{ ok: true }>("DELETE", `/editor/drafts/${id}`, undefined, {
       "X-Author-Label": authorLabel ?? "",
     }),
-  listDrafts: () => get<Draft[]>(`/drafts`),
-  getDraft: (id: number) => get<Draft>(`/drafts/${id}`),
+  listDrafts: (authorLabel?: string | null) =>
+    get<Draft[]>(`/drafts`, authorLabel ? { "X-Author-Label": authorLabel } : undefined),
+  getDraft: (id: number, authorLabel?: string | null) =>
+    get<Draft>(`/drafts/${id}`, authorLabel ? { "X-Author-Label": authorLabel } : undefined),
   approveDraft: (id: number) =>
     send<{ ok: true }>("POST", `/drafts/${id}/approve`),
   rejectDraft: (id: number) =>

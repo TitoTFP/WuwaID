@@ -43,11 +43,13 @@ function PatchPreview({ draft }: { draft: Draft }) {
 function QueueView() {
   const meQ = useMe();
   const logout = useLogout();
-  const draftsQ = useQuery({
-    queryKey: ["drafts"],
-    queryFn: () => api.listDrafts(),
-  });
   const role = meQ.data?.role ?? "anon";
+  const authorLabel = getAuthorLabel();
+  const draftsQ = useQuery({
+    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    enabled: !!meQ.data,
+  });
   const pending = (draftsQ.data ?? []).filter((draft) => draft.status === "pending");
 
   return (
@@ -102,10 +104,12 @@ function QueueView() {
 function DetailView({ draftId }: { draftId: number }) {
   const meQ = useMe();
   const queryClient = useQueryClient();
+  const role = meQ.data?.role ?? "anon";
+  const authorLabel = getAuthorLabel();
   const draftQ = useQuery({
-    queryKey: ["draft", draftId],
-    queryFn: () => api.getDraft(draftId),
-    enabled: !!draftId,
+    queryKey: ["draft", draftId, role === "editor" ? "editor" : authorLabel],
+    queryFn: () => api.getDraft(draftId, role === "editor" ? null : authorLabel),
+    enabled: !!draftId && !!meQ.data,
   });
   const approveQ = useMutation({
     mutationFn: () => api.approveDraft(draftId),
@@ -114,6 +118,7 @@ function DetailView({ draftId }: { draftId: number }) {
         queryClient.invalidateQueries({ queryKey: ["drafts"] }),
         queryClient.invalidateQueries({ queryKey: ["draft", draftId] }),
         queryClient.invalidateQueries({ queryKey: ["editor"] }),
+        draft ? queryClient.invalidateQueries({ queryKey: ["quest", draft.qid] }) : Promise.resolve(),
       ]);
     },
   });
@@ -128,7 +133,6 @@ function DetailView({ draftId }: { draftId: number }) {
     },
   });
   const draft = draftQ.data;
-  const role = meQ.data?.role ?? "anon";
   const canReview = role === "editor" && draft?.status === "pending";
   const busy = approveQ.isPending || rejectQ.isPending;
 
