@@ -5,12 +5,21 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import db
+from .auth import (
+    SESSION_COOKIE,
+    SESSION_MAX_AGE_DAYS,
+    check_password,
+    get_role,
+    make_session_token,
+    require_editor,
+    revoke_session,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -122,6 +131,41 @@ def api_search(
             if text:
                 h["text"] = text
     return JSONResponse(hits)
+
+
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/login")
+def api_login(payload: dict, response: Response):
+    if not os.environ.get("EDITOR_PASSWORD"):
+        raise HTTPException(503, "editor login not configured (EDITOR_PASSWORD unset)")
+    if not check_password(str(payload.get("password", ""))):
+        raise HTTPException(401, "wrong password")
+    token = make_session_token("editor")
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        max_age=SESSION_MAX_AGE_DAYS * 86400,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"role": "editor"}
+
+
+@app.post("/api/logout")
+def api_logout(request: Request, response: Response):
+    raw = request.cookies.get(SESSION_COOKIE)
+    revoke_session(raw)
+    response.delete_cookie(SESSION_COOKIE)
+    return {"role": "anon"}
+
+
+@app.get("/api/me")
+def api_me(role: str = Depends(get_role)):
+    return {"role": role}
 
 
 # ---------------------------------------------------------------------------

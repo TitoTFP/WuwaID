@@ -48,7 +48,7 @@ def test_check_password_unset_env(monkeypatch):
     assert check_password("anything") is False
 
 
-def test_make_and_read_session_roundtrip():
+def test_make_and_read_session_roundtrip(client):
     tok = make_session_token("editor")
     assert read_session_cookie(tok) == "editor"
 
