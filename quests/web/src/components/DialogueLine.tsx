@@ -33,7 +33,10 @@ export default function DialogueLine({ line, primary, highlightQ }: {
   primary: Lang;
   highlightQ?: string | null;
 }) {
-  const isEmptySpeaker = !line.speaker_en && !line.speaker_zh_Hans && !line.speaker_ja;
+  const isEmptySpeaker =
+    !line.speaker_en &&
+    !line["speaker_zh-Hans"] &&
+    !line.speaker_ja;
   const isCenterText = line.type === "CenterText";
   const isOption = line.type === "Option";
   const isMarker = isCenterText || isEmptySpeaker;
@@ -57,8 +60,8 @@ export default function DialogueLine({ line, primary, highlightQ }: {
 
       <div className="space-y-1.5">
         {ORDER.map((l) => {
-          const text = (line as any)[`text_${l.replace("-", "_")}`] as string;
-          const speaker = (line as any)[`speaker_${l.replace("-", "_")}`] as string;
+          const text = (line as any)[`text_${l}`] as string;
+          const speaker = (line as any)[`speaker_${l}`] as string;
           const isPrimary = l === primary;
           if (!text && !speaker) return null;
           return (
@@ -87,7 +90,7 @@ export default function DialogueLine({ line, primary, highlightQ }: {
       {line.options && line.options.length > 0 && (
         <ul className="mt-3 space-y-1 border-l-2 border-accent-teal/30 pl-3">
           {line.options.map((opt, i) => {
-            const optText = (opt as any)[`text_${primary.replace("-", "_")}`] || opt.text_en || "";
+            const optText = (opt as any)[`text_${primary}`] || opt.text_en || "";
             return (
               <li key={i} className="text-sm text-slate-300">
                 <span className="text-accent-teal/70 mr-1">›</span>
