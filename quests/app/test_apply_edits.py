@@ -157,6 +157,17 @@ def test_reorder_untouched_lines_keep_relative_order(tmp_db, sample_quest):
     assert [l["id"] for l in out["all_lines"]] == [2, 1, 3]
 
 
+def test_reorder_to_top_is_idempotent(tmp_db, sample_quest):
+    _insert_order(tmp_db, 106000002, 2, position_after=None)
+
+    once = db.apply_edits(106000002, sample_quest)
+    twice = db.apply_edits(106000002, once)
+
+    assert [l["id"] for l in once["all_lines"]] == [2, 1, 3]
+    assert [l["id"] for l in twice["all_lines"]] == [2, 1, 3]
+    assert twice == once
+
+
 def test_stale_edit_ignored(tmp_db, sample_quest):
     _insert_edit(tmp_db, qid=106000002, line_id=999, text_en="ghost")
     out = db.apply_edits(106000002, sample_quest)

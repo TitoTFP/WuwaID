@@ -424,15 +424,17 @@ def apply_edits(qid: int, quest: dict) -> dict:
         ).fetchall()
         if overrides:
             by_id = {l["id"]: l for l in quest["all_lines"]}
+            start_followers: list[dict] = []
             following: dict[int, list[dict]] = {}
             overridden_ids: set[int] = set()
             for row in overrides:
                 overridden_ids.add(row["line_id"])
                 anchor = row["position_after"]
-                if anchor is None:
-                    continue
                 follower = by_id.get(row["line_id"])
                 if follower is None:
+                    continue
+                if anchor is None:
+                    start_followers.append(follower)
                     continue
                 following.setdefault(anchor, []).append(follower)
 
@@ -447,6 +449,8 @@ def apply_edits(qid: int, quest: dict) -> dict:
                 for f in following.get(line["id"], []):
                     _add(f)
 
+            for line in start_followers:
+                _add(line)
             for line in quest["all_lines"]:
                 if line["id"] in overridden_ids:
                     continue
