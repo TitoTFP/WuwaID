@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import type { DialogueLine, DraftPatch, Lang } from "../../lib/types";
+import ConfirmDialog from "./ConfirmDialog";
 import DiffField from "./DiffField";
 import LangTabs from "./LangTabs";
+import OptionsSubform from "./OptionsSubform";
+import ReorderButtons from "./ReorderButtons";
 
 type Tab = Lang | "META";
 type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja";
@@ -26,6 +29,9 @@ function basePatch(line: DialogueLine, draft: DialogueLine): DraftPatch {
     if (draft[sKey] !== line[sKey]) patch[sKey] = draft[sKey];
     if (draft[tKey] !== line[tKey]) patch[tKey] = draft[tKey];
   }
+  if (JSON.stringify(draft.options ?? []) !== JSON.stringify(line.options ?? [])) {
+    patch.options = draft.options ?? [];
+  }
   return patch;
 }
 
@@ -44,10 +50,12 @@ export default function LineForm({
 }) {
   const [tab, setTab] = useState<Tab>("en");
   const [draft, setDraft] = useState<DialogueLine>(line);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
 
   useEffect(() => {
     setDraft(line);
     setTab("en");
+    setConfirmDiscard(false);
   }, [line.id, line]);
 
   const patch = basePatch(line, draft);
@@ -70,6 +78,11 @@ export default function LineForm({
           <div className="text-xs text-slate-500">Line #{line.id}</div>
           <div className="font-serif text-xl text-slate-100">{line.text_key}</div>
         </div>
+        <ReorderButtons
+          onMoveUp={() => {}}
+          onMoveDown={() => {}}
+          onInsertAfter={() => {}}
+        />
       </div>
 
       <LangTabs active={tab} onChange={setTab} />
@@ -87,6 +100,11 @@ export default function LineForm({
             value={draft.state_key}
             original={line.state_key}
             onChange={(value) => updateField("state_key", value)}
+          />
+          <OptionsSubform
+            options={draft.options ?? []}
+            originals={line.options ?? []}
+            onChange={(options) => updateField("options", options)}
           />
         </div>
       ) : (
@@ -115,7 +133,7 @@ export default function LineForm({
           type="button"
           className="btn"
           disabled={!hasPatch(patch) || busy}
-          onClick={() => setDraft(line)}
+          onClick={() => setConfirmDiscard(true)}
         >
           Discard
         </button>
@@ -125,6 +143,18 @@ export default function LineForm({
           </span>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmDiscard}
+        title="Discard edits?"
+        message="This resets the working copy for this line. Drafts already saved are not affected."
+        confirmLabel="Discard"
+        destructive
+        onCancel={() => setConfirmDiscard(false)}
+        onConfirm={() => {
+          setDraft(line);
+          setConfirmDiscard(false);
+        }}
+      />
     </form>
   );
 }
