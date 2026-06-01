@@ -77,12 +77,28 @@ def api_quests(
     )
 
 
+def _merged_quest_meta(qid: int) -> tuple[str, str, dict[int, dict]]:
+    """Load + merge a quest; return (quest_name, chapter_name, line_overrides)."""
+    p = QUESTS_DIR / f"{qid}.json"
+    if not p.is_file():
+        return ("", "", {})
+    quest = json.loads(p.read_text(encoding="utf-8"))
+    db.apply_edits(qid, quest)
+    overrides = {l["id"]: l for l in quest["all_lines"]}
+    return (
+        quest.get("quest_name", ""),
+        quest.get("chapter_name", ""),
+        overrides,
+    )
+
+
 @app.get("/api/quests/{qid}")
 def api_quest(qid: int):
     p = QUESTS_DIR / f"{qid}.json"
     if not p.is_file():
         raise HTTPException(404, f"quest {qid} not found")
-    return JSONResponse(json.loads(p.read_text(encoding="utf-8")))
+    quest = json.loads(p.read_text(encoding="utf-8"))
+    return JSONResponse(db.apply_edits(qid, quest))
 
 
 @app.get("/api/search")
@@ -93,9 +109,20 @@ def api_search(
     quest_type: int | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
 ):
-    return JSONResponse(
-        db.search(q, lang=lang, side=side, quest_type=quest_type, limit=limit)
-    )
+    hits = db.search(q, lang=lang, side=side, quest_type=quest_type, limit=limit)
+    by_qid: dict[int, list[dict]] = {}
+    for h in hits:
+        by_qid.setdefault(h["qid"], []).append(h)
+    for qid, group in by_qid.items():
+        _, _, overrides = _merged_quest_meta(qid)
+        for h in group:
+            line = overrides.get(h["line_id"])
+            if line is None:
+                continue
+            text = line.get(f"text_{lang}", "")
+            if text:
+                h["text"] = text
+    return JSONResponse(hits)
 
 
 # ---------------------------------------------------------------------------
