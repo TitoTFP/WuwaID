@@ -762,8 +762,22 @@ def main():
     lang_packs = [LangPack(lang) for lang in LANGUAGES]
     print(f"Languages: {LANGUAGES}")
 
-    # Load chapter names from lang packs (zh-Hans only for folder naming)
-    lang_zh = lang_packs[0]
+    # Folder/label naming: prefer English, fall back to zh-Hans for any key
+    # the English pack is missing. Dialogue text/speaker fields still use all
+    # LANGUAGES packs (see extract_dialogue_from_flowstate).
+    def _find_pack(code: str) -> "LangPack":
+        for pack in lang_packs:
+            if pack.lang == code:
+                return pack
+        return lang_packs[0]
+
+    lang_en = _find_pack("en")
+    lang_zh = _find_pack("zh-Hans")
+
+    def _display_name(tid: str) -> str:
+        if not tid:
+            return ""
+        return lang_en.get_text(tid) or lang_zh.get_text(tid) or ""
 
     # -----------------------------------------------------------------------
     # 1. Load quest tree chapters from the authoritative flatbuffer config
@@ -867,7 +881,7 @@ def main():
             print(f"\nSkipping hidden placeholder chapter {ch_id}: {ch_name_key}")
             continue
 
-        ch_name = lang_zh.get_text(ch_name_key) if ch_name_key else ""
+        ch_name = _display_name(ch_name_key) if ch_name_key else ""
         ch_name = ch_name or ch_name_key or f"Chapter_{ch_id}"
         print(f"\n{'='*50}")
         print(f"Chapter {ch_id}: {ch_name}")
@@ -899,7 +913,7 @@ def main():
                 qdata = questdata_map.get(quest_id, {})
                 quest_type = qdata.get("Type", 0)
                 tid_name = qdata.get("TidName", "")
-                quest_name = lang_zh.get_text(tid_name) if tid_name else f"Quest_{quest_id}"
+                quest_name = _display_name(tid_name) if tid_name else ""
                 quest_name = quest_name or f"Quest_{quest_id}"
 
                 print(f"  [{quest_idx+1:03d}] Quest {quest_id}: {quest_name}")
@@ -1002,7 +1016,7 @@ def main():
             continue
 
         tid_name = qdata.get("TidName", "")
-        quest_name = lang_zh.get_text(tid_name) if tid_name else f"Quest_{quest_id}"
+        quest_name = _display_name(tid_name) if tid_name else ""
         quest_name = quest_name or f"Quest_{quest_id}"
 
         flows = get_quest_flows(quest_id, qnode_cur)
