@@ -20,3 +20,7 @@ __pycache__/
 # logs / os
 *.log
 .DS_Store
+
+# brainstorming session artifacts (not source)
+/.superpowers/
+/.codegraph/
