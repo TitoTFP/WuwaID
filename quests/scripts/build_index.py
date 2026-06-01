@@ -253,6 +253,69 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
     cur.execute("CREATE INDEX idx_quests_type ON quests(quest_type)")
     cur.execute("CREATE INDEX idx_quests_side ON quests(side)")
     cur.execute("CREATE INDEX idx_quests_chapter_order ON quests(side, chapter_id, ord)")
+    cur.execute("""
+        CREATE TABLE edits (
+            qid INTEGER NOT NULL,
+            line_id INTEGER NOT NULL,
+            type TEXT,
+            state_key TEXT,
+            speaker_en TEXT,
+            speaker_zh_hans TEXT,
+            speaker_ja TEXT,
+            text_en TEXT,
+            text_zh_hans TEXT,
+            text_ja TEXT,
+            options_json TEXT,
+            approved_by TEXT NOT NULL,
+            approved_at TEXT NOT NULL,
+            PRIMARY KEY (qid, line_id)
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE inserted_lines (
+            qid INTEGER NOT NULL,
+            line_id INTEGER NOT NULL,
+            position_after INTEGER,
+            line_json TEXT NOT NULL,
+            approved_by TEXT NOT NULL,
+            approved_at TEXT NOT NULL,
+            PRIMARY KEY (qid, line_id)
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE line_order (
+            qid INTEGER NOT NULL,
+            line_id INTEGER NOT NULL,
+            position_after INTEGER,
+            approved_by TEXT NOT NULL,
+            approved_at TEXT NOT NULL,
+            PRIMARY KEY (qid, line_id)
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE drafts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            qid INTEGER NOT NULL,
+            line_id INTEGER NOT NULL,
+            position_after INTEGER,
+            patch_json TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            author_label TEXT,
+            note TEXT
+        )
+    """)
+    cur.execute("CREATE INDEX idx_drafts_status ON drafts(status)")
+    cur.execute("CREATE INDEX idx_drafts_qid ON drafts(qid)")
+    cur.execute("CREATE INDEX idx_drafts_author ON drafts(author_label)")
+    cur.execute("""
+        CREATE TABLE editor_session (
+            token TEXT PRIMARY KEY,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL
+        )
+    """)
     con.commit()
     con.close()
     return len(rows)
@@ -275,11 +338,21 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--source", help="Path to export_quest_ordered/")
     p.add_argument("--data-dir", default=str(DATA_DIR))
+    p.add_argument(
+        "--with-edits",
+        action="store_true",
+        help="Re-apply approved edits to per-quest JSONs (deferred; see spec §9)",
+    )
     args = p.parse_args()
 
     data_dir = Path(args.data_dir).resolve()
     quests_dir = data_dir / "quests"
     db_path = data_dir / "index.db"
+
+    if args.with_edits:
+        print("--with-edits is not yet implemented (see spec §9).")
+        print("Exiting without changes.")
+        return 0
 
     source = resolve_source(args.source)
     print(f"Source : {source}")
