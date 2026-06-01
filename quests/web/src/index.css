@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    background: #d6b66b40;
+  }
+}
+
+@layer components {
+  .container-narrow {
+    @apply mx-auto w-full max-w-5xl px-4 sm:px-6;
+  }
+  .card {
+    @apply rounded-xl border border-white/5 bg-bg-1/80 backdrop-blur-sm;
+  }
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-bg-2 px-3 py-1.5 text-sm text-slate-200 transition hover:border-accent-gold/40 hover:bg-bg-3 hover:text-white;
+  }
+  .btn-active {
+    @apply border-accent-gold/60 bg-accent-gold/10 text-accent-gold;
+  }
+  .input {
+    @apply w-full rounded-md border border-white/10 bg-bg-1 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/40;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-bg-2 px-2 py-0.5 text-xs text-slate-300;
+  }
+  .link {
+    @apply text-accent-teal hover:text-accent-gold transition-colors;
+  }
+  .dialogue-line {
+    @apply rounded-lg border border-white/5 bg-bg-1/60 p-3 sm:p-4 transition hover:border-white/10;
+  }
+  .dialogue-line.is-marker {
+    @apply border-dashed border-white/5 bg-bg-1/30 italic;
+  }
+  .dialogue-line.is-highlighted {
+    @apply border-accent-gold/40 bg-accent-gold/5;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0b0d12; }
+::-webkit-scrollbar-thumb { background: #1f2530; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #2a3242; }

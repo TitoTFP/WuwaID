@@ -1,0 +1,22 @@
+# dependencies
+/node_modules
+/bun.lockb
+/.pnp
+.pnp.js
+
+# build output
+/web/dist
+/web/.vite
+
+# data (rebuilt by scripts/build_index.py)
+/data
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.uv-cache/
+
+# logs / os
+*.log
+.DS_Store
