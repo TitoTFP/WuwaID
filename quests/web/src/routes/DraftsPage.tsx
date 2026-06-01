@@ -6,6 +6,7 @@ import { getAuthorLabel } from "../lib/session";
 import type { Draft, DraftPatch } from "../lib/types";
 
 function parsePatch(draft: Draft): DraftPatch {
+  if (draft.patch) return draft.patch;
   try {
     const patch = JSON.parse(draft.patch_json) as unknown;
     return patch && typeof patch === "object" && !Array.isArray(patch)
@@ -14,6 +15,35 @@ function parsePatch(draft: Draft): DraftPatch {
   } catch {
     return {};
   }
+}
+
+function OriginalDiff({ draft }: { draft: Draft }) {
+  const patch = parsePatch(draft);
+  const original = draft.original_json;
+  if (!original) return null;
+  return (
+    <section className="card p-4">
+      <h2 className="mb-3 text-xs uppercase tracking-widest text-slate-500">Original vs draft</h2>
+      <div className="space-y-2 text-xs">
+        {Object.entries(patch).map(([key, value]) => (
+          <div key={key} className="grid gap-2 md:grid-cols-2">
+            <div className="rounded border border-white/10 bg-bg-2 p-2">
+              <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-slate-500">original {key}</div>
+              <pre className="whitespace-pre-wrap break-words font-sans text-slate-400">
+                {JSON.stringify(original[key as keyof typeof original] ?? null, null, 2)}
+              </pre>
+            </div>
+            <div className="rounded border border-accent-gold/20 bg-accent-gold/5 p-2">
+              <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-accent-gold">draft {key}</div>
+              <pre className="whitespace-pre-wrap break-words font-sans text-slate-200">
+                {typeof value === "string" ? value : JSON.stringify(value, null, 2)}
+              </pre>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function PatchPreview({ draft }: { draft: Draft }) {
@@ -165,6 +195,8 @@ function DetailView({ draftId }: { draftId: number }) {
         <h2 className="mb-3 text-xs uppercase tracking-widest text-slate-500">Patch</h2>
         <PatchPreview draft={draft} />
       </section>
+
+      <OriginalDiff draft={draft} />
 
       {canReview && (
         <div className="flex flex-wrap items-center gap-2">

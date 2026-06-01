@@ -121,6 +121,30 @@ def test_insert_after_existing(tmp_db, sample_quest):
     assert [l["id"] for l in out["all_lines"]] == [1, 2, 50, 3]
 
 
+def test_insertions_with_same_anchor_keep_approval_order_and_are_idempotent(tmp_db, sample_quest):
+    first = {
+        "id": 50, "state_item_id": 1, "type": "Talk",
+        "state_key": "Flow_1_50", "text_key": "t50",
+        "speaker_en": "", "speaker_zh-Hans": "", "speaker_ja": "",
+        "text_en": "First.", "text_zh-Hans": "", "text_ja": "",
+        "options": [],
+    }
+    second = {**first, "id": 51, "text_key": "t51", "text_en": "Second."}
+    _insert_line(tmp_db, 106000002, 50, position_after=2, line=first)
+    con = sqlite3.connect(tmp_db)
+    con.execute(
+        "INSERT INTO inserted_lines VALUES (?,?,?,?,?,?)",
+        (106000002, 51, 2, json.dumps(second), "tester", "2026-06-02T00:00:01Z"),
+    )
+    con.commit()
+    con.close()
+
+    once = db.apply_edits(106000002, sample_quest)
+    twice = db.apply_edits(106000002, once)
+    assert [l["id"] for l in once["all_lines"]] == [1, 2, 50, 51, 3]
+    assert twice == once
+
+
 def test_reorder_one_line(tmp_db, sample_quest):
     _insert_order(tmp_db, 106000002, 3, position_after=1)
     out = db.apply_edits(106000002, sample_quest)

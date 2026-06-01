@@ -124,13 +124,25 @@ def api_search(
         by_qid.setdefault(h["qid"], []).append(h)
     for qid, group in by_qid.items():
         overrides = _load_quest_overrides(qid)
+        text_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja"}[lang]
         for h in group:
             line = overrides.get(h["line_id"])
             if line is None:
                 continue
-            text = line.get(f"text_{lang}", "")
+            text = line.get(text_key, "")
             if text:
                 h["text"] = text
+    seen = {(h["qid"], h["line_id"]) for h in hits}
+    remaining = max(0, limit - len(hits))
+    if remaining:
+        for h in db.search_overlays(q, lang=lang, side=side, quest_type=quest_type, limit=remaining):
+            key = (h["qid"], h["line_id"])
+            if key in seen:
+                continue
+            hits.append(h)
+            seen.add(key)
+            if len(hits) >= limit:
+                break
     return JSONResponse(hits)
 
 
@@ -238,18 +250,31 @@ def api_create_draft(payload: dict, request: Request):
 
 
 @app.put("/api/editor/drafts/{draft_id}")
-def api_update_draft(draft_id: int, payload: dict, request: Request):
-    db.update_draft(
-        draft_id,
-        author_label=_author_label(request),
-        patch=payload.get("patch", {}),
-    )
+def api_update_draft(draft_id: int, payload: dict, request: Request, role: str = Depends(get_role)):
+    author_label = None if role == "editor" else _author_label(request)
+    if role != "editor" and author_label is None:
+        raise HTTPException(403, "author label required")
+    try:
+        db.update_draft(draft_id, author_label=author_label, patch=payload.get("patch", {}))
+    except PermissionError as e:
+        raise HTTPException(403, str(e))
+    except ValueError as e:
+        msg = str(e)
+        raise HTTPException(409 if "already" in msg else 404, msg)
     return {"ok": True}
 
 
 @app.delete("/api/editor/drafts/{draft_id}")
-def api_delete_draft(draft_id: int, request: Request):
-    db.delete_draft(draft_id, author_label=_author_label(request))
+def api_delete_draft(draft_id: int, request: Request, role: str = Depends(get_role)):
+    author_label = None if role == "editor" else _author_label(request)
+    if role != "editor" and author_label is None:
+        raise HTTPException(403, "author label required")
+    try:
+        db.delete_draft(draft_id, author_label=author_label)
+    except PermissionError as e:
+        raise HTTPException(403, str(e))
+    except ValueError as e:
+        raise HTTPException(409, str(e))
     return {"ok": True}
 
 
@@ -264,7 +289,7 @@ def api_list_drafts(request: Request, role: str = Depends(get_role)):
 
 @app.get("/api/drafts/{draft_id}")
 def api_get_draft(draft_id: int, request: Request, role: str = Depends(get_role)):
-    d = db.get_draft(draft_id)
+    d = db.get_draft_with_diff(draft_id)
     if d is None:
         raise HTTPException(404, "draft not found")
     if role != "editor" and d["author_label"] != _author_label(request):

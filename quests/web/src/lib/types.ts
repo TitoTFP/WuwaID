@@ -142,6 +142,7 @@ export type EditableField =
 export type DraftPatch = Partial<{
   type: string;
   state_key: string;
+  text_key: string;
   speaker_en: string;
   "speaker_zh-Hans": string;
   speaker_ja: string;
@@ -163,6 +164,8 @@ export interface Draft {
   updated_at: string;
   author_label: string | null;
   note: string | null;
+  patch?: DraftPatch;
+  original_json?: DialogueLine | null;
 }
 
 export interface LineSummary {

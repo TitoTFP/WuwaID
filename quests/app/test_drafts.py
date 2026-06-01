@@ -81,6 +81,71 @@ def test_approve_draft_writes_edit_and_marks_applied(tmp_db):
     assert row["approved_by"] == "editor-bob"
 
 
+def test_approve_zh_hans_patch_writes_edit_column(tmp_db):
+    did = db.create_draft(
+        qid=106000002,
+        line_id=1,
+        patch={"text_zh-Hans": "你好，唯一文本。"},
+        author_label="alice",
+    )
+    db.approve_draft(did, approver="editor-bob")
+    con = db.connect()
+    try:
+        row = con.execute(
+            "SELECT text_zh_hans FROM edits WHERE qid = ? AND line_id = ?",
+            (106000002, 1),
+        ).fetchone()
+    finally:
+        con.close()
+    assert row["text_zh_hans"] == "你好，唯一文本。"
+
+
+def test_two_insert_drafts_get_distinct_ids_and_apply_in_order(tmp_db, sample_quest):
+    first = db.create_draft(
+        qid=106000002,
+        line_id=0,
+        position_after=2,
+        patch={"type": "Talk", "state_key": "Flow_1_2", "text_key": "draft_a", "text_en": "A"},
+    )
+    second = db.create_draft(
+        qid=106000002,
+        line_id=0,
+        position_after=2,
+        patch={"type": "Talk", "state_key": "Flow_1_2", "text_key": "draft_b", "text_en": "B"},
+    )
+    db.approve_draft(first, approver="editor")
+    db.approve_draft(second, approver="editor")
+
+    con = db.connect()
+    try:
+        ids = [
+            r["line_id"]
+            for r in con.execute(
+                "SELECT line_id FROM inserted_lines WHERE qid = ? ORDER BY approved_at, line_id",
+                (106000002,),
+            ).fetchall()
+        ]
+    finally:
+        con.close()
+
+    assert len(ids) == 2
+    assert ids[0] != ids[1]
+    once = db.apply_edits(106000002, sample_quest)
+    twice = db.apply_edits(106000002, once)
+    assert [line["id"] for line in once["all_lines"]] == [1, 2, ids[0], ids[1], 3]
+    assert twice == once
+
+
+def test_get_draft_with_diff_preserves_raw_fields_and_adds_context(tmp_db):
+    did = db.create_draft(qid=106000002, line_id=1, patch={"text_en": "Howdy."})
+    d = db.get_draft_with_diff(did)
+    assert d is not None
+    assert d["id"] == did
+    assert json.loads(d["patch_json"]) == {"text_en": "Howdy."}
+    assert d["patch"] == {"text_en": "Howdy."}
+    assert d["original_json"]["text_en"] == "Hello."
+
+
 def test_double_approve_raises(tmp_db):
     did = db.create_draft(qid=106000002, line_id=1, patch={})
     db.approve_draft(did, approver="bob")

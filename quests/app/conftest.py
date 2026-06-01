@@ -1,6 +1,7 @@
 """Shared pytest fixtures for the editor tests."""
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 from pathlib import Path
@@ -79,6 +80,12 @@ def sample_quest() -> dict:
 @pytest.fixture
 def tmp_db(tmp_path: Path, sample_quest: dict) -> Path:
     """Create a temp index.db with the editor tables; return its path."""
+    quests_dir = tmp_path / "quests"
+    quests_dir.mkdir()
+    (quests_dir / "106000002.json").write_text(
+        json.dumps(sample_quest),
+        encoding="utf-8",
+    )
     db_path = tmp_path / "index.db"
     con = sqlite3.connect(db_path)
     con.executescript("""

@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
 import { api } from "../lib/api";
+import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
-import type { DraftPatch } from "../lib/types";
+import type { DraftPatch, LineSummary } from "../lib/types";
 import LineList from "../components/editor/LineList";
 import LineForm from "../components/editor/LineForm";
 import DraftBanner from "../components/editor/DraftBanner";
@@ -13,6 +14,9 @@ export default function EditorPage() {
   const qidN = Number(qid);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const meQ = useMe();
+  const role = meQ.data?.role ?? "anon";
+  const authorLabel = getAuthorLabel();
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -30,16 +34,68 @@ export default function EditorPage() {
     mutationFn: (patch: DraftPatch) =>
       api.createDraft(
         { qid: qidN, line_id: selectedId!, patch },
-        getAuthorLabel(),
+        authorLabel,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["editor", "lines", qidN] });
       queryClient.invalidateQueries({ queryKey: ["editor", "quest", qidN] });
+      queryClient.invalidateQueries({ queryKey: ["drafts"] });
     },
+  });
+
+  const structureQ = useMutation({
+    mutationFn: (draft: { line_id: number; patch: DraftPatch; position_after?: number | null }) =>
+      api.createDraft({ qid: qidN, ...draft }, authorLabel),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drafts"] });
+    },
+  });
+
+  const draftsQ = useQuery({
+    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    enabled: !!meQ.data,
   });
 
   const lines = linesQ.data ?? [];
   const selectedLine = questQ.data?.all_lines.find((line) => line.id === selectedId) ?? null;
+  const pendingCounts = (draftsQ.data ?? [])
+    .filter((draft) => draft.qid === qidN && draft.status === "pending")
+    .reduce<Record<number, number>>((acc, draft) => {
+      acc[draft.line_id] = (acc[draft.line_id] ?? 0) + 1;
+      return acc;
+    }, {});
+
+  const indexOf = (lineId: number) => lines.findIndex((line) => line.id === lineId);
+  const moveLine = (lineId: number, direction: -1 | 1) => {
+    const idx = indexOf(lineId);
+    const targetIdx = idx + direction;
+    if (idx < 0 || targetIdx < 0 || targetIdx >= lines.length) return;
+    const previous = direction < 0 ? lines[targetIdx - 1] : lines[targetIdx];
+    structureQ.mutate({
+      line_id: lineId,
+      patch: { _op: "reorder" },
+      position_after: previous?.id ?? null,
+    });
+  };
+  const insertAfter = (lineId: number) => {
+    const anchor = lines.find((line) => line.id === lineId) as LineSummary | undefined;
+    structureQ.mutate({
+      line_id: 0,
+      position_after: lineId,
+      patch: {
+        type: "Talk",
+        state_key: anchor?.state_key ?? "",
+        text_key: `draft_${Date.now()}`,
+        speaker_en: "",
+        "speaker_zh-Hans": "",
+        speaker_ja: "",
+        text_en: "",
+        "text_zh-Hans": "",
+        text_ja: "",
+      },
+    });
+  };
 
   return (
     <div className="container-narrow">
@@ -68,8 +124,14 @@ export default function EditorPage() {
               lines={lines}
               selectedId={selectedId}
               onSelect={setSelectedId}
-              pendingCounts={{}}
+              pendingCounts={pendingCounts}
+              onMoveUp={(id) => moveLine(id, -1)}
+              onMoveDown={(id) => moveLine(id, 1)}
+              onInsertAfter={insertAfter}
             />
+          )}
+          {structureQ.error && (
+            <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
           )}
         </aside>
         <section className="card p-4">

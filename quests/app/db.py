@@ -152,6 +152,92 @@ def search(
     return [dict(r) for r in rows]
 
 
+def search_overlays(
+    q: str,
+    lang: str = "en",
+    limit: int = 50,
+    side: int | None = None,
+    quest_type: int | None = None,
+) -> list[dict]:
+    """Simple substring search over approved overlays and inserted lines."""
+    needle = q.strip().lower()
+    if not needle:
+        return []
+    edit_col = {"en": "text_en", "zh": "text_zh_hans", "ja": "text_ja"}[lang]
+    json_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja"}[lang]
+    results: list[dict] = []
+    con = connect()
+    try:
+        quest_where: list[str] = []
+        params: list = []
+        if side is not None:
+            quest_where.append("side = ?")
+            params.append(side)
+        if quest_type is not None:
+            quest_where.append("quest_type = ?")
+            params.append(quest_type)
+        quest_sql = ("WHERE " + " AND ".join(quest_where)) if quest_where else ""
+        quests = {
+            r["qid"]: dict(r)
+            for r in con.execute(
+                f"SELECT qid, quest_name, quest_type, side, chapter_name FROM quests {quest_sql}",
+                params,
+            ).fetchall()
+        }
+        if not quests:
+            return []
+
+        for row in con.execute(
+            f"SELECT qid, line_id, {edit_col} AS text FROM edits WHERE {edit_col} IS NOT NULL"
+        ).fetchall():
+            if len(results) >= limit:
+                break
+            if row["qid"] not in quests or needle not in row["text"].lower():
+                continue
+            line = next((l for l in _load_quest_lines(con, row["qid"]) if l.get("id") == row["line_id"]), {})
+            quest = quests[row["qid"]]
+            results.append({
+                "qid": row["qid"],
+                "line_id": row["line_id"],
+                "quest_name": quest["quest_name"],
+                "chapter_name": quest["chapter_name"] or "",
+                "side": quest["side"],
+                "speaker_en": line.get("speaker_en", ""),
+                "text": row["text"],
+                "line_type": line.get("type", ""),
+                "has_options": 1 if line.get("options") else 0,
+                "snippet": row["text"],
+            })
+
+        for row in con.execute(
+            "SELECT qid, line_id, line_json FROM inserted_lines ORDER BY approved_at, line_id"
+        ).fetchall():
+            if len(results) >= limit:
+                break
+            if row["qid"] not in quests:
+                continue
+            line = json.loads(row["line_json"])
+            text = line.get(json_key, "")
+            if needle not in text.lower():
+                continue
+            quest = quests[row["qid"]]
+            results.append({
+                "qid": row["qid"],
+                "line_id": row["line_id"],
+                "quest_name": quest["quest_name"],
+                "chapter_name": quest["chapter_name"] or "",
+                "side": quest["side"],
+                "speaker_en": line.get("speaker_en", ""),
+                "text": text,
+                "line_type": line.get("type", ""),
+                "has_options": 1 if line.get("options") else 0,
+                "snippet": text,
+            })
+    finally:
+        con.close()
+    return results
+
+
 def list_quests(
     side: int | None = None,
     quest_type: int | None = None,
@@ -301,15 +387,17 @@ def apply_edits(qid: int, quest: dict) -> dict:
             if row["options_json"] is not None:
                 line["options"] = json.loads(row["options_json"])
 
-        # 2. Inserted lines (splice in by position_after; ties broken by approved_at, line_id)
+        # 2. Inserted lines (group by anchor so same-anchor approvals keep order).
         insertions = con.execute(
             "SELECT * FROM inserted_lines WHERE qid = ? "
             "ORDER BY position_after, approved_at, line_id",
             (qid,),
         ).fetchall()
+        by_anchor: dict[int | None, list[sqlite3.Row]] = {}
         for ins in insertions:
-            new_line = json.loads(ins["line_json"])
-            anchor_id = ins["position_after"]
+            by_anchor.setdefault(ins["position_after"], []).append(ins)
+        existing_ids = {l.get("id") for l in quest["all_lines"]}
+        for anchor_id, group in by_anchor.items():
             if anchor_id is None:
                 idx = len(quest["all_lines"])
             else:
@@ -318,7 +406,13 @@ def apply_edits(qid: int, quest: dict) -> dict:
                     None,
                 )
                 idx = (quest["all_lines"].index(anchor) + 1) if anchor else len(quest["all_lines"])
-            quest["all_lines"].insert(idx, new_line)
+            for ins in group:
+                if ins["line_id"] in existing_ids:
+                    continue
+                new_line = json.loads(ins["line_json"])
+                quest["all_lines"].insert(idx, new_line)
+                existing_ids.add(ins["line_id"])
+                idx += 1
 
         # 3. Reorder overrides: each row says "line_id should appear immediately
         #    after the line with id=position_after". Rebuild the sequence by
@@ -409,6 +503,25 @@ def get_draft(draft_id: int) -> dict | None:
     return dict(row) if row else None
 
 
+def get_draft_with_diff(draft_id: int) -> dict | None:
+    d = get_draft(draft_id)
+    if d is None:
+        return None
+    try:
+        patch = json.loads(d["patch_json"])
+    except json.JSONDecodeError:
+        patch = {}
+    con = connect()
+    try:
+        original = next(
+            (l for l in _load_quest_lines(con, d["qid"]) if l.get("id") == d["line_id"]),
+            None,
+        )
+    finally:
+        con.close()
+    return {**d, "patch": patch if isinstance(patch, dict) else {}, "original_json": original}
+
+
 def update_draft(
     draft_id: int,
     *,
@@ -482,17 +595,22 @@ _PATCH_TO_COLUMN = {
     "type": "type",
     "state_key": "state_key",
     "speaker_en": "speaker_en",
-    "speaker_zh-Hans": "speaker_zh_hans",
+    "speaker_zh_hans": "speaker_zh_hans",
     "speaker_ja": "speaker_ja",
     "text_en": "text_en",
-    "text_zh-Hans": "text_zh_hans",
+    "text_zh_hans": "text_zh_hans",
     "text_ja": "text_ja",
+}
+
+_PATCH_NORMALIZE_MAP = {
+    "speaker_zh-Hans": "speaker_zh_hans",
+    "text_zh-Hans": "text_zh_hans",
 }
 
 
 def _normalize_patch(patch: dict) -> dict:
-    """Translate hyphenated JSON keys to underscore form. Idempotent."""
-    return {k.replace("-", "_"): v for k, v in patch.items()}
+    """Translate only known zh-Hans JSON patch keys to SQL-safe names."""
+    return {_PATCH_NORMALIZE_MAP.get(k, k): v for k, v in patch.items()}
 
 
 def approve_draft(draft_id: int, *, approver: str) -> None:
@@ -590,9 +708,18 @@ def _materialize_field_edit(con, qid: int, line_id: int, patch: dict, approver: 
 
 def _materialize_insert(con, qid: int, position_after: int | None, patch: dict, approver: str) -> None:
     lines = _load_quest_lines(con, qid)
-    new_id = max((l.get("id", 0) for l in lines), default=0) + 1
+    inserted = con.execute(
+        "SELECT line_id FROM inserted_lines WHERE qid = ?",
+        (qid,),
+    ).fetchall()
+    new_id = max(
+        [l.get("id", 0) for l in lines] + [r["line_id"] for r in inserted],
+        default=0,
+    ) + 1
     if "id" not in patch:
         patch = {**patch, "id": new_id}
+    else:
+        new_id = int(patch["id"])
     if "options" not in patch:
         patch["options"] = []
     con.execute(

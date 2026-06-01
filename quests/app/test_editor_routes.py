@@ -58,6 +58,15 @@ def client(tmp_path, monkeypatch):
         CREATE TABLE editor_session (token TEXT PRIMARY KEY,
             created_at TEXT NOT NULL, expires_at TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'editor');
+        CREATE TABLE quests (qid INTEGER PRIMARY KEY, quest_name TEXT, quest_type INTEGER,
+            side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER, total_lines INTEGER);
+        INSERT INTO quests VALUES (106000002, 'Test Quest', 1, 0, 1, 'Test Chapter', 1, 1);
+        CREATE VIRTUAL TABLE dialogue_idx USING fts5(
+            qid UNINDEXED, line_id UNINDEXED, quest_name UNINDEXED, chapter_name UNINDEXED,
+            side UNINDEXED, speaker_en, line_type UNINDEXED, has_options UNINDEXED,
+            text_en, text_zh, text_ja);
+        INSERT INTO dialogue_idx VALUES (106000002, 1, 'Test Quest', 'Test Chapter', 0,
+            'Rover', 'Talk', 0, 'Original only.', '', '');
     """)
     con.commit()
     con.close()
@@ -155,3 +164,43 @@ def test_drafts_route_validates_branch_target(client):
     did = r.json()["id"]
     r2 = client.post(f"/api/drafts/{did}/approve")
     assert r2.status_code == 422
+
+
+def test_anon_cannot_update_or_delete_without_author_label(client):
+    cr = client.post(
+        "/api/editor/drafts",
+        json={"qid": 106000002, "line_id": 1, "patch": {"text_en": "owner"}},
+        headers={"X-Author-Label": "alice"},
+    )
+    did = cr.json()["id"]
+
+    r = client.put(f"/api/editor/drafts/{did}", json={"patch": {"text_en": "hacked"}})
+    assert r.status_code == 403
+    r = client.delete(f"/api/editor/drafts/{did}")
+    assert r.status_code == 403
+
+    r = client.put(
+        f"/api/editor/drafts/{did}",
+        json={"patch": {"text_en": "hacked"}},
+        headers={"X-Author-Label": "mallory"},
+    )
+    assert r.status_code == 403
+
+
+def test_search_finds_approved_overlay_text(client):
+    _login(client)
+    cr = client.post(
+        "/api/editor/drafts",
+        json={"qid": 106000002, "line_id": 1, "patch": {"text_en": "HowdyUnique"}},
+        headers={"X-Author-Label": "alice"},
+    )
+    assert client.post(f"/api/drafts/{cr.json()['id']}/approve").status_code == 200
+
+    r = client.get("/api/search", params={"q": "HowdyUnique", "lang": "en"})
+    assert r.status_code == 200
+    hits = r.json()
+    assert any(hit["qid"] == 106000002 and hit["line_id"] == 1 for hit in hits)
+    hit = next(hit for hit in hits if hit["qid"] == 106000002 and hit["line_id"] == 1)
+    assert hit["quest_name"] == "Test Quest"
+    assert isinstance(hit["speaker_en"], str)
+    assert hit["text"] == "HowdyUnique"
