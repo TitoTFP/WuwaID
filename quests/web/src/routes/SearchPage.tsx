@@ -37,7 +37,7 @@ export default function SearchPage() {
     if (n) nameCounts.set(n, (nameCounts.get(n) ?? 0) + 1);
   });
   const nameOrder = new Map<string, number>();
-  const dupFor = (qid: number, name: string) => {
+  const dupFor = (_qid: number, name: string) => {
     const total = nameCounts.get(name) ?? 1;
     if (total <= 1) return { dupIndex: undefined, dupTotal: undefined };
     const idx = (nameOrder.get(name) ?? 0) + 1;

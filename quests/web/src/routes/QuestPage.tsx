@@ -36,14 +36,27 @@ export default function QuestPage() {
 
   const groups = useMemo(() => {
     if (!quest) return [];
+    // Build a (state_key) → plot_mode map from the flow.states arrays
+    const plotModeByKey = new Map<string, string>();
+    for (const f of quest.flows) {
+      for (const s of f.states ?? []) {
+        plotModeByKey.set(s.state_key, s.plot_mode);
+      }
+    }
     const lines = quest.all_lines;
-    const g: { flow_name: string; state_id: number; lines: typeof lines }[] = [];
-    let cur: { flow_name: string; state_id: number; lines: typeof lines } | null = null;
+    const g: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines }[] = [];
+    let cur: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines } | null = null;
     for (const l of lines) {
-      const [flow_name, state_id_raw] = (l.state_key ?? "").split("_");
-      const state_id = Number(state_id_raw);
+      // State keys are "<FlowListName>_<StateId>_<SubId>". The FlowListName
+      // itself can contain underscores (e.g. "剧情_3_3_拉海洛主线_下半"), so a
+      // naive split("_") would shred it. Match the exporter's parse:
+      const m = (l.state_key ?? "").match(/^(.*)_(\d+)_(\d+)$/);
+      if (!m) continue;
+      const flow_name = m[1];
+      const state_id = Number(m[2]);
+      const pm = plotModeByKey.get(l.state_key ?? "") ?? "Normal";
       if (!cur || cur.flow_name !== flow_name || cur.state_id !== state_id) {
-        cur = { flow_name, state_id, lines: [] };
+        cur = { flow_name, state_id, plot_mode: pm, lines: [] };
         g.push(cur);
       }
       cur.lines.push(l);
@@ -74,12 +87,24 @@ export default function QuestPage() {
 
       {groups.map((g, i) => (
         <section key={i}>
-          <h2 className="mb-2 text-[10px] uppercase tracking-widest text-slate-600">
-            {g.flow_name || "scene"} · state {g.state_id || "—"}
+          <h2 className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-slate-600">
+            <span>{g.flow_name || "scene"} · state {g.state_id || "—"}</span>
+            {g.plot_mode && g.plot_mode !== "Normal" && (
+              <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
+                {g.plot_mode}
+              </span>
+            )}
           </h2>
           <div className="space-y-2">
             {g.lines.map((line) => (
-              <DialogueLine key={line.id} line={line} primary={primary} highlightQ={highlightQ} />
+              <DialogueLine
+                key={line.id}
+                line={line}
+                primary={primary}
+                highlightQ={highlightQ}
+                plotMode={g.plot_mode}
+                allLines={quest.all_lines}
+              />
             ))}
           </div>
         </section>

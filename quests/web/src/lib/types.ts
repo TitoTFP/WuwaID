@@ -4,31 +4,64 @@ export type QuestType = number; // 1=main, 2,3,4,7,9,10,11,14,100
 export type Lang = "en" | "zh-Hans" | "ja";
 export type LineType = "Talk" | "Option" | "CenterText" | "PhoneMessage" | "NoTextItem" | "SystemOption";
 
+// Plot mode is the last SetPlotMode.Mode seen in a flow state.
+// Common values: "Normal", "PhoneMessage", "BlackScreen", "Chapter",
+// "LevelA".."LevelF" (camera focus levels). String union is open because
+// the exporter passes the raw value through.
+export type PlotMode = string;
+
+export interface FlowAction {
+  name: string;
+  params: Record<string, unknown>;
+  action_id?: number;
+  action_guid?: string;
+}
+
 export interface DialogueLineOption {
   text_key: string;
-  text_zh-Hans: string;
+  "text_zh-Hans": string;
   text_en: string;
   text_ja: string;
+  // Optional cross-reference to the line this option jumps to
+  plot_line_id?: number;
+  plot_line_key?: string;
+  // Branching actions, typically a single JumpTalk to another TalkId
+  actions?: FlowAction[];
 }
 
 export interface DialogueLine {
   id: number;
+  // Per-state id preserved from the source ShowTalk.TalkItems.Id field,
+  // which restarts at 1 in every state. The export renumbers `id` to be
+  // globally unique within the quest, but the verbose chip display
+  // (`#<global> · S<state>.<sub>.<state_item_id>`) still uses this.
+  state_item_id?: number;
   type: LineType | string;
   state_key: string;
   text_key: string;
-  speaker_zh-Hans: string;
+  "speaker_zh-Hans": string;
   speaker_en: string;
   speaker_ja: string;
-  text_zh-Hans: string;
+  "text_zh-Hans": string;
   text_en: string;
   text_ja: string;
   options?: DialogueLineOption[];
+  // For cross-state/cross-line linking (player choice → target line)
+  plot_line_id?: number;
+  plot_line_key?: string;
+}
+
+export interface QuestFlowState {
+  state_key: string;
+  plot_mode: PlotMode;
+  actions: FlowAction[];
 }
 
 export interface QuestFlow {
   flow_list_name: string;
   flow_id: number;
   state_id: number;
+  states: QuestFlowState[];
   dialogue: DialogueLine[];
 }
 

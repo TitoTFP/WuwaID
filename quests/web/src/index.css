@@ -42,6 +42,17 @@
   .dialogue-line.is-highlighted {
     @apply border-accent-gold/40 bg-accent-gold/5;
   }
+  /* WavesLine / PhoneMessage chat-bubble — right-aligned, gold accent */
+  .dialogue-line.is-phone {
+    @apply border-accent-gold/30 bg-accent-gold/5;
+  }
+  /* (per-row column-swap overrides removed — they assigned the text
+     wrapper to a 2.25rem cell, collapsing long strings to vertical
+     wrapping. The phone-mode row is now a flex layout in DialogueLine.tsx.) */
+  /* Cinematic / camera-focus / black-screen transition — slightly darker */
+  .dialogue-line.is-cinematic {
+    @apply border-slate-700/40 bg-bg-0/40;
+  }
 }
 
 /* Custom scrollbar */
