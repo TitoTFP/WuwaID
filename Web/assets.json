@@ -1,15 +1,15 @@
 {
-  "update_date": "2026-05-21T03:00:00",
+  "update_date": "2026-06-08T03:00:00",
   "assets": [
     {
       "name": "bgm.mp3",
       "url": "https://raw.githubusercontent.com/CallMeDangDev/WuwaVH/refs/heads/main/Web/Audio/bgm.mp3",
-      "sha256": "42d084794552aa4fa90e2355b8c0e563a13565f6281028587115726b7ab4bfa6"
+      "sha256": "CED99504021B7775092B400D3962C4D0BC59A506BE58395C67B6BBD3C2459573"
     },
     {
       "name": "bg-video.mp4",
       "url": "https://raw.githubusercontent.com/CallMeDangDev/WuwaVH/refs/heads/main/Web/Video/bg-video.mp4",
-      "sha256": "c49c588f90fd5c83001752c4e301881d3c50d965ca5e5e4f508837942e27b791"
+      "sha256": "DADA2597FBB6418126117AEAE2610E7AB77F606445A98749B49E907D10CC4CAC"
     }
   ]
 }
