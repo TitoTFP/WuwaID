@@ -77,19 +77,18 @@ def api_quests(
     )
 
 
-def _merged_quest_meta(qid: int) -> tuple[str, str, dict[int, dict]]:
-    """Load + merge a quest; return (quest_name, chapter_name, line_overrides)."""
+def _load_quest_overrides(qid: int) -> dict[int, dict]:
+    """Load + merge a quest; return a {line_id: line} map post-merge.
+
+    Returns an empty dict if the quest JSON is missing (e.g. stale search
+    hit). Callers should treat that as "no override to apply".
+    """
     p = QUESTS_DIR / f"{qid}.json"
     if not p.is_file():
-        return ("", "", {})
+        return {}
     quest = json.loads(p.read_text(encoding="utf-8"))
     db.apply_edits(qid, quest)
-    overrides = {l["id"]: l for l in quest["all_lines"]}
-    return (
-        quest.get("quest_name", ""),
-        quest.get("chapter_name", ""),
-        overrides,
-    )
+    return {l["id"]: l for l in quest["all_lines"]}
 
 
 @app.get("/api/quests/{qid}")
@@ -114,7 +113,7 @@ def api_search(
     for h in hits:
         by_qid.setdefault(h["qid"], []).append(h)
     for qid, group in by_qid.items():
-        _, _, overrides = _merged_quest_meta(qid)
+        overrides = _load_quest_overrides(qid)
         for h in group:
             line = overrides.get(h["line_id"])
             if line is None:
