@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { api } from "../lib/api";
 import { getAuthorLabel } from "../lib/session";
 import type { DraftPatch } from "../lib/types";
@@ -37,11 +37,8 @@ export default function EditorPage() {
     },
   });
 
-  const lines = useMemo(() => linesQ.data ?? [], [linesQ.data]);
-  const selectedLine = useMemo(
-    () => questQ.data?.all_lines.find((line) => line.id === selectedId) ?? null,
-    [questQ.data, selectedId],
-  );
+  const lines = linesQ.data ?? [];
+  const selectedLine = questQ.data?.all_lines.find((line) => line.id === selectedId) ?? null;
 
   return (
     <div className="container-narrow">

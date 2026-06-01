@@ -4,7 +4,6 @@ import ConfirmDialog from "./ConfirmDialog";
 import DiffField from "./DiffField";
 import LangTabs from "./LangTabs";
 import OptionsSubform from "./OptionsSubform";
-import ReorderButtons from "./ReorderButtons";
 
 type Tab = Lang | "META";
 type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja";
@@ -78,11 +77,6 @@ export default function LineForm({
           <div className="text-xs text-slate-500">Line #{line.id}</div>
           <div className="font-serif text-xl text-slate-100">{line.text_key}</div>
         </div>
-        <ReorderButtons
-          onMoveUp={() => {}}
-          onMoveDown={() => {}}
-          onInsertAfter={() => {}}
-        />
       </div>
 
       <LangTabs active={tab} onChange={setTab} />
