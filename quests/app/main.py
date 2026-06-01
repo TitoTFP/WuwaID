@@ -17,7 +17,7 @@ from .auth import (
     check_password,
     get_role,
     make_session_token,
-    require_editor,
+    require_editor,  # noqa: F401 — wired to /api/drafts/{id}/approve in Task 7+
     revoke_session,
 )
 
@@ -44,6 +44,7 @@ def _startup():
             "Run `uv run python scripts/build_index.py` first."
         )
     db.set_db_path(DATA_DIR / "index.db")
+    db.ensure_editor_schema()
 
 
 # ---------------------------------------------------------------------------

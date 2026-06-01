@@ -117,4 +117,4 @@ def tmp_db(tmp_path: Path, sample_quest: dict) -> Path:
     from app import db
     db.set_db_path(db_path)
     yield db_path
-    db.set_db_path(None)  # type: ignore[arg-type]
+    db.set_db_path(None)

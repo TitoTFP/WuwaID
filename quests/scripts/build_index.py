@@ -313,7 +313,8 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
         CREATE TABLE editor_session (
             token TEXT PRIMARY KEY,
             created_at TEXT NOT NULL,
-            expires_at TEXT NOT NULL
+            expires_at TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'editor'
         )
     """)
     con.commit()

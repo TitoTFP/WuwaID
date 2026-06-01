@@ -11,10 +11,9 @@ import hmac
 import logging
 import os
 import secrets
-import sqlite3
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Cookie, Depends, HTTPException, Response, status
+from fastapi import Cookie, Depends, HTTPException, Response
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from . import db
@@ -24,17 +23,21 @@ log = logging.getLogger("wuwaid-quests.auth")
 SESSION_COOKIE = "wuwaid_editor"
 SESSION_MAX_AGE_DAYS = int(os.environ.get("SESSION_DAYS", "7"))
 
+_FALLBACK_SECRET: bytes | None = None
+
 
 def _secret() -> bytes:
     s = os.environ.get("SESSION_SECRET")
     if s:
         return s.encode("utf-8")
-    fallback = secrets.token_hex(32)
-    log.warning(
-        "SESSION_SECRET not set; generated a one-time fallback. "
-        "Sessions will not survive a server restart. Set SESSION_SECRET in .env."
-    )
-    return fallback.encode("utf-8")
+    global _FALLBACK_SECRET
+    if _FALLBACK_SECRET is None:
+        _FALLBACK_SECRET = secrets.token_hex(32).encode("utf-8")
+        log.warning(
+            "SESSION_SECRET not set; generated a one-time fallback. "
+            "Sessions will not survive a server restart. Set SESSION_SECRET in .env."
+        )
+    return _FALLBACK_SECRET
 
 
 def _serializer() -> URLSafeTimedSerializer:
@@ -51,13 +54,13 @@ def check_password(submitted: str) -> bool:
 def make_session_token(role: str) -> str:
     """Mint a session token, persist it in editor_session, return signed cookie value."""
     raw = secrets.token_urlsafe(32)
-    con = db._con()  # noqa: SLF001 — internal helper, acceptable for auth
+    con = db.connect()
     try:
         now = datetime.now(timezone.utc)
         expires = now + timedelta(days=SESSION_MAX_AGE_DAYS)
         con.execute(
-            "INSERT INTO editor_session VALUES (?, ?, ?)",
-            (raw, now.isoformat(), expires.isoformat()),
+            "INSERT INTO editor_session VALUES (?, ?, ?, ?)",
+            (raw, now.isoformat(), expires.isoformat(), role),
         )
         con.commit()
     finally:
@@ -74,10 +77,10 @@ def read_session_cookie(cookie_value: str) -> str | None:
     raw = payload.get("token")
     if not raw:
         return None
-    con = db._con()  # noqa: SLF001
+    con = db.connect()
     try:
         row = con.execute(
-            "SELECT expires_at FROM editor_session WHERE token = ?", (raw,)
+            "SELECT expires_at, role FROM editor_session WHERE token = ?", (raw,)
         ).fetchone()
     finally:
         con.close()
@@ -86,7 +89,7 @@ def read_session_cookie(cookie_value: str) -> str | None:
     expires_at = datetime.fromisoformat(row["expires_at"])
     if expires_at < datetime.now(timezone.utc):
         return None
-    return payload.get("role", "editor")
+    return row["role"]
 
 
 def get_role(cookie: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> str:
@@ -98,15 +101,12 @@ def get_role(cookie: str | None = Cookie(default=None, alias=SESSION_COOKIE)) ->
 
 def require_editor(role: str = Depends(get_role)) -> str:
     if role != "editor":
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "editor login required")
+        raise HTTPException(401, "editor login required")
     return role
 
 
 def revoke_session(cookie_value: str | None) -> None:
     if not cookie_value:
-        return
-    role = read_session_cookie(cookie_value)
-    if not role:
         return
     try:
         payload = _serializer().loads(cookie_value, max_age=SESSION_MAX_AGE_DAYS * 86400)
@@ -115,7 +115,7 @@ def revoke_session(cookie_value: str | None) -> None:
     raw = payload.get("token")
     if not raw:
         return
-    con = db._con()  # noqa: SLF001
+    con = db.connect()
     try:
         con.execute("DELETE FROM editor_session WHERE token = ?", (raw,))
         con.commit()

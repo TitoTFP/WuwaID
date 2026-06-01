@@ -9,17 +9,36 @@ from pathlib import Path
 DB_PATH: Path | None = None
 
 
-def set_db_path(path: Path) -> None:
+def set_db_path(path: Path | None) -> None:
     global DB_PATH
     DB_PATH = path
 
 
-def _con() -> sqlite3.Connection:
+def connect() -> sqlite3.Connection:
     if DB_PATH is None:
         raise RuntimeError("DB_PATH not set; call set_db_path() first")
     con = sqlite3.connect(str(DB_PATH))
     con.row_factory = sqlite3.Row
     return con
+
+
+def ensure_editor_schema() -> None:
+    """Create the editor_session table if it doesn't exist (idempotent)."""
+    con = connect()
+    try:
+        con.execute(
+            """
+            CREATE TABLE IF NOT EXISTS editor_session (
+                token TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'editor'
+            )
+            """
+        )
+        con.commit()
+    finally:
+        con.close()
 
 
 def _cjk_bigrams(s: str) -> str:
@@ -122,7 +141,7 @@ def search(
         LIMIT ?
     """
     params.append(limit)
-    con = _con()
+    con = connect()
     try:
         rows = con.execute(sql, params).fetchall()
     finally:
@@ -179,7 +198,7 @@ def list_quests(
     page_size = max(1, min(200, page_size))
     offset = (page - 1) * page_size
 
-    con = _con()
+    con = connect()
     try:
         total = con.execute(
             f"SELECT COUNT(*) FROM quests q {where_sql}", params
@@ -206,7 +225,7 @@ def list_quests(
 
 
 def list_speakers() -> list[dict]:
-    con = _con()
+    con = connect()
     try:
         rows = con.execute(
             """
@@ -225,7 +244,7 @@ def list_speakers() -> list[dict]:
 
 
 def get_quest(qid: int) -> dict | None:
-    con = _con()
+    con = connect()
     try:
         row = con.execute(
             "SELECT * FROM quests WHERE qid = ?", (qid,)
@@ -261,7 +280,7 @@ def apply_edits(qid: int, quest: dict) -> dict:
     Mutates and returns `quest`. Idempotent: re-running on a quest that
     already reflects all edits is a no-op.
     """
-    con = _con()
+    con = connect()
     try:
         # 1. Field overlay
         for row in con.execute(
