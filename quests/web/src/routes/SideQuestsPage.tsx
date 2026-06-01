@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import QuestCard from "../components/QuestCard";
@@ -101,9 +101,25 @@ export default function SideQuestsPage() {
 
       {isLoading && <div className="text-sm text-slate-500">Loading…</div>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {data?.items.map((q) => <QuestCard key={q.qid} q={q} />)}
-      </div>
+      {(() => {
+        const items = data?.items ?? [];
+        const counts = new Map<string, number>();
+        items.forEach((q) => counts.set(q.quest_name, (counts.get(q.quest_name) ?? 0) + 1));
+        const seen = new Map<string, number>();
+        const dupInfo = items.map((q) => {
+          const total = counts.get(q.quest_name) ?? 1;
+          const idx = (seen.get(q.quest_name) ?? 0) + 1;
+          seen.set(q.quest_name, idx);
+          return { q, dupIndex: idx, dupTotal: total };
+        });
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {dupInfo.map(({ q, dupIndex, dupTotal }) => (
+              <QuestCard key={q.qid} q={q} dupIndex={dupIndex} dupTotal={dupTotal} />
+            ))}
+          </div>
+        );
+      })()}
 
       {data && data.total > data.page_size && (
         <div className="flex items-center justify-between text-sm">

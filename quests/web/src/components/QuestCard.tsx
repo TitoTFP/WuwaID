@@ -14,16 +14,32 @@ const TYPE_LABEL: Record<number, string> = {
   100: "Activity",
 };
 
-export default function QuestCard({ q }: { q: QuestListItem }) {
+export default function QuestCard({
+  q,
+  dupIndex,
+  dupTotal,
+}: {
+  q: QuestListItem;
+  dupIndex?: number;
+  dupTotal?: number;
+}) {
+  const isDup = (dupTotal ?? 0) > 1;
   return (
     <Link
       to={`/quests/${q.qid}`}
-      className="card group block p-3 sm:p-4 transition hover:border-accent-gold/30 hover:bg-bg-2"
+      className={`card group block p-3 sm:p-4 transition hover:border-accent-gold/30 hover:bg-bg-2 ${
+        isDup ? "border-l-2 border-l-accent-gold/60" : ""
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-[10px] text-slate-500">
             <span className="font-mono">#{q.qid}</span>
+            {isDup && (
+              <span className="text-accent-gold">
+                {dupIndex}/{dupTotal}
+              </span>
+            )}
             {q.side === 1 && <span className="text-accent-teal">side</span>}
           </div>
           <div className="mt-0.5 truncate text-sm font-medium text-slate-100 group-hover:text-accent-gold">

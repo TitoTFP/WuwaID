@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
@@ -28,6 +29,21 @@ export default function SearchPage() {
     (acc[h.qid] ??= []).push(h);
     return acc;
   }, {});
+
+  // disambiguate quests that share a name across distinct qids
+  const nameCounts = new Map<string, number>();
+  Object.values(grouped).forEach((items) => {
+    const n = items[0]?.quest_name;
+    if (n) nameCounts.set(n, (nameCounts.get(n) ?? 0) + 1);
+  });
+  const nameOrder = new Map<string, number>();
+  const dupFor = (qid: number, name: string) => {
+    const total = nameCounts.get(name) ?? 1;
+    if (total <= 1) return { dupIndex: undefined, dupTotal: undefined };
+    const idx = (nameOrder.get(name) ?? 0) + 1;
+    nameOrder.set(name, idx);
+    return { dupIndex: idx, dupTotal: total };
+  };
 
   return (
     <div className="container-narrow space-y-5">
@@ -75,14 +91,28 @@ export default function SearchPage() {
         <div className="text-sm text-slate-500">No hits for <span className="text-slate-300">{q}</span>.</div>
       )}
 
-      {Object.entries(grouped).map(([qid, items]) => (
-        <div key={qid} className="card p-3 sm:p-4 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="font-medium text-accent-gold hover:underline">
-              {items[0].quest_name}
-            </Link>
-            <span className="text-[10px] text-slate-500 font-mono">#{qid}</span>
-          </div>
+      {Object.entries(grouped).map(([qid, items]) => {
+        const name = items[0]?.quest_name ?? "";
+        const { dupIndex, dupTotal } = dupFor(Number(qid), name);
+        const isDup = (dupTotal ?? 0) > 1;
+        return (
+          <div
+            key={qid}
+            className={`card p-3 sm:p-4 space-y-2 ${isDup ? "border-l-2 border-l-accent-gold/60" : ""}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="font-medium text-accent-gold hover:underline truncate">
+                  {name}
+                </Link>
+                {isDup && (
+                  <span className="text-[10px] text-accent-gold shrink-0">
+                    {dupIndex}/{dupTotal}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono shrink-0">#{qid}</span>
+            </div>
           {items.map((h) => (
             <Link
               key={`${h.qid}-${h.line_id}`}
@@ -98,11 +128,9 @@ export default function SearchPage() {
               />
             </Link>
           ))}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
-
-// Local useState import
-import { useState, useEffect } from "react";
