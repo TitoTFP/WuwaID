@@ -474,18 +474,22 @@ def list_drafts(*, scope: str, author_label: str | None) -> list[dict]:
 
 
 # Map a JSON-side patch key to its DB column.
+# (zh-Hans uses a hyphen in JSON; we use zh_hans in the SQL column for SQL-safety.)
 _PATCH_TO_COLUMN = {
     "type": "type",
     "state_key": "state_key",
     "speaker_en": "speaker_en",
     "speaker_zh-Hans": "speaker_zh_hans",
-    "speaker_zh_hans": "speaker_zh_hans",
     "speaker_ja": "speaker_ja",
     "text_en": "text_en",
     "text_zh-Hans": "text_zh_hans",
-    "text_zh_hans": "text_zh_hans",
     "text_ja": "text_ja",
 }
+
+
+def _normalize_patch(patch: dict) -> dict:
+    """Translate hyphenated JSON keys to underscore form. Idempotent."""
+    return {k.replace("-", "_"): v for k, v in patch.items()}
 
 
 def approve_draft(draft_id: int, *, approver: str) -> None:
@@ -497,7 +501,7 @@ def approve_draft(draft_id: int, *, approver: str) -> None:
         if row["status"] != "pending":
             raise ValueError(f"draft already processed ({row['status']})")
 
-        patch = json.loads(row["patch_json"])
+        patch = _normalize_patch(json.loads(row["patch_json"]))
         qid = row["qid"]
         line_id = row["line_id"]
 
