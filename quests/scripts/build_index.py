@@ -66,8 +66,20 @@ def load_quest(path: Path) -> dict | None:
         return None
 
 
+def _parse_order(folder_name: str) -> int:
+    """Extract leading integer prefix from a chapter folder (e.g. '001_xxx' -> 1).
+
+    Returns a large sentinel if no numeric prefix, so unprefixed entries sink
+    to the end of the chapter instead of scrambling to the front.
+    """
+    head = folder_name.split("_", 1)[0]
+    if head.isdigit():
+        return int(head)
+    return 10**9
+
+
 def collect_quests(source: Path) -> list[dict]:
-    """Return list of quest dicts with injected side/chapter_id/chapter_name."""
+    """Return list of quest dicts with injected side/chapter_id/chapter_name/order."""
     quests: list[dict] = []
     for dirpath, _dirs, files in os.walk(source):
         if "dialogue.json" not in files:
@@ -81,10 +93,12 @@ def collect_quests(source: Path) -> list[dict]:
             d["side"] = 0
             d.setdefault("chapter_id", 0)
             d.setdefault("chapter_name", parts[0])
+            d["order"] = _parse_order(parts[1]) if len(parts) > 1 else 10**9
         elif parts and parts[0] == "side_quests":
             d["side"] = 1
             d["chapter_id"] = 0
             d["chapter_name"] = "Side Quests"
+            d["order"] = 0
         else:
             print(f"  WARN: unknown layout {rel}", file=sys.stderr)
             continue
@@ -216,11 +230,12 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             side INTEGER,
             chapter_id INTEGER,
             chapter_name TEXT,
+            ord INTEGER,
             total_lines INTEGER
         )
     """)
     cur.executemany(
-        "INSERT INTO quests VALUES (?,?,?,?,?,?,?)",
+        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?)",
         [
             (
                 q["quest_id"],
@@ -229,6 +244,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                 q.get("side", 0),
                 q.get("chapter_id", 0),
                 q.get("chapter_name", ""),
+                q.get("order", 0),
                 q.get("total_lines", 0),
             )
             for q in quests
@@ -236,6 +252,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
     )
     cur.execute("CREATE INDEX idx_quests_type ON quests(quest_type)")
     cur.execute("CREATE INDEX idx_quests_side ON quests(side)")
+    cur.execute("CREATE INDEX idx_quests_chapter_order ON quests(side, chapter_id, ord)")
     con.commit()
     con.close()
     return len(rows)
@@ -270,7 +287,7 @@ def main() -> int:
 
     print("Scanning quests...")
     quests = collect_quests(source)
-    quests.sort(key=lambda q: (q.get("side", 0), q.get("chapter_id", 0), q.get("quest_id", 0)))
+    quests.sort(key=lambda q: (q.get("side", 0), q.get("chapter_id", 0), q.get("order", 0), q.get("quest_id", 0)))
     print(f"  found {len(quests)} quests")
 
     print("Aggregating chapters + speakers...")

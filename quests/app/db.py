@@ -160,11 +160,11 @@ def list_quests(
 
     where_sql = ("WHERE " + " AND ".join(where)) if where else ""
     sort_sql = {
-        "id": "q.qid",
+        "id": "q.chapter_id, q.ord, q.qid",
         "name": "q.quest_name",
         "lines": "q.total_lines DESC",
         "lines_asc": "q.total_lines",
-    }.get(sort, "q.qid")
+    }.get(sort, "q.chapter_id, q.ord, q.qid")
 
     page = max(1, page)
     page_size = max(1, min(200, page_size))
@@ -178,7 +178,7 @@ def list_quests(
         rows = con.execute(
             f"""
             SELECT q.qid, q.quest_name, q.quest_type, q.side,
-                   q.chapter_id, q.chapter_name, q.total_lines
+                   q.chapter_id, q.chapter_name, q.ord, q.total_lines
             FROM quests q
             {where_sql}
             ORDER BY q.side, {sort_sql}
