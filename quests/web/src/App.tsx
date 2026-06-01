@@ -5,6 +5,9 @@ import ChapterPage from "./routes/ChapterPage";
 import SideQuestsPage from "./routes/SideQuestsPage";
 import QuestPage from "./routes/QuestPage";
 import SearchPage from "./routes/SearchPage";
+import EditorPage from "./routes/EditorPage";
+import DraftsPage from "./routes/DraftsPage";
+import LoginPage from "./routes/LoginPage";
 
 export default function App() {
   return (
@@ -15,6 +18,10 @@ export default function App() {
         <Route path="/side-quests" element={<SideQuestsPage />} />
         <Route path="/quests/:qid" element={<QuestPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/editor/:qid" element={<EditorPage />} />
+        <Route path="/drafts" element={<DraftsPage />} />
+        <Route path="/drafts/:draftId" element={<DraftsPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
