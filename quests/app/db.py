@@ -56,9 +56,11 @@ def _prepare_fts_query(q: str, lang: str) -> str:
     For CJK languages we bigram-ize the query so unicode61 tokenization
     matches the indexed text.
 
-    For English we auto-quote bare words. If the user supplies an explicit
-    FTS5 expression (NEAR(...), AND, OR, NOT, *, column:term, "..."),
-    we pass it through verbatim so power-users can write raw queries.
+    For English we quote each token and append ``*`` so partial words match
+    (e.g. ``"Towa"*`` matches ``Towards``). This is a strict superset of
+    exact match. If the user supplies an explicit FTS5 expression
+    (NEAR(...), AND, OR, NOT, *, column:term, "..."), we pass it through
+    verbatim so power-users can write raw queries.
     """
     q = q.strip()
     if not q:
@@ -71,7 +73,13 @@ def _prepare_fts_query(q: str, lang: str) -> str:
     tokens = q.split()
     if not tokens:
         return ""
-    return " ".join(f'"{t}"' for t in tokens)
+    out: list[str] = []
+    for t in tokens:
+        if t.endswith("*"):
+            out.append(f'"{t}"')
+        else:
+            out.append(f'"{t}"*')
+    return " ".join(out)
 
 
 def search(
