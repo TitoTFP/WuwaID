@@ -359,3 +359,249 @@ def apply_edits(qid: int, quest: dict) -> dict:
     finally:
         con.close()
     return quest
+
+
+# ---------------------------------------------------------------------------
+# Editor: drafts
+# ---------------------------------------------------------------------------
+
+
+def _now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+
+def create_draft(
+    qid: int,
+    line_id: int,
+    patch: dict,
+    *,
+    author_label: str | None = None,
+    note: str | None = None,
+    position_after: int | None = None,
+) -> int:
+    con = connect()
+    try:
+        now = _now()
+        cur = con.execute(
+            """INSERT INTO drafts
+               (qid, line_id, position_after, patch_json, status,
+                created_at, updated_at, author_label, note)
+               VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)""",
+            (qid, line_id, position_after, json.dumps(patch), now, now,
+             author_label, note),
+        )
+        con.commit()
+        return int(cur.lastrowid)
+    finally:
+        con.close()
+
+
+def get_draft(draft_id: int) -> dict | None:
+    con = connect()
+    try:
+        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+    finally:
+        con.close()
+    return dict(row) if row else None
+
+
+def update_draft(
+    draft_id: int,
+    *,
+    author_label: str | None,
+    patch: dict,
+) -> None:
+    con = connect()
+    try:
+        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        if row is None:
+            raise ValueError("draft not found")
+        if row["status"] != "pending":
+            raise ValueError(f"draft already {row['status']}")
+        is_editor = author_label is None
+        if not is_editor and row["author_label"] != author_label:
+            raise PermissionError("not your draft")
+        con.execute(
+            "UPDATE drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
+            (json.dumps(patch), _now(), draft_id),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+
+def delete_draft(draft_id: int, *, author_label: str | None) -> None:
+    con = connect()
+    try:
+        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        if row is None:
+            return
+        is_editor = author_label is None
+        if not is_editor and row["author_label"] != author_label:
+            raise PermissionError("not your draft")
+        if row["status"] != "pending":
+            raise ValueError(f"draft already {row['status']}")
+        con.execute("DELETE FROM drafts WHERE id = ?", (draft_id,))
+        con.commit()
+    finally:
+        con.close()
+
+
+def list_drafts(*, scope: str, author_label: str | None) -> list[dict]:
+    """scope: 'mine' filters by author_label; 'all' returns everything pending."""
+    con = connect()
+    try:
+        if scope == "mine":
+            rows = con.execute(
+                "SELECT * FROM drafts WHERE author_label = ? "
+                "AND status = 'pending' ORDER BY created_at DESC",
+                (author_label,),
+            ).fetchall()
+        else:
+            rows = con.execute(
+                "SELECT * FROM drafts WHERE status = 'pending' "
+                "ORDER BY created_at DESC"
+            ).fetchall()
+    finally:
+        con.close()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Editor: approve / reject
+# ---------------------------------------------------------------------------
+
+
+# Map a JSON-side patch key to its DB column.
+_PATCH_TO_COLUMN = {
+    "type": "type",
+    "state_key": "state_key",
+    "speaker_en": "speaker_en",
+    "speaker_zh-Hans": "speaker_zh_hans",
+    "speaker_zh_hans": "speaker_zh_hans",
+    "speaker_ja": "speaker_ja",
+    "text_en": "text_en",
+    "text_zh-Hans": "text_zh_hans",
+    "text_zh_hans": "text_zh_hans",
+    "text_ja": "text_ja",
+}
+
+
+def approve_draft(draft_id: int, *, approver: str) -> None:
+    con = connect()
+    try:
+        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        if row is None:
+            raise ValueError("draft not found")
+        if row["status"] != "pending":
+            raise ValueError(f"draft already processed ({row['status']})")
+
+        patch = json.loads(row["patch_json"])
+        qid = row["qid"]
+        line_id = row["line_id"]
+
+        if line_id == 0:
+            _materialize_insert(con, qid, row["position_after"], patch, approver)
+        elif patch.get("_op") == "reorder":
+            _materialize_reorder(con, qid, line_id, row["position_after"], approver)
+        else:
+            _materialize_field_edit(con, qid, line_id, patch, approver)
+
+        con.execute(
+            "UPDATE drafts SET status = 'applied', updated_at = ? WHERE id = ?",
+            (_now(), draft_id),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+
+def reject_draft(draft_id: int, *, approver: str) -> None:
+    con = connect()
+    try:
+        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        if row is None:
+            raise ValueError("draft not found")
+        if row["status"] != "pending":
+            raise ValueError(f"draft already processed ({row['status']})")
+        con.execute(
+            "UPDATE drafts SET status = 'rejected', updated_at = ? WHERE id = ?",
+            (_now(), draft_id),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+
+def _load_quest_lines(con, qid: int) -> list[dict]:
+    """Read the quest's all_lines[] for validation. Returns [] if no quest file."""
+    if DB_PATH is None:
+        return []
+    p = Path(DB_PATH).parent / "quests" / f"{qid}.json"
+    if not p.is_file():
+        return []
+    return json.loads(p.read_text(encoding="utf-8")).get("all_lines", [])
+
+
+def _materialize_field_edit(con, qid: int, line_id: int, patch: dict, approver: str) -> None:
+    lines = _load_quest_lines(con, qid)
+    if lines and not any(l.get("id") == line_id for l in lines):
+        raise ValueError(f"target line {line_id} gone")
+    # Validate branch targets inside options, if present
+    if lines and "options" in patch and patch["options"] is not None:
+        for opt in patch["options"]:
+            pk = opt.get("plot_line_key")
+            if pk:
+                if not any(l.get("plot_line_key") == pk or l.get("text_key") == pk for l in lines):
+                    raise ValueError(f"branch target {pk!r} not in this quest")
+    # Validate state_key change, if present
+    if lines and patch.get("state_key") is not None:
+        if not any(l.get("state_key") == patch["state_key"] for l in lines):
+            raise ValueError(f"state_key {patch['state_key']!r} not in this quest")
+    # Build (column, value) pairs
+    cols: dict[str, object] = {}
+    for k, v in patch.items():
+        if k == "options":
+            cols["options_json"] = json.dumps(v)
+        elif k in _PATCH_TO_COLUMN:
+            cols[_PATCH_TO_COLUMN[k]] = v
+    if not cols:
+        return
+    cols["approved_by"] = approver
+    cols["approved_at"] = _now()
+    placeholders = ", ".join("?" for _ in cols)
+    col_names = ", ".join(cols.keys())
+    update_set = ", ".join(f"{c} = ?" for c in cols if c not in ("qid", "line_id"))
+    values = list(cols.values())
+    con.execute(
+        f"INSERT INTO edits (qid, line_id, {col_names}) VALUES (?, ?, {placeholders}) "
+        f"ON CONFLICT(qid, line_id) DO UPDATE SET {update_set}",
+        [qid, line_id] + values + values,
+    )
+
+
+def _materialize_insert(con, qid: int, position_after: int | None, patch: dict, approver: str) -> None:
+    lines = _load_quest_lines(con, qid)
+    new_id = max((l.get("id", 0) for l in lines), default=0) + 1
+    if "id" not in patch:
+        patch = {**patch, "id": new_id}
+    if "options" not in patch:
+        patch["options"] = []
+    con.execute(
+        "INSERT INTO inserted_lines VALUES (?,?,?,?,?,?)",
+        (qid, new_id, position_after, json.dumps(patch), approver, _now()),
+    )
+
+
+def _materialize_reorder(con, qid: int, line_id: int, position_after: int | None, approver: str) -> None:
+    lines = _load_quest_lines(con, qid)
+    if lines and not any(l.get("id") == line_id for l in lines):
+        raise ValueError(f"target line {line_id} gone")
+    con.execute(
+        "INSERT INTO line_order VALUES (?,?,?,?,?) "
+        "ON CONFLICT(qid, line_id) DO UPDATE SET position_after = ?, "
+        "approved_by = ?, approved_at = ?",
+        (qid, line_id, position_after, approver, _now(),
+         position_after, approver, _now()),
+    )
