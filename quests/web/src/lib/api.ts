@@ -1,5 +1,9 @@
 import type {
   Chapter,
+  Draft,
+  DraftPatch,
+  LineSummary,
+  MeResponse,
   Quest,
   QuestListResponse,
   SearchHit,
@@ -9,8 +13,30 @@ import type {
 const BASE = "/api";
 
 async function get<T>(path: string): Promise<T> {
-  const r = await fetch(BASE + path);
+  const r = await fetch(BASE + path, { credentials: "include" });
   if (!r.ok) throw new Error(`${r.status} ${path}`);
+  return (await r.json()) as T;
+}
+
+async function send<T>(
+  method: "POST" | "PUT" | "DELETE",
+  path: string,
+  body?: unknown,
+  extraHeaders?: Record<string, string>,
+): Promise<T> {
+  const r = await fetch(BASE + path, {
+    method,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(extraHeaders ?? {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) {
+    const text = await r.text();
+    throw new Error(`${r.status} ${path} ${text}`);
+  }
   return (await r.json()) as T;
 }
 
@@ -49,4 +75,35 @@ export const api = {
     if (params.limit) u.set("limit", String(params.limit));
     return get<SearchHit[]>(`/search?${u.toString()}`);
   },
+
+  editorQuest: (qid: number) => get<Quest>(`/editor/quest/${qid}`),
+  editorQuestLines: (qid: number) => get<LineSummary[]>(`/editor/quest/${qid}/lines`),
+  createDraft: (params: {
+    qid: number;
+    line_id: number;
+    patch: DraftPatch;
+    position_after?: number | null;
+    note?: string;
+  }, authorLabel: string) =>
+    send<{ id: number }>("POST", "/editor/drafts", params, {
+      "X-Author-Label": authorLabel,
+    }),
+  updateDraft: (id: number, patch: DraftPatch, authorLabel: string | null) =>
+    send<{ ok: true }>("PUT", `/editor/drafts/${id}`, { patch }, {
+      "X-Author-Label": authorLabel ?? "",
+    }),
+  deleteDraft: (id: number, authorLabel: string | null) =>
+    send<{ ok: true }>("DELETE", `/editor/drafts/${id}`, undefined, {
+      "X-Author-Label": authorLabel ?? "",
+    }),
+  listDrafts: () => get<Draft[]>(`/drafts`),
+  getDraft: (id: number) => get<Draft>(`/drafts/${id}`),
+  approveDraft: (id: number) =>
+    send<{ ok: true }>("POST", `/drafts/${id}/approve`),
+  rejectDraft: (id: number) =>
+    send<{ ok: true }>("POST", `/drafts/${id}/reject`),
+  login: (password: string) =>
+    send<{ role: "editor" }>("POST", "/login", { password }),
+  logout: () => send<{ role: "anon" }>("POST", "/logout"),
+  me: () => get<MeResponse>(`/me`),
 };

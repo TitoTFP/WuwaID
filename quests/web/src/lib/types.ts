@@ -123,3 +123,57 @@ export interface QuestListResponse {
   page_size: number;
   items: QuestListItem[];
 }
+
+// Editor mode types (mirrors app/db.py)
+
+export type DraftStatus = "pending" | "applied" | "rejected" | "withdrawn";
+
+export type EditableField =
+  | "type"
+  | "state_key"
+  | "speaker_en"
+  | "speaker_zh-Hans"
+  | "speaker_ja"
+  | "text_en"
+  | "text_zh-Hans"
+  | "text_ja"
+  | "options";
+
+export type DraftPatch = Partial<{
+  type: string;
+  state_key: string;
+  speaker_en: string;
+  "speaker_zh-Hans": string;
+  speaker_ja: string;
+  text_en: string;
+  "text_zh-Hans": string;
+  text_ja: string;
+  options: DialogueLineOption[];
+  _op: "reorder";
+}>;
+
+export interface Draft {
+  id: number;
+  qid: number;
+  line_id: number;
+  position_after: number | null;
+  patch_json: string;
+  status: DraftStatus;
+  created_at: string;
+  updated_at: string;
+  author_label: string | null;
+  note: string | null;
+}
+
+export interface LineSummary {
+  id: number;
+  type: string;
+  state_key: string;
+  speaker_en: string;
+  text_en: string;
+  is_edited: boolean;
+}
+
+export interface MeResponse {
+  role: "anon" | "editor";
+}
