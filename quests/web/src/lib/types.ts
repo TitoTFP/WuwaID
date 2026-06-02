@@ -177,6 +177,23 @@ export interface LineSummary {
   is_edited: boolean;
 }
 
+export type TreeNodeKind = "flow" | "state" | "line";
+export type TreeDropPosition = "before" | "after" | "inside";
+
+export interface DialogueTreeNode {
+  id: string;
+  kind: TreeNodeKind;
+  label: string;
+  flowName?: string;
+  stateKey?: string;
+  stateId?: number;
+  subId?: number;
+  plotMode?: string;
+  line?: DialogueLine & { is_edited?: boolean };
+  lineIds: number[];
+  children?: DialogueTreeNode[];
+}
+
 export interface MeResponse {
   role: "anon" | "editor";
 }

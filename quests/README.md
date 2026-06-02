@@ -13,12 +13,22 @@ Web viewer for Wuthering Waves quest dialogue exported by
 
 ```
 wuwaid-quests/
-├── scripts/build_index.py   # rebuilds data/ from ../WuwaID/export_quest_ordered
+├── scripts/
+│   ├── build_index.py       # rebuilds data/ from ../WuwaID/export_quest_ordered
+│   ├── dev-check.js         # fails fast if :5173/:8000 busy
+│   └── serve-check.js       # fails fast if :8000 busy
 ├── app/                     # FastAPI backend
+│   ├── *.py                 # routes, db, auth
+│   └── test_*.py            # pytest suite
 ├── web/                     # Vite + React frontend
+│   └── src/
+│       ├── components/editor/  # LineForm, DialogueTreeView, DiffField, ...
+│       ├── routes/             # QuestPage, EditorPage, DraftsPage, ...
+│       └── __manual__/         # manual verification checklists
+├── docs/superpowers/        # design specs + implementation plans
 └── data/                    # generated, gitignored
     ├── chapters.json
-    ├── index.db             # FTS5
+    ├── index.db             # FTS5 + editor state
     └── quests/              # copy of dialogue.json files
 ```
 
@@ -62,6 +72,56 @@ verify the build before pushing, or to share on your LAN.
 | Editing FastAPI/Python | `bun run dev` (uvicorn auto-reloads) |
 | Verifying the production bundle | `bun run build && bun run serve` |
 | Sharing on LAN with a finished build | `bun run build && bun run serve` |
+| Reindexing quest data after game update | `bun run build:index` |
+| Running backend tests | `uv run pytest` |
+| Manual editor walkthrough | follow `web/src/__manual__/editor-flow.md` |
+
+## Reindexing after game updates
+
+`bun run build:index` rebuilds generated quest JSON and the FTS index from the
+latest WuwaID export. Editor-owned data in `data/index.db` is preserved across
+the rebuild:
+
+- approved field edits (`edits`)
+- inserted lines (`inserted_lines`)
+- approved reorder operations (`line_order`)
+- pending/review drafts (`drafts`)
+
+Rows targeting quests or line ids that no longer exist in the updated game data
+are skipped as stale. The command prints how many editor rows were restored or
+skipped.
+
+## Editor mode
+
+The `/editor/:qid` route lets visitors propose corrections without an account
+(anonymous drafts). Editors log in via `/login` to approve drafts at `/drafts`.
+Editor state lives in `data/index.db` alongside the FTS index.
+
+Set the editor password in a local `.env` (gitignored):
+
+```sh
+echo 'EDITOR_PASSWORD=dev' > .env
+```
+
+Then restart `bun run dev` / `bun run serve` and log in. The cookie session
+keeps you signed in until you sign out or restart with a different password.
+
+See `web/src/__manual__/editor-flow.md` for the full end-to-end checklist
+(anonymous draft → editor approval → applied edit).
+
+## Testing
+
+```sh
+uv run pytest
+```
+
+The suite uses `httpx` + FastAPI's TestClient against a tmpdir `data/index.db`.
+Notable cases: `app/test_build_index_preserve.py` verifies that
+`scripts/build_index.py` preserves editor tables (`edits`, `inserted_lines`,
+`line_order`, `drafts`) when rebuilding the FTS index.
+
+There is no JS test runner. The frontend is verified manually via the checklists
+in `web/src/__manual__/`.
 
 ## Pre-flight
 

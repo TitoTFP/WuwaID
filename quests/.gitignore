@@ -15,11 +15,30 @@
 __pycache__/
 *.py[cod]
 .venv/
-.uv-cache/
+
+# editor / runtime env
+.env
+.env.*
+!.env.example
+
+# pytest + coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# editors / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # logs / os
 *.log
 .DS_Store
+Thumbs.db
 
 # brainstorming session artifacts (not source)
 /.superpowers/

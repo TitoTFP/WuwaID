@@ -34,6 +34,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 QUESTS_DIR = DATA_DIR / "quests"
 DB_PATH = DATA_DIR / "index.db"
+EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session")
 
 DEFAULT_CANDIDATES = [
     REPO_ROOT.parent / "WuwaID" / "export_quest_ordered",
@@ -173,7 +174,97 @@ def cjk_bigrams(s: str) -> str:
     return " ".join(out)
 
 
+def _table_exists(con: sqlite3.Connection, table: str) -> bool:
+    return con.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+        (table,),
+    ).fetchone() is not None
+
+
+def snapshot_editor_tables(db_path: Path) -> dict[str, list[dict]]:
+    """Read editor-owned rows before rebuilding generated index tables."""
+    if not db_path.exists():
+        return {table: [] for table in EDITOR_TABLES}
+    con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row
+    try:
+        snapshot: dict[str, list[dict]] = {}
+        for table in EDITOR_TABLES:
+            if not _table_exists(con, table):
+                snapshot[table] = []
+                continue
+            snapshot[table] = [dict(row) for row in con.execute(f"SELECT * FROM {table}").fetchall()]
+        return snapshot
+    finally:
+        con.close()
+
+
+def _quest_line_ids(quests: list[dict]) -> dict[int, set[int]]:
+    return {
+        int(q["quest_id"]): {int(line.get("id", 0)) for line in q.get("all_lines", [])}
+        for q in quests
+    }
+
+
+def _anchor_valid(anchor: int | None, line_ids: set[int]) -> bool:
+    return anchor is None or int(anchor) in line_ids
+
+
+def _valid_editor_row(table: str, row: dict, line_ids_by_qid: dict[int, set[int]]) -> bool:
+    if table == "editor_session":
+        return True
+    qid = int(row.get("qid", -1))
+    line_ids = line_ids_by_qid.get(qid)
+    if line_ids is None:
+        return False
+    if table in ("edits", "line_order"):
+        line_id = int(row.get("line_id", -1))
+        if line_id not in line_ids:
+            return False
+        if table == "line_order" and not _anchor_valid(row.get("position_after"), line_ids):
+            return False
+        return True
+    if table == "inserted_lines":
+        return _anchor_valid(row.get("position_after"), line_ids)
+    if table == "drafts":
+        line_id = int(row.get("line_id", -1))
+        if line_id == 0:
+            return _anchor_valid(row.get("position_after"), line_ids)
+        return line_id in line_ids and _anchor_valid(row.get("position_after"), line_ids)
+    return False
+
+
+def restore_editor_tables(
+    con: sqlite3.Connection,
+    snapshot: dict[str, list[dict]],
+    quests: list[dict],
+) -> dict[str, dict[str, int]]:
+    """Restore editor rows that still target quests/lines present after rebuild."""
+    line_ids_by_qid = _quest_line_ids(quests)
+    stats: dict[str, dict[str, int]] = {}
+    for table, rows in snapshot.items():
+        stats[table] = {"restored": 0, "skipped": 0}
+        if not rows or not _table_exists(con, table):
+            stats[table]["skipped"] = len(rows)
+            continue
+        cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
+        for row in rows:
+            if not _valid_editor_row(table, row, line_ids_by_qid):
+                stats[table]["skipped"] += 1
+                continue
+            insert_cols = [col for col in cols if col in row]
+            placeholders = ",".join("?" for _ in insert_cols)
+            col_sql = ",".join(insert_cols)
+            con.execute(
+                f"INSERT OR REPLACE INTO {table} ({col_sql}) VALUES ({placeholders})",
+                [row[col] for col in insert_cols],
+            )
+            stats[table]["restored"] += 1
+    return stats
+
+
 def build_fts(db_path: Path, quests: list[dict]) -> int:
+    editor_snapshot = snapshot_editor_tables(db_path)
     if db_path.exists():
         db_path.unlink()
     con = sqlite3.connect(db_path)
@@ -317,8 +408,13 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             role TEXT NOT NULL DEFAULT 'editor'
         )
     """)
+    restore_stats = restore_editor_tables(con, editor_snapshot, quests)
     con.commit()
     con.close()
+    restored = sum(s["restored"] for s in restore_stats.values())
+    skipped = sum(s["skipped"] for s in restore_stats.values())
+    if restored or skipped:
+        print(f"  preserved editor rows: {restored} restored, {skipped} skipped stale")
     return len(rows)
 
 

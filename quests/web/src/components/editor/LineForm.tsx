@@ -40,13 +40,18 @@ function hasPatch(patch: DraftPatch): boolean {
 
 export default function LineForm({
   line,
+  originalLine,
   onSubmit,
+  onPreview,
   busy,
 }: {
   line: DialogueLine;
+  originalLine?: DialogueLine;
   onSubmit: (patch: DraftPatch) => void;
+  onPreview?: (line: DialogueLine) => void;
   busy: boolean;
 }) {
+  const baseLine = originalLine ?? line;
   const [tab, setTab] = useState<Tab>("en");
   const [draft, setDraft] = useState<DialogueLine>(line);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -57,11 +62,15 @@ export default function LineForm({
     setConfirmDiscard(false);
   }, [line.id, line]);
 
-  const patch = basePatch(line, draft);
+  const patch = basePatch(baseLine, draft);
   const canSave = hasPatch(patch) && !busy;
 
   function updateField<K extends keyof DialogueLine>(key: K, value: DialogueLine[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((current) => {
+      const next = { ...current, [key]: value };
+      onPreview?.(next);
+      return next;
+    });
   }
 
   return (
@@ -86,18 +95,18 @@ export default function LineForm({
           <DiffField
             label="type"
             value={draft.type}
-            original={line.type}
+            original={baseLine.type}
             onChange={(value) => updateField("type", value)}
           />
           <DiffField
             label="state_key"
             value={draft.state_key}
-            original={line.state_key}
+            original={baseLine.state_key}
             onChange={(value) => updateField("state_key", value)}
           />
           <OptionsSubform
             options={draft.options ?? []}
-            originals={line.options ?? []}
+            originals={baseLine.options ?? []}
             onChange={(options) => updateField("options", options)}
           />
         </div>
@@ -106,13 +115,13 @@ export default function LineForm({
           <DiffField
             label={`speaker_${tab}`}
             value={draft[speakerKey(tab)]}
-            original={line[speakerKey(tab)]}
+            original={baseLine[speakerKey(tab)]}
             onChange={(value) => updateField(speakerKey(tab), value)}
           />
           <DiffField
             label={`text_${tab}`}
             value={draft[textKey(tab)]}
-            original={line[textKey(tab)]}
+            original={baseLine[textKey(tab)]}
             onChange={(value) => updateField(textKey(tab), value)}
             multiline
           />
@@ -145,7 +154,8 @@ export default function LineForm({
         destructive
         onCancel={() => setConfirmDiscard(false)}
         onConfirm={() => {
-          setDraft(line);
+          setDraft(baseLine);
+          onPreview?.(baseLine);
           setConfirmDiscard(false);
         }}
       />
