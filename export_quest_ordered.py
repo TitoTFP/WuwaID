@@ -605,6 +605,25 @@ def get_quest_flows(quest_id: int, qnode_cur: sqlite3.Cursor) -> list[tuple[str,
     return sorted(found)
 
 
+def _expand_to_all_flowids(base_flows: list[tuple[str, int]],
+                            fl_fids: dict[str, set[int]]) -> list[tuple[str, int]]:
+    """
+    If a quest's qnode references any FlowId in a flowlist, the quest gets
+    every FlowId of that flowlist from flowState. Applied to all flowlists
+    regardless of single/multi-owner status; multi-owner flowlists produce
+    duplicated content across the quests that share them (accepted by
+    design — flowlists are story units, the rest of the chapter is
+    reachable from the same in-game context even if the qnode doesn't
+    explicitly reference every FlowId).
+    """
+    flowlists_in_use = {fl for fl, _ in base_flows}
+    expanded: set[tuple[str, int]] = set(base_flows)
+    for fl in flowlists_in_use:
+        for fid in fl_fids.get(fl, ()):
+            expanded.add((fl, fid))
+    return sorted(expanded)
+
+
 # ---------------------------------------------------------------------------
 # Dialogue extraction from flowState BinData
 # ---------------------------------------------------------------------------
@@ -638,12 +657,54 @@ def _extract_actions_from_bindata(bindata: bytes) -> list | None:
 def extract_dialogue_from_flowstate(state_key: str, bindata: bytes,
                                     lang_packs: list[LangPack]) -> list[dict]:
     """
-    From a single flowstate entry, extract all ShowTalk dialogue lines.
-    Returns list of dicts: {id, speaker_<lang>, text_<lang>, ...}
+    From a single flowstate entry, extract dialogue lines plus the
+    surrounding action metadata (plot mode + full action list).
+
+    Returns (lines, plot_mode, actions):
+      - lines     : list of {id, speaker_<lang>, text_<lang>, options, ...}
+      - plot_mode : last SetPlotMode.Mode seen in this state ("PhoneMessage",
+                    "Normal", "BlackScreen", "Chapter", ...). Default "Normal".
+      - actions   : compact summary of all actions in the state:
+                      [{"name": "...", "params": {...}, "action_id": ...,
+                        "action_guid": "..."}, ...]
+                    Excludes ShowTalk.TalkItems (already captured per-line)
+                    to keep payload small. Use this for the viewer to render
+                    plot-mode transitions, fades, branch links, etc.
     """
     actions = _extract_actions_from_bindata(bindata)
     if not actions or not isinstance(actions, list):
-        return []
+        return [], "Normal", []
+
+    plot_mode = "Normal"
+    action_summary: list[dict] = []
+
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        name = action.get("Name", "")
+        params = action.get("Params", {}) or {}
+        # Track SetPlotMode transitions in order so the final mode is "current"
+        if name == "SetPlotMode" and isinstance(params, dict):
+            mode = params.get("Mode")
+            if isinstance(mode, str) and mode:
+                plot_mode = mode
+        # Build a compact summary: drop TalkItems from ShowTalk (per-line data)
+        # to avoid duplicating what `lines` already carries.
+        if name == "ShowTalk" and isinstance(params, dict):
+            stripped = {k: v for k, v in params.items() if k != "TalkItems"}
+            action_summary.append({
+                "name": name,
+                "params": stripped,
+                "action_id": action.get("ActionId"),
+                "action_guid": action.get("ActionGuid"),
+            })
+        else:
+            action_summary.append({
+                "name": name,
+                "params": params,
+                "action_id": action.get("ActionId"),
+                "action_guid": action.get("ActionGuid"),
+            })
 
     lines = []
     for action in actions:
@@ -668,9 +729,12 @@ def extract_dialogue_from_flowstate(state_key: str, bindata: bytes,
 
             entry = {
                 "id": item_id,
+                "state_item_id": item_id,
                 "type": item_type,
                 "state_key": state_key,
                 "text_key": tid_talk,
+                "plot_line_id": item.get("PlotLineId"),
+                "plot_line_key": item.get("PlotLineKey", ""),
             }
 
             for pack in lang_packs:
@@ -685,7 +749,24 @@ def extract_dialogue_from_flowstate(state_key: str, bindata: bytes,
                     if not isinstance(opt, dict):
                         continue
                     opt_tid = opt.get("TidTalkOption", "")
-                    opt_entry = {"text_key": opt_tid}
+                    opt_entry = {
+                        "text_key": opt_tid,
+                        "plot_line_id": opt.get("PlotLineId"),
+                        "plot_line_key": opt.get("PlotLineKey", ""),
+                    }
+                    # Preserve the action list (JumpTalk, etc.) so the viewer
+                    # can render "→ leads to #L<id>" links for each option.
+                    opt_actions = opt.get("Actions", [])
+                    if isinstance(opt_actions, list) and opt_actions:
+                        opt_entry["actions"] = [
+                            {
+                                "name": a.get("Name", ""),
+                                "params": a.get("Params", {}) or {},
+                                "action_id": a.get("ActionId"),
+                                "action_guid": a.get("ActionGuid"),
+                            }
+                            for a in opt_actions if isinstance(a, dict)
+                        ]
                     for pack in lang_packs:
                         opt_entry[f"text_{pack.lang}"] = pack.get_text(opt_tid)
                     parsed_options.append(opt_entry)
@@ -694,7 +775,7 @@ def extract_dialogue_from_flowstate(state_key: str, bindata: bytes,
 
             lines.append(entry)
 
-    return lines
+    return lines, plot_mode, action_summary
 
 
 def parse_flowstate_key(state_key: str) -> tuple[str, int, int] | None:
@@ -722,6 +803,37 @@ def has_available_dialogue(lines: list[dict], primary_lang: str = "zh-Hans") -> 
             if option_text and set(option_text) != {'*'}:
                 return True
     return False
+
+
+def renumber_lines_globally(lines: list[dict]) -> None:
+    """Renumber each line's `id` to be globally unique within the quest.
+
+    The source `item.Id` is per-state, not per-quest — every state restarts
+    at 1. Without this pass, HTML `id="L{id}"` collisions break scroll
+    targets and option-branch resolution, and the displayed `#id` chip
+    resets inside the same quest (e.g. #1..#19 then back to #1..#3 across
+    sub-states of a PhoneMessage flow).
+
+    Each line's original per-state id is preserved in `state_item_id` for
+    the verbose display form (`#<global> · S<state>.<sub>.<local>`).
+    """
+    running = 0
+    id_remap: dict[tuple[str, int], int] = {}
+    for line in lines:
+        running += 1
+        sk = line.get("state_key") or ""
+        old = line.get("id", 0)
+        id_remap[(sk, old)] = running
+        line["id"] = running
+
+    for line in lines:
+        sk = line.get("state_key") or ""
+        for opt in line.get("options", []):
+            for a in opt.get("actions", []):
+                if a.get("name") == "JumpTalk" and isinstance(a.get("params", {}).get("TalkId"), int):
+                    new = id_remap.get((sk, a["params"]["TalkId"]))
+                    if new is not None:
+                        a["params"]["TalkId"] = new
 
 
 # ---------------------------------------------------------------------------
@@ -853,6 +965,11 @@ def main():
 
     print(f"  Indexed {len(state_index)} flow list/state combinations")
 
+    # Build flowlist -> set of FlowIds index for the all-FlowIds expansion rule.
+    fl_fids: dict[str, set[int]] = {}
+    for list_name, state_id in state_index.keys():
+        fl_fids.setdefault(list_name, set()).add(state_id)
+
     # -----------------------------------------------------------------------
     # 5. Create output directory (clean stale files from prior runs first)
     # -----------------------------------------------------------------------
@@ -919,8 +1036,9 @@ def main():
                 print(f"  [{quest_idx+1:03d}] Quest {quest_id}: {quest_name}")
 
                 # Find all flows for this quest
-                flows = get_quest_flows(quest_id, qnode_cur)
-                print(f"         Flows: {len(flows)}")
+                base_flows = get_quest_flows(quest_id, qnode_cur)
+                flows = _expand_to_all_flowids(base_flows, fl_fids)
+                print(f"         Flows: {len(flows)} (qnode: {len(base_flows)}, expanded +{len(flows) - len(base_flows)})")
 
                 # Collect all dialogue lines from flowstate
                 all_lines: list[dict] = []
@@ -929,16 +1047,23 @@ def main():
                 for flow_name, state_id in flows:
                     entries = state_index.get((flow_name, state_id), [])
                     flow_lines = []
+                    flow_states = []
                     for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                        lines = extract_dialogue_from_flowstate(
+                        lines, plot_mode, state_actions = extract_dialogue_from_flowstate(
                             state_key, bindata, lang_packs
                         )
                         flow_lines.extend(lines)
+                        flow_states.append({
+                            "state_key": state_key,
+                            "plot_mode": plot_mode,
+                            "actions": state_actions,
+                        })
                     if flow_lines:
                         flow_details.append({
                             "flow_list_name": flow_name,
                             "flow_id": state_id,
                             "state_id": state_id,
+                            "states": flow_states,
                             "dialogue": flow_lines,
                         })
                     all_lines.extend(flow_lines)
@@ -952,6 +1077,8 @@ def main():
                     print(f"         Lines: {len(all_lines)}")
                     print("         Skipped: dialogue is fully masked/unavailable")
                     continue
+
+                renumber_lines_globally(all_lines)
 
                 quest_idx += 1
                 q_dir = os.path.join(
@@ -1019,7 +1146,8 @@ def main():
         quest_name = _display_name(tid_name) if tid_name else ""
         quest_name = quest_name or f"Quest_{quest_id}"
 
-        flows = get_quest_flows(quest_id, qnode_cur)
+        base_flows = get_quest_flows(quest_id, qnode_cur)
+        flows = _expand_to_all_flowids(base_flows, fl_fids)
         if not flows:
             continue  # Skip quests with no flow data at all
 
@@ -1029,16 +1157,23 @@ def main():
         for flow_name, state_id in flows:
             entries = state_index.get((flow_name, state_id), [])
             flow_lines = []
+            flow_states = []
             for state_key, _, bindata in sorted(entries, key=lambda x: (x[1], x[0])):
-                lines = extract_dialogue_from_flowstate(
+                lines, plot_mode, state_actions = extract_dialogue_from_flowstate(
                     state_key, bindata, lang_packs
                 )
                 flow_lines.extend(lines)
+                flow_states.append({
+                    "state_key": state_key,
+                    "plot_mode": plot_mode,
+                    "actions": state_actions,
+                })
             if flow_lines:
                 flow_details.append({
                     "flow_list_name": flow_name,
                     "flow_id": state_id,
                     "state_id": state_id,
+                    "states": flow_states,
                     "dialogue": flow_lines,
                 })
             all_lines.extend(flow_lines)
@@ -1048,6 +1183,8 @@ def main():
 
         if not has_available_dialogue(all_lines):
             continue
+
+        renumber_lines_globally(all_lines)
 
         safe_makedirs(side_dir)
         q_dir = os.path.join(side_dir, sanitize_filename(f"{quest_id}_{quest_name}"))
