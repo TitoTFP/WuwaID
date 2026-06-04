@@ -1,13 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
 import type { DialogueLine, DialogueTreeNode, DraftPatch, LineSummary, TreeDropPosition } from "../lib/types";
-import DialogueTreeView from "../components/editor/DialogueTreeView";
-import LineForm from "../components/editor/LineForm";
+import DialogueTreeView, { applyFilters, type TreeFilters } from "../components/editor/DialogueTreeView";
+import LineForm, { TAB_ORDER } from "../components/editor/LineForm";
 import DraftBanner from "../components/editor/DraftBanner";
+import ShortcutsHelp from "../components/editor/ShortcutsHelp";
+import ResizeHandle from "../components/editor/ResizeHandle";
+import Skeleton from "../components/editor/Skeleton";
+import { useGlobalHotkeys } from "../lib/keyboard";
+import { useToast } from "../components/Toast";
+import { useUnsavedGuard } from "../lib/useUnsavedGuard";
 
 type ReorderPreview = { line_id: number; position_after: number | null };
 
@@ -142,17 +148,40 @@ function countTreeLines(nodes: DialogueTreeNode[]) {
   return total;
 }
 
+function collectLineIds(nodes: DialogueTreeNode[]): number[] {
+  const out: number[] = [];
+  function walk(list: DialogueTreeNode[]) {
+    for (const n of list) {
+      if (n.kind === "line" && n.line) out.push(n.line.id);
+      else if (n.children) walk(n.children);
+    }
+  }
+  walk(nodes);
+  return out;
+}
+
 export default function EditorPage() {
   const { qid = "0" } = useParams();
   const qidN = Number(qid);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [searchQ, setSearchQ] = useState("");
   const [previewLines, setPreviewLines] = useState<DialogueLine[]>([]);
   const [reorderPreview, setReorderPreview] = useState<ReorderPreview[]>([]);
+  const [tab, setTab] = useState<"en" | "zh-Hans" | "ja" | "META">("en");
+  const [filters, setFilters] = useState<TreeFilters>({
+    editedOnly: false,
+    pendingOnly: false,
+    hasOptionsOnly: false,
+    type: null,
+  });
+  const [showHelp, setShowHelp] = useState(false);
+  const [multiLang, setMultiLang] = useState(false);
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
+  const toast = useToast();
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -167,14 +196,16 @@ export default function EditorPage() {
   });
 
   const submitQ = useMutation({
-    mutationFn: (patch: DraftPatch) =>
+    mutationFn: (params: { patch: DraftPatch; note: string }) =>
       api.createDraft(
-        { qid: qidN, line_id: selectedId!, patch },
+        { qid: qidN, line_id: selectedId!, patch: params.patch, note: params.note || undefined },
         authorLabel,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drafts"] });
+      toast.success("Draft saved");
     },
+    onError: () => toast.error("Failed to save draft"),
   });
 
   const saveReorderQ = useMutation({
@@ -194,7 +225,9 @@ export default function EditorPage() {
     onSuccess: () => {
       setReorderPreview([]);
       queryClient.invalidateQueries({ queryKey: ["drafts"] });
+      toast.success("Reorder drafts saved");
     },
+    onError: () => toast.error("Failed to save reorder drafts"),
   });
 
   const draftsQ = useQuery({
@@ -206,7 +239,10 @@ export default function EditorPage() {
   useEffect(() => {
     setPreviewLines(questQ.data?.all_lines ?? []);
     setReorderPreview([]);
-  }, [questQ.data?.quest_id, questQ.data?.all_lines]);
+    setSelectedId(null);
+    setSelectedIds(new Set());
+    setSearchQ("");
+  }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   const lines = linesQ.data ?? [];
   const selectedLine = previewLines.find((line) => line.id === selectedId) ?? null;
@@ -222,14 +258,33 @@ export default function EditorPage() {
     () => buildEditorTree(previewLines, lines, plotModeByKey),
     [previewLines, lines, plotModeByKey],
   );
-  const filteredTree = useMemo(() => filterEditorTree(tree, searchQ), [tree, searchQ]);
-  const searchMatchCount = useMemo(() => countTreeLines(filteredTree), [filteredTree]);
-  const pendingCounts = (draftsQ.data ?? [])
-    .filter((draft) => draft.qid === qidN && draft.status === "pending")
-    .reduce<Record<number, number>>((acc, draft) => {
+  const searchedTree = useMemo(() => filterEditorTree(tree, searchQ), [tree, searchQ]);
+  const pendingCountsById = useMemo(() => {
+    const acc: Record<number, number> = {};
+    for (const draft of draftsQ.data ?? []) {
+      if (draft.qid !== qidN || draft.status !== "pending") continue;
       acc[draft.line_id] = (acc[draft.line_id] ?? 0) + 1;
-      return acc;
-    }, {});
+    }
+    return acc;
+  }, [draftsQ.data, qidN]);
+  const filteredTree = useMemo(
+    () => applyFilters(searchedTree, filters, pendingCountsById),
+    [searchedTree, filters, pendingCountsById],
+  );
+  const searchMatchCount = useMemo(() => countTreeLines(searchedTree), [searchedTree]);
+
+  const allLineIds = useMemo(() => collectLineIds(tree), [tree]);
+  const lineIdIndex = useMemo(() => {
+    const map = new Map<number, number>();
+    allLineIds.forEach((id, idx) => map.set(id, idx));
+    return map;
+  }, [allLineIds]);
+
+  const typesInQuest = useMemo(() => {
+    const set = new Set<string>();
+    for (const line of previewLines) set.add(String(line.type));
+    return Array.from(set).sort();
+  }, [previewLines]);
 
   const moveBlock = (
     movedLineIds: number[],
@@ -249,7 +304,7 @@ export default function EditorPage() {
     if (nextOrder.join(",") === currentOrder) return;
 
     const byId = new Map(previewLines.map((line) => [line.id, line]));
-    setPreviewLines(nextOrder.flatMap((id) => byId.get(id) ? [byId.get(id)!] : []));
+    setPreviewLines(nextOrder.flatMap((id) => (byId.get(id) ? [byId.get(id)!] : [])));
 
     const drafts: ReorderPreview[] = [];
     let anchor: number | null = insertAt > 0 ? remaining[insertAt - 1] : null;
@@ -272,6 +327,110 @@ export default function EditorPage() {
     setPreviewLines((current) => current.map((item) => (item.id === line.id ? line : item)));
   };
 
+  const selectById = useCallback(
+    (id: number) => {
+      setSelectedId(id);
+      setSelectedIds(new Set());
+    },
+    [],
+  );
+
+  const selectRelative = useCallback(
+    (direction: 1 | -1) => {
+      if (selectedId === null) {
+        if (allLineIds.length > 0) selectById(allLineIds[0]);
+        return;
+      }
+      const idx = lineIdIndex.get(selectedId);
+      if (idx === undefined) return;
+      const next = allLineIds[idx + direction];
+      if (next !== undefined) selectById(next);
+    },
+    [selectedId, allLineIds, lineIdIndex, selectById],
+  );
+
+  const jumpToLine = useCallback(
+    (id: number) => {
+      if (allLineIds.includes(id)) {
+        selectById(id);
+        toast.success(`Jumped to #${id}`);
+      } else {
+        toast.error(`Line #${id} not in this quest`);
+      }
+    },
+    [allLineIds, selectById, toast],
+  );
+
+  const onSelectMany = useCallback((ids: number[], replace: boolean) => {
+    setSelectedIds((current) => {
+      const next = replace ? new Set<number>() : new Set(current);
+      for (const id of ids) {
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const clearMultiSelect = useCallback(() => setSelectedIds(new Set()), []);
+
+  const tabCycle = useCallback((dir: 1 | -1) => {
+    setTab((current) => {
+      const idx = TAB_ORDER.indexOf(current);
+      if (idx < 0) return "en";
+      const next = (idx + dir + TAB_ORDER.length) % TAB_ORDER.length;
+      return TAB_ORDER[next];
+    });
+  }, []);
+
+  const dirty = submitQ.isPending || (reorderPreview.length > 0);
+  useUnsavedGuard(dirty);
+
+  useGlobalHotkeys([
+    { key: "j", handler: () => selectRelative(1) },
+    { key: "k", handler: () => selectRelative(-1) },
+    { key: "s", handler: (event) => {
+        event.preventDefault();
+        // submission handled in form via direct ref? simpler: ignore for now
+      }, options: { mod: true } },
+    { key: "1", handler: () => setTab("en"), options: { allowInInputs: true } },
+    { key: "2", handler: () => setTab("zh-Hans"), options: { allowInInputs: true } },
+    { key: "3", handler: () => setTab("ja"), options: { allowInInputs: true } },
+    { key: "4", handler: () => setTab("META"), options: { allowInInputs: true } },
+    { key: "[", handler: () => tabCycle(-1), options: { allowInInputs: true } },
+    { key: "]", handler: () => tabCycle(1), options: { allowInInputs: true } },
+    { key: "?", handler: () => setShowHelp((v) => !v), options: { shift: true } },
+    { key: "Escape", handler: () => { setShowHelp(false); if (searchQ) setSearchQ(""); } },
+  ]);
+
+  const backlinks = useMemo(() => {
+    if (!selectedLine) return [] as { fromId: number; fromType: string; snippet: string }[];
+    const matches: { fromId: number; fromType: string; snippet: string }[] = [];
+    const targetKey = selectedLine.text_key;
+    const targetId = selectedLine.id;
+    for (const line of previewLines) {
+      if (line.id === targetId) continue;
+      for (const opt of line.options ?? []) {
+        if (opt.plot_line_id === targetId || (opt.plot_line_key && opt.plot_line_key === targetKey)) {
+          matches.push({
+            fromId: line.id,
+            fromType: line.type,
+            snippet: (opt.text_en || opt["text_zh-Hans"] || opt.text_ja || "").slice(0, 60),
+          });
+        }
+      }
+    }
+    return matches;
+  }, [selectedLine, previewLines]);
+
+  const breadcrumb = useMemo(() => {
+    if (!selectedLine) return null;
+    const parsed = parseStateKey(selectedLine.state_key ?? "");
+    const flow = parsed?.flowName || "Ungrouped";
+    const state = parsed ? `state ${parsed.stateId}.${parsed.subId}` : selectedLine.state_key;
+    return { flow, state, line: selectedLine.id };
+  }, [selectedLine]);
+
   return (
     <div className="container-narrow">
       <div className="mb-3">
@@ -281,84 +440,212 @@ export default function EditorPage() {
         >
           ← back to viewer
         </Link>
-        <h1 className="mt-1 font-serif text-2xl text-slate-100">
-          Editor · quest #{qidN}
-        </h1>
+        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
+          <h1 className="font-serif text-2xl text-slate-100">
+            Editor · quest #{qidN}
+            <span className="ml-2 text-sm text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
+          </h1>
+          <button
+            type="button"
+            className="btn text-xs"
+            onClick={() => setShowHelp(true)}
+            title="Show keyboard shortcuts"
+            aria-label="Show keyboard shortcuts"
+          >
+            ?
+          </button>
+        </div>
+        {breadcrumb && (
+          <div className="mt-1 text-[11px] text-slate-500">
+            <span>quest #{qidN}</span>
+            <span className="mx-1 text-slate-700">›</span>
+            <span>{breadcrumb.flow}</span>
+            <span className="mx-1 text-slate-700">›</span>
+            <span>{breadcrumb.state}</span>
+            <span className="mx-1 text-slate-700">›</span>
+            <span className="text-slate-300">line #{breadcrumb.line}</span>
+          </div>
+        )}
         {reorderPreview.length > 0 && (
-          <div className="card mt-3 flex flex-wrap items-center justify-between gap-3 border-accent-gold/20 bg-accent-gold/5 p-3 text-sm">
-            <div>
-              <div className="text-slate-200">
-                Previewing {reorderPreview.length} unsaved reorder {reorderPreview.length === 1 ? "change" : "changes"}.
+          <div className="card mt-3 flex flex-col gap-3 border-accent-gold/20 bg-accent-gold/5 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-slate-200">
+                  Previewing {reorderPreview.length} unsaved reorder {reorderPreview.length === 1 ? "change" : "changes"}.
+                </div>
+                <div className="text-xs text-slate-500">
+                  Tree order updates immediately. Save to create review drafts.
+                </div>
               </div>
-              <div className="text-xs text-slate-500">
-                Tree order updates immediately. Save to create review drafts.
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-active text-xs"
+                  disabled={saveReorderQ.isPending}
+                  onClick={() => saveReorderQ.mutate(reorderPreview)}
+                >
+                  {saveReorderQ.isPending ? "Saving..." : "Save reorder drafts"}
+                </button>
+                <button type="button" className="btn text-xs" onClick={resetPreview}>
+                  Reset preview
+                </button>
               </div>
             </div>
+            <ul className="space-y-1 text-xs text-slate-300">
+              {reorderPreview.map((change) => (
+                <li
+                  key={change.line_id}
+                  className="flex items-center justify-between gap-2 rounded border border-white/5 bg-bg-1/40 px-2 py-1"
+                >
+                  <span className="font-mono">
+                    #<span className="text-slate-400">{change.line_id}</span>{" "}
+                    <span className="text-slate-500">→</span>{" "}
+                    {change.position_after === null ? (
+                      <span className="text-slate-500">top</span>
+                    ) : (
+                      <span>after #{change.position_after}</span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    className="text-rose-300 hover:text-rose-200"
+                    onClick={() =>
+                      setReorderPreview((current) => current.filter((d) => d.line_id !== change.line_id))
+                    }
+                  >
+                    ↶
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <DraftBanner qid={qidN} />
+        {selectedIds.size > 1 && (
+          <div className="card mt-3 flex flex-wrap items-center justify-between gap-2 border-accent-teal/30 bg-accent-teal/5 p-2 text-xs text-slate-200">
+            <span>
+              {selectedIds.size} lines selected
+            </span>
             <div className="flex gap-2">
               <button
                 type="button"
-                className="btn btn-active text-xs"
-                disabled={saveReorderQ.isPending}
-                onClick={() => saveReorderQ.mutate(reorderPreview)}
+                className="btn text-xs"
+                onClick={() => {
+                  const ids = Array.from(selectedIds);
+                  if (!ids.length) return;
+                  moveBlock(ids, [ids[ids.length - 1]], "after");
+                  toast.success(`Moved ${ids.length} lines`);
+                }}
               >
-                {saveReorderQ.isPending ? "Saving..." : "Save reorder drafts"}
+                Move to end
               </button>
-              <button type="button" className="btn text-xs" onClick={resetPreview}>
-                Reset preview
+              <button type="button" className="btn text-xs" onClick={clearMultiSelect}>
+                Clear
               </button>
             </div>
           </div>
         )}
-        <DraftBanner qid={qidN} />
       </div>
-      <div className="grid min-h-[60vh] gap-4 lg:grid-cols-[22rem_1fr]">
-        <aside className="card max-h-[80vh] overflow-auto p-2 lg:sticky lg:top-4">
-          {linesQ.isLoading && (
-            <div className="text-xs text-slate-500 p-2">Loading lines…</div>
-          )}
-          {linesQ.error && (
-            <div className="text-xs text-rose-400 p-2">Failed to load lines.</div>
-          )}
-          {tree.length > 0 && (
-            <DialogueTreeView
-              nodes={filteredTree}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              pendingCounts={pendingCounts}
-              searchQ={searchQ}
-              onSearchChange={setSearchQ}
-              searchMatchCount={searchMatchCount}
-              totalLineCount={previewLines.length || lines.length}
-              onMoveBlock={moveBlock}
-            />
-          )}
-          {saveReorderQ.error && (
-            <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
-          )}
-        </aside>
-        <section className="card p-4">
+      <div className="grid min-h-[60vh] gap-4 lg:grid-cols-[auto_1fr]">
+        <div className="flex w-[22rem] max-w-full">
+          <aside className="card max-h-[80vh] w-full overflow-auto p-2 lg:sticky lg:top-4">
+            {linesQ.isLoading && questQ.isLoading && (
+              <div className="p-2">
+                <Skeleton lines={6} />
+              </div>
+            )}
+            {tree.length > 0 && (
+              <DialogueTreeView
+                nodes={filteredTree}
+                selectedId={selectedId}
+                onSelect={selectById}
+                pendingCounts={pendingCountsById}
+                searchQ={searchQ}
+                onSearchChange={setSearchQ}
+                searchMatchCount={searchMatchCount}
+                totalLineCount={previewLines.length || lines.length}
+                filters={filters}
+                onFiltersChange={setFilters}
+                types={typesInQuest}
+                onMoveBlock={moveBlock}
+                onJumpToLine={jumpToLine}
+                activeLang={tab === "META" ? "en" : tab}
+                selectedIds={selectedIds}
+                onSelectMany={onSelectMany}
+                storageKeyOpen={`editor:open:${qidN}`}
+              />
+            )}
+            {saveReorderQ.error && (
+              <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
+            )}
+          </aside>
+          <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={720} />
+        </div>
+        <section className="card flex h-[80vh] flex-col p-4">
           {selectedId === null ? (
-            <div className="text-sm text-slate-500">
-              Select a line on the left to edit it.
+            <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
+              <p>Select a line on the left, or press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
+              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
             </div>
           ) : questQ.isLoading ? (
-            <div className="text-sm text-slate-500">Loading line…</div>
+            <Skeleton variant="form" />
           ) : questQ.error ? (
             <div className="text-sm text-rose-400">Failed to load quest.</div>
           ) : selectedLine ? (
-            <div className="space-y-3">
+            <div className="flex h-full flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] uppercase tracking-widest text-slate-500">Edit line</div>
+                <label className="flex items-center gap-1 text-[10px] text-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={multiLang}
+                    onChange={(e) => setMultiLang(e.target.checked)}
+                    className="accent-accent-gold"
+                  />
+                  3-lang view
+                </label>
+              </div>
               <LineForm
                 line={selectedLine}
                 originalLine={originalSelectedLine ?? selectedLine}
+                qid={qidN}
+                tab={tab}
+                onTabChange={setTab}
                 busy={submitQ.isPending}
                 onPreview={previewLineEdit}
-                onSubmit={(patch) => submitQ.mutate(patch)}
+                onSubmit={(patch, note) => submitQ.mutate({ patch, note })}
+                onSelectNext={(dir) => {
+                  setTab("en");
+                  selectRelative(dir);
+                }}
+                allLines={previewLines}
+                multiLang={multiLang}
               />
-              {submitQ.error && (
-                <div className="text-xs text-rose-400">Failed to save draft.</div>
-              )}
-              {submitQ.isSuccess && (
-                <div className="text-xs text-accent-gold">Draft saved.</div>
+              {backlinks.length > 0 && (
+                <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
+                  <summary className="cursor-pointer text-slate-300">
+                    Backlinks · {backlinks.length} line(s) jump here
+                  </summary>
+                  <ul className="mt-2 space-y-1">
+                    {backlinks.map((link) => (
+                      <li
+                        key={link.fromId}
+                        className="flex items-center gap-2"
+                      >
+                        <button
+                          type="button"
+                          className="link text-xs"
+                          onClick={() => selectById(link.fromId)}
+                        >
+                          #{link.fromId} · {link.fromType}
+                        </button>
+                        {link.snippet && (
+                          <span className="truncate text-slate-500">— {link.snippet}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               )}
             </div>
           ) : (
@@ -368,6 +655,7 @@ export default function EditorPage() {
           )}
         </section>
       </div>
+      <ShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 }

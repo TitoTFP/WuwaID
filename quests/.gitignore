@@ -43,3 +43,9 @@ Thumbs.db
 # brainstorming session artifacts (not source)
 /.superpowers/
 /.codegraph/
+
+# superpowers
+docs/superpowers/
+
+# Command Code
+.commandcode/

@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DialogueLine, DraftPatch, Lang } from "../../lib/types";
 import ConfirmDialog from "./ConfirmDialog";
 import DiffField from "./DiffField";
 import LangTabs from "./LangTabs";
 import OptionsSubform from "./OptionsSubform";
+import { useUnsavedGuard } from "../../lib/useUnsavedGuard";
+import { useLocalDraft } from "../../lib/useLocalDraft";
+import { useToast } from "../Toast";
+import { useHotkey } from "../../lib/keyboard";
 
 type Tab = Lang | "META";
 type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja";
 type TextKey = "text_en" | "text_zh-Hans" | "text_ja";
+
+const LANG_KEYS: Lang[] = ["en", "zh-Hans", "ja"];
+const TAB_ORDER: Tab[] = ["en", "zh-Hans", "ja", "META"];
 
 function speakerKey(lang: Lang): SpeakerKey {
   return lang === "zh-Hans" ? "speaker_zh-Hans" : `speaker_${lang}`;
@@ -22,7 +29,7 @@ function basePatch(line: DialogueLine, draft: DialogueLine): DraftPatch {
   for (const key of ["type", "state_key"] as const) {
     if (draft[key] !== line[key]) patch[key] = draft[key];
   }
-  for (const lang of ["en", "zh-Hans", "ja"] as const) {
+  for (const lang of LANG_KEYS) {
     const sKey = speakerKey(lang);
     const tKey = textKey(lang);
     if (draft[sKey] !== line[sKey]) patch[sKey] = draft[sKey];
@@ -38,32 +45,94 @@ function hasPatch(patch: DraftPatch): boolean {
   return Object.keys(patch).length > 0;
 }
 
+const MAX_TEXT_LEN = 1000;
+
+function validateField(value: string, field: string): string | null {
+  if (!value.trim() && (field.startsWith("text_") || field === "type" || field === "state_key")) {
+    return "empty";
+  }
+  if (value.length > MAX_TEXT_LEN) return "too long";
+  return null;
+}
+
 export default function LineForm({
   line,
   originalLine,
+  qid,
+  tab,
+  onTabChange,
   onSubmit,
   onPreview,
   busy,
+  onSelectNext,
+  allLines,
+  multiLang,
 }: {
   line: DialogueLine;
   originalLine?: DialogueLine;
-  onSubmit: (patch: DraftPatch) => void;
+  qid: number;
+  tab: Tab;
+  onTabChange: (next: Tab) => void;
+  onSubmit: (patch: DraftPatch, note: string) => void;
   onPreview?: (line: DialogueLine) => void;
   busy: boolean;
+  onSelectNext?: (direction: 1 | -1) => void;
+  allLines?: DialogueLine[];
+  multiLang?: boolean;
 }) {
   const baseLine = originalLine ?? line;
-  const [tab, setTab] = useState<Tab>("en");
   const [draft, setDraft] = useState<DialogueLine>(line);
+  const [note, setNote] = useState("");
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [showRestore, setShowRestore] = useState(false);
+  const localDraft = useLocalDraft<{ draft: DialogueLine; note: string }>(qid, line.id);
+  const initialised = useRef(false);
+  const toast = useToast();
 
   useEffect(() => {
-    setDraft(line);
-    setTab("en");
+    initialised.current = false;
+    onTabChange("en");
+    setNote("");
+    setShowRestore(false);
     setConfirmDiscard(false);
-  }, [line.id, line]);
+  }, [line.id, onTabChange]);
+
+  useEffect(() => {
+    if (initialised.current) return;
+    if (localDraft.restored) {
+      setDraft(localDraft.restored.draft);
+      setNote(localDraft.restored.note);
+      setShowRestore(true);
+    } else {
+      setDraft(line);
+      setNote("");
+    }
+    initialised.current = true;
+  }, [line, localDraft.restored]);
+
+  useEffect(() => {
+    if (!initialised.current) return;
+    if (!showRestore) return;
+    localDraft.save({ draft, note });
+  }, [draft, note, showRestore, localDraft]);
 
   const patch = basePatch(baseLine, draft);
   const canSave = hasPatch(patch) && !busy;
+  const dirty = hasPatch(patch) || note.trim().length > 0;
+  useUnsavedGuard(dirty);
+  useHotkey("s", () => submit(0), { mod: true, allowInInputs: true });
+
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    for (const lang of LANG_KEYS) {
+      const t = draft[textKey(lang)];
+      if (typeof t === "string") {
+        const e = validateField(t, `text_${lang}`);
+        if (e) errors[`text_${lang}`] = e;
+      }
+    }
+    return errors;
+  }, [draft]);
 
   function updateField<K extends keyof DialogueLine>(key: K, value: DialogueLine[K]) {
     setDraft((current) => {
@@ -73,92 +142,240 @@ export default function LineForm({
     });
   }
 
+  function resetField(key: keyof DialogueLine) {
+    setDraft((current) => {
+      const next = { ...current, [key]: baseLine[key] };
+      onPreview?.(next);
+      return next;
+    });
+  }
+
+  function discardAll() {
+    setDraft(baseLine);
+    setNote("");
+    onPreview?.(baseLine);
+    localDraft.clear();
+    setShowRestore(false);
+    setConfirmDiscard(false);
+    toast.success("Discarded local edits");
+  }
+
+  function discardLocal() {
+    setDraft(line);
+    setNote("");
+    onPreview?.(line);
+    localDraft.clear();
+    setShowRestore(false);
+  }
+
+  function submit(advance: 0 | 1 = 0) {
+    if (!canSave) return;
+    if (Object.keys(fieldErrors).length > 0) {
+      toast.error("Fix validation errors before saving");
+      return;
+    }
+    onSubmit(patch, note.trim());
+    setNote("");
+    localDraft.clear();
+    setShowRestore(false);
+    if (advance === 1) onSelectNext?.(1);
+  }
+
   return (
     <form
-      className="space-y-4"
+      className="flex h-full flex-col"
       onSubmit={(e) => {
         e.preventDefault();
-        if (canSave) onSubmit(patch);
+        submit(0);
       }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="text-xs text-slate-500">Line #{line.id}</div>
-          <div className="font-serif text-xl text-slate-100">{line.text_key}</div>
+      <div className="space-y-4 pb-32">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-xs text-slate-500">Line #{line.id}</div>
+            <div className="font-serif text-xl text-slate-100">{line.text_key || <em className="text-slate-500">no text_key</em>}</div>
+          </div>
+          <div className="text-xs text-slate-500">
+            <a className="link" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
+              open in viewer ↗
+            </a>
+          </div>
         </div>
-      </div>
 
-      <LangTabs active={tab} onChange={setTab} />
-
-      {tab === "META" ? (
-        <div className="space-y-4">
-          <DiffField
-            label="type"
-            value={draft.type}
-            original={baseLine.type}
-            onChange={(value) => updateField("type", value)}
-          />
-          <DiffField
-            label="state_key"
-            value={draft.state_key}
-            original={baseLine.state_key}
-            onChange={(value) => updateField("state_key", value)}
-          />
-          <OptionsSubform
-            options={draft.options ?? []}
-            originals={baseLine.options ?? []}
-            onChange={(options) => updateField("options", options)}
-          />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <DiffField
-            label={`speaker_${tab}`}
-            value={draft[speakerKey(tab)]}
-            original={baseLine[speakerKey(tab)]}
-            onChange={(value) => updateField(speakerKey(tab), value)}
-          />
-          <DiffField
-            label={`text_${tab}`}
-            value={draft[textKey(tab)]}
-            original={baseLine[textKey(tab)]}
-            onChange={(value) => updateField(textKey(tab), value)}
-            multiline
-          />
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
-        <button type="submit" className="btn btn-active" disabled={!canSave}>
-          {busy ? "Saving…" : "Save as draft"}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          disabled={!hasPatch(patch) || busy}
-          onClick={() => setConfirmDiscard(true)}
-        >
-          Discard
-        </button>
-        {hasPatch(patch) && (
-          <span className="text-xs text-slate-500">
-            {Object.keys(patch).length} changed field(s)
-          </span>
+        {showRestore && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-2 text-xs text-slate-200">
+            <span>Restored unsaved edits from your last session.</span>
+            <div className="flex gap-2">
+              <button type="button" className="btn text-[11px]" onClick={discardLocal}>
+                Discard local
+              </button>
+            </div>
+          </div>
         )}
+
+        <LangTabs active={tab} onChange={onTabChange} />
+
+        {tab === "META" ? (
+          <div className="space-y-4">
+            <DiffField
+              label="type"
+              value={String(draft.type ?? "")}
+              original={String(baseLine.type ?? "")}
+              onChange={(value) => updateField("type", value)}
+              onReset={() => resetField("type")}
+            />
+            <DiffField
+              label="state_key"
+              value={String(draft.state_key ?? "")}
+              original={String(baseLine.state_key ?? "")}
+              onChange={(value) => updateField("state_key", value)}
+              onReset={() => resetField("state_key")}
+            />
+            <OptionsSubform
+              options={draft.options ?? []}
+              originals={baseLine.options ?? []}
+              onChange={(options) => updateField("options", options)}
+              allLines={allLines}
+              currentLineId={line.id}
+            />
+          </div>
+        ) : multiLang ? (
+          <div className="space-y-4">
+            {LANG_KEYS.map((lang) => {
+              const sKey = speakerKey(lang);
+              const tKey = textKey(lang);
+              return (
+                <div key={lang} className="rounded-md border border-white/5 bg-bg-1/40 p-3">
+                  <div className="mb-2 text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                    {lang}
+                  </div>
+                  <div className="space-y-3">
+                    <DiffField
+                      label={`speaker_${lang}`}
+                      value={String(draft[sKey] ?? "")}
+                      original={String(baseLine[sKey] ?? "")}
+                      onChange={(value) => updateField(sKey, value)}
+                      onReset={() => resetField(sKey)}
+                    />
+                    <DiffField
+                      label={`text_${lang}`}
+                      value={String(draft[tKey] ?? "")}
+                      original={String(baseLine[tKey] ?? "")}
+                      onChange={(value) => updateField(tKey, value)}
+                      onReset={() => resetField(tKey)}
+                      multiline
+                      maxLength={MAX_TEXT_LEN}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <DiffField
+              label={`speaker_${tab}`}
+              value={String(draft[speakerKey(tab)] ?? "")}
+              original={String(baseLine[speakerKey(tab)] ?? "")}
+              onChange={(value) => updateField(speakerKey(tab), value)}
+              onReset={() => resetField(speakerKey(tab))}
+            />
+            <DiffField
+              label={`text_${tab}`}
+              value={String(draft[textKey(tab)] ?? "")}
+              original={String(baseLine[textKey(tab)] ?? "")}
+              onChange={(value) => updateField(textKey(tab), value)}
+              onReset={() => resetField(textKey(tab))}
+              multiline
+              maxLength={MAX_TEXT_LEN}
+            />
+            {fieldErrors[`text_${tab}`] === "empty" && (
+              <div className="text-[11px] text-amber-300">empty text</div>
+            )}
+            {fieldErrors[`text_${tab}`] === "too long" && (
+              <div className="text-[11px] text-rose-300">over {MAX_TEXT_LEN} characters</div>
+            )}
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-slate-300" htmlFor="draft-note">
+            Note (optional)
+          </label>
+          <textarea
+            id="draft-note"
+            className="input min-h-16 resize-y text-xs"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="why this change? reviewers will see this."
+          />
+        </div>
       </div>
+
+      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1/90 px-4 py-3 backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="submit" className="btn btn-active" disabled={!canSave} title="Ctrl+S">
+            {busy ? "Saving…" : "Save as draft"}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            disabled={!canSave}
+            onClick={() => submit(1)}
+            title="Save then jump to next line"
+          >
+            Save & next
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => onSelectNext?.(-1)}
+            title="Previous line"
+            aria-label="Previous line"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => onSelectNext?.(1)}
+            title="Next line"
+            aria-label="Next line"
+          >
+            →
+          </button>
+          <button
+            type="button"
+            className="btn"
+            disabled={!dirty || busy}
+            onClick={() => setConfirmDiscard(true)}
+          >
+            Discard
+          </button>
+          {hasPatch(patch) && (
+            <span className="text-xs text-slate-500">
+              {Object.keys(patch).length} changed field(s)
+            </span>
+          )}
+          {Object.keys(fieldErrors).length > 0 && (
+            <span className="ml-auto text-xs text-rose-300">
+              {Object.keys(fieldErrors).length} validation issue(s)
+            </span>
+          )}
+        </div>
+      </div>
+
       <ConfirmDialog
         open={confirmDiscard}
-        title="Discard edits?"
+        title="Discard all edits?"
         message="This resets the working copy for this line. Drafts already saved are not affected."
         confirmLabel="Discard"
         destructive
         onCancel={() => setConfirmDiscard(false)}
-        onConfirm={() => {
-          setDraft(baseLine);
-          onPreview?.(baseLine);
-          setConfirmDiscard(false);
-        }}
+        onConfirm={discardAll}
       />
     </form>
   );
 }
+
+export { TAB_ORDER };

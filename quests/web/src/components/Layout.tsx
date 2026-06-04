@@ -1,6 +1,10 @@
 import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import LangSwitcher from "./LangSwitcher";
+import { api } from "../lib/api";
+import { useMe } from "../lib/auth";
+import { getAuthorLabel } from "../lib/session";
 
 export default function Layout() {
   const [params, setParams] = useSearchParams();
@@ -8,6 +12,17 @@ export default function Layout() {
   const nav = useNavigate();
 
   useEffect(() => setQ(params.get("q") ?? ""), [params]);
+
+  const meQ = useMe();
+  const role = meQ.data?.role ?? "anon";
+  const authorLabel = getAuthorLabel();
+  const draftsQ = useQuery({
+    queryKey: ["drafts", "header", role === "editor" ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    enabled: !!meQ.data,
+    staleTime: 15_000,
+  });
+  const pendingCount = (draftsQ.data ?? []).filter((d) => d.status === "pending").length;
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +72,22 @@ export default function Layout() {
               </svg>
             </div>
           </form>
+
+          <NavLink
+            to="/drafts"
+            className={({ isActive }) =>
+              `btn relative ${isActive ? "btn-active" : ""}`
+            }
+            title="Drafts"
+            aria-label={`Drafts (${pendingCount} pending)`}
+          >
+            <span>Drafts</span>
+            {pendingCount > 0 && (
+              <span className="ml-1 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-accent-gold/30 px-1.5 text-[10px] font-semibold text-accent-gold">
+                {pendingCount > 99 ? "99+" : pendingCount}
+              </span>
+            )}
+          </NavLink>
 
           <LangSwitcher />
         </div>

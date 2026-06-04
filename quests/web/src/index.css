@@ -60,3 +60,24 @@
 ::-webkit-scrollbar-track { background: #0b0d12; }
 ::-webkit-scrollbar-thumb { background: #1f2530; border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: #2a3242; }
+
+/* Skeleton shimmer (no extra dep) */
+.skeleton {
+  @apply rounded-md bg-white/[0.04] relative overflow-hidden;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  animation: skeleton-shimmer 1.4s infinite;
+}
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Diff highlights */
+.diff-removed { @apply bg-rose-500/20 text-rose-200 line-through decoration-rose-300/40 rounded-sm px-0.5; }
+.diff-added { @apply bg-accent-teal/20 text-accent-teal rounded-sm px-0.5; }
+.diff-equal { @apply text-slate-300; }

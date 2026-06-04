@@ -1,11 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
-import type { DialogueTreeNode, TreeDropPosition } from "../../lib/types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { DialogueLine, DialogueTreeNode, Lang, TreeDropPosition } from "../../lib/types";
 
 type DragPayload = {
   id: string;
   kind: DialogueTreeNode["kind"];
   lineIds: number[];
 };
+
+export type TreeFilters = {
+  editedOnly: boolean;
+  pendingOnly: boolean;
+  hasOptionsOnly: boolean;
+  type: string | null;
+};
+
+const ROW_HEIGHT = 44;
 
 function allExpandableIds(nodes: DialogueTreeNode[]): string[] {
   const ids: string[] = [];
@@ -71,6 +80,75 @@ function dropAllowed(
   return target.kind === "line" || target.kind === "state";
 }
 
+type FlatRow = {
+  id: string;
+  kind: DialogueTreeNode["kind"];
+  depth: number;
+  label: string;
+  line?: DialogueLine & { is_edited?: boolean };
+  lineIds: number[];
+  flowName?: string;
+  stateKey?: string;
+  plotMode?: string;
+};
+
+function flatten(
+  nodes: DialogueTreeNode[],
+  open: Set<string>,
+  depth: number,
+  out: FlatRow[],
+): void {
+  for (const node of nodes) {
+    out.push({
+      id: node.id,
+      kind: node.kind,
+      depth,
+      label: node.label,
+      line: node.line,
+      lineIds: node.lineIds,
+      flowName: node.flowName,
+      stateKey: node.stateKey,
+      plotMode: node.plotMode,
+    });
+    if (node.kind !== "line" && open.has(node.id) && node.children) {
+      flatten(node.children, open, depth + 1, out);
+    }
+  }
+}
+
+function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCounts: Record<number, number>): boolean {
+  if (node.kind !== "line" || !node.line) {
+    const children = node.children ?? [];
+    if (children.length === 0) return false;
+    return children.some((child) => matchesFilters(child, filters, pendingCounts));
+  }
+  const line = node.line;
+  if (filters.editedOnly && !line.is_edited) return false;
+  if (filters.pendingOnly && (pendingCounts[line.id] ?? 0) === 0) return false;
+  if (filters.hasOptionsOnly && !(line.options && line.options.length > 0)) return false;
+  if (filters.type && line.type !== filters.type) return false;
+  return true;
+}
+
+export function applyFilters(nodes: DialogueTreeNode[], filters: TreeFilters, pendingCounts: Record<number, number>): DialogueTreeNode[] {
+  return nodes
+    .map((node) => {
+      if (node.kind === "line") {
+        return matchesFilters(node, filters, pendingCounts) ? node : null;
+      }
+      const filteredChildren = applyFilters(node.children ?? [], filters, pendingCounts);
+      if (filteredChildren.length === 0) return null;
+      return { ...node, children: filteredChildren, lineIds: filteredChildren.flatMap((c) => c.lineIds) };
+    })
+    .filter((node): node is DialogueTreeNode => node !== null);
+}
+
+function previewValueForLang(line: DialogueLine, lang: Lang): { speaker: string; text: string } {
+  const speaker = (line[`speaker_${lang}` as keyof DialogueLine] as string) || line.speaker_en;
+  const text = (line[`text_${lang}` as keyof DialogueLine] as string) || line.text_en;
+  return { speaker: String(speaker ?? ""), text: String(text ?? "") };
+}
+
 export default function DialogueTreeView({
   nodes,
   selectedId,
@@ -79,8 +157,16 @@ export default function DialogueTreeView({
   onSearchChange,
   searchMatchCount,
   totalLineCount,
+  filters,
+  onFiltersChange,
+  types,
   onSelect,
   onMoveBlock,
+  onJumpToLine,
+  activeLang,
+  selectedIds,
+  onSelectMany,
+  storageKeyOpen,
 }: {
   nodes: DialogueTreeNode[];
   selectedId: number | null;
@@ -89,17 +175,68 @@ export default function DialogueTreeView({
   onSearchChange: (value: string) => void;
   searchMatchCount: number;
   totalLineCount: number;
+  filters: TreeFilters;
+  onFiltersChange: (next: TreeFilters) => void;
+  types: string[];
   onSelect: (id: number) => void;
   onMoveBlock?: (
     movedLineIds: number[],
     targetLineIds: number[],
     position: TreeDropPosition,
   ) => void;
+  onJumpToLine?: (id: number) => void;
+  activeLang: Lang;
+  selectedIds?: Set<number>;
+  onSelectMany?: (ids: number[], replace: boolean) => void;
+  storageKeyOpen: string;
 }) {
   const expandable = useMemo(() => allExpandableIds(nodes), [nodes]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(expandable));
   const [dragging, setDragging] = useState<DragPayload | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const [jumpTo, setJumpTo] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewport, setViewport] = useState(600);
+  const initialised = useRef(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKeyOpen);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          setOpen(new Set(arr.filter((v) => typeof v === "string")));
+          initialised.current = true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [storageKeyOpen]);
+
+  useEffect(() => {
+    if (!initialised.current) return;
+    try {
+      localStorage.setItem(storageKeyOpen, JSON.stringify(Array.from(open)));
+    } catch {
+      // ignore
+    }
+  }, [open, storageKeyOpen]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => setScrollTop(el.scrollTop);
+    const onResize = () => setViewport(el.clientHeight);
+    onResize();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   useEffect(() => {
     setOpen((current) => {
@@ -111,6 +248,19 @@ export default function DialogueTreeView({
       return next;
     });
   }, [expandable, nodes, searchQ, selectedId]);
+
+  const flatRows = useMemo(() => {
+    const rows: FlatRow[] = [];
+    flatten(nodes, open, 0, rows);
+    return rows;
+  }, [nodes, open]);
+
+  const totalRows = flatRows.length;
+  const overscan = 6;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - overscan);
+  const endIndex = Math.min(totalRows, Math.ceil((scrollTop + viewport) / ROW_HEIGHT) + overscan);
+  const visibleRows = flatRows.slice(startIndex, endIndex);
+  const totalHeight = totalRows * ROW_HEIGHT;
 
   function toggle(id: string) {
     setOpen((current) => {
@@ -129,149 +279,56 @@ export default function DialogueTreeView({
     setOpen(new Set());
   }
 
-  function renderDropZone(node: DialogueTreeNode, position: TreeDropPosition) {
-    const key = `${node.id}:${position}`;
-    const allowed = dropAllowed(dragging, node, position);
-    return (
-      <div
-        onDragOver={(e) => {
-          if (!allowed) return;
-          e.preventDefault();
-          setDropTarget(key);
-        }}
-        onDragLeave={() => setDropTarget((current) => (current === key ? null : current))}
-        onDrop={(e) => {
-          e.preventDefault();
-          if (!allowed || !dragging) return;
-          setDropTarget(null);
-          onMoveBlock?.(dragging.lineIds, node.lineIds, position);
-        }}
-        className={[
-          "mx-2 h-1 rounded-full transition-colors",
-          allowed && dropTarget === key ? "bg-accent-gold/80" : "bg-transparent",
-        ].join(" ")}
-      />
-    );
+  function updateFilter<K extends keyof TreeFilters>(key: K, value: TreeFilters[K]) {
+    onFiltersChange({ ...filters, [key]: value });
   }
 
-  function renderNode(node: DialogueTreeNode, depth = 0) {
-    const isLine = node.kind === "line";
-    const isOpen = open.has(node.id);
-    const selected = isLine && node.line?.id === selectedId;
-    const pending = isLine && node.line ? pendingCounts[node.line.id] ?? 0 : 0;
-    const canNestInto = node.kind !== "line";
-    const dragDisabled = !!searchQ.trim();
-
-    return (
-      <div key={node.id}>
-        {renderDropZone(node, "before")}
-        <div
-          draggable={!dragDisabled}
-          onDragStart={(e) => {
-            if (dragDisabled) {
-              e.preventDefault();
-              return;
-            }
-            const payload = { id: node.id, kind: node.kind, lineIds: node.lineIds };
-            setDragging(payload);
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("application/json", JSON.stringify(payload));
-          }}
-          onDragEnd={() => {
-            setDragging(null);
-            setDropTarget(null);
-          }}
-          onDragOver={(e) => {
-            if (!canNestInto || !dropAllowed(dragging, node, "inside")) return;
-            e.preventDefault();
-            setDropTarget(`${node.id}:inside`);
-          }}
-          onDragLeave={() =>
-            setDropTarget((current) => (current === `${node.id}:inside` ? null : current))
-          }
-          onDrop={(e) => {
-            e.preventDefault();
-            if (!canNestInto || !dropAllowed(dragging, node, "inside") || !dragging) return;
-            setDropTarget(null);
-            onMoveBlock?.(dragging.lineIds, node.lineIds, "inside");
-          }}
-          className={[
-            "group rounded-lg border transition-colors",
-            selected
-              ? "border-accent-gold/40 bg-accent-gold/10"
-              : dropTarget === `${node.id}:inside`
-                ? "border-accent-gold/50 bg-accent-gold/5"
-                : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
-          ].join(" ")}
-          style={{ marginLeft: depth * 12 }}
-        >
-          {isLine && node.line ? (
-            <div className="rounded-lg">
-              <button
-                type="button"
-                onClick={() => onSelect(node.line!.id)}
-                className="w-full px-2 py-1.5 text-left"
-              >
-                <div className="flex min-w-0 items-center gap-1.5 text-xs font-mono">
-                  <span className={dragDisabled ? "text-slate-700" : "cursor-grab text-slate-600 active:cursor-grabbing"}>::</span>
-                  <span className="text-slate-500">#{node.line.id}</span>
-                  <span className={selected ? "text-accent-gold" : "text-slate-400"}>
-                    {highlight(String(node.line.type), searchQ)}
-                  </span>
-                  {node.line.speaker_en && (
-                    <span className="truncate text-slate-500">
-                      {highlight(node.line.speaker_en, searchQ)}
-                    </span>
-                  )}
-                  {node.line.is_edited && (
-                    <span className="ml-auto rounded bg-accent-gold/20 px-1 py-0.5 text-[9px] text-accent-gold">
-                      edited
-                    </span>
-                  )}
-                  {pending > 0 && (
-                    <span className="rounded bg-violet-500/20 px-1 py-0.5 text-[9px] text-violet-300">
-                      *{pending}
-                    </span>
-                  )}
-                </div>
-                <div className="truncate pl-6 text-[10px] text-slate-500">
-                  {node.line.text_en ? highlight(node.line.text_en, searchQ) : <em className="opacity-50">-</em>}
-                </div>
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => toggle(node.id)}
-              className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs"
-            >
-              <span className="w-3 text-slate-500">{isOpen ? "-" : "+"}</span>
-              <span className={dragDisabled ? "font-mono text-slate-700" : "cursor-grab font-mono text-slate-600 active:cursor-grabbing"}>::</span>
-              <span className={node.kind === "flow" ? "font-medium text-slate-200" : "text-slate-300"}>
-                {node.label}
-              </span>
-              <span className="ml-auto text-[10px] text-slate-600">{node.lineIds.length}</span>
-              {node.plotMode && node.plotMode !== "Normal" && (
-                <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] text-slate-400">
-                  {node.plotMode}
-                </span>
-              )}
-            </button>
-          )}
-        </div>
-        {node.kind !== "line" && isOpen && node.children && (
-          <div className="mt-0.5 space-y-0.5">
-            {node.children.map((child) => renderNode(child, depth + 1))}
-          </div>
-        )}
-        {renderDropZone(node, "after")}
-      </div>
-    );
+  function commitJump() {
+    const raw = jumpTo.trim().replace(/^#/, "");
+    const id = Number(raw);
+    if (Number.isFinite(id) && id > 0) {
+      onJumpToLine?.(id);
+      setJumpTo("");
+    }
   }
+
+  function rowClick(row: FlatRow, event: React.MouseEvent) {
+    if (row.kind === "line" && row.line) {
+      if (event.shiftKey && selectedIds && onSelectMany) {
+        const ids = collectLineIdsInRange(nodes, selectedId ?? row.line.id, row.line.id);
+        onSelectMany(ids, !event.metaKey && !event.ctrlKey);
+        return;
+      }
+      if ((event.metaKey || event.ctrlKey) && selectedIds && onSelectMany) {
+        onSelectMany([row.line.id], false);
+        return;
+      }
+      onSelect(row.line.id);
+    } else {
+      toggle(row.id);
+    }
+  }
+
+  function collectLineIdsInRange(nodes: DialogueTreeNode[], fromId: number, toId: number): number[] {
+    const list: number[] = [];
+    for (const n of nodes) {
+      if (n.kind === "line" && n.line) list.push(n.line.id);
+      else if (n.children) list.push(...collectLineIdsInRange(n.children, fromId, toId));
+    }
+    const a = list.indexOf(fromId);
+    const b = list.indexOf(toId);
+    if (a < 0 || b < 0) return [];
+    const [lo, hi] = a < b ? [a, b] : [b, a];
+    return list.slice(lo, hi + 1);
+  }
+
+  const dragDisabled = !!searchQ.trim() || !onMoveBlock;
+  const showInside = (row: FlatRow) => row.kind !== "line";
+  const totalCount = nodes.reduce((sum, node) => sum + node.lineIds.length, 0);
 
   return (
     <div className="space-y-2">
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <div className="relative">
           <input
             value={searchQ}
@@ -290,28 +347,333 @@ export default function DialogueTreeView({
             </button>
           )}
         </div>
+        <div className="flex items-center gap-1">
+          <input
+            value={jumpTo}
+            onChange={(e) => setJumpTo(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitJump();
+              }
+            }}
+            placeholder="#id"
+            className="input h-7 w-20 text-[10px] font-mono"
+            inputMode="numeric"
+          />
+          <button
+            type="button"
+            className="btn px-2 py-0.5 text-[10px]"
+            onClick={commitJump}
+            disabled={!jumpTo.trim()}
+          >
+            jump
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          <FilterChip
+            label="edited"
+            active={filters.editedOnly}
+            onClick={() => updateFilter("editedOnly", !filters.editedOnly)}
+          />
+          <FilterChip
+            label="pending"
+            active={filters.pendingOnly}
+            onClick={() => updateFilter("pendingOnly", !filters.pendingOnly)}
+          />
+          <FilterChip
+            label="has options"
+            active={filters.hasOptionsOnly}
+            onClick={() => updateFilter("hasOptionsOnly", !filters.hasOptionsOnly)}
+          />
+          {types.length > 0 && (
+            <select
+              value={filters.type ?? ""}
+              onChange={(e) => updateFilter("type", e.target.value || null)}
+              className="rounded-md border border-white/10 bg-bg-2 px-2 py-0.5 text-[10px] text-slate-300"
+            >
+              <option value="">any type</option>
+              {types.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="px-1 text-[10px] text-slate-600">
           {searchQ.trim()
             ? `${searchMatchCount} of ${totalLineCount} lines match · clear search to reorder`
-            : `Local search across ${totalLineCount} lines`}
+            : `${totalLineCount} lines · ${nodes.length} top-level flow(s)`}
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 px-1">
         <div className="text-[10px] uppercase tracking-widest text-slate-600">
-          Tree · {nodes.reduce((sum, node) => sum + node.lineIds.length, 0)} lines
+          Tree · {totalCount} lines
         </div>
         <div className="flex gap-1">
           <button type="button" className="btn px-2 py-0.5 text-[10px]" onClick={expandAll}>expand</button>
           <button type="button" className="btn px-2 py-0.5 text-[10px]" onClick={collapseAll}>collapse</button>
         </div>
       </div>
-      {nodes.length > 0 ? (
-        <div className="space-y-0.5">{nodes.map((node) => renderNode(node))}</div>
-      ) : (
+      {totalRows === 0 ? (
         <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-xs text-slate-500">
-          No local matches.
+          No matches in this quest.
+        </div>
+      ) : (
+        <div
+          ref={scrollRef}
+          className="relative overflow-auto"
+          style={{ maxHeight: "calc(100vh - 16rem)", minHeight: "200px" }}
+        >
+          <div style={{ height: totalHeight, position: "relative" }}>
+            {visibleRows.map((row, idx) => {
+              const actualIndex = startIndex + idx;
+              return (
+                <Row
+                  key={row.id}
+                  row={row}
+                  top={actualIndex * ROW_HEIGHT}
+                  height={ROW_HEIGHT}
+                  isOpen={open.has(row.id)}
+                  selected={row.kind === "line" && row.line?.id === selectedId}
+                  multiSelected={row.kind === "line" && !!row.line && !!selectedIds?.has(row.line.id)}
+                  pending={row.kind === "line" && row.line ? pendingCounts[row.line.id] ?? 0 : 0}
+                  searchQ={searchQ}
+                  activeLang={activeLang}
+                  dropTarget={dropTarget}
+                  dragging={dragging}
+                  dragDisabled={dragDisabled}
+                  showInside={showInside(row)}
+                  onClick={(event) => rowClick(row, event)}
+                  onDragStart={(event) => {
+                    if (dragDisabled) {
+                      event.preventDefault();
+                      return;
+                    }
+                    const payload = { id: row.id, kind: row.kind, lineIds: row.lineIds };
+                    setDragging(payload);
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("application/json", JSON.stringify(payload));
+                  }}
+                  onDragEnd={() => {
+                    setDragging(null);
+                    setDropTarget(null);
+                  }}
+                  onDropTargetChange={(key) => setDropTarget(key)}
+                  onDrop={(lineIds, position) => onMoveBlock?.(lineIds, row.lineIds, position)}
+                  draggingPayload={dragging}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded-full border px-2 py-0.5 text-[10px] transition",
+        active
+          ? "border-accent-gold/60 bg-accent-gold/10 text-accent-gold"
+          : "border-white/10 bg-bg-2 text-slate-400 hover:text-slate-200",
+      ].join(" ")}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Row({
+  row,
+  top,
+  height,
+  isOpen,
+  selected,
+  multiSelected,
+  pending,
+  searchQ,
+  activeLang,
+  dropTarget,
+  dragging,
+  dragDisabled,
+  showInside,
+  onClick,
+  onDragStart,
+  onDragEnd,
+  onDropTargetChange,
+  onDrop,
+  draggingPayload,
+}: {
+  row: FlatRow;
+  top: number;
+  height: number;
+  isOpen: boolean;
+  selected: boolean;
+  multiSelected: boolean;
+  pending: number;
+  searchQ: string;
+  activeLang: Lang;
+  dropTarget: string | null;
+  dragging: DragPayload | null;
+  dragDisabled: boolean;
+  showInside: boolean;
+  onClick: (event: React.MouseEvent) => void;
+  onDragStart: (event: React.DragEvent) => void;
+  onDragEnd: () => void;
+  onDropTargetChange: (key: string | null | ((current: string | null) => string | null)) => void;
+  onDrop: (lineIds: number[], position: TreeDropPosition) => void;
+  draggingPayload: DragPayload | null;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isLine = row.kind === "line";
+  const beforeKey = `${row.id}:before`;
+  const afterKey = `${row.id}:after`;
+  const insideKey = `${row.id}:inside`;
+
+  function handleDragOverBefore(event: React.DragEvent) {
+    const allowed = dropAllowed(dragging, { id: row.id, kind: row.kind, label: "", lineIds: row.lineIds }, "before");
+    if (!allowed) return;
+    event.preventDefault();
+    onDropTargetChange(beforeKey);
+  }
+  function handleDragOverAfter(event: React.DragEvent) {
+    const target = { id: row.id, kind: row.kind, label: "", lineIds: row.lineIds };
+    const allowed = dropAllowed(dragging, target, "after");
+    if (!allowed) return;
+    event.preventDefault();
+    onDropTargetChange(afterKey);
+  }
+  function handleDragOverInside(event: React.DragEvent) {
+    if (!showInside) return;
+    const target = { id: row.id, kind: row.kind, label: "", lineIds: row.lineIds };
+    if (!dropAllowed(dragging, target, "inside")) return;
+    event.preventDefault();
+    onDropTargetChange(insideKey);
+  }
+  function handleDrop(event: React.DragEvent, position: TreeDropPosition) {
+    event.preventDefault();
+    if (!draggingPayload) return;
+    onDrop(draggingPayload.lineIds, position);
+    onDropTargetChange(null);
+  }
+
+  const activeInside = dropTarget === insideKey;
+  const activeBefore = dropTarget === beforeKey;
+  const activeAfter = dropTarget === afterKey;
+  const preview = isLine && row.line ? previewValueForLang(row.line, activeLang) : null;
+
+  return (
+    <div
+      ref={ref}
+      style={{ position: "absolute", top, left: 0, right: 0, height, paddingLeft: 4, paddingRight: 4 }}
+    >
+      <div
+        onDragOver={handleDragOverBefore}
+        onDragLeave={() => onDropTargetChange((cur) => (cur === beforeKey ? null : cur))}
+        onDrop={(e) => handleDrop(e, "before")}
+        className={[
+          "h-1.5 rounded-full transition-colors",
+          activeBefore ? "bg-accent-gold/80" : "bg-transparent",
+        ].join(" ")}
+      />
+      <div
+        draggable={!dragDisabled}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={handleDragOverInside}
+        onDragLeave={() => onDropTargetChange((cur) => (cur === insideKey ? null : cur))}
+        onDrop={(e) => handleDrop(e, "inside")}
+        className={[
+          "group flex h-[34px] items-center gap-2 rounded-md border px-2 text-xs transition-colors",
+          selected
+            ? "border-accent-gold/50 bg-accent-gold/10"
+            : multiSelected
+              ? "border-accent-teal/50 bg-accent-teal/10"
+              : activeInside
+                ? "border-accent-gold/40 bg-accent-gold/5"
+                : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
+        ].join(" ")}
+        style={{ marginLeft: row.depth * 12 }}
+      >
+        {isLine ? (
+          <button
+            type="button"
+            onClick={onClick}
+            className="flex w-full items-center gap-1.5 overflow-hidden text-left font-mono"
+          >
+            <span className={dragDisabled ? "text-slate-700" : "cursor-grab text-slate-600 active:cursor-grabbing"}>
+              ::
+            </span>
+            <span className="shrink-0 text-slate-500">#{row.line!.id}</span>
+            <span className={selected ? "shrink-0 text-accent-gold" : "shrink-0 text-slate-400"}>
+              {highlight(String(row.line!.type), searchQ)}
+            </span>
+            {preview?.speaker && (
+              <span className="truncate text-slate-500">{highlight(preview.speaker, searchQ)}</span>
+            )}
+            <div className="ml-auto flex items-center gap-1">
+              {row.line?.is_edited && (
+                <span className="rounded bg-accent-gold/20 px-1 py-0.5 text-[9px] text-accent-gold">edited</span>
+              )}
+              {pending > 0 && (
+                <span className="rounded bg-violet-500/20 px-1 py-0.5 text-[9px] text-violet-300">*{pending}</span>
+              )}
+            </div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onClick}
+            className="flex w-full items-center gap-2 text-left"
+            draggable={!dragDisabled}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+          >
+            <span className="w-3 text-slate-500">{isOpen ? "-" : "+"}</span>
+            <span className={dragDisabled ? "font-mono text-slate-700" : "cursor-grab font-mono text-slate-600 active:cursor-grabbing"}>
+              ::
+            </span>
+            <span className={row.kind === "flow" ? "truncate font-medium text-slate-200" : "truncate text-slate-300"}>
+              {row.label}
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1">
+              {pending > 0 && (
+                <span className="rounded bg-violet-500/20 px-1 py-0.5 text-[9px] text-violet-300">*{pending}</span>
+              )}
+              <span className="text-[10px] text-slate-600">{row.lineIds.length}</span>
+              {row.plotMode && row.plotMode !== "Normal" && (
+                <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] text-slate-400">
+                  {row.plotMode}
+                </span>
+              )}
+            </span>
+          </button>
+        )}
+      </div>
+      {isLine && preview && (
+        <div
+          className="truncate pl-7 text-[10px] text-slate-500"
+          style={{ marginLeft: row.depth * 12 }}
+        >
+          {preview.text ? highlight(preview.text, searchQ) : <em className="opacity-50">-</em>}
+        </div>
+      )}
+      <div
+        onDragOver={handleDragOverAfter}
+        onDragLeave={() => onDropTargetChange((cur) => (cur === afterKey ? null : cur))}
+        onDrop={(e) => handleDrop(e, "after")}
+        className={[
+          "h-1.5 rounded-full transition-colors",
+          activeAfter ? "bg-accent-gold/80" : "bg-transparent",
+        ].join(" ")}
+      />
     </div>
   );
 }
