@@ -20,6 +20,17 @@ const PREVIEW_GAP = 2;
 const PREVIEW_HEIGHT = 15;
 const ROW_GAP = 6;
 
+const LINE_TYPE_TAG: Record<string, { tag: string; rail: string; tagClass: string }> = {
+  Talk:         { tag: "TALK",   rail: "bg-accent-teal",   tagClass: "bg-accent-teal/15 text-accent-teal" },
+  Option:       { tag: "OPTION", rail: "bg-accent-gold",   tagClass: "bg-accent-gold/15 text-accent-gold" },
+  CenterText:   { tag: "CENTER", rail: "bg-accent-violet", tagClass: "bg-accent-violet/15 text-accent-violet" },
+  PhoneMessage: { tag: "PHONE",  rail: "bg-accent-amber",  tagClass: "bg-accent-amber/20 text-accent-amber" },
+  NoTextItem:   { tag: "MARKER", rail: "bg-accent-slate",  tagClass: "bg-accent-slate/20 text-accent-slate" },
+  SystemOption: { tag: "SYSOPT", rail: "bg-accent-blue",   tagClass: "bg-accent-blue/15 text-accent-blue" },
+};
+const FALLBACK_TYPE = { tag: "?? TYPE", rail: "bg-slate-500", tagClass: "bg-white/10 text-slate-300" };
+const PLOT_MODE_CINE = /^(BlackScreen|Level[A-Z])$/;
+
 function rowHeight(row: { kind: DialogueTreeNode["kind"] }): number {
   return row.kind === "line"
     ? DROP_PAD + ROW_INNER + PREVIEW_GAP + PREVIEW_HEIGHT + DROP_PAD
@@ -673,6 +684,12 @@ function Row({
   const activeBefore = dropTarget === beforeKey;
   const activeAfter = dropTarget === afterKey;
   const preview = isLine && row.line ? previewValueForLang(row.line, activeLang) : null;
+  const cine = isLine && row.line && PLOT_MODE_CINE.test(row.plotMode ?? "");
+  const typeInfo = !isLine || !row.line
+    ? null
+    : cine
+      ? { tag: "CINE", rail: "bg-accent-slate", tagClass: "border border-accent-slate/50 bg-transparent text-accent-slate" }
+      : LINE_TYPE_TAG[row.line.type] ?? FALLBACK_TYPE;
 
   return (
     <div
@@ -711,17 +728,20 @@ function Row({
           <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-1.5 overflow-hidden text-left font-mono"
+            className="flex w-full items-center gap-1.5 overflow-hidden text-left"
           >
+            {typeInfo && <span className={`self-stretch w-[3px] shrink-0 rounded-sm ${typeInfo.rail}`} />}
             <span className={dragDisabled ? "text-slate-700" : "cursor-grab text-slate-600 active:cursor-grabbing"}>
               ::
             </span>
-            <span className="shrink-0 text-slate-500">#{row.line!.id}</span>
-            <span className={selected ? "shrink-0 text-accent-gold" : "shrink-0 text-slate-400"}>
-              {highlight(String(row.line!.type), searchQ)}
-            </span>
+            <span className="shrink-0 font-mono text-[10px] text-slate-500">#{row.line!.id}</span>
+            {typeInfo && (
+              <span className={`inline-block min-w-[50px] rounded-sm px-1.5 py-0.5 text-center text-[9px] font-bold tracking-wider ${typeInfo.tagClass}`}>
+                {typeInfo.tag}
+              </span>
+            )}
             {preview?.speaker && (
-              <span className="truncate text-slate-500">{highlight(preview.speaker, searchQ)}</span>
+              <span className="truncate font-sans text-[11px] text-slate-300">{highlight(preview.speaker, searchQ)}</span>
             )}
             <div className="ml-auto flex items-center gap-1">
               {row.line?.is_edited && (
@@ -745,29 +765,34 @@ function Row({
             <span className={dragDisabled ? "font-mono text-slate-700" : "cursor-grab font-mono text-slate-600 active:cursor-grabbing"}>
               ::
             </span>
-            <span className={row.kind === "flow" ? "truncate font-medium text-slate-200" : "truncate text-slate-300"}>
-              {row.label}
-              {row.kind === "state" && row.localIndex !== undefined && (
-                <span className="ml-1.5 text-slate-500">[{row.localIndex}]</span>
-              )}
-            </span>
-            <span className="ml-auto inline-flex items-center gap-1">
-              {pending > 0 && (
-                <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
-              )}
-              <span className="text-[10px] text-slate-600">{row.lineIds.length}</span>
-              {row.plotMode && row.plotMode !== "Normal" && (
-                <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] text-slate-400">
-                  {row.plotMode}
+            {row.kind === "flow" ? (
+              <>
+                <span className="inline-block rounded-sm bg-accent-teal px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-bg-0">FLOW</span>
+                <span className="truncate text-[12px] font-semibold text-slate-100">{row.label}</span>
+                <span className="ml-auto text-[10px] text-slate-500">{row.lineIds.length} lines</span>
+              </>
+            ) : (
+              <>
+                <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-accent-gold">STATE</span>
+                <span className="truncate text-[11px] font-medium text-slate-300">{row.label}</span>
+                {row.localIndex !== undefined && <span className="ml-1 text-slate-500">[{row.localIndex}]</span>}
+                <span className="ml-auto text-[10px] text-slate-500">
+                  {(() => {
+                    const mode = row.plotMode && row.plotMode !== "Normal" ? row.plotMode : null;
+                    return [mode, `${row.lineIds.length} lines`].filter(Boolean).join(" · ");
+                  })()}
                 </span>
-              )}
-            </span>
+              </>
+            )}
+            {pending > 0 && (
+              <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
+            )}
           </button>
         )}
       </div>
       {isLine && preview && (
         <div
-          className="truncate pl-7 text-[11px] leading-snug text-slate-400"
+          className="truncate pl-7 font-sans text-[10px] italic text-slate-500"
           style={{ marginLeft: row.depth * 12, marginTop: PREVIEW_GAP }}
         >
           {preview.text ? highlight(preview.text, searchQ) : <em className="opacity-50">-</em>}
