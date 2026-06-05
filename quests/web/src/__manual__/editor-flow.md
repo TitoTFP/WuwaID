@@ -75,6 +75,16 @@ Run `bun run dev`, then walk through this list. Each step should match the expec
 - [ ] Drag a flow into a state: drop is ignored, no highlight
 - [ ] After this round, all 12+ previously-passing checks in `editor-flow.md` (drag/drop, scroll, jump-to, state numbering) still pass
 
+## Urut review marker
+
+- [ ] Click the circle toggle on a line row. The row gets emerald bg + border; the icon becomes a filled checkmark
+- [ ] Click the filled checkmark again. The emerald bg + border disappear; the icon returns to an empty circle
+- [ ] Mark a state row. The state row gets emerald bg + border; its inner line rows are not auto-marked
+- [ ] Mark a flow row. The flow row gets emerald bg + border
+- [ ] Refresh the browser. All previously-marked rows are still marked (persisted via localStorage)
+- [ ] Mark a row, then drag it before/after another row. The marker stays on the dragged row after the drop
+- [ ] Mark a row, then drag another row over it (inside). The teal-tinted inside drop indicator overrides the emerald bg while dragging; emerald returns after drop
+
 ## Regression: viewer
 
 - [ ] `/quests/106000002` shows approved edits to text/speaker.
