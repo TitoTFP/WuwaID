@@ -769,6 +769,11 @@ function Row({
               <span className="truncate font-sans text-[11px] text-slate-300">{highlight(preview.speaker, searchQ)}</span>
             )}
             <div className="ml-auto flex items-center gap-1">
+              {activeInside && (
+                <span className="inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                  ↳ inside
+                </span>
+              )}
               {(() => {
                 const pills: { label: string; cls: string; title: string }[] = [];
                 if (row.line?.is_edited) pills.push({ label: "EDITED", cls: "bg-accent-gold/15 text-accent-gold", title: "Has approved edits" });
@@ -807,22 +812,34 @@ function Row({
               <>
                 <span className="inline-block rounded-sm bg-accent-teal px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-bg-0">FLOW</span>
                 <span className="truncate text-[12px] font-semibold text-slate-100">{row.label}</span>
-                <span className="ml-auto text-[10px] text-slate-500">{row.lineIds.length} lines</span>
+                {activeInside ? (
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                    ↳ inside
+                  </span>
+                ) : (
+                  <span className="ml-auto text-[10px] text-slate-500">{row.lineIds.length} lines</span>
+                )}
               </>
             ) : (
               <>
                 <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-accent-gold">STATE</span>
                 <span className="truncate text-[11px] font-medium text-slate-300">{row.label}</span>
                 {row.localIndex !== undefined && <span className="ml-1 text-slate-500">[{row.localIndex}]</span>}
-                <span className="ml-auto text-[10px] text-slate-500">
-                  {(() => {
-                    const mode = row.plotMode && row.plotMode !== "Normal" ? row.plotMode : null;
-                    return [mode, `${row.lineIds.length} lines`].filter(Boolean).join(" · ");
-                  })()}
-                </span>
+                {activeInside ? (
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                    ↳ inside
+                  </span>
+                ) : (
+                  <span className="ml-auto text-[10px] text-slate-500">
+                    {(() => {
+                      const mode = row.plotMode && row.plotMode !== "Normal" ? row.plotMode : null;
+                      return [mode, `${row.lineIds.length} lines`].filter(Boolean).join(" · ");
+                    })()}
+                  </span>
+                )}
               </>
             )}
-            {pending > 0 && (
+            {!activeInside && pending > 0 && (
               <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
             )}
           </button>
