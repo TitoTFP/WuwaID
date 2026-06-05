@@ -103,7 +103,6 @@ export default function LineForm({
   const [note, setNote] = useState("");
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
-  const [moveLineTarget, setMoveLineTarget] = useState("");
   const [moveStateTarget, setMoveStateTarget] = useState("");
   const localDraft = useLocalDraft<{ draft: DialogueLine; note: string }>(qid, line.id);
   const initialised = useRef(false);
@@ -115,26 +114,8 @@ export default function LineForm({
     setNote("");
     setShowRestore(false);
     setConfirmDiscard(false);
-    setMoveLineTarget("");
     setMoveStateTarget("");
   }, [line.id, onTabChange]);
-
-  function handleMoveLine(position: "before" | "after") {
-    if (!onMoveBlock || !allLines) return;
-    const targetId = Number(moveLineTarget.trim().replace(/^#/, ""));
-    if (!Number.isInteger(targetId) || targetId <= 0) {
-      toast.error("Invalid target line ID");
-      return;
-    }
-    const targetExists = allLines.some((l) => l.id === targetId);
-    if (!targetExists) {
-      toast.error(`Line #${targetId} not found in this quest`);
-      return;
-    }
-    onMoveBlock([line.id], [targetId], position);
-    toast.success(`Moved line #${line.id} ${position} #${targetId}`);
-    setMoveLineTarget("");
-  }
 
   function handleMoveState(position: "before" | "after") {
     if (!onMoveBlock || !allLines) return;
@@ -314,41 +295,11 @@ export default function LineForm({
 
         {tab === "META" ? (
           <div className="space-y-4">
-            {/* Quick Move Section */}
-            <div className="rounded-md border border-white/10 bg-bg-2 p-3 space-y-3">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Quick Move</div>
+              {/* Quick Move Section */}
+              <div className="rounded-md border border-white/10 bg-bg-2 p-3 space-y-3">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Quick Move</div>
 
-              {/* Move Line */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">Move this Line (#{line.id})</label>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="text"
-                    placeholder="target line #id"
-                    value={moveLineTarget}
-                    onChange={(e) => setMoveLineTarget(e.target.value)}
-                    className="input h-8 text-xs font-mono w-32"
-                  />
-                  <button
-                    type="button"
-                    disabled={!moveLineTarget.trim() || !onMoveBlock}
-                    onClick={() => handleMoveLine("before")}
-                    className="btn h-8 px-2.5 text-xs"
-                  >
-                    Before
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!moveLineTarget.trim() || !onMoveBlock}
-                    onClick={() => handleMoveLine("after")}
-                    className="btn h-8 px-2.5 text-xs"
-                  >
-                    After
-                  </button>
-                </div>
-              </div>
-
-              {/* Move State */}
+                {/* Move State */}
               {line.state_key && (
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-slate-300">
