@@ -548,7 +548,7 @@ export default function EditorPage() {
       </div>
       <div className="grid min-h-[60vh] gap-4 lg:grid-cols-[auto_1fr]">
         <div className="flex w-[22rem] max-w-full">
-          <aside className="card max-h-[80vh] w-full overflow-auto p-2 lg:sticky lg:top-4">
+          <aside className="card max-h-[80vh] w-full overflow-auto no-scrollbar p-2 lg:sticky lg:top-4">
             {linesQ.isLoading && questQ.isLoading && (
               <div className="p-2">
                 <Skeleton lines={6} />

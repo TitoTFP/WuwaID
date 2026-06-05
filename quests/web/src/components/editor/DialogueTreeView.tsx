@@ -14,7 +14,18 @@ export type TreeFilters = {
   type: string | null;
 };
 
+const ROW_INNER = 34;
+const DROP_PAD = 8;
+const PREVIEW_GAP = 2;
+const PREVIEW_HEIGHT = 20;
+const ROW_GAP = 6;
 const ROW_HEIGHT = 44;
+
+function rowHeight(row: { kind: DialogueTreeNode["kind"] }): number {
+  return row.kind === "line"
+    ? DROP_PAD + ROW_INNER + PREVIEW_GAP + PREVIEW_HEIGHT + DROP_PAD
+    : DROP_PAD + ROW_INNER + DROP_PAD;
+}
 
 function allExpandableIds(nodes: DialogueTreeNode[]): string[] {
   const ids: string[] = [];
@@ -256,11 +267,40 @@ export default function DialogueTreeView({
   }, [nodes, open]);
 
   const totalRows = flatRows.length;
+  const rowHeights = useMemo(() => flatRows.map(rowHeight), [flatRows]);
+  const rowTops = useMemo(() => {
+    const tops = new Array<number>(rowHeights.length);
+    let y = 0;
+    for (let i = 0; i < rowHeights.length; i++) {
+      tops[i] = y;
+      y += rowHeights[i] + ROW_GAP;
+    }
+    return tops;
+  }, [rowHeights]);
+  const totalHeight = rowTops.length
+    ? rowTops[rowTops.length - 1] + rowHeights[rowHeights.length - 1]
+    : 0;
   const overscan = 6;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - overscan);
   const endIndex = Math.min(totalRows, Math.ceil((scrollTop + viewport) / ROW_HEIGHT) + overscan);
   const visibleRows = flatRows.slice(startIndex, endIndex);
-  const totalHeight = totalRows * ROW_HEIGHT;
+
+  useEffect(() => {
+    if (selectedId === null) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const idx = flatRows.findIndex((r) => r.kind === "line" && r.line?.id === selectedId);
+    if (idx < 0) return;
+    const rowTop = rowTops[idx];
+    const rowBottom = rowTop + rowHeights[idx];
+    const viewTop = el.scrollTop;
+    const viewBottom = viewTop + el.clientHeight;
+    if (rowTop < viewTop) {
+      el.scrollTop = rowTop;
+    } else if (rowBottom > viewBottom) {
+      el.scrollTop = rowBottom - el.clientHeight;
+    }
+  }, [selectedId, flatRows, rowTops, rowHeights]);
 
   function toggle(id: string) {
     setOpen((current) => {
@@ -330,47 +370,35 @@ export default function DialogueTreeView({
     <div className="space-y-2">
       <div className="space-y-1.5">
         <div className="relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"
+          >
+            ⌕
+          </span>
           <input
             value={searchQ}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="input h-9 pr-16 text-xs"
+            className="input h-9 pl-7 pr-16 text-xs"
             placeholder="Search this quest..."
             type="search"
           />
-          {searchQ && (
+          {searchQ ? (
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 transition hover:text-slate-200"
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 transition hover:bg-white/5 hover:text-slate-100"
               onClick={() => onSearchChange("")}
             >
-              clear
+              ×
             </button>
+          ) : (
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-500">
+              esc
+            </kbd>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <input
-            value={jumpTo}
-            onChange={(e) => setJumpTo(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                commitJump();
-              }
-            }}
-            placeholder="#id"
-            className="input h-7 w-20 text-[10px] font-mono"
-            inputMode="numeric"
-          />
-          <button
-            type="button"
-            className="btn px-2 py-0.5 text-[10px]"
-            onClick={commitJump}
-            disabled={!jumpTo.trim()}
-          >
-            jump
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <FilterChip
             label="edited"
             active={filters.editedOnly}
@@ -390,7 +418,7 @@ export default function DialogueTreeView({
             <select
               value={filters.type ?? ""}
               onChange={(e) => updateFilter("type", e.target.value || null)}
-              className="rounded-md border border-white/10 bg-bg-2 px-2 py-0.5 text-[10px] text-slate-300"
+              className="rounded-md border border-white/10 bg-bg-2 px-2 py-0.5 text-[10px] font-medium text-slate-300 transition hover:border-white/20"
             >
               <option value="">any type</option>
               {types.map((type) => (
@@ -401,24 +429,77 @@ export default function DialogueTreeView({
             </select>
           )}
         </div>
-        <div className="px-1 text-[10px] text-slate-600">
-          {searchQ.trim()
-            ? `${searchMatchCount} of ${totalLineCount} lines match · clear search to reorder`
-            : `${totalLineCount} lines · ${nodes.length} top-level flow(s)`}
-        </div>
       </div>
-      <div className="flex items-center justify-between gap-2 px-1">
-        <div className="text-[10px] uppercase tracking-widest text-slate-600">
-          Tree · {totalCount} lines
+      <div className="flex items-center justify-between gap-2 border-t border-white/5 px-1 pt-2">
+        <div className="text-[11px] tabular-nums text-slate-500">
+          {searchQ.trim() ? (
+            <span>
+              <span className="text-accent-gold">{searchMatchCount}</span>
+              <span className="text-slate-600"> / {totalLineCount} match</span>
+            </span>
+          ) : (
+            <span>
+              <span className="text-slate-300">{totalCount}</span>
+              <span className="text-slate-600"> lines · {nodes.length} flow</span>
+            </span>
+          )}
         </div>
-        <div className="flex gap-1">
-          <button type="button" className="btn px-2 py-0.5 text-[10px]" onClick={expandAll}>expand</button>
-          <button type="button" className="btn px-2 py-0.5 text-[10px]" onClick={collapseAll}>collapse</button>
+        <div className="flex items-center gap-1">
+          <input
+            value={jumpTo}
+            onChange={(e) => setJumpTo(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitJump();
+              }
+            }}
+            placeholder="#id"
+            aria-label="Jump to line by id"
+            className="h-6 w-14 rounded-md border border-white/10 bg-bg-1 px-1.5 text-center font-mono text-[10px] text-slate-200 outline-none transition focus:border-accent-gold/60"
+            inputMode="numeric"
+          />
+          <button
+            type="button"
+            className="btn h-6 px-2 text-[10px] disabled:opacity-40"
+            onClick={commitJump}
+            disabled={!jumpTo.trim()}
+            aria-label="Jump"
+          >
+            go
+          </button>
+          <span className="mx-0.5 h-3 w-px bg-white/10" aria-hidden="true" />
+          <button
+            type="button"
+            className="btn h-6 px-2 text-[10px]"
+            onClick={expandAll}
+            aria-label="Expand all groups"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="btn h-6 px-2 text-[10px]"
+            onClick={collapseAll}
+            aria-label="Collapse all groups"
+          >
+            −
+          </button>
         </div>
       </div>
       {totalRows === 0 ? (
-        <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-xs text-slate-500">
-          No matches in this quest.
+        <div className="rounded-lg border border-dashed border-white/10 px-4 py-6 text-center">
+          <div className="text-base text-slate-600" aria-hidden="true">⌕</div>
+          <div className="mt-1 text-xs text-slate-400">No matches in this quest.</div>
+          {searchQ && (
+            <button
+              type="button"
+              className="mt-2 text-[10px] text-accent-teal hover:text-accent-gold"
+              onClick={() => onSearchChange("")}
+            >
+              clear search
+            </button>
+          )}
         </div>
       ) : (
         <div
@@ -433,8 +514,8 @@ export default function DialogueTreeView({
                 <Row
                   key={row.id}
                   row={row}
-                  top={actualIndex * ROW_HEIGHT}
-                  height={ROW_HEIGHT}
+                  top={rowTops[actualIndex]}
+                  height={rowHeights[actualIndex]}
                   isOpen={open.has(row.id)}
                   selected={row.kind === "line" && row.line?.id === selectedId}
                   multiSelected={row.kind === "line" && !!row.line && !!selectedIds?.has(row.line.id)}
@@ -479,10 +560,10 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
       type="button"
       onClick={onClick}
       className={[
-        "rounded-full border px-2 py-0.5 text-[10px] transition",
+        "rounded-md border px-2 py-0.5 text-[10px] font-medium transition",
         active
           ? "border-accent-gold/60 bg-accent-gold/10 text-accent-gold"
-          : "border-white/10 bg-bg-2 text-slate-400 hover:text-slate-200",
+          : "border-white/10 bg-bg-2 text-slate-400 hover:border-white/20 hover:text-slate-200",
       ].join(" ")}
     >
       {label}
@@ -579,8 +660,8 @@ function Row({
         onDragLeave={() => onDropTargetChange((cur) => (cur === beforeKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "before")}
         className={[
-          "h-1.5 rounded-full transition-colors",
-          activeBefore ? "bg-accent-gold/80" : "bg-transparent",
+          "h-2 rounded-full transition-colors",
+          activeBefore ? "bg-accent-gold shadow-[0_0_0_2px_rgba(214,182,107,0.18)]" : "bg-transparent",
         ].join(" ")}
       />
       <div
@@ -623,7 +704,7 @@ function Row({
                 <span className="rounded bg-accent-gold/20 px-1 py-0.5 text-[9px] text-accent-gold">edited</span>
               )}
               {pending > 0 && (
-                <span className="rounded bg-violet-500/20 px-1 py-0.5 text-[9px] text-violet-300">*{pending}</span>
+                <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
               )}
             </div>
           </button>
@@ -645,7 +726,7 @@ function Row({
             </span>
             <span className="ml-auto inline-flex items-center gap-1">
               {pending > 0 && (
-                <span className="rounded bg-violet-500/20 px-1 py-0.5 text-[9px] text-violet-300">*{pending}</span>
+                <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
               )}
               <span className="text-[10px] text-slate-600">{row.lineIds.length}</span>
               {row.plotMode && row.plotMode !== "Normal" && (
@@ -659,8 +740,8 @@ function Row({
       </div>
       {isLine && preview && (
         <div
-          className="truncate pl-7 text-[10px] text-slate-500"
-          style={{ marginLeft: row.depth * 12 }}
+          className="truncate pl-7 text-[11px] leading-snug text-slate-400"
+          style={{ marginLeft: row.depth * 12, marginTop: PREVIEW_GAP }}
         >
           {preview.text ? highlight(preview.text, searchQ) : <em className="opacity-50">-</em>}
         </div>
@@ -670,8 +751,8 @@ function Row({
         onDragLeave={() => onDropTargetChange((cur) => (cur === afterKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "after")}
         className={[
-          "h-1.5 rounded-full transition-colors",
-          activeAfter ? "bg-accent-gold/80" : "bg-transparent",
+          "h-2 rounded-full transition-colors",
+          activeAfter ? "bg-accent-gold shadow-[0_0_0_2px_rgba(214,182,107,0.18)]" : "bg-transparent",
         ].join(" ")}
       />
     </div>

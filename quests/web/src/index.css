@@ -61,6 +61,15 @@
 ::-webkit-scrollbar-thumb { background: #1f2530; border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: #2a3242; }
 
+/* Hide scrollbar for sidebar (and elements with .no-scrollbar) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Skeleton shimmer (no extra dep) */
 .skeleton {
   @apply rounded-md bg-white/[0.04] relative overflow-hidden;
