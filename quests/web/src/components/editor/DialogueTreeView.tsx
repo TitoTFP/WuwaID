@@ -815,7 +815,9 @@ function Row({
                 ? "border-accent-teal/40 bg-accent-teal/5"
                 : activeBefore || activeAfter
                   ? "border-accent-gold/40 opacity-40 translate-x-1.5"
-                  : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
+                  : isMarked
+                    ? "border-accent-emerald/30 bg-accent-emerald/10"
+                    : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
         ].join(" ")}
         style={{ marginLeft: row.depth * 12 }}
       >
