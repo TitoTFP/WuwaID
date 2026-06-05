@@ -824,7 +824,11 @@ function Row({
               <>
                 <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-accent-gold">STATE</span>
                 <span className="truncate text-[11px] font-medium text-slate-300">{row.label}</span>
-                {row.localIndex !== undefined && <span className="ml-1 text-slate-500">[{row.localIndex}]</span>}
+                {row.localIndex !== undefined && (
+                  <span className="ml-1 inline-block rounded-sm bg-accent-violet/15 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-violet">
+                    [{row.localIndex}]
+                  </span>
+                )}
                 {activeInside ? (
                   <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
                     ↳ inside
