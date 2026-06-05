@@ -744,12 +744,25 @@ function Row({
               <span className="truncate font-sans text-[11px] text-slate-300">{highlight(preview.speaker, searchQ)}</span>
             )}
             <div className="ml-auto flex items-center gap-1">
-              {row.line?.is_edited && (
-                <span className="rounded bg-accent-gold/20 px-1 py-0.5 text-[9px] text-accent-gold">edited</span>
-              )}
-              {pending > 0 && (
-                <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
-              )}
+              {(() => {
+                const pills: { label: string; cls: string; title: string }[] = [];
+                if (row.line?.is_edited) pills.push({ label: "EDITED", cls: "bg-accent-gold/15 text-accent-gold", title: "Has approved edits" });
+                if (pending > 0) pills.push({ label: `${pending} ${pending === 1 ? "DRAFT" : "DRAFTS"}`, cls: "bg-accent-ember/15 text-accent-ember", title: `${pending} pending draft(s)` });
+                const optCount = row.line?.options?.length ?? 0;
+                if (optCount > 0) pills.push({ label: `${optCount} opts`, cls: "bg-accent-teal/15 text-accent-teal", title: `${optCount} option(s)` });
+                const visible = pills.slice(0, 2);
+                const overflow = pills.length - visible.length;
+                return (
+                  <>
+                    {visible.map((p) => (
+                      <span key={p.label} className={`inline-flex items-center rounded-sm px-1.5 py-0.5 text-[9px] font-semibold tracking-wider ${p.cls}`} title={p.title} aria-label={p.title}>
+                        {p.label}
+                      </span>
+                    ))}
+                    {overflow > 0 && <span className="text-[9px] text-slate-500">+{overflow}</span>}
+                  </>
+                );
+              })()}
             </div>
           </button>
         ) : (
