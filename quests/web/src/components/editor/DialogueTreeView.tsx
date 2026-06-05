@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DialogueLine, DialogueTreeNode, Lang, TreeDropPosition } from "../../lib/types";
+import { loadReviewMarks, saveReviewMarks } from "../../lib/reviewStore";
 
 type DragPayload = {
   id: string;
@@ -105,6 +106,27 @@ function dropAllowed(
   return target.kind === "line" || target.kind === "state";
 }
 
+function useReviewMarks(storageKey: string | null) {
+  const [marked, setMarked] = useState<Record<string, true>>(() =>
+    storageKey ? loadReviewMarks(storageKey) : {},
+  );
+  const toggle = useCallback(
+    (id: string) => {
+      if (!storageKey) return;
+      setMarked((prev) => {
+        const next = { ...prev };
+        if (next[id]) delete next[id];
+        else next[id] = true;
+        saveReviewMarks(storageKey, next);
+        return next;
+      });
+    },
+    [storageKey],
+  );
+  const isMarked = useCallback((id: string) => Boolean(marked[id]), [marked]);
+  return { isMarked, toggle, count: Object.keys(marked).length };
+}
+
 type FlatRow = {
   id: string;
   kind: DialogueTreeNode["kind"];
@@ -194,6 +216,7 @@ export default function DialogueTreeView({
   selectedIds,
   onSelectMany,
   storageKeyOpen,
+  storageKeyReview,
 }: {
   nodes: DialogueTreeNode[];
   selectedId: number | null;
@@ -216,12 +239,14 @@ export default function DialogueTreeView({
   selectedIds?: Set<number>;
   onSelectMany?: (ids: number[], replace: boolean) => void;
   storageKeyOpen: string;
+  storageKeyReview: string;
 }) {
   const expandable = useMemo(() => allExpandableIds(nodes), [nodes]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(expandable));
   const [dragging, setDragging] = useState<DragPayload | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [jumpTo, setJumpTo] = useState("");
+  const { isMarked: isMarkedReview, toggle: toggleReview } = useReviewMarks(storageKeyReview);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewport, setViewport] = useState(600);
@@ -561,6 +586,8 @@ export default function DialogueTreeView({
                   dragging={dragging}
                   dragDisabled={dragDisabled}
                   showInside={showInside(row)}
+                  isMarked={isMarkedReview(row.id)}
+                  onToggleMark={() => toggleReview(row.id)}
                   onClick={(event) => rowClick(row, event)}
                   onDragStart={(event) => {
                     if (dragDisabled) {
@@ -646,6 +673,8 @@ function Row({
   dragging,
   dragDisabled,
   showInside,
+  isMarked,
+  onToggleMark,
   onClick,
   onDragStart,
   onDragEnd,
@@ -666,6 +695,8 @@ function Row({
   dragging: DragPayload | null;
   dragDisabled: boolean;
   showInside: boolean;
+  isMarked: boolean;
+  onToggleMark: () => void;
   onClick: (event: React.MouseEvent) => void;
   onDragStart: (event: React.DragEvent) => void;
   onDragEnd: () => void;
