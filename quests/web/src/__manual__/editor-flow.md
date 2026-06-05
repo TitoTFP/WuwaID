@@ -62,6 +62,19 @@ Run `bun run dev`, then walk through this list. Each step should match the expec
 - [ ] Open `/editor/<qid>` in two tabs. Edit the same line in both. Save both drafts. Editor approves one, then the other. Second approval should fail (line may have moved).
 - [ ] Log out via `/drafts`. Try to approve another draft - should be 401.
 
+## Tree readability pass
+
+- [ ] Talk / Option / CenterText / PhoneMessage / NoTextItem / SystemOption rows each render with a different type tag color and left rail color
+- [ ] Plot_mode `BlackScreen` and `LevelA..F` lines render with the `CINE` overlay (slate rail, slate tag) instead of the type tag
+- [ ] Flow rows show the filled `FLOW` chip + teal gradient rail
+- [ ] State rows show the outlined `STATE` chip + gold gradient rail + `state X.Y [N]` + meta
+- [ ] Line rows: speaker is `font-sans` (not mono); preview line is italic + slate-500 + indented
+- [ ] EDITED / N DRAFTS / N opts pills render in the unified style; with 3 statuses, show `+N` overflow
+- [ ] Drag a line before another: 6px gradient bar + glow + target row fades and shifts
+- [ ] Drag a state into another flow: target row gets teal-tinted bg + `↳ inside` hint
+- [ ] Drag a flow into a state: drop is ignored, no highlight
+- [ ] After this round, all 12+ previously-passing checks in `editor-flow.md` (drag/drop, scroll, jump-to, state numbering) still pass
+
 ## Regression: viewer
 
 - [ ] `/quests/106000002` shows approved edits to text/speaker.
