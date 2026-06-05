@@ -606,6 +606,32 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
+function DropBar({
+  active,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}: {
+  active: boolean;
+  onDragOver: (event: React.DragEvent) => void;
+  onDragLeave: () => void;
+  onDrop: (event: React.DragEvent) => void;
+}) {
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      className={[
+        "h-1.5 my-0.5 rounded-sm transition-all",
+        active
+          ? "bg-gradient-to-r from-accent-gold to-accent-gold/40 shadow-[0_0_0_1px_rgba(214,182,107,0.4),0_0_10px_rgba(214,182,107,0.25)]"
+          : "bg-transparent",
+      ].join(" ")}
+    />
+  );
+}
+
 function Row({
   row,
   top,
@@ -696,14 +722,11 @@ function Row({
       ref={ref}
       style={{ position: "absolute", top, left: 0, right: 0, height, paddingLeft: 4, paddingRight: 4 }}
     >
-      <div
+      <DropBar
+        active={activeBefore}
         onDragOver={handleDragOverBefore}
         onDragLeave={() => onDropTargetChange((cur) => (cur === beforeKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "before")}
-        className={[
-          "h-2 rounded-full transition-colors",
-          activeBefore ? "bg-accent-gold shadow-[0_0_0_2px_rgba(214,182,107,0.18)]" : "bg-transparent",
-        ].join(" ")}
       />
       <div
         draggable={!dragDisabled}
@@ -713,14 +736,16 @@ function Row({
         onDragLeave={() => onDropTargetChange((cur) => (cur === insideKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "inside")}
         className={[
-          "group flex h-[34px] items-center gap-2 rounded-md border px-2 text-xs transition-colors",
+          "group flex h-[34px] items-center gap-2 rounded-md border px-2 text-xs transition-all",
           selected
             ? "border-accent-gold/50 bg-accent-gold/10"
             : multiSelected
               ? "border-accent-teal/50 bg-accent-teal/10"
               : activeInside
-                ? "border-accent-gold/40 bg-accent-gold/5"
-                : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
+                ? "border-accent-teal/40 bg-accent-teal/5"
+                : activeBefore || activeAfter
+                  ? "border-accent-gold/40 opacity-40 translate-x-1.5"
+                  : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
         ].join(" ")}
         style={{ marginLeft: row.depth * 12 }}
       >
@@ -811,14 +836,11 @@ function Row({
           {preview.text ? highlight(preview.text, searchQ) : <em className="opacity-50">-</em>}
         </div>
       )}
-      <div
+      <DropBar
+        active={activeAfter}
         onDragOver={handleDragOverAfter}
         onDragLeave={() => onDropTargetChange((cur) => (cur === afterKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "after")}
-        className={[
-          "h-2 rounded-full transition-colors",
-          activeAfter ? "bg-accent-gold shadow-[0_0_0_2px_rgba(214,182,107,0.18)]" : "bg-transparent",
-        ].join(" ")}
       />
     </div>
   );
