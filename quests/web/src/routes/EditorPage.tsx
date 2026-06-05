@@ -596,6 +596,7 @@ export default function EditorPage() {
                 selectedIds={selectedIds}
                 onSelectMany={onSelectMany}
                 storageKeyOpen={`editor:open:${qidN}`}
+                storageKeyReview={`editor:review:${qidN}`}
               />
             )}
             {saveReorderQ.error && (

@@ -659,6 +659,45 @@ function DropBar({
   );
 }
 
+function MarkButton({ marked, onToggle }: { marked: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      title={marked ? "Batal tandai urut" : "Tandai sudah urut"}
+      aria-label={marked ? "Batal tandai urut" : "Tandai sudah urut"}
+      aria-pressed={marked}
+      className={[
+        "shrink-0 rounded p-0.5 transition",
+        marked
+          ? "text-accent-emerald hover:text-accent-emerald/80"
+          : "text-slate-500 hover:text-slate-300",
+      ].join(" ")}
+    >
+      {marked ? (
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" fill="currentColor" />
+          <polyline
+            points="4.5 8 7 10.5 11.5 5.5"
+            stroke="#0b0d12"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 function Row({
   row,
   top,
@@ -784,7 +823,7 @@ function Row({
           <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-1.5 overflow-hidden text-left"
+            className="flex flex-1 min-w-0 items-center gap-1.5 overflow-hidden text-left"
           >
             {typeInfo && <span className={`self-stretch w-[3px] shrink-0 rounded-sm ${typeInfo.rail}`} />}
             <span className={dragDisabled ? "text-slate-700" : "cursor-grab text-slate-600 active:cursor-grabbing"}>
@@ -830,7 +869,7 @@ function Row({
           <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-2 text-left"
+            className="flex flex-1 min-w-0 items-center gap-2 text-left"
             draggable={!dragDisabled}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
@@ -879,6 +918,7 @@ function Row({
             )}
           </button>
         )}
+        <MarkButton marked={isMarked} onToggle={onToggleMark} />
       </div>
       {isLine && preview && (
         <div
