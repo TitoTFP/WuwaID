@@ -40,6 +40,21 @@ Run `bun run dev`, then walk through this list. Each step should match the expec
 - [ ] Type in local search, then try dragging. Reordering is disabled until search is cleared.
 - [ ] After selecting a nested line, collapse all then refresh/select it again. Its parent flow/state auto-expands.
 
+## Editor keyboard shortcuts
+
+- [ ] In the META tab, focus the Quick Move "target line" input and type `#12345`. All digits appear; the active tab does not change.
+- [ ] In the META tab, focus the Quick Move "target state" input and type `#119000000.1`. All characters appear; the active tab does not change.
+- [ ] In any input, press `1`/`2`/`3`/`4`/`[`/`]` — the character is entered and the active tab does not change.
+- [ ] Click a line in the tree (it gets highlighted), then expand or collapse a different state. The viewport stays where the user moved it; the highlighted row does not pull the view back.
+- [ ] Click a line that is off-screen at the bottom of the tree. The row scrolls smoothly into the center of the viewport with equal space above and below (preview text fully visible).
+- [ ] Click a line that is off-screen at the top of the tree. The row scrolls smoothly into the center of the viewport with equal space above and below.
+- [ ] Click a line that is already fully visible. The viewport does not jump.
+- [ ] Tree states display as `state 1.1 [1]`, `state 1.2 [2]`, etc. — no `#` prefix, bracket is 1-based within the flow.
+- [ ] Reorder two states in the tree. The `[N]` bracket updates to reflect the new position.
+- [ ] In the META tab, the `Move entire State` label shows `1.1` (no `#`).
+- [ ] In the META tab, type `[2]` into the target state input and click Before/After. The state moves to the [2] position of the same flow.
+- [ ] Use the tree `#id / state` jump input to jump to a state. The toast reads `Jumped to state 1.2` (no `#`).
+
 ## Edge cases
 
 - [ ] Try to approve a draft whose target line was deleted by an earlier approval — should get 409.

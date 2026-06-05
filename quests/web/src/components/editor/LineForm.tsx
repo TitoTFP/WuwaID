@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { DialogueLine, DraftPatch, Lang } from "../../lib/types";
+import type { DialogueLine, DraftPatch, Lang, TreeDropPosition } from "../../lib/types";
 import ConfirmDialog from "./ConfirmDialog";
 import DiffField from "./DiffField";
 import LangTabs from "./LangTabs";
@@ -14,7 +14,7 @@ type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja";
 type TextKey = "text_en" | "text_zh-Hans" | "text_ja";
 
 const LANG_KEYS: Lang[] = ["en", "zh-Hans", "ja"];
-const TAB_ORDER: Tab[] = ["en", "zh-Hans", "ja", "META"];
+const TAB_ORDER: Tab[] = ["META", "en", "zh-Hans", "ja"];
 
 function speakerKey(lang: Lang): SpeakerKey {
   return lang === "zh-Hans" ? "speaker_zh-Hans" : `speaker_${lang}`;
@@ -47,6 +47,18 @@ function hasPatch(patch: DraftPatch): boolean {
 
 const MAX_TEXT_LEN = 1000;
 
+const STATE_KEY_RE = /^(.*)_(\d+)_(\d+)$/;
+
+function parseStateKey(stateKey: string) {
+  const match = stateKey.match(STATE_KEY_RE);
+  if (!match) return null;
+  return {
+    flowName: match[1],
+    stateId: Number(match[2]),
+    subId: Number(match[3]),
+  };
+}
+
 function validateField(value: string, field: string): string | null {
   if (!value.trim() && (field.startsWith("text_") || field === "type" || field === "state_key")) {
     return "empty";
@@ -67,6 +79,7 @@ export default function LineForm({
   onSelectNext,
   allLines,
   multiLang,
+  onMoveBlock,
 }: {
   line: DialogueLine;
   originalLine?: DialogueLine;
@@ -79,23 +92,107 @@ export default function LineForm({
   onSelectNext?: (direction: 1 | -1) => void;
   allLines?: DialogueLine[];
   multiLang?: boolean;
+  onMoveBlock?: (
+    movedLineIds: number[],
+    targetLineIds: number[],
+    position: TreeDropPosition,
+  ) => void;
 }) {
   const baseLine = originalLine ?? line;
   const [draft, setDraft] = useState<DialogueLine>(line);
   const [note, setNote] = useState("");
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
+  const [moveLineTarget, setMoveLineTarget] = useState("");
+  const [moveStateTarget, setMoveStateTarget] = useState("");
   const localDraft = useLocalDraft<{ draft: DialogueLine; note: string }>(qid, line.id);
   const initialised = useRef(false);
   const toast = useToast();
 
   useEffect(() => {
     initialised.current = false;
-    onTabChange("en");
+    onTabChange("META");
     setNote("");
     setShowRestore(false);
     setConfirmDiscard(false);
+    setMoveLineTarget("");
+    setMoveStateTarget("");
   }, [line.id, onTabChange]);
+
+  function handleMoveLine(position: "before" | "after") {
+    if (!onMoveBlock || !allLines) return;
+    const targetId = Number(moveLineTarget.trim().replace(/^#/, ""));
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      toast.error("Invalid target line ID");
+      return;
+    }
+    const targetExists = allLines.some((l) => l.id === targetId);
+    if (!targetExists) {
+      toast.error(`Line #${targetId} not found in this quest`);
+      return;
+    }
+    onMoveBlock([line.id], [targetId], position);
+    toast.success(`Moved line #${line.id} ${position} #${targetId}`);
+    setMoveLineTarget("");
+  }
+
+  function handleMoveState(position: "before" | "after") {
+    if (!onMoveBlock || !allLines) return;
+    const target = moveStateTarget.trim().replace(/^#/, "");
+    if (!target) {
+      toast.error("Please enter a target state");
+      return;
+    }
+
+    let targetLines: DialogueLine[] = [];
+
+    // [N] — local position within the current line's flow
+    const bracketMatch = target.match(/^\[(\d+)\]$/);
+    if (bracketMatch) {
+      const localIndex = Number(bracketMatch[1]);
+      const currentParsed = parseStateKey(line.state_key ?? "");
+      const currentFlow = currentParsed?.flowName || "Ungrouped";
+      const stateOrder: string[] = [];
+      for (const l of allLines) {
+        const parsed = parseStateKey(l.state_key ?? "");
+        const flow = parsed?.flowName || "Ungrouped";
+        if (flow === currentFlow && l.state_key && !stateOrder.includes(l.state_key)) {
+          stateOrder.push(l.state_key);
+        }
+      }
+      const targetStateKey = stateOrder[localIndex - 1];
+      if (targetStateKey) {
+        targetLines = allLines.filter((l) => l.state_key === targetStateKey);
+      }
+    } else {
+      // Try matching stateId.subId
+      const stateMatch = target.match(/^(\d+)\.(\d+)$/);
+      if (stateMatch) {
+        const stateId = Number(stateMatch[1]);
+        const subId = Number(stateMatch[2]);
+        targetLines = allLines.filter((l) => {
+          const parsed = parseStateKey(l.state_key ?? "");
+          return parsed && parsed.stateId === stateId && parsed.subId === subId;
+        });
+      } else {
+        // Try matching state_key directly
+        targetLines = allLines.filter((l) => l.state_key === target);
+      }
+    }
+
+    if (targetLines.length === 0) {
+      toast.error(`Target state "${target}" not found`);
+      return;
+    }
+
+    const currentStateLines = allLines.filter((l) => l.state_key === line.state_key);
+    const currentLineIds = currentStateLines.map((l) => l.id);
+    const targetLineIds = targetLines.map((l) => l.id);
+
+    onMoveBlock(currentLineIds, targetLineIds, position);
+    toast.success(`Moved state ${position} target state`);
+    setMoveStateTarget("");
+  }
 
   useEffect(() => {
     if (initialised.current) return;
@@ -217,6 +314,77 @@ export default function LineForm({
 
         {tab === "META" ? (
           <div className="space-y-4">
+            {/* Quick Move Section */}
+            <div className="rounded-md border border-white/10 bg-bg-2 p-3 space-y-3">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Quick Move</div>
+
+              {/* Move Line */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">Move this Line (#{line.id})</label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="target line #id"
+                    value={moveLineTarget}
+                    onChange={(e) => setMoveLineTarget(e.target.value)}
+                    className="input h-8 text-xs font-mono w-32"
+                  />
+                  <button
+                    type="button"
+                    disabled={!moveLineTarget.trim() || !onMoveBlock}
+                    onClick={() => handleMoveLine("before")}
+                    className="btn h-8 px-2.5 text-xs"
+                  >
+                    Before
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!moveLineTarget.trim() || !onMoveBlock}
+                    onClick={() => handleMoveLine("after")}
+                    className="btn h-8 px-2.5 text-xs"
+                  >
+                    After
+                  </button>
+                </div>
+              </div>
+
+              {/* Move State */}
+              {line.state_key && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-300">
+                    Move entire State ({(() => {
+                      const parsed = parseStateKey(line.state_key ?? "");
+                      return parsed ? `${parsed.stateId}.${parsed.subId}` : line.state_key;
+                    })()})
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="target state (e.g. 1.2 or [2])"
+                      value={moveStateTarget}
+                      onChange={(e) => setMoveStateTarget(e.target.value)}
+                      className="input h-8 text-xs font-mono w-44"
+                    />
+                    <button
+                      type="button"
+                      disabled={!moveStateTarget.trim() || !onMoveBlock}
+                      onClick={() => handleMoveState("before")}
+                      className="btn h-8 px-2.5 text-xs"
+                    >
+                      Before
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!moveStateTarget.trim() || !onMoveBlock}
+                      onClick={() => handleMoveState("after")}
+                      className="btn h-8 px-2.5 text-xs"
+                    >
+                      After
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <DiffField
               label="type"
               value={String(draft.type ?? "")}

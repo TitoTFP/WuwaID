@@ -17,9 +17,8 @@ export type TreeFilters = {
 const ROW_INNER = 34;
 const DROP_PAD = 8;
 const PREVIEW_GAP = 2;
-const PREVIEW_HEIGHT = 20;
+const PREVIEW_HEIGHT = 15;
 const ROW_GAP = 6;
-const ROW_HEIGHT = 44;
 
 function rowHeight(row: { kind: DialogueTreeNode["kind"] }): number {
   return row.kind === "line"
@@ -53,6 +52,10 @@ function findParents(
 function isNoopDrop(payload: DragPayload, targetLineIds: number[]) {
   if (payload.id === "") return true;
   return targetLineIds.length > 0 && targetLineIds.every((id) => payload.lineIds.includes(id));
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
 
 function highlight(value: string, query: string) {
@@ -101,6 +104,7 @@ type FlatRow = {
   flowName?: string;
   stateKey?: string;
   plotMode?: string;
+  localIndex?: number;
 };
 
 function flatten(
@@ -120,6 +124,7 @@ function flatten(
       flowName: node.flowName,
       stateKey: node.stateKey,
       plotMode: node.plotMode,
+      localIndex: node.localIndex,
     });
     if (node.kind !== "line" && open.has(node.id) && node.children) {
       flatten(node.children, open, depth + 1, out);
@@ -195,7 +200,7 @@ export default function DialogueTreeView({
     targetLineIds: number[],
     position: TreeDropPosition,
   ) => void;
-  onJumpToLine?: (id: number) => void;
+  onJumpToLine?: (raw: string) => void;
   activeLang: Lang;
   selectedIds?: Set<number>;
   onSelectMany?: (ids: number[], replace: boolean) => void;
@@ -210,6 +215,7 @@ export default function DialogueTreeView({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewport, setViewport] = useState(600);
   const initialised = useRef(false);
+  const lastScrolledIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -281,12 +287,29 @@ export default function DialogueTreeView({
     ? rowTops[rowTops.length - 1] + rowHeights[rowHeights.length - 1]
     : 0;
   const overscan = 6;
-  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - overscan);
-  const endIndex = Math.min(totalRows, Math.ceil((scrollTop + viewport) / ROW_HEIGHT) + overscan);
+  const startIndex = useMemo(() => {
+    let start = 0;
+    while (start < totalRows && rowTops[start] + rowHeights[start] < scrollTop) {
+      start++;
+    }
+    return Math.max(0, start - overscan);
+  }, [totalRows, rowTops, rowHeights, scrollTop, overscan]);
+
+  const endIndex = useMemo(() => {
+    let end = startIndex;
+    while (end < totalRows && rowTops[end] < scrollTop + viewport) {
+      end++;
+    }
+    return Math.min(totalRows, end + overscan);
+  }, [totalRows, rowTops, startIndex, scrollTop, viewport, overscan]);
   const visibleRows = flatRows.slice(startIndex, endIndex);
 
   useEffect(() => {
-    if (selectedId === null) return;
+    if (selectedId === null) {
+      lastScrolledIdRef.current = null;
+      return;
+    }
+    if (lastScrolledIdRef.current === selectedId) return;
     const el = scrollRef.current;
     if (!el) return;
     const idx = flatRows.findIndex((r) => r.kind === "line" && r.line?.id === selectedId);
@@ -295,11 +318,15 @@ export default function DialogueTreeView({
     const rowBottom = rowTop + rowHeights[idx];
     const viewTop = el.scrollTop;
     const viewBottom = viewTop + el.clientHeight;
-    if (rowTop < viewTop) {
-      el.scrollTop = rowTop;
-    } else if (rowBottom > viewBottom) {
-      el.scrollTop = rowBottom - el.clientHeight;
+    if (rowTop < viewTop || rowBottom > viewBottom) {
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      const centered = rowTop - (el.clientHeight - rowHeights[idx]) / 2;
+      el.scrollTo({
+        top: Math.max(0, Math.min(centered, maxScroll)),
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+      });
     }
+    lastScrolledIdRef.current = selectedId;
   }, [selectedId, flatRows, rowTops, rowHeights]);
 
   function toggle(id: string) {
@@ -324,10 +351,8 @@ export default function DialogueTreeView({
   }
 
   function commitJump() {
-    const raw = jumpTo.trim().replace(/^#/, "");
-    const id = Number(raw);
-    if (Number.isFinite(id) && id > 0) {
-      onJumpToLine?.(id);
+    if (jumpTo.trim()) {
+      onJumpToLine?.(jumpTo.trim());
       setJumpTo("");
     }
   }
@@ -367,7 +392,7 @@ export default function DialogueTreeView({
   const totalCount = nodes.reduce((sum, node) => sum + node.lineIds.length, 0);
 
   return (
-    <div className="space-y-2">
+    <div className="flex h-full flex-col gap-2">
       <div className="space-y-1.5">
         <div className="relative">
           <span
@@ -454,10 +479,9 @@ export default function DialogueTreeView({
                 commitJump();
               }
             }}
-            placeholder="#id"
-            aria-label="Jump to line by id"
-            className="h-6 w-14 rounded-md border border-white/10 bg-bg-1 px-1.5 text-center font-mono text-[10px] text-slate-200 outline-none transition focus:border-accent-gold/60"
-            inputMode="numeric"
+            placeholder="#id / state"
+            aria-label="Jump to line or state"
+            className="h-6 w-24 rounded-md border border-white/10 bg-bg-1 px-1.5 text-center font-mono text-[10px] text-slate-200 outline-none transition focus:border-accent-gold/60"
           />
           <button
             type="button"
@@ -504,8 +528,8 @@ export default function DialogueTreeView({
       ) : (
         <div
           ref={scrollRef}
-          className="relative overflow-auto"
-          style={{ maxHeight: "calc(100vh - 16rem)", minHeight: "200px" }}
+          className="relative flex-1 min-h-0 overflow-auto overscroll-contain"
+          style={{ minHeight: "200px" }}
         >
           <div style={{ height: totalHeight, position: "relative" }}>
             {visibleRows.map((row, idx) => {
@@ -723,6 +747,9 @@ function Row({
             </span>
             <span className={row.kind === "flow" ? "truncate font-medium text-slate-200" : "truncate text-slate-300"}>
               {row.label}
+              {row.kind === "state" && row.localIndex !== undefined && (
+                <span className="ml-1.5 text-slate-500">[{row.localIndex}]</span>
+              )}
             </span>
             <span className="ml-auto inline-flex items-center gap-1">
               {pending > 0 && (

@@ -15,6 +15,9 @@
   .container-narrow {
     @apply mx-auto w-full max-w-5xl px-4 sm:px-6;
   }
+  .container-wide {
+    @apply mx-auto w-full max-w-[1600px] px-4 sm:px-6;
+  }
   .card {
     @apply rounded-xl border border-white/5 bg-bg-1/80 backdrop-blur-sm;
   }

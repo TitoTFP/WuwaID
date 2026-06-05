@@ -192,6 +192,10 @@ export interface DialogueTreeNode {
   line?: DialogueLine & { is_edited?: boolean };
   lineIds: number[];
   children?: DialogueTreeNode[];
+  // 1-based position of a state within its parent flow. Only set for
+  // kind === "state". Computed at tree-build time; updates as the
+  // underlying line order changes (drag/drop, reorder, etc.).
+  localIndex?: number;
 }
 
 export interface MeResponse {

@@ -70,6 +70,7 @@ function buildEditorTree(
         plotMode: plotModeByKey.get(stateKey) ?? "Normal",
         lineIds: [],
         children: [],
+        localIndex: (flow.children?.length ?? 0) + 1,
       };
       stateByKey.set(stateKey, state);
       flow.children?.push(state);
@@ -168,7 +169,7 @@ export default function EditorPage() {
   const [searchQ, setSearchQ] = useState("");
   const [previewLines, setPreviewLines] = useState<DialogueLine[]>([]);
   const [reorderPreview, setReorderPreview] = useState<ReorderPreview[]>([]);
-  const [tab, setTab] = useState<"en" | "zh-Hans" | "ja" | "META">("en");
+  const [tab, setTab] = useState<"en" | "zh-Hans" | "ja" | "META">("META");
   const [filters, setFilters] = useState<TreeFilters>({
     editedOnly: false,
     pendingOnly: false,
@@ -350,15 +351,37 @@ export default function EditorPage() {
   );
 
   const jumpToLine = useCallback(
-    (id: number) => {
-      if (allLineIds.includes(id)) {
-        selectById(id);
-        toast.success(`Jumped to #${id}`);
+    (raw: string) => {
+      const clean = raw.trim().replace(/^#/, "");
+      if (!clean) return;
+
+      // Try matching state ID (e.g., 119000000.1)
+      const stateMatch = clean.match(/^(\d+)\.(\d+)$/);
+      if (stateMatch) {
+        const stateId = Number(stateMatch[1]);
+        const subId = Number(stateMatch[2]);
+        // Find the first line in this state
+        const matchLine = previewLines.find((l) => {
+          const parsed = parseStateKey(l.state_key ?? "");
+          return parsed && parsed.stateId === stateId && parsed.subId === subId;
+        });
+        if (matchLine) {
+          selectById(matchLine.id);
+          toast.success(`Jumped to state ${stateId}.${subId}`);
+          return;
+        }
+      }
+
+      // Try matching line ID
+      const lineId = Number(clean);
+      if (Number.isInteger(lineId) && allLineIds.includes(lineId)) {
+        selectById(lineId);
+        toast.success(`Jumped to #${lineId}`);
       } else {
-        toast.error(`Line #${id} not in this quest`);
+        toast.error(`Line/state "${raw}" not found in this quest`);
       }
     },
-    [allLineIds, selectById, toast],
+    [allLineIds, previewLines, selectById, toast],
   );
 
   const onSelectMany = useCallback((ids: number[], replace: boolean) => {
@@ -393,12 +416,12 @@ export default function EditorPage() {
         event.preventDefault();
         // submission handled in form via direct ref? simpler: ignore for now
       }, options: { mod: true } },
-    { key: "1", handler: () => setTab("en"), options: { allowInInputs: true } },
-    { key: "2", handler: () => setTab("zh-Hans"), options: { allowInInputs: true } },
-    { key: "3", handler: () => setTab("ja"), options: { allowInInputs: true } },
-    { key: "4", handler: () => setTab("META"), options: { allowInInputs: true } },
-    { key: "[", handler: () => tabCycle(-1), options: { allowInInputs: true } },
-    { key: "]", handler: () => tabCycle(1), options: { allowInInputs: true } },
+    { key: "1", handler: () => setTab("en") },
+    { key: "2", handler: () => setTab("zh-Hans") },
+    { key: "3", handler: () => setTab("ja") },
+    { key: "4", handler: () => setTab("META") },
+    { key: "[", handler: () => tabCycle(-1) },
+    { key: "]", handler: () => tabCycle(1) },
     { key: "?", handler: () => setShowHelp((v) => !v), options: { shift: true } },
     { key: "Escape", handler: () => { setShowHelp(false); if (searchQ) setSearchQ(""); } },
   ]);
@@ -432,7 +455,7 @@ export default function EditorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-narrow">
+    <div className="container-wide">
       <div className="mb-3">
         <Link
           to={qidN ? `/quests/${qidN}` : "/"}
@@ -548,7 +571,7 @@ export default function EditorPage() {
       </div>
       <div className="grid min-h-[60vh] gap-4 lg:grid-cols-[auto_1fr]">
         <div className="flex w-[22rem] max-w-full">
-          <aside className="card max-h-[80vh] w-full overflow-auto no-scrollbar p-2 lg:sticky lg:top-4">
+          <aside className="card h-[80vh] w-full overflow-hidden no-scrollbar overscroll-contain p-2 lg:sticky lg:top-4">
             {linesQ.isLoading && questQ.isLoading && (
               <div className="p-2">
                 <Skeleton lines={6} />
@@ -579,7 +602,7 @@ export default function EditorPage() {
               <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
             )}
           </aside>
-          <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={720} />
+          <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
         </div>
         <section className="card flex h-[80vh] flex-col p-4">
           {selectedId === null ? (
@@ -615,11 +638,12 @@ export default function EditorPage() {
                 onPreview={previewLineEdit}
                 onSubmit={(patch, note) => submitQ.mutate({ patch, note })}
                 onSelectNext={(dir) => {
-                  setTab("en");
+                  setTab("META");
                   selectRelative(dir);
                 }}
                 allLines={previewLines}
                 multiLang={multiLang}
+                onMoveBlock={moveBlock}
               />
               {backlinks.length > 0 && (
                 <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
