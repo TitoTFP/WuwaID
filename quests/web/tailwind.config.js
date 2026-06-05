@@ -22,6 +22,7 @@ export default {
           amber: '#fbbf24',
           blue: '#60a5fa',
           slate: '#cbd5e1',
+          emerald: '#10b981',
         },
       },
     },
