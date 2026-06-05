@@ -847,7 +847,7 @@ function Row({
       </div>
       {isLine && preview && (
         <div
-          className="truncate pl-7 font-sans text-[10px] italic text-slate-500"
+          className="truncate pl-7 font-sans text-xs italic text-slate-400"
           style={{ marginLeft: row.depth * 12, marginTop: PREVIEW_GAP }}
         >
           {preview.text ? highlight(preview.text, searchQ) : <em className="opacity-50">-</em>}
