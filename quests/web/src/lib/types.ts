@@ -71,8 +71,9 @@ export interface Quest {
   quest_type: QuestType;
   languages: Lang[];
   total_lines: number;
-  flows: QuestFlow[];
+  flows?: QuestFlow[];
   all_lines: DialogueLine[];
+  plot_mode_by_state: Record<string, PlotMode>;
   // main-story only:
   chapter_id?: number;
   chapter_name?: string;

@@ -7,8 +7,10 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from functools import lru_cache
 
 from . import db
 from .auth import (
@@ -34,6 +36,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+
+def _json(payload: object) -> Response:
+    return Response(
+        content=json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8"),
+        media_type="application/json",
+    )
+
+
+@lru_cache(maxsize=64)
+def _load_quest_cached(qid: int, mtime_ns: int) -> dict:
+    """Cache loaded quest JSON. mtime_ns invalidates the entry on file change."""
+    p = QUESTS_DIR / f"{qid}.json"
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _load_quest(qid: int) -> dict | None:
+    p = QUESTS_DIR / f"{qid}.json"
+    if not p.is_file():
+        return None
+    st = p.stat()
+    return _load_quest_cached(qid, st.st_mtime_ns)
 
 
 @app.on_event("startup")
@@ -56,12 +81,12 @@ def api_chapters():
     p = DATA_DIR / "chapters.json"
     if not p.is_file():
         raise HTTPException(404, "chapters.json missing")
-    return JSONResponse(json.loads(p.read_text(encoding="utf-8")))
+    return _json(json.loads(p.read_text(encoding="utf-8")))
 
 
 @app.get("/api/speakers")
 def api_speakers():
-    return JSONResponse(db.list_speakers())
+    return _json(db.list_speakers())
 
 
 @app.get("/api/quests")
@@ -93,21 +118,35 @@ def _load_quest_overrides(qid: int) -> dict[int, dict]:
     Returns an empty dict if the quest JSON is missing (e.g. stale search
     hit). Callers should treat that as "no override to apply".
     """
-    p = QUESTS_DIR / f"{qid}.json"
-    if not p.is_file():
+    quest = _load_quest(qid)
+    if quest is None:
         return {}
-    quest = json.loads(p.read_text(encoding="utf-8"))
     db.apply_edits(qid, quest)
     return {l["id"]: l for l in quest["all_lines"]}
 
 
 @app.get("/api/quests/{qid}")
 def api_quest(qid: int):
-    p = QUESTS_DIR / f"{qid}.json"
-    if not p.is_file():
+    quest = _load_quest(qid)
+    if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
-    quest = json.loads(p.read_text(encoding="utf-8"))
-    return JSONResponse(db.apply_edits(qid, quest))
+    db.apply_edits(qid, quest)
+    plot_mode_by_state: dict[str, str] = {}
+    for f in quest.get("flows", []):
+        for s in f.get("states") or []:
+            plot_mode_by_state[s["state_key"]] = s["plot_mode"]
+    return _json({
+        "quest_id": quest["quest_id"],
+        "quest_name": quest["quest_name"],
+        "quest_type": quest["quest_type"],
+        "languages": quest["languages"],
+        "total_lines": quest["total_lines"],
+        "all_lines": quest["all_lines"],
+        "plot_mode_by_state": plot_mode_by_state,
+        "side": quest.get("side", 0),
+        "chapter_id": quest.get("chapter_id"),
+        "chapter_name": quest.get("chapter_name"),
+    })
 
 
 @app.get("/api/search")
@@ -143,7 +182,7 @@ def api_search(
             seen.add(key)
             if len(hits) >= limit:
                 break
-    return JSONResponse(hits)
+    return _json(hits)
 
 
 # ---------------------------------------------------------------------------
@@ -188,19 +227,17 @@ def api_me(role: str = Depends(get_role)):
 
 @app.get("/api/editor/quest/{qid}")
 def api_editor_quest(qid: int):
-    p = QUESTS_DIR / f"{qid}.json"
-    if not p.is_file():
+    quest = _load_quest(qid)
+    if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
-    quest = json.loads(p.read_text(encoding="utf-8"))
-    return JSONResponse(db.apply_edits(qid, quest))
+    return _json(db.apply_edits(qid, quest))
 
 
 @app.get("/api/editor/quest/{qid}/lines")
 def api_editor_quest_lines(qid: int):
-    p = QUESTS_DIR / f"{qid}.json"
-    if not p.is_file():
+    quest = _load_quest(qid)
+    if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
-    quest = json.loads(p.read_text(encoding="utf-8"))
     db.apply_edits(qid, quest)
     con = db.connect()
     try:
@@ -221,7 +258,7 @@ def api_editor_quest_lines(qid: int):
         }
         for l in quest["all_lines"]
     ]
-    return JSONResponse(items)
+    return _json(items)
 
 
 def _author_label(request: Request) -> str | None:
@@ -281,8 +318,8 @@ def api_delete_draft(draft_id: int, request: Request, role: str = Depends(get_ro
 @app.get("/api/drafts")
 def api_list_drafts(request: Request, role: str = Depends(get_role)):
     if role == "editor":
-        return JSONResponse(db.list_drafts(scope="all", author_label=None))
-    return JSONResponse(
+        return _json(db.list_drafts(scope="all", author_label=None))
+    return _json(
         db.list_drafts(scope="mine", author_label=_author_label(request))
     )
 
@@ -294,7 +331,7 @@ def api_get_draft(draft_id: int, request: Request, role: str = Depends(get_role)
         raise HTTPException(404, "draft not found")
     if role != "editor" and d["author_label"] != _author_label(request):
         raise HTTPException(403, "not your draft")
-    return JSONResponse(d)
+    return _json(d)
 
 
 @app.post("/api/drafts/{draft_id}/approve")
@@ -353,7 +390,7 @@ if DIST_DIR.is_dir():
 else:
     @app.api_route("/", methods=["GET", "HEAD"])
     def root_no_build():
-        return JSONResponse(
+        return _json(
             {
                 "detail": "web/dist not built. Run `bun run build` then `bun run serve`.",
                 "api_docs": "/docs",

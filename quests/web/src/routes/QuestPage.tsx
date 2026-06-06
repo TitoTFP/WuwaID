@@ -36,13 +36,7 @@ export default function QuestPage() {
 
   const groups = useMemo(() => {
     if (!quest) return [];
-    // Build a (state_key) → plot_mode map from the flow.states arrays
-    const plotModeByKey = new Map<string, string>();
-    for (const f of quest.flows) {
-      for (const s of f.states ?? []) {
-        plotModeByKey.set(s.state_key, s.plot_mode);
-      }
-    }
+    const plotModeByKey = quest.plot_mode_by_state;
     const lines = quest.all_lines;
     const g: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines }[] = [];
     let cur: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines } | null = null;
@@ -54,7 +48,7 @@ export default function QuestPage() {
       if (!m) continue;
       const flow_name = m[1];
       const state_id = Number(m[2]);
-      const pm = plotModeByKey.get(l.state_key ?? "") ?? "Normal";
+      const pm = plotModeByKey[l.state_key ?? ""] ?? "Normal";
       if (!cur || cur.flow_name !== flow_name || cur.state_id !== state_id) {
         cur = { flow_name, state_id, plot_mode: pm, lines: [] };
         g.push(cur);
