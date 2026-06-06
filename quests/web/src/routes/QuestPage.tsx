@@ -1,9 +1,30 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { FixedSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
 import DialogueLine from "../components/DialogueLine";
 import type { DialogueLine as DialogueLineT, Lang } from "../lib/types";
+
+type HeaderRow = {
+  kind: "header";
+  key: string;
+  flow_name: string;
+  state_id: number;
+  plot_mode: string;
+};
+
+type LineRow = {
+  kind: "line";
+  key: string;
+  line: DialogueLineT;
+  plot_mode: string;
+};
+
+type Row = HeaderRow | LineRow;
+
+const HEADER_HEIGHT = 40;
+const LINE_HEIGHT = 96;
 
 export default function QuestPage() {
   const { qid = "0" } = useParams();
@@ -17,22 +38,6 @@ export default function QuestPage() {
     queryFn: () => api.quest(qidN),
     enabled: !!qidN,
   });
-
-  // Scroll to the line indicated by #L<id> in the URL hash
-  const scrolledRef = useRef(false);
-  useEffect(() => {
-    if (!quest || scrolledRef.current) return;
-    const m = window.location.hash.match(/^#L(\d+)$/);
-    if (m) {
-      const el = document.getElementById(`L${m[1]}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("is-highlighted");
-        setTimeout(() => el.classList.remove("is-highlighted"), 3000);
-        scrolledRef.current = true;
-      }
-    }
-  }, [quest]);
 
   const groups = useMemo(() => {
     if (!quest) return [];
@@ -58,6 +63,26 @@ export default function QuestPage() {
     return g;
   }, [quest]);
 
+  // Flatten groups into a single list of rows for react-window. Each group
+  // emits a header row followed by one row per line. This lets us virtualize
+  // 45k+ lines while preserving section structure.
+  const rows = useMemo<Row[]>(() => {
+    const out: Row[] = [];
+    for (const g of groups) {
+      out.push({
+        kind: "header",
+        key: `h-${g.flow_name}-${g.state_id}`,
+        flow_name: g.flow_name,
+        state_id: g.state_id,
+        plot_mode: g.plot_mode,
+      });
+      for (const l of g.lines) {
+        out.push({ kind: "line", key: `l-${l.id}`, line: l, plot_mode: g.plot_mode });
+      }
+    }
+    return out;
+  }, [groups]);
+
   // Build a Map<plot_line_key|text_key, lineId> and Map<id, line> once so
   // DialogueLine.resolveTargetId is O(1) instead of O(N) Array.find.
   const lineIndex = useMemo(() => {
@@ -71,8 +96,78 @@ export default function QuestPage() {
     return { byKey, byId };
   }, [quest]);
 
+  const getItemSize = (idx: number) => (rows[idx]?.kind === "header" ? HEADER_HEIGHT : LINE_HEIGHT);
+
+  // Resize observer for the scroll container so the list fills available height.
+  const listRef = useRef<List>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [listHeight, setListHeight] = useState(600);
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setListHeight(e.contentRect.height);
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // Scroll to the line indicated by #L<id> in the URL hash. Use listRef so we
+  // account for the virtualized layout (DOM nodes outside the viewport are
+  // unmounted, so document.getElementById may be null at the time of the
+  // effect).
+  const scrolledRef = useRef(false);
+  useEffect(() => {
+    if (!quest || scrolledRef.current) return;
+    const m = window.location.hash.match(/^#L(\d+)$/);
+    if (!m) return;
+    const targetId = Number(m[1]);
+    const idx = rows.findIndex((r) => r.kind === "line" && r.line.id === targetId);
+    if (idx >= 0 && listRef.current) {
+      listRef.current.scrollToItem(idx, "center");
+      scrolledRef.current = true;
+      // Highlight once the row is mounted; scrollToItem is async-ish.
+      setTimeout(() => {
+        const el = document.getElementById(`L${targetId}`);
+        if (el) {
+          el.classList.add("is-highlighted");
+          setTimeout(() => el.classList.remove("is-highlighted"), 3000);
+        }
+      }, 250);
+    }
+  }, [quest, rows]);
+
   if (isLoading) return <div className="container-narrow text-sm text-slate-500">Loading quest…</div>;
   if (error || !quest) return <div className="container-narrow text-sm text-rose-400">Quest {qid} not found.</div>;
+
+  const Row = ({ index, style }: ListChildComponentProps) => {
+    const r = rows[index];
+    if (r.kind === "header") {
+      return (
+        <div
+          style={style}
+          className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-slate-600"
+        >
+          <span>{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
+          {r.plot_mode && r.plot_mode !== "Normal" && (
+            <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
+              {r.plot_mode}
+            </span>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div style={style} className="pb-2">
+        <DialogueLine
+          line={r.line}
+          primary={primary}
+          highlightQ={highlightQ}
+          plotMode={r.plot_mode}
+          lineIndex={lineIndex}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="container-narrow space-y-5">
@@ -97,30 +192,21 @@ export default function QuestPage() {
         </div>
       </div>
 
-      {groups.map((g, i) => (
-        <section key={i}>
-          <h2 className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-slate-600">
-            <span>{g.flow_name || "scene"} · state {g.state_id || "—"}</span>
-            {g.plot_mode && g.plot_mode !== "Normal" && (
-              <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
-                {g.plot_mode}
-              </span>
-            )}
-          </h2>
-          <div className="space-y-2">
-            {g.lines.map((line) => (
-              <DialogueLine
-                key={line.id}
-                line={line}
-                primary={primary}
-                highlightQ={highlightQ}
-                plotMode={g.plot_mode}
-                lineIndex={lineIndex}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      <div
+        ref={containerRef}
+        style={{ height: "calc(100vh - 220px)", minHeight: 400 }}
+      >
+        <List
+          ref={listRef}
+          height={listHeight}
+          itemCount={rows.length}
+          itemSize={getItemSize}
+          width="100%"
+          overscanCount={4}
+        >
+          {Row}
+        </List>
+      </div>
     </div>
   );
 }
