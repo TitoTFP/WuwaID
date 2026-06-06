@@ -1,9 +1,10 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FixedSizeList as List, type ListChildComponentProps } from "react-window";
+import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
-import DialogueLine from "../components/DialogueLine";
+import DialogueLine, { type LineIndex } from "../components/DialogueLine";
+import ErrorBoundary from "../components/ErrorBoundary";
 import type { DialogueLine as DialogueLineT, Lang } from "../lib/types";
 
 type HeaderRow = {
@@ -26,12 +27,107 @@ type Row = HeaderRow | LineRow;
 const HEADER_HEIGHT = 40;
 const LINE_HEIGHT = 96;
 
+type RowData = {
+  rows: Row[];
+  primary: Lang;
+  highlightQ: string | null;
+  lineIndex: LineIndex;
+  setSize: (index: number, size: number) => void;
+};
+
+interface RowWrapperProps {
+  index: number;
+  style: React.CSSProperties;
+  setSize: (index: number, size: number) => void;
+  children: React.ReactNode;
+}
+
+function RowWrapper({ index, style, setSize, children }: RowWrapperProps) {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!rowRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const height = entry.target.getBoundingClientRect().height;
+        if (height > 0) {
+          setSize(index, height);
+        }
+      }
+    });
+
+    observer.observe(rowRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [index, setSize]);
+
+  return (
+    <div style={style}>
+      <div ref={rowRef} className="w-full">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Row({ index, style, data }: ListChildComponentProps<RowData>) {
+  const r = data.rows[index];
+  if (!r) return null;
+  if (r.kind === "header") {
+    return (
+      <RowWrapper index={index} style={style} setSize={data.setSize}>
+        <div className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-slate-600">
+          <span>{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
+          {r.plot_mode && r.plot_mode !== "Normal" && (
+            <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
+              {r.plot_mode}
+            </span>
+          )}
+        </div>
+      </RowWrapper>
+    );
+  }
+  return (
+    <RowWrapper index={index} style={style} setSize={data.setSize}>
+      <div className="pb-2">
+        <DialogueLine
+          line={r.line}
+          primary={data.primary}
+          highlightQ={data.highlightQ}
+          plotMode={r.plot_mode}
+          lineIndex={data.lineIndex}
+        />
+      </div>
+    </RowWrapper>
+  );
+}
+
 export default function QuestPage() {
   const { qid = "0" } = useParams();
   const qidN = Number(qid);
   const [params] = useSearchParams();
   const primary = (params.get("lang") ?? "en") as Lang;
   const highlightQ = params.get("q");
+
+  const listRef = useRef<List>(null);
+  const sizeMap = useRef<Record<number, number>>({});
+  const [, forceUpdate] = useState(0);
+
+  const setSize = useCallback((index: number, size: number) => {
+    if (sizeMap.current[index] !== size) {
+      sizeMap.current[index] = size;
+      listRef.current?.resetAfterIndex(index, false);
+      forceUpdate((c) => c + 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    sizeMap.current = {};
+    listRef.current?.resetAfterIndex(0, false);
+  }, [qid]);
 
   const { data: quest, isLoading, error } = useQuery({
     queryKey: ["quest", qidN],
@@ -46,9 +142,6 @@ export default function QuestPage() {
     const g: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines }[] = [];
     let cur: { flow_name: string; state_id: number; plot_mode: string; lines: typeof lines } | null = null;
     for (const l of lines) {
-      // State keys are "<FlowListName>_<StateId>_<SubId>". The FlowListName
-      // itself can contain underscores (e.g. "剧情_3_3_拉海洛主线_下半"), so a
-      // naive split("_") would shred it. Match the exporter's parse:
       const m = (l.state_key ?? "").match(/^(.*)_(\d+)_(\d+)$/);
       if (!m) continue;
       const flow_name = m[1];
@@ -63,9 +156,6 @@ export default function QuestPage() {
     return g;
   }, [quest]);
 
-  // Flatten groups into a single list of rows for react-window. Each group
-  // emits a header row followed by one row per line. This lets us virtualize
-  // 45k+ lines while preserving section structure.
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
     for (const g of groups) {
@@ -83,8 +173,6 @@ export default function QuestPage() {
     return out;
   }, [groups]);
 
-  // Build a Map<plot_line_key|text_key, lineId> and Map<id, line> once so
-  // DialogueLine.resolveTargetId is O(1) instead of O(N) Array.find.
   const lineIndex = useMemo(() => {
     const byKey = new Map<string, number>();
     const byId = new Map<number, DialogueLineT>();
@@ -96,10 +184,15 @@ export default function QuestPage() {
     return { byKey, byId };
   }, [quest]);
 
-  const getItemSize = (idx: number) => (rows[idx]?.kind === "header" ? HEADER_HEIGHT : LINE_HEIGHT);
+  const rowData = useMemo<RowData>(
+    () => ({ rows, primary, highlightQ, lineIndex, setSize }),
+    [rows, primary, highlightQ, lineIndex, setSize],
+  );
 
-  // Resize observer for the scroll container so the list fills available height.
-  const listRef = useRef<List>(null);
+  const getItemSize = useCallback((idx: number) => {
+    return sizeMap.current[idx] || (rows[idx]?.kind === "header" ? HEADER_HEIGHT : LINE_HEIGHT);
+  }, [rows]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
   useLayoutEffect(() => {
@@ -111,10 +204,6 @@ export default function QuestPage() {
     return () => ro.disconnect();
   }, []);
 
-  // Scroll to the line indicated by #L<id> in the URL hash. Use listRef so we
-  // account for the virtualized layout (DOM nodes outside the viewport are
-  // unmounted, so document.getElementById may be null at the time of the
-  // effect).
   const scrolledRef = useRef(false);
   useEffect(() => {
     if (!quest || scrolledRef.current) return;
@@ -125,7 +214,6 @@ export default function QuestPage() {
     if (idx >= 0 && listRef.current) {
       listRef.current.scrollToItem(idx, "center");
       scrolledRef.current = true;
-      // Highlight once the row is mounted; scrollToItem is async-ish.
       setTimeout(() => {
         const el = document.getElementById(`L${targetId}`);
         if (el) {
@@ -139,38 +227,8 @@ export default function QuestPage() {
   if (isLoading) return <div className="container-narrow text-sm text-slate-500">Loading quest…</div>;
   if (error || !quest) return <div className="container-narrow text-sm text-rose-400">Quest {qid} not found.</div>;
 
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    const r = rows[index];
-    if (r.kind === "header") {
-      return (
-        <div
-          style={style}
-          className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-slate-600"
-        >
-          <span>{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
-          {r.plot_mode && r.plot_mode !== "Normal" && (
-            <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
-              {r.plot_mode}
-            </span>
-          )}
-        </div>
-      );
-    }
-    return (
-      <div style={style} className="pb-2">
-        <DialogueLine
-          line={r.line}
-          primary={primary}
-          highlightQ={highlightQ}
-          plotMode={r.plot_mode}
-          lineIndex={lineIndex}
-        />
-      </div>
-    );
-  };
-
   return (
-    <div className="container-narrow space-y-5">
+    <div className="container-narrow flex-1 flex flex-col overflow-hidden space-y-5">
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`} className="link text-xs">
@@ -194,8 +252,9 @@ export default function QuestPage() {
 
       <div
         ref={containerRef}
-        style={{ height: "calc(100vh - 220px)", minHeight: 400 }}
+        className="flex-1 w-full min-h-0"
       >
+        <ErrorBoundary>
         <List
           ref={listRef}
           height={listHeight}
@@ -203,9 +262,13 @@ export default function QuestPage() {
           itemSize={getItemSize}
           width="100%"
           overscanCount={4}
+          estimatedItemSize={LINE_HEIGHT}
+          itemData={rowData}
+          itemKey={(idx, d) => d.rows[idx]?.key ?? String(idx)}
         >
           {Row}
         </List>
+        </ErrorBoundary>
       </div>
     </div>
   );

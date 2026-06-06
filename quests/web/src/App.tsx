@@ -8,6 +8,7 @@ import SearchPage from "./routes/SearchPage";
 import EditorPage from "./routes/EditorPage";
 import DraftsPage from "./routes/DraftsPage";
 import LoginPage from "./routes/LoginPage";
+import CategoriesPage from "./routes/CategoriesPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/chapters/:chapterId" element={<ChapterPage />} />
         <Route path="/side-quests" element={<SideQuestsPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/quests/:qid" element={<QuestPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/editor/:qid" element={<EditorPage />} />

@@ -93,3 +93,41 @@
 .diff-removed { @apply bg-rose-500/20 text-rose-200 line-through decoration-rose-300/40 rounded-sm px-0.5; }
 .diff-added { @apply bg-accent-teal/20 text-accent-teal rounded-sm px-0.5; }
 .diff-equal { @apply text-slate-300; }
+
+/* Global viewport height layouts */
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+#root,
+.min-h-screen {
+  height: 100vh;
+  min-height: 100vh !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  height: 100%;
+}
+main > .container-narrow,
+main > .container-wide {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+main > .container-narrow:not(.overflow-hidden),
+main > .container-wide:not(.overflow-hidden) {
+  overflow-y: auto;
+}
+
+main > .container-narrow.overflow-hidden,
+main > .container-wide.overflow-hidden {
+  overflow: hidden !important;
+}

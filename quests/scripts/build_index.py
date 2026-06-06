@@ -14,9 +14,9 @@ Outputs (written to ./data/, gitignored):
 
 Path resolution order for the exporter root:
   1. --source CLI arg
-  2. ../WuwaID/export_quest_ordered (sibling repo)
-  3. ./WuwaID/export_quest_ordered
-  4. ./export_quest_ordered
+  2. ../WuwaID/export_text_grouped/export_quest_ordered (sibling repo)
+  3. ./WuwaID/export_text_grouped/export_quest_ordered
+  4. ./export_text_grouped/export_quest_ordered
 """
 from __future__ import annotations
 
@@ -37,9 +37,9 @@ DB_PATH = DATA_DIR / "index.db"
 EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session")
 
 DEFAULT_CANDIDATES = [
-    REPO_ROOT.parent / "WuwaID" / "export_quest_ordered",
-    REPO_ROOT / "WuwaID" / "export_quest_ordered",
-    REPO_ROOT / "export_quest_ordered",
+    REPO_ROOT.parent / "WuwaID" / "export_text_grouped" / "export_quest_ordered",
+    REPO_ROOT / "WuwaID" / "export_text_grouped" / "export_quest_ordered",
+    REPO_ROOT / "export_text_grouped" / "export_quest_ordered",
 ]
 
 
@@ -418,6 +418,18 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
     return len(rows)
 
 
+def copy_categories(source_parent: Path, data_dir: Path) -> int:
+    cat_src = source_parent / "categories"
+    cat_dst = data_dir / "categories"
+    if not cat_src.is_dir():
+        print(f"  WARN: categories source directory not found: {cat_src}")
+        return 0
+    if cat_dst.exists():
+        shutil.rmtree(cat_dst)
+    shutil.copytree(cat_src, cat_dst)
+    return len(list(cat_dst.glob("*.json")))
+
+
 def write_quests(quests: list[dict]) -> int:
     if QUESTS_DIR.exists():
         shutil.rmtree(QUESTS_DIR)
@@ -459,6 +471,10 @@ def main() -> int:
     quests = collect_quests(source)
     quests.sort(key=lambda q: (q.get("side", 0), q.get("chapter_id", 0), q.get("order", 0), q.get("quest_id", 0)))
     print(f"  found {len(quests)} quests")
+
+    print("Copying categories...")
+    n_categories = copy_categories(source.parent, data_dir)
+    print(f"  copied {n_categories} category files")
 
     print("Aggregating chapters + speakers...")
     chapters, speakers = aggregate(quests)

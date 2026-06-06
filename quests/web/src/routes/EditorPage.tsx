@@ -516,7 +516,7 @@ export default function EditorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-wide">
+    <div className="container-wide flex-1 flex flex-col overflow-hidden">
       <div className="mb-3">
         <Link
           to={qidN ? `/quests/${qidN}` : "/"}
@@ -630,9 +630,9 @@ export default function EditorPage() {
           </div>
         )}
       </div>
-      <div className="grid min-h-[60vh] gap-4 lg:grid-cols-[auto_1fr]">
-        <div className="flex w-[22rem] max-w-full">
-          <aside className="card h-[80vh] w-full overflow-hidden no-scrollbar overscroll-contain p-2 lg:sticky lg:top-4">
+      <div className="flex flex-1 min-h-0 gap-4">
+        <div className="flex w-[22rem] max-w-full shrink-0 relative">
+          <aside className="card flex-1 flex flex-col overflow-hidden p-2">
             {linesQ.isLoading && questQ.isLoading && (
               <div className="p-2">
                 <Skeleton lines={6} />
@@ -666,7 +666,7 @@ export default function EditorPage() {
           </aside>
           <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
         </div>
-        <section className="card flex h-[80vh] flex-col p-4">
+        <section className="card flex-1 flex flex-col p-4 min-h-0 overflow-y-auto">
           {selectedId === null ? (
             <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
               <p>Select a line on the left, or press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>

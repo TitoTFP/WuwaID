@@ -202,3 +202,18 @@ export interface DialogueTreeNode {
 export interface MeResponse {
   role: "anon" | "editor";
 }
+
+export interface CategoryItem {
+  key: string;
+  "zh-Hans"?: string;
+  en?: string;
+  ja?: string;
+}
+
+export interface CategoryResponse {
+  category: string;
+  total: number;
+  page: number;
+  page_size: number;
+  items: CategoryItem[];
+}

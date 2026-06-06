@@ -149,6 +149,57 @@ def api_quest(qid: int):
     })
 
 
+@app.get("/api/categories")
+def api_categories():
+    cat_dir = DATA_DIR / "categories"
+    if not cat_dir.is_dir():
+        return _json([])
+    files = sorted(cat_dir.glob("*.json"))
+    categories = [f.stem for f in files]
+    return _json(categories)
+
+
+@app.get("/api/categories/{name}")
+def api_category(
+    name: str,
+    q: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1, le=1000),
+):
+    p = DATA_DIR / "categories" / f"{name}.json"
+    if not p.is_file():
+        raise HTTPException(404, f"Category {name} not found")
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise HTTPException(500, f"Error reading category file: {e}")
+
+    items = []
+    for k, val in data.items():
+        item = {"key": k}
+        item.update(val)
+        items.append(item)
+
+    if q:
+        q_lower = q.lower()
+        items = [
+            i for i in items
+            if q_lower in i["key"].lower()
+            or any(q_lower in str(v).lower() for k, v in i.items() if k != "key")
+        ]
+
+    total = len(items)
+    start = (page - 1) * page_size
+    end = start + page_size
+    return _json({
+        "category": name,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "items": items[start:end]
+    })
+
+
 @app.get("/api/search")
 def api_search(
     q: str = Query(..., min_length=1),

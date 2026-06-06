@@ -5,6 +5,11 @@ of these and tick the boxes. Browser DevTools → Network tab open.
 
 ## Quest 1 (45,292 lines, "测试文本")
 
+- [ ] **Blank-screen smoke: opening `/quests/1` shows the dialog list rendered
+      in the scroll area, not a blank/black region.** This catches the
+      "FixedSizeList with a function `itemSize`" regression class — see the
+      2026-06-07 incident. Always run this for any change touching
+      `QuestPage.tsx` or `react-window`.
 - [ ] Open `/quests/1` cold — initial render < 2s, browser responsive
 - [ ] Network tab: response `/api/quests/1` < 12MB (gzipped) and < 1.5s
 - [ ] Network tab: response has `content-encoding: gzip`
@@ -41,8 +46,11 @@ of these and tick the boxes. Browser DevTools → Network tab open.
 
 ## Build & typecheck
 
-- [ ] `tsc --noEmit` (from repo root) exits 0
-- [ ] `bun run build` exits 0
+- [ ] `cd web && tsc --noEmit` exits 0 (this is the one that catches the
+      `react-window` list-type mistakes; the root `tsc` doesn't compile
+      anything because there's no root tsconfig.json)
+- [ ] `bun run build` exits 0 (now runs `tsc --noEmit` before `vite build`,
+      so a type error will block the bundle)
 - [ ] `uv run pytest app/ -v` all pass (52 tests)
 
 ## How to test gzip manually

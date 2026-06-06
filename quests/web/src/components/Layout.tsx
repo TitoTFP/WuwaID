@@ -53,6 +53,9 @@ export default function Layout() {
             <NavLink to="/side-quests" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
               Side Quests
             </NavLink>
+            <NavLink to="/categories" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
+              Grouped Texts
+            </NavLink>
           </nav>
 
           <form onSubmit={onSubmit} className="flex-1 max-w-xl">
