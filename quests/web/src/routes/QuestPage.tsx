@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import DialogueLine from "../components/DialogueLine";
-import type { Lang } from "../lib/types";
+import type { DialogueLine as DialogueLineT, Lang } from "../lib/types";
 
 export default function QuestPage() {
   const { qid = "0" } = useParams();
@@ -58,6 +58,19 @@ export default function QuestPage() {
     return g;
   }, [quest]);
 
+  // Build a Map<plot_line_key|text_key, lineId> and Map<id, line> once so
+  // DialogueLine.resolveTargetId is O(1) instead of O(N) Array.find.
+  const lineIndex = useMemo(() => {
+    const byKey = new Map<string, number>();
+    const byId = new Map<number, DialogueLineT>();
+    for (const l of quest?.all_lines ?? []) {
+      byId.set(l.id, l);
+      if (l.plot_line_key) byKey.set(l.plot_line_key, l.id);
+      if (l.text_key) byKey.set(l.text_key, l.id);
+    }
+    return { byKey, byId };
+  }, [quest]);
+
   if (isLoading) return <div className="container-narrow text-sm text-slate-500">Loading quest…</div>;
   if (error || !quest) return <div className="container-narrow text-sm text-rose-400">Quest {qid} not found.</div>;
 
@@ -102,7 +115,7 @@ export default function QuestPage() {
                 primary={primary}
                 highlightQ={highlightQ}
                 plotMode={g.plot_mode}
-                allLines={quest.all_lines}
+                lineIndex={lineIndex}
               />
             ))}
           </div>

@@ -1,5 +1,11 @@
+import { memo, useMemo } from "react";
 import type { DialogueLine, Lang, PlotMode } from "../lib/types";
 import SpeakerBadge from "./SpeakerBadge";
+
+export type LineIndex = {
+  byKey: Map<string, number>;
+  byId: Map<number, DialogueLine>;
+};
 
 const LANG_LABEL: Record<Lang, string> = {
   en: "EN",
@@ -45,21 +51,20 @@ function highlight(text: string, q: string | null): React.ReactNode {
 // Resolve an option's branch target to a line id within the same quest.
 // We do this by matching the option's plot_line_key against any line's
 // plot_line_key OR text_key (TidTalk == PlotLineKey in this game's data).
+// All lookups are O(1) via Map — caller passes a precomputed `lineIndex`.
 function resolveTargetId(
   opt: { plot_line_key?: string; actions?: { name: string; params: { TalkId?: number } }[] },
-  allLines: DialogueLine[],
+  lineIndex: LineIndex | undefined,
 ): number | null {
-  // Prefer plot_line_key match
+  if (!lineIndex) return null;
   if (opt.plot_line_key) {
-    const hit = allLines.find((l) => l.plot_line_key === opt.plot_line_key || l.text_key === opt.plot_line_key);
-    if (hit) return hit.id;
+    const id = lineIndex.byKey.get(opt.plot_line_key);
+    if (id !== undefined) return id;
   }
-  // Fall back: JumpTalk's TalkId points at the line id within the state
   for (const a of opt.actions ?? []) {
     if (a.name === "JumpTalk" && typeof a.params?.TalkId === "number") {
-      // TalkId == item.Id in ShowTalk.TalkItems, which we used as `id` on the line
-      const hit = allLines.find((l) => l.id === a.params.TalkId);
-      if (hit) return hit.id;
+      const line = lineIndex.byId.get(a.params.TalkId);
+      if (line) return line.id;
     }
   }
   return null;
@@ -73,18 +78,18 @@ function scrollToLine(id: number) {
   window.setTimeout(() => el.classList.remove("is-highlighted"), 3000);
 }
 
-export default function DialogueLine({
+export default memo(function DialogueLine({
   line,
   primary,
   highlightQ,
   plotMode,
-  allLines,
+  lineIndex,
 }: {
   line: DialogueLine;
   primary: Lang;
   highlightQ?: string | null;
   plotMode?: PlotMode;
-  allLines?: DialogueLine[];
+  lineIndex?: LineIndex;
 }) {
   const isEmptySpeaker =
     !line.speaker_en &&
@@ -96,6 +101,11 @@ export default function DialogueLine({
 
   const phone = isPhoneMode(plotMode);
   const cinematic = isCinematicMode(plotMode);
+
+  const parsedState = useMemo(() => {
+    const m = (line.state_key ?? "").match(/^(.*)_(\d+)_(\d+)$/);
+    return m ? { stateId: m[2], subId: m[3] } : null;
+  }, [line.state_key]);
 
   return (
     <div
@@ -126,15 +136,9 @@ export default function DialogueLine({
           <span className="chip">+{line.options.length} choice{line.options.length > 1 ? "s" : ""}</span>
         )}
         <span className="ml-auto text-[10px] text-slate-500">
-          {(() => {
-            const m = (line.state_key ?? "").match(/^(.*)_(\d+)_(\d+)$/);
-            const stateId = m ? m[2] : null;
-            const subId = m ? m[3] : null;
-            const local = line.state_item_id;
-            return stateId && subId && local != null
-              ? `#${line.id} · S${stateId}.${subId}.${local}`
-              : `#${line.id}`;
-          })()}
+          {parsedState && line.state_item_id != null
+            ? `#${line.id} · S${parsedState.stateId}.${parsedState.subId}.${line.state_item_id}`
+            : `#${line.id}`}
         </span>
       </div>
 
@@ -188,7 +192,7 @@ export default function DialogueLine({
         <ul className="mt-3 space-y-2 border-l-2 border-accent-teal/30 pl-3">
           {line.options.map((opt, i) => {
             const optText = (opt as any)[`text_${primary}`] || opt.text_en || "";
-            const targetId = allLines ? resolveTargetId(opt, allLines) : null;
+            const targetId = resolveTargetId(opt, lineIndex);
             const hasBranch = !!targetId;
             return (
               <li key={i} className="text-sm text-slate-300">
@@ -212,4 +216,4 @@ export default function DialogueLine({
       )}
     </div>
   );
-}
+});
