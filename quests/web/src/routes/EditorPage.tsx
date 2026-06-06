@@ -246,8 +246,18 @@ export default function EditorPage() {
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   const lines = linesQ.data ?? [];
-  const selectedLine = previewLines.find((line) => line.id === selectedId) ?? null;
-  const originalSelectedLine = questQ.data?.all_lines.find((line) => line.id === selectedId) ?? null;
+  const previewLineMap = useMemo(() => {
+    const m = new Map<number, DialogueLine>();
+    for (const l of previewLines) m.set(l.id, l);
+    return m;
+  }, [previewLines]);
+  const originalLineMap = useMemo(() => {
+    const m = new Map<number, DialogueLine>();
+    for (const l of questQ.data?.all_lines ?? []) m.set(l.id, l);
+    return m;
+  }, [questQ.data]);
+  const selectedLine = selectedId !== null ? (previewLineMap.get(selectedId) ?? null) : null;
+  const originalSelectedLine = selectedId !== null ? (originalLineMap.get(selectedId) ?? null) : null;
   const plotModeByKey = useMemo(() => {
     const map = new Map<string, string>();
     for (const flow of questQ.data?.flows ?? []) {
@@ -285,6 +295,77 @@ export default function EditorPage() {
     const set = new Set<string>();
     for (const line of previewLines) set.add(String(line.type));
     return Array.from(set).sort();
+  }, [previewLines]);
+
+  // For each line, list of options that point at it (for backlinks panel).
+  // Built once so the backlinks useMemo is O(1) instead of O(N×M).
+  const optIndex = useMemo(() => {
+    const idx = new Map<number, { fromId: number; fromType: string; snippet: string }[]>();
+    for (const line of previewLines) {
+      for (const opt of line.options ?? []) {
+        let targetId: number | undefined;
+        if (typeof opt.plot_line_id === "number") {
+          targetId = opt.plot_line_id;
+        } else if (opt.plot_line_key) {
+          targetId = previewLineMap.get(parseInt(opt.plot_line_key.split("_").pop() ?? "0", 10))?.id;
+          if (targetId == null) {
+            // Fall back: scan all_lines via text_key (rare case)
+            for (const l of previewLines) {
+              if (l.text_key === opt.plot_line_key) { targetId = l.id; break; }
+            }
+          }
+        }
+        if (targetId == null) continue;
+        if (!idx.has(targetId)) idx.set(targetId, []);
+        idx.get(targetId)!.push({
+          fromId: line.id,
+          fromType: line.type,
+          snippet: (opt.text_en || opt["text_zh-Hans"] || opt.text_ja || "").slice(0, 60),
+        });
+      }
+    }
+    return idx;
+  }, [previewLines, previewLineMap]);
+
+  // For jumpToLine: state_id.sub_id → first matching line. User-triggered but
+  // cheap to keep memoized.
+  const stateKeyIndex = useMemo(() => {
+    const m = new Map<string, DialogueLine>();
+    for (const l of previewLines) {
+      const parsed = parseStateKey(l.state_key ?? "");
+      if (parsed) {
+        const k = `${parsed.stateId}.${parsed.subId}`;
+        if (!m.has(k)) m.set(k, l);
+      }
+    }
+    return m;
+  }, [previewLines]);
+
+  // For LineForm handleMoveState: state_key → lines in that state.
+  const linesByState = useMemo(() => {
+    const m = new Map<string, DialogueLine[]>();
+    for (const l of previewLines) {
+      const k = l.state_key || "";
+      if (!m.has(k)) m.set(k, []);
+      m.get(k)!.push(l);
+    }
+    return m;
+  }, [previewLines]);
+
+  // For LineForm handleMoveState: flowName → ordered state_keys (preserves
+  // encounter order). Replaces the O(N²) filter+includes inside LineForm.
+  const stateOrderByFlow = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const l of previewLines) {
+      const parsed = parseStateKey(l.state_key ?? "");
+      const flow = parsed?.flowName || "Ungrouped";
+      const key = l.state_key || "";
+      if (!key) continue;
+      if (!m.has(flow)) m.set(flow, []);
+      const arr = m.get(flow)!;
+      if (!arr.includes(key)) arr.push(key);
+    }
+    return m;
   }, [previewLines]);
 
   const moveBlock = (
@@ -358,16 +439,11 @@ export default function EditorPage() {
       // Try matching state ID (e.g., 119000000.1)
       const stateMatch = clean.match(/^(\d+)\.(\d+)$/);
       if (stateMatch) {
-        const stateId = Number(stateMatch[1]);
-        const subId = Number(stateMatch[2]);
-        // Find the first line in this state
-        const matchLine = previewLines.find((l) => {
-          const parsed = parseStateKey(l.state_key ?? "");
-          return parsed && parsed.stateId === stateId && parsed.subId === subId;
-        });
+        const k = `${stateMatch[1]}.${stateMatch[2]}`;
+        const matchLine = stateKeyIndex.get(k);
         if (matchLine) {
           selectById(matchLine.id);
-          toast.success(`Jumped to state ${stateId}.${subId}`);
+          toast.success(`Jumped to state ${stateMatch[1]}.${stateMatch[2]}`);
           return;
         }
       }
@@ -381,7 +457,7 @@ export default function EditorPage() {
         toast.error(`Line/state "${raw}" not found in this quest`);
       }
     },
-    [allLineIds, previewLines, selectById, toast],
+    [allLineIds, stateKeyIndex, selectById, toast],
   );
 
   const onSelectMany = useCallback((ids: number[], replace: boolean) => {
@@ -428,23 +504,8 @@ export default function EditorPage() {
 
   const backlinks = useMemo(() => {
     if (!selectedLine) return [] as { fromId: number; fromType: string; snippet: string }[];
-    const matches: { fromId: number; fromType: string; snippet: string }[] = [];
-    const targetKey = selectedLine.text_key;
-    const targetId = selectedLine.id;
-    for (const line of previewLines) {
-      if (line.id === targetId) continue;
-      for (const opt of line.options ?? []) {
-        if (opt.plot_line_id === targetId || (opt.plot_line_key && opt.plot_line_key === targetKey)) {
-          matches.push({
-            fromId: line.id,
-            fromType: line.type,
-            snippet: (opt.text_en || opt["text_zh-Hans"] || opt.text_ja || "").slice(0, 60),
-          });
-        }
-      }
-    }
-    return matches;
-  }, [selectedLine, previewLines]);
+    return optIndex.get(selectedLine.id) ?? [];
+  }, [selectedLine, optIndex]);
 
   const breadcrumb = useMemo(() => {
     if (!selectedLine) return null;
@@ -643,6 +704,8 @@ export default function EditorPage() {
                   selectRelative(dir);
                 }}
                 allLines={previewLines}
+                linesByState={linesByState}
+                stateOrderByFlow={stateOrderByFlow}
                 multiLang={multiLang}
                 onMoveBlock={moveBlock}
               />

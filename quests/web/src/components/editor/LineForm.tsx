@@ -78,6 +78,8 @@ export default function LineForm({
   busy,
   onSelectNext,
   allLines,
+  linesByState,
+  stateOrderByFlow,
   multiLang,
   onMoveBlock,
 }: {
@@ -91,6 +93,8 @@ export default function LineForm({
   busy: boolean;
   onSelectNext?: (direction: 1 | -1) => void;
   allLines?: DialogueLine[];
+  linesByState?: Map<string, DialogueLine[]>;
+  stateOrderByFlow?: Map<string, string[]>;
   multiLang?: boolean;
   onMoveBlock?: (
     movedLineIds: number[],
@@ -118,7 +122,11 @@ export default function LineForm({
   }, [line.id, onTabChange]);
 
   function handleMoveState(position: "before" | "after") {
-    if (!onMoveBlock || !allLines) return;
+    if (!onMoveBlock) return;
+    if (!linesByState || !stateOrderByFlow) {
+      // Fallback to old allLines path if precomputed maps not provided
+      if (!allLines) return;
+    }
     const target = moveStateTarget.trim().replace(/^#/, "");
     if (!target) {
       toast.error("Please enter a target state");
@@ -133,16 +141,11 @@ export default function LineForm({
       const localIndex = Number(bracketMatch[1]);
       const currentParsed = parseStateKey(line.state_key ?? "");
       const currentFlow = currentParsed?.flowName || "Ungrouped";
-      const stateOrder: string[] = [];
-      for (const l of allLines) {
-        const parsed = parseStateKey(l.state_key ?? "");
-        const flow = parsed?.flowName || "Ungrouped";
-        if (flow === currentFlow && l.state_key && !stateOrder.includes(l.state_key)) {
-          stateOrder.push(l.state_key);
-        }
-      }
+      const stateOrder = stateOrderByFlow?.get(currentFlow) ?? [];
       const targetStateKey = stateOrder[localIndex - 1];
-      if (targetStateKey) {
+      if (targetStateKey && linesByState) {
+        targetLines = linesByState.get(targetStateKey) ?? [];
+      } else if (targetStateKey && allLines) {
         targetLines = allLines.filter((l) => l.state_key === targetStateKey);
       }
     } else {
@@ -151,13 +154,30 @@ export default function LineForm({
       if (stateMatch) {
         const stateId = Number(stateMatch[1]);
         const subId = Number(stateMatch[2]);
-        targetLines = allLines.filter((l) => {
-          const parsed = parseStateKey(l.state_key ?? "");
-          return parsed && parsed.stateId === stateId && parsed.subId === subId;
-        });
+        // Search linesByState for one whose key parses to (stateId, subId)
+        if (linesByState) {
+          for (const [k, ls] of linesByState) {
+            const parsed = parseStateKey(k);
+            if (parsed && parsed.stateId === stateId && parsed.subId === subId) {
+              targetLines = ls;
+              break;
+            }
+          }
+        }
+        if (targetLines.length === 0 && allLines) {
+          targetLines = allLines.filter((l) => {
+            const parsed = parseStateKey(l.state_key ?? "");
+            return parsed && parsed.stateId === stateId && parsed.subId === subId;
+          });
+        }
       } else {
         // Try matching state_key directly
-        targetLines = allLines.filter((l) => l.state_key === target);
+        if (linesByState) {
+          targetLines = linesByState.get(target) ?? [];
+        }
+        if (targetLines.length === 0 && allLines) {
+          targetLines = allLines.filter((l) => l.state_key === target);
+        }
       }
     }
 
@@ -166,7 +186,9 @@ export default function LineForm({
       return;
     }
 
-    const currentStateLines = allLines.filter((l) => l.state_key === line.state_key);
+    const currentStateLines = linesByState
+      ? (linesByState.get(line.state_key ?? "") ?? [])
+      : (allLines?.filter((l) => l.state_key === line.state_key) ?? []);
     const currentLineIds = currentStateLines.map((l) => l.id);
     const targetLineIds = targetLines.map((l) => l.id);
 
