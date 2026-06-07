@@ -7,23 +7,26 @@ over-translated it; flag it.
 from __future__ import annotations
 
 
+from .glossary import is_term_in_text
+
+
 def detect_violations(line: dict, state_glossary: list[str]) -> list[str]:
     """Return glossary terms present in EN but missing from ID for this line."""
     en_text = " ".join([
         line.get("speaker_en", "") or "",
         line.get("text_en", "") or "",
-    ]).lower()
+    ])
     id_text = " ".join([
         line.get("speaker_id", "") or "",
         line.get("text_id", "") or "",
-    ]).lower()
+    ])
 
     violations: list[str] = []
     for term in state_glossary:
-        needle = term.lower()
-        if needle in en_text and needle not in id_text:
+        if is_term_in_text(term, en_text) and not is_term_in_text(term, id_text):
             violations.append(term)
     return violations
+
 
 
 def find_missing_terms(lines: list[dict], state_glossary: list[str]) -> list[str]:

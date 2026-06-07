@@ -34,6 +34,27 @@ def load_glossary(path: Path) -> dict[str, dict]:
         return {}
 
 
+def is_term_in_text(term: str, text: str) -> bool:
+    """Check if a glossary term is present in text using word boundary matching.
+
+    If the term starts or ends with a word character (alphanumeric/underscore),
+    word boundary checks (\b) are applied at those respective ends.
+
+    Capitalized terms (containing any uppercase characters) are matched
+    case-sensitively to avoid matching lowercase homonyms (e.g. character name
+    "Will" vs. lowercase verb "will").
+    """
+    pattern = re.escape(term)
+    if term and (term[0].isalnum() or term[0] == '_'):
+        pattern = r'\b' + pattern
+    if term and (term[-1].isalnum() or term[-1] == '_'):
+        pattern = pattern + r'\b'
+    has_upper = any(c.isupper() for c in term)
+    flags = 0 if has_upper else re.IGNORECASE
+    return bool(re.search(pattern, text, flags))
+
+
+
 def terms_for_state(
     glossary: dict[str, dict],
     lines: Iterable[dict],
@@ -48,11 +69,11 @@ def terms_for_state(
         haystack_parts.append(line.get("text_en", "") or "")
         for opt in line.get("options", []) or []:
             haystack_parts.append(opt.get("text_en", "") or "")
-    haystack = " ".join(haystack_parts).lower()
+    haystack = " ".join(haystack_parts)
 
     hits: list[str] = []
     for term in glossary:
-        needle = term.lower()
-        if needle in haystack:
+        if is_term_in_text(term, haystack):
             hits.append(term)
     return hits
+
