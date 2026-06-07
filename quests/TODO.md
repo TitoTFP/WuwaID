@@ -12,6 +12,11 @@ Each item gets its own spec → plan → implementation cycle when picked up.
 - [ ] **v1 standalone MT tool** — `scripts/translate_id.py`. The foundation
       everything below depends on. Spec:
       [`docs/superpowers/specs/2026-06-07-translate-id-design.md`](docs/superpowers/specs/2026-06-07-translate-id-design.md).
+      Includes **translation memory** (`text_key` cache) — the
+      `text_key → text_id` map is built from existing per-quest outputs
+      at startup and consulted before each LLM call, so duplicate
+      dialogue across quests is translated only once. See spec
+      §Translation memory.
 
 ## Viewer integration (highest priority follow-up)
 
@@ -43,10 +48,6 @@ Each item gets its own spec → plan → implementation cycle when picked up.
 
 ## Quality and reuse
 
-- [ ] **Translation memory** — when re-translating after a game update, many
-      lines are unchanged. Hash the source `text_en` + `speaker_en` and
-      reuse the previous Indonesian output if available. Could save
-      significant LLM calls.
 - [ ] **Glossary auto-build from approved editor translations** — when
       editors approve a draft, harvest the human-chosen Indonesian for
       proper nouns and append to `data/glossary.json` automatically. Locks
