@@ -24,14 +24,25 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="llama-server URL (default http://localhost:8080).")
     p.add_argument("--model", default="",
                    help="Model name (default: server default).")
-    p.add_argument("--concurrency", type=int, default=4,
-                   help="Parallel requests (default 4).")
+    p.add_argument("--np", default="auto",
+                   help="Parallel requests: 'auto' (query server /slots), or integer. (default auto)")
     p.add_argument("--glossary", type=Path, default=None,
                    help="Glossary JSON (default data/glossary.json).")
     p.add_argument("--output-dir", type=Path, default=None,
                    help="Output directory (default data/quests_id).")
-    p.add_argument("--temperature", type=float, default=0.3)
-    p.add_argument("--max-tokens", type=int, default=2048)
+    p.add_argument("--temperature", type=float, default=1.0,
+                   help="Sampling temperature (default 1.0, matches Gemma 4 model card).")
+    p.add_argument("--max-tokens", type=int, default=4096,
+                   help="Max response tokens (default 4096, accommodates thinking + 83-line state).")
+    p.add_argument("--top-p", type=float, default=0.95,
+                   help="Nucleus sampling top_p (default 0.95, matches model card).")
+    p.add_argument("--top-k", type=int, default=64,
+                   help="Top-k sampling (default 64, matches model card).")
+    p.add_argument("--timeout", type=float, default=300.0,
+                   help="HTTP request timeout in seconds (default 300s).")
+    p.add_argument("--enable-thinking", dest="enable_thinking",
+                   action=argparse.BooleanOptionalAction, default=True,
+                   help="Enable Gemma 4 thinking mode via <|think|> token (default ON).")
     p.add_argument("--limit", type=int, default=None,
                    help="Translate only first N states (testing).")
     p.add_argument("--state-key", default=None,

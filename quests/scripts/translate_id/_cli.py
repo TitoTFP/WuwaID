@@ -16,6 +16,7 @@ from scripts.translate_id.client import LlamaClient
 from scripts.translate_id.glossary import load_glossary
 from scripts.translate_id.memory import Memory
 from scripts.translate_id.orchestrator import translate_quest
+from scripts.translate_id.slot_detect import detect_n_parallel
 from scripts.translate_id.state_iter import order_quests_by_chapter
 
 
@@ -94,6 +95,22 @@ async def run(ns, repo_root: Path) -> int:
     # Build glossary category lookup for prompt display
     glossary_categories = {t: meta.get("category", "") for t, meta in glossary.items()}
 
+    # Resolve --np "auto" → query llama-server /slots
+    if isinstance(ns.np, str) and ns.np.lower() == "auto":
+        concurrency = await detect_n_parallel(ns.server, default=4)
+    else:
+        try:
+            concurrency = int(ns.np)
+        except (TypeError, ValueError):
+            log.warning("Invalid --np value %r; falling back to 4", ns.np)
+            concurrency = 4
+    log.info(
+        "Concurrency=%d (server=%s, model=%r, temperature=%.2f, top_p=%.2f, top_k=%d, "
+        "max_tokens=%d, timeout=%.0fs, enable_thinking=%s)",
+        concurrency, ns.server, ns.model or "(default)",
+        ns.temperature, ns.top_p, ns.top_k, ns.max_tokens, ns.timeout, ns.enable_thinking,
+    )
+
     start = time.time()
     total_lines = 0
     total_from_mem = 0
@@ -101,7 +118,9 @@ async def run(ns, repo_root: Path) -> int:
 
     async with LlamaClient(
         base_url=ns.server, model=ns.model,
+        timeout=ns.timeout,
         temperature=ns.temperature, max_tokens=ns.max_tokens,
+        top_p=ns.top_p, top_k=ns.top_k,
     ) as client:
         for p in quest_paths:
             try:
@@ -131,10 +150,11 @@ async def run(ns, repo_root: Path) -> int:
             stats = await translate_quest(
                 quest_path=p, quest_data=quest_data,
                 output_dir=output_dir, memory=memory, glossary=glossary,
-                client=client, concurrency=ns.concurrency,
+                client=client, concurrency=concurrency,
                 glossary_categories=glossary_categories,
                 use_cache=not ns.no_cache,
                 force=ns.force,
+                enable_thinking=ns.enable_thinking,
             )
             total_lines += stats["lines_translated"] + stats["lines_from_memory"]
             total_from_mem += stats["lines_from_memory"]

@@ -19,9 +19,22 @@ Rules:
 8. Return ONLY a valid JSON array, no markdown fences, no commentary.
 """
 
+# Gemma 4 chat-template token: when present in the system prompt, the model emits
+# a <|channel>analysis block (thinking) followed by a <|channel>final block (answer).
+# Omit to disable thinking. See https://huggingface.co/unsloth/gemma-4-12B-it-qat-GGUF
+THINK_TOKEN = "<|think|>"
 
-def build_system_prompt() -> str:
-    """The static system prompt — same for every request."""
+
+def build_system_prompt(enable_thinking: bool = True) -> str:
+    """The system prompt — same for every request (modulo thinking token).
+
+    When `enable_thinking` is True (default), the Gemma 4 `<|think|>` token is
+    appended, prompting the model to reason before answering. The response will
+    contain `<|channel>analysis...<|channel|>` (discarded) and
+    `<|channel>final...<|channel|>` (extracted by `parse_translation_response`).
+    """
+    if enable_thinking:
+        return SYSTEM_PROMPT + "\n" + THINK_TOKEN
     return SYSTEM_PROMPT
 
 
@@ -100,13 +113,27 @@ def build_augmented_system_prompt(missing_terms: list[str]) -> str:
 def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
     """Parse the LLM JSON-array response, re-ordering to match `expected_ids`.
 
+    Supports three response formats:
+    1. Direct JSON: `[{"line_id": 1, ...}, ...]`
+    2. Gemma 4 thinking (channel format):
+       `<|channel>analysis\n...<|channel|>\n<|channel>final\n[...JSON...]<|channel|>`
+    3. Gemma 4 thinking (think tag format):
+       `<|think|>...<|think|>[...JSON...]`
+
+    Markdown code fences are also stripped defensively.
+
     Raises ValueError on parse error or missing line_ids.
     """
-    # Strip markdown fences if present (defensive).
     s = raw.strip()
+
+    # Extract JSON from thinking-mode wrappers (try each format).
+    s = _extract_json_from_thinking(s)
+
+    # Strip markdown fences if present (defensive).
     if s.startswith("```"):
         s = re.sub(r"^```(?:json)?\s*", "", s)
         s = re.sub(r"\s*```$", "", s)
+
     try:
         data = json.loads(s)
     except json.JSONDecodeError as e:
@@ -130,3 +157,39 @@ def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
             raise ValueError(f"LLM response missing line_id {lid}; got {sorted(by_id.keys())[:10]}...")
         result.append(by_id[lid])
     return result
+
+
+def _extract_json_from_thinking(s: str) -> str:
+    """If `s` contains a Gemma 4 thinking block, return only the final-answer portion.
+
+    Tries in order:
+    1. `<|channel|>final\\n(...)<|channel|>` (channel format)
+    2. `<|think|>(...)<|think|>(...)` (think tag format, take content after the closing tag)
+    3. Strip `<|channel|>analysis\\n...<|channel|>` if no final block (model leaked analysis only)
+    Returns `s` unchanged if no thinking markers are found.
+    """
+    if "<|channel|>" in s or "<|think|>" in s:
+        # Channel format: extract <|channel|>final\n(...)\n<|channel|>
+        m = re.search(
+            r"<\|channel\|>\s*final\s*\n(.*?)<\|channel\|>",
+            s,
+            re.DOTALL,
+        )
+        if m:
+            return m.group(1).strip()
+        # Think-tag format: take everything after the last <|think|>...<|think|>
+        if "<|think|>" in s:
+            # Discard analysis (if any) and take content after closing think tag.
+            parts = re.split(r"<\|think\|>", s)
+            # parts is ['', 'analysis...', 'final answer...']
+            if len(parts) >= 3:
+                return parts[-1].strip()
+        # Analysis-only or malformed: strip any analysis channel as last resort.
+        s = re.sub(
+            r"<\|channel\|>\s*analysis\s*\n.*?<\|channel\|>",
+            "",
+            s,
+            flags=re.DOTALL,
+        )
+        s = re.sub(r"<\|think\|>.*?<\|think\|>", "", s, flags=re.DOTALL)
+    return s

@@ -17,6 +17,7 @@ from .prompt import (
     build_user_prompt,
     build_augmented_system_prompt,
     parse_translation_response,
+    THINK_TOKEN,
 )
 from .state_iter import group_lines_by_state
 
@@ -34,11 +35,13 @@ async def translate_quest(
     glossary_categories: dict[str, str] | None = None,
     use_cache: bool = True,
     force: bool = False,
+    enable_thinking: bool = True,
 ) -> dict:
     """Translate one quest. Returns stats dict.
 
     `memory` is mutated in place (write-once inserts from new translations).
     `output_dir/<qid>.json` is written atomically at the end.
+    `enable_thinking` toggles the Gemma 4 `<|think|>` token in the system prompt.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     qid = int(quest_data.get("quest_id", 0))
@@ -93,6 +96,7 @@ async def translate_quest(
                 memory=memory,
                 client=client,
                 use_cache=use_cache,
+                enable_thinking=enable_thinking,
             )
 
     tasks = [run_one(sk, ls) for sk, ls in todo]
@@ -125,6 +129,7 @@ async def _translate_state(
     memory: Memory,
     client: LlamaClient,
     use_cache: bool,
+    enable_thinking: bool = True,
 ) -> dict:
     """Translate one state. Returns the state payload (lines or error)."""
     plot_mode = ""
@@ -219,6 +224,7 @@ async def _translate_state(
             expected_ids=expected_llm_ids,
             client=client,
             output_lines_template=lines_to_llm,
+            enable_thinking=enable_thinking,
         )
     except Exception as e:
         log.error("qid %s state %s translation failed: %s", quest_data.get("quest_id"), state_key, e)
@@ -266,12 +272,13 @@ async def _llm_translate_with_glossary_retry(
     expected_ids: list[int],
     client: LlamaClient,
     output_lines_template: list[dict],
+    enable_thinking: bool = True,
 ) -> list[dict]:
     """Translate + check glossary, retry once with augmented prompt if needed.
 
     Returns the final list of {line_id, speaker_id, text_id}.
     """
-    base_system = build_system_prompt()
+    base_system = build_system_prompt(enable_thinking=enable_thinking)
     llm_lines = await client.translate_state(base_system, user_prompt, expected_ids)
 
     # Build a "line record" for the postprocessor
@@ -293,6 +300,9 @@ async def _llm_translate_with_glossary_retry(
 
     log.info("glossary violation: %d terms missing, retrying", len(missing))
     aug_system = build_augmented_system_prompt(missing)
+    # Augmented system still includes the think token if enabled.
+    if enable_thinking and THINK_TOKEN not in aug_system:
+        aug_system = aug_system + "\n" + THINK_TOKEN
     llm_lines = await client.translate_state(aug_system, user_prompt, expected_ids)
     return llm_lines
 

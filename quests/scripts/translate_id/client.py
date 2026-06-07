@@ -28,10 +28,12 @@ class LlamaClient:
         self,
         base_url: str = "http://localhost:8080",
         model: str = "",
-        timeout: float = 120.0,
+        timeout: float = 300.0,
         max_retries: int = 3,
-        temperature: float = 0.3,
-        max_tokens: int = 2048,
+        temperature: float = 1.0,
+        max_tokens: int = 4096,
+        top_p: float = 0.95,
+        top_k: int = 64,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
@@ -39,6 +41,8 @@ class LlamaClient:
         self.max_retries = max_retries
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.top_p = top_p
+        self.top_k = top_k
         self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self) -> "LlamaClient":
@@ -69,7 +73,8 @@ class LlamaClient:
             ],
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
-            "top_p": 0.9,
+            "top_p": self.top_p,
+            "top_k": self.top_k,
         }
         if self.model:
             body["model"] = self.model
