@@ -103,7 +103,7 @@ export default function Layout() {
       <footer className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
         Data sourced from{" "}
         <a className="link" href="https://github.com/TitoTFP/WuwaID" target="_blank" rel="noreferrer">
-          WuwaID/export_quest_ordered.py
+          WuwaID/export_text_grouped.py
         </a>{" "}
         · 504 quests · 71,469 lines · 3 languages
       </footer>

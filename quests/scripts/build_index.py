@@ -2,7 +2,7 @@
 """Rebuild the wuwaid-quests data layer from the exporter output.
 
 Inputs (read-only):
-  ../WuwaID/export_quest_ordered/
+  ../WuwaID/export_text_grouped/export_quest_ordered/
     Chapter_<N>_<name>/<idx>_<quest_name>/dialogue.json
     side_quests/<qid>_<quest_name>/dialogue.json
 
@@ -445,7 +445,7 @@ def write_quests(quests: list[dict]) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--source", help="Path to export_quest_ordered/")
+    p.add_argument("--source", help="Path to export_text_grouped/export_quest_ordered/")
     p.add_argument("--data-dir", default=str(DATA_DIR))
     p.add_argument(
         "--with-edits",

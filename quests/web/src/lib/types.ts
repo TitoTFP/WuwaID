@@ -1,4 +1,4 @@
-// Types matching the dialogue.json schema from export_quest_ordered.py
+// Types matching the dialogue.json schema from export_text_grouped.py
 
 export type QuestType = number; // 1=main, 2,3,4,7,9,10,11,14,100
 export type Lang = "en" | "zh-Hans" | "ja";
