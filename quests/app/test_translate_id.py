@@ -653,3 +653,157 @@ async def test_translate_state_line_count_mismatch_retries_then_raises() -> None
     async with LlamaClient(base_url="http://localhost:8080") as c:
         with pytest.raises(Exception, match="missing line_id 2"):
             await c.translate_state("sys", "user", [1, 2])
+
+
+from scripts.translate_id.orchestrator import translate_quest
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_happy_path(tmp_path: Path) -> None:
+    # Build a minimal quest with 1 state, 2 lines
+    quest = {
+        "quest_id": 119000000,
+        "quest_name": "Test Quest",
+        "chapter_id": 3,
+        "chapter_name": "To the Stars",
+        "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+            {"id": 2, "type": "Talk", "state_key": "s1", "text_key": "k2",
+             "speaker_en": "Chixia", "text_en": "Stay close."},
+        ],
+    }
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+            {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+        ])}}]})
+    )
+
+    memory = Memory(q_out / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=q_in / "119000000.json",
+            quest_data=quest,
+            output_dir=q_out,
+            memory=memory,
+            glossary={},
+            client=client,
+            concurrency=1,
+        )
+    assert stats["states_done"] == 1
+    assert stats["lines_translated"] == 2
+    assert stats["errors"] == 0
+
+    # Verify output file
+    out_path = q_out / "119000000.json"
+    out_data = json.loads(out_path.read_text(encoding="utf-8"))
+    assert out_data["quest_id"] == 119000000
+    assert "s1" in out_data["states"]
+    lines = out_data["states"]["s1"]["lines"]
+    assert lines[0]["text_id"] == "Halo."
+    assert lines[0]["from_memory"] is False
+    assert lines[0]["text_key"] == "k1"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_uses_memory_cache(tmp_path: Path) -> None:
+    # Pre-populate memory with a cached translation
+    memory = Memory(tmp_path / "out" / "_memory.json")
+    memory.insert("k1", "Halo (cached).", "Hello.", "Rover", 999)
+
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+            {"id": 2, "type": "Talk", "state_key": "s1", "text_key": "k2",
+             "speaker_en": "Rover", "text_en": "Bye."},
+        ],
+    }
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+    q_out.mkdir()
+
+    # Server should only be called ONCE (for the cache-miss line)
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 2, "speaker_id": "Rover", "text_id": "Sampai jumpa."}
+        ])}}]})
+    )
+
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=q_in / "1.json", quest_data=quest,
+            output_dir=q_out, memory=memory, glossary={},
+            client=client, concurrency=1,
+        )
+
+    assert stats["lines_from_memory"] == 1
+    assert stats["lines_translated"] == 1
+    assert route.call_count == 1  # only the cache-miss line triggered a request
+
+    out = json.loads((q_out / "1.json").read_text(encoding="utf-8"))
+    lines = out["states"]["s1"]["lines"]
+    line1 = next(l for l in lines if l["id"] == 1)
+    line2 = next(l for l in lines if l["id"] == 2)
+    assert line1["text_id"] == "Halo (cached)."
+    assert line1["from_memory"] is True
+    assert line2["text_id"] == "Sampai jumpa."
+    assert line2["from_memory"] is False
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_records_glossary_violation_after_retry(tmp_path: Path) -> None:
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Rover says hi."},
+        ],
+    }
+    q_in = tmp_path / "in"; q_in.mkdir()
+    (q_in / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"; q_out.mkdir()
+    memory = Memory(q_out / "_memory.json")
+
+    # Glossary has "Rover" — must stay in English
+    glossary = {"Rover": {"indonesian_translation": "Rover"}}
+
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        side_effect=[
+            # First call: bad translation (drops "Rover")
+            httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Pengembara", "text_id": "Pengembara bilang hai."}
+            ])}}]}),
+            # Retry: still drops "Rover" (model is stubborn)
+            httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Pengembara", "text_id": "Pengembara menyapa."}
+            ])}}]}),
+        ]
+    )
+
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=q_in / "1.json", quest_data=quest,
+            output_dir=q_out, memory=memory, glossary=glossary,
+            client=client, concurrency=1,
+        )
+
+    assert route.call_count == 2
+    out = json.loads((q_out / "1.json").read_text(encoding="utf-8"))
+    line = out["states"]["s1"]["lines"][0]
+    assert "glossary_violation" in line["flags"]
+    # No infinite loop — the run completed (we don't recheck after the second call
+    # in the current design; violations are just recorded).
