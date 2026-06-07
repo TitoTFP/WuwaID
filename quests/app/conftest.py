@@ -94,6 +94,7 @@ def tmp_db(tmp_path: Path, sample_quest: dict) -> Path:
             type TEXT, state_key TEXT,
             speaker_en TEXT, speaker_zh_hans TEXT, speaker_ja TEXT,
             text_en TEXT, text_zh_hans TEXT, text_ja TEXT,
+            text_id TEXT, speaker_id TEXT,
             options_json TEXT,
             approved_by TEXT NOT NULL, approved_at TEXT NOT NULL,
             PRIMARY KEY (qid, line_id)
