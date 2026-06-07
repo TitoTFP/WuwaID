@@ -142,20 +142,28 @@ def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
     if not isinstance(data, list):
         raise ValueError(f"LLM response is not a JSON array, got {type(data).__name__}")
 
-    by_id: dict[int, dict] = {}
+    by_id: dict[int | str, dict] = {}
     for entry in data:
         if not isinstance(entry, dict):
             raise ValueError(f"LLM array contains non-object entry: {entry!r}")
         lid = entry.get("line_id")
         if lid is None:
             raise ValueError(f"LLM array entry missing line_id: {entry!r}")
-        by_id[int(lid)] = entry
+        try:
+            resolved_lid = int(lid)
+        except (ValueError, TypeError):
+            resolved_lid = lid
+        by_id[resolved_lid] = entry
 
     result: list[dict] = []
     for lid in expected_ids:
-        if lid not in by_id:
-            raise ValueError(f"LLM response missing line_id {lid}; got {sorted(by_id.keys())[:10]}...")
-        result.append(by_id[lid])
+        try:
+            resolved_lid = int(lid)
+        except (ValueError, TypeError):
+            resolved_lid = lid
+        if resolved_lid not in by_id:
+            raise ValueError(f"LLM response missing line_id {lid}; got {sorted(str(k) for k in by_id.keys())[:10]}...")
+        result.append(by_id[resolved_lid])
     return result
 
 

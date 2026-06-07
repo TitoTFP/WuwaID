@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from dataclasses import dataclass
 
 import httpx
@@ -40,23 +41,37 @@ class StateTranslation:
 class LlamaClient:
     def __init__(
         self,
-        base_url: str = "http://localhost:8080",
-        model: str = "",
+        base_url: str | None = None,
+        model: str | None = None,
+        api_key: str | None = None,
         timeout: float = 300.0,
         max_retries: int = 3,
         temperature: float = 1.0,
         max_tokens: int = 4096,
         top_p: float = 0.95,
-        top_k: int = 64,
+        top_k: int | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
+        # Load from environment variables if not provided
+        if base_url is None:
+            base_url = os.environ.get("MTL_BASE_URL", "http://localhost:8080")
+        if model is None:
+            model = os.environ.get("MTL_MODEL", "")
+        if api_key is None:
+            api_key = os.environ.get("MTL_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.api_key = api_key
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.top_p = top_p
+        if top_k is None and not self.api_key:
+            top_k = 64
         self.top_k = top_k
+        self.extra_headers = headers or {}
         self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self) -> "LlamaClient":
@@ -80,6 +95,15 @@ class LlamaClient:
         if self._client is None:
             raise RuntimeError("LlamaClient must be used as an async context manager")
         url = f"{self.base_url}/v1/chat/completions"
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        if self.extra_headers:
+            headers.update(self.extra_headers)
+
         body = {
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -88,14 +112,17 @@ class LlamaClient:
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "top_p": self.top_p,
-            "top_k": self.top_k,
+            "stream": False,
         }
         if self.model:
             body["model"] = self.model
+        if self.top_k is not None:
+            body["top_k"] = self.top_k
+
         last_exc: Exception | None = None
         for attempt in range(self.max_retries):
             try:
-                resp = await self._client.post(url, json=body)
+                resp = await self._client.post(url, json=body, headers=headers)
             except (httpx.HTTPError, OSError) as e:
                 last_exc = e
                 if attempt < self.max_retries - 1:

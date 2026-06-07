@@ -1189,6 +1189,17 @@ def test_parse_translation_response_raises_on_analysis_only() -> None:
         parse_translation_response(raw, [1])
 
 
+def test_parse_translation_response_coerces_types() -> None:
+    """If expected_ids contains strings but response contains ints (or vice-versa), coerce."""
+    raw = json.dumps([{"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}])
+    result = parse_translation_response(raw, ["1"])
+    assert result[0]["text_id"] == "Halo."
+
+    raw2 = json.dumps([{"line_id": "1", "speaker_id": "Rover", "text_id": "Halo."}])
+    result2 = parse_translation_response(raw2, [1])
+    assert result2[0]["text_id"] == "Halo."
+
+
 # --- Gemma 4 thinking mode: system prompt includes <|think|> token ---
 
 

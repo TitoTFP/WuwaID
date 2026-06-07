@@ -96,9 +96,21 @@ async def run(ns, repo_root: Path) -> int:
     # Build glossary category lookup for prompt display
     glossary_categories = {t: meta.get("category", "") for t, meta in glossary.items()}
 
+    import os
+    server_url = ns.server or os.environ.get("MTL_BASE_URL", "http://localhost:8080")
+
+    # Resolve top_k: if cloud API is used and top_k is 64 (parser default), omit it unless passed explicitly
+    resolved_top_k = ns.top_k
+    api_key_env = os.environ.get("MTL_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+    is_cloud = bool(getattr(ns, "api_key", None) or api_key_env)
+    if is_cloud and ns.top_k == 64:
+        import sys
+        if "--top-k" not in sys.argv:
+            resolved_top_k = None
+
     # Resolve --np "auto" → query llama-server /slots
     if isinstance(ns.np, str) and ns.np.lower() == "auto":
-        concurrency = await detect_n_parallel(ns.server, default=4)
+        concurrency = await detect_n_parallel(server_url, default=4)
     else:
         try:
             concurrency = int(ns.np)
@@ -106,11 +118,18 @@ async def run(ns, repo_root: Path) -> int:
             log.warning("Invalid --np value %r; falling back to 4", ns.np)
             concurrency = 4
     log.info(
-        "Concurrency=%d (server=%s, model=%r, temperature=%.2f, top_p=%.2f, top_k=%d, "
+        "Concurrency=%d (server=%s, model=%r, temperature=%.2f, top_p=%.2f, top_k=%s, "
         "max_tokens=%d, timeout=%.0fs, enable_thinking=%s)",
-        concurrency, ns.server, ns.model or "(default)",
-        ns.temperature, ns.top_p, ns.top_k, ns.max_tokens, ns.timeout, ns.enable_thinking,
+        concurrency, server_url, ns.model or "(default)",
+        ns.temperature, ns.top_p, str(resolved_top_k), ns.max_tokens, ns.timeout, ns.enable_thinking,
     )
+
+    extra_headers = None
+    if getattr(ns, "headers", None):
+        try:
+            extra_headers = json.loads(ns.headers)
+        except Exception as e:
+            log.warning("Failed to parse --headers JSON (%s); ignoring headers", e)
 
     start = time.time()
     total_lines = 0
@@ -120,10 +139,12 @@ async def run(ns, repo_root: Path) -> int:
     progress = ProgressReporter(total_quests=len(quest_paths), enabled=not ns.no_progress)
     try:
         async with LlamaClient(
-            base_url=ns.server, model=ns.model,
+            base_url=server_url, model=ns.model,
+            api_key=getattr(ns, "api_key", None),
             timeout=ns.timeout,
             temperature=ns.temperature, max_tokens=ns.max_tokens,
-            top_p=ns.top_p, top_k=ns.top_k,
+            top_p=ns.top_p, top_k=resolved_top_k,
+            headers=extra_headers,
         ) as client:
             for p in quest_paths:
                 try:

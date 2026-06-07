@@ -20,10 +20,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Translate all quests in chapter N (still orders by `order`).")
     p.add_argument("--all", dest="all", action="store_true", default=True,
                    help="(default) Sweep all quests in chapter-priority order.")
-    p.add_argument("--server", default="http://localhost:8080",
-                   help="llama-server URL (default http://localhost:8080).")
-    p.add_argument("--model", default="",
-                   help="Model name (default: server default).")
+    import os
+    p.add_argument("--server", default=os.environ.get("MTL_BASE_URL", "http://localhost:8080"),
+                   help="llama-server or cloud API URL (default: http://localhost:8080 or MTL_BASE_URL).")
+    p.add_argument("--api-key", default=None,
+                   help="API key for LLM provider (default: MTL_API_KEY/OPENAI_API_KEY/OPENROUTER_API_KEY).")
+    p.add_argument("--headers", default=None,
+                   help="Extra request headers in JSON format (e.g. '{\"HTTP-Referer\": \"...\"}').")
+    p.add_argument("--model", default=None,
+                   help="Model name (default: server default or MTL_MODEL).")
     p.add_argument("--np", default="auto",
                    help="Parallel requests: 'auto' (query server /slots), or integer. (default auto)")
     p.add_argument("--glossary", type=Path, default=None,
@@ -37,7 +42,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--top-p", type=float, default=0.95,
                    help="Nucleus sampling top_p (default 0.95, matches model card).")
     p.add_argument("--top-k", type=int, default=64,
-                   help="Top-k sampling (default 64, matches model card).")
+                   help="Top-k sampling (default: 64, set to None for cloud APIs).")
     p.add_argument("--timeout", type=float, default=300.0,
                    help="HTTP request timeout in seconds (default 300s).")
     p.add_argument("--enable-thinking", dest="enable_thinking",

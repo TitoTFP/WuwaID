@@ -10,7 +10,8 @@
     "build": "cd web && tsc --noEmit && vite build",
     "preview": "cd web && vite preview",
     "serve": "node scripts/serve-check.js && uv run uvicorn app.main:app --port 8000 --app-dir .",
-    "build:index": "python scripts/build_index.py"
+    "build:index": "python scripts/build_index.py",
+    "mcp": "uv run python scripts/mcp_server.py"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.0",
