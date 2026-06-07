@@ -100,6 +100,8 @@ Default settings target `unsloth/gemma-4-12B-it-qat-GGUF` with the model's
 recommended sampling (`temperature=1.0, top_p=0.95, top_k=64`) and
 Gemma 4 thinking mode enabled.
 
+After the v1 MT tool produces `data/quests_id/<qid>.json`, the web viewer (and editor) display Indonesian as a 4th language alongside EN / ZH-Hans / JA. Use the `LangSwitcher` in the header to switch primary language; the `?lang=id` URL parameter also works. The FTS5 search index includes a `text_id` column, so `/api/search?lang=id` finds Indonesian matches.
+
 Setup (one time):
 
 ```sh
