@@ -277,7 +277,7 @@ def api_category(
 @app.get("/api/search")
 def api_search(
     q: str = Query(..., min_length=1),
-    lang: str = Query("en", pattern="^(en|zh|ja)$"),
+    lang: str = Query("en", pattern="^(en|zh|ja|id)$"),
     side: int | None = Query(None, ge=0, le=1),
     quest_type: int | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
