@@ -134,8 +134,10 @@ def search(
     col = {"en": "text_en", "zh": "text_zh", "ja": "text_ja", "id": "text_id"}[lang]
     col_idx = {"en": 10, "zh": 11, "ja": 12, "id": 13}[lang]
 
+    # Restrict the FTS5 MATCH to the target column so a query that only
+    # matches e.g. text_en does not leak into lang=id results.
     where = ["dialogue_idx MATCH ?"]
-    params: list = [fts_q]
+    params: list = [f"{col} : ({fts_q})"]
     if side is not None:
         where.append("side = ?")
         params.append(side)
@@ -173,8 +175,8 @@ def search_overlays(
     needle = q.strip().lower()
     if not needle:
         return []
-    edit_col = {"en": "text_en", "zh": "text_zh_hans", "ja": "text_ja"}[lang]
-    json_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja"}[lang]
+    edit_col = {"en": "text_en", "zh": "text_zh_hans", "ja": "text_ja", "id": "text_id"}[lang]
+    json_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja", "id": "text_id"}[lang]
     results: list[dict] = []
     con = connect()
     try:
