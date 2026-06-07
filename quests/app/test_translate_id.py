@@ -4,6 +4,7 @@ import pytest
 
 from scripts.translate_id.glossary import load_glossary, terms_for_state
 from scripts.translate_id.state_iter import group_lines_by_state, order_quests_by_chapter
+from scripts.translate_id.atomic import atomic_write_json
 
 
 def test_load_glossary_parses_valid_json(tmp_path: Path) -> None:
@@ -142,3 +143,37 @@ def test_order_quests_by_chapter_missing_order_sorts_last() -> None:
 
 def test_order_quests_by_chapter_empty() -> None:
     assert order_quests_by_chapter([]) == []
+
+
+def test_atomic_write_json_creates_file(tmp_path: Path) -> None:
+    p = tmp_path / "out.json"
+    atomic_write_json(p, {"hello": "world"})
+    assert json.loads(p.read_text(encoding="utf-8")) == {"hello": "world"}
+
+
+def test_atomic_write_json_overwrites_existing(tmp_path: Path) -> None:
+    p = tmp_path / "out.json"
+    atomic_write_json(p, {"v": 1})
+    atomic_write_json(p, {"v": 2})
+    assert json.loads(p.read_text(encoding="utf-8")) == {"v": 2}
+
+
+def test_atomic_write_json_unicode_safe(tmp_path: Path) -> None:
+    p = tmp_path / "out.json"
+    atomic_write_json(p, {"text": "Halo, Jinhsi! 你好"})
+    raw = p.read_text(encoding="utf-8")
+    assert "Halo, Jinhsi! 你好" in raw
+    # ensure_ascii=False is the contract
+    assert "\\u" not in raw
+
+
+def test_atomic_write_json_no_tmp_left_behind(tmp_path: Path) -> None:
+    p = tmp_path / "out.json"
+    atomic_write_json(p, {"a": 1})
+    assert not (tmp_path / "out.json.tmp").exists()
+
+
+def test_atomic_write_json_nested_dirs(tmp_path: Path) -> None:
+    p = tmp_path / "deep" / "nested" / "out.json"
+    atomic_write_json(p, {"a": 1})
+    assert p.exists()
