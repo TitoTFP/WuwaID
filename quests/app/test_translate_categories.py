@@ -95,3 +95,63 @@ def test_find_missing_terms_for_category_empty():
     records = [{"text_en": "Hi", "text_id": "Hai"}]
     out = find_missing_terms_for_category(records, ["Glacio"])
     assert out == []
+
+
+from scripts.translate_id.state_iter import group_category_keys_by_prefix, chunk_keys
+
+
+def test_group_category_keys_by_prefix_basic():
+    keys = [
+        {"key": "Item_Sword_001"},
+        {"key": "Item_Sword_002"},
+        {"key": "Skill_Fireball"},
+        {"key": "ItemInfo_Sword_001"},
+    ]
+    groups = group_category_keys_by_prefix(keys)
+    # Ordered: first occurrence wins
+    assert list(groups.keys()) == ["Item", "Skill", "ItemInfo"]
+    assert [k["key"] for k in groups["Item"]] == ["Item_Sword_001", "Item_Sword_002"]
+    assert [k["key"] for k in groups["Skill"]] == ["Skill_Fireball"]
+    assert [k["key"] for k in groups["ItemInfo"]] == ["ItemInfo_Sword_001"]
+
+
+def test_group_category_keys_by_prefix_no_underscore():
+    keys = [{"key": "LonelyKey"}, {"key": "Item_X"}]
+    groups = group_category_keys_by_prefix(keys)
+    assert "NoPrefix" in groups
+    assert groups["NoPrefix"][0]["key"] == "LonelyKey"
+    assert "Item" in groups
+
+
+def test_chunk_keys_smaller_than_max():
+    keys = [{"key": f"k{i}"} for i in range(5)]
+    chunks = list(chunk_keys(keys, max_size=10))
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 5
+
+
+def test_chunk_keys_exact_max():
+    keys = [{"key": f"k{i}"} for i in range(10)]
+    chunks = list(chunk_keys(keys, max_size=10))
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 10
+
+
+def test_chunk_keys_larger_than_max():
+    keys = [{"key": f"k{i}"} for i in range(25)]
+    chunks = list(chunk_keys(keys, max_size=10))
+    assert len(chunks) == 3
+    assert len(chunks[0]) == 10
+    assert len(chunks[1]) == 10
+    assert len(chunks[2]) == 5
+
+
+def test_chunk_keys_empty():
+    chunks = list(chunk_keys([], max_size=10))
+    assert chunks == []
+
+
+def test_chunk_keys_invalid_max():
+    import pytest
+    with pytest.raises(ValueError):
+        list(chunk_keys([{"key": "k"}], max_size=0))
