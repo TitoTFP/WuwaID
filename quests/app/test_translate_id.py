@@ -896,6 +896,86 @@ async def test_main_dry_run_prints_quest_order(tmp_path: Path, capsys) -> None:
     assert "1" in captured  # quest 1 (ch 1) printed
 
 
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_force_retranslates_existing(tmp_path: Path) -> None:
+    # Pre-existing output for a state (1 line)
+    out_path = tmp_path / "out" / "1.json"
+    out_path.parent.mkdir()
+    out_path.write_text(json.dumps({
+        "quest_id": 1,
+        "states": {"s1": {"lines": [{"id": 1, "text_id": "Old translation."}]}},
+    }), encoding="utf-8")
+
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+        ],
+    }
+    (tmp_path / "1.json").parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "New translation."}
+        ])}}]})
+    )
+
+    memory = Memory(tmp_path / "out" / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=tmp_path / "1.json", quest_data=quest,
+            output_dir=tmp_path / "out", memory=memory, glossary={},
+            client=client, concurrency=1, force=True,
+        )
+    assert stats["states_done"] == 1
+    out = json.loads((tmp_path / "out" / "1.json").read_text(encoding="utf-8"))
+    assert out["states"]["s1"]["lines"][0]["text_id"] == "New translation."
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_empty_text_en_passthrough(tmp_path: Path) -> None:
+    # Line with empty text_en must be passed through (no LLM call).
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": ""},
+            {"id": 2, "type": "Talk", "state_key": "s1", "text_key": "k2",
+             "speaker_en": "Rover", "text_en": "Hello."},
+        ],
+    }
+    q_in = tmp_path / "in"; q_in.mkdir()
+    (q_in / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"; q_out.mkdir()
+    memory = Memory(q_out / "_memory.json")
+
+    # LLM should only be called once (for line 2)
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 2, "speaker_id": "Rover", "text_id": "Halo."}
+        ])}}]})
+    )
+
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=q_in / "1.json", quest_data=quest,
+            output_dir=q_out, memory=memory, glossary={},
+            client=client, concurrency=1,
+        )
+    assert route.call_count == 1
+    out = json.loads((q_out / "1.json").read_text(encoding="utf-8"))
+    lines = out["states"]["s1"]["lines"]
+    line1 = next(l for l in lines if l["id"] == 1)
+    line2 = next(l for l in lines if l["id"] == 2)
+    assert line1["text_id"] == ""  # passthrough
+    assert line1["from_memory"] is False
+    assert line2["text_id"] == "Halo."  # translated
+
+
 def test_end_to_end_with_sample_quest(tmp_path: Path, sample_quest: dict) -> None:
     """Smoke test: take the existing sample_quest fixture, write it to disk,
     mock the LLM, run translate_quest, verify output structure + memory."""

@@ -33,6 +33,7 @@ async def translate_quest(
     concurrency: int = 4,
     glossary_categories: dict[str, str] | None = None,
     use_cache: bool = True,
+    force: bool = False,
 ) -> dict:
     """Translate one quest. Returns stats dict.
 
@@ -43,8 +44,11 @@ async def translate_quest(
     qid = int(quest_data.get("quest_id", 0))
     output_path = output_dir / f"{qid}.json"
 
-    # Load existing output (for skip-resume)
-    existing = load_existing_output(output_path) if output_path.exists() else {}
+    # Load existing output (for skip-resume) — skip when --force
+    if force:
+        existing = {}
+    else:
+        existing = load_existing_output(output_path) if output_path.exists() else {}
     output_payload: dict[str, Any] = {
         "quest_id": qid,
         "quest_name": quest_data.get("quest_name", ""),
@@ -151,6 +155,19 @@ async def _translate_state(
 
     # First pass: serve from cache
     for i, line in enumerate(lines):
+        text_en = line.get("text_en", "") or ""
+        if not text_en.strip():
+            # Empty source: passthrough, no LLM call, line still in output
+            # so line count matches source for skip detection.
+            out_line = dict(line)
+            out_line["speaker_id"] = ""
+            out_line["text_id"] = ""
+            out_line["from_memory"] = False
+            out_line["flags"] = []
+            out_line["source_text_en"] = ""
+            out_line["source_speaker_en"] = ""
+            output_lines.append(out_line)
+            continue
         tk = line.get("text_key", "")
         if use_cache and tk:
             check = memory.lookup_with_check(

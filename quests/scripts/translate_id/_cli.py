@@ -99,7 +99,10 @@ async def run(ns, repo_root: Path) -> int:
     total_from_mem = 0
     total_errors = 0
 
-    async with LlamaClient(base_url=ns.server, model=ns.model) as client:
+    async with LlamaClient(
+        base_url=ns.server, model=ns.model,
+        temperature=ns.temperature, max_tokens=ns.max_tokens,
+    ) as client:
         for p in quest_paths:
             try:
                 with p.open(encoding="utf-8") as f:
@@ -131,6 +134,7 @@ async def run(ns, repo_root: Path) -> int:
                 client=client, concurrency=ns.concurrency,
                 glossary_categories=glossary_categories,
                 use_cache=not ns.no_cache,
+                force=ns.force,
             )
             total_lines += stats["lines_translated"] + stats["lines_from_memory"]
             total_from_mem += stats["lines_from_memory"]

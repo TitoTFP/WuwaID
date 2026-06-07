@@ -11,14 +11,10 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Iterable
 
 import httpx
 
-from .prompt import (
-    build_augmented_system_prompt,
-    parse_translation_response,
-)
+from .prompt import parse_translation_response
 
 log = logging.getLogger(__name__)
 
@@ -34,11 +30,15 @@ class LlamaClient:
         model: str = "",
         timeout: float = 120.0,
         max_retries: int = 3,
+        temperature: float = 0.3,
+        max_tokens: int = 2048,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout = timeout
         self.max_retries = max_retries
+        self.temperature = temperature
+        self.max_tokens = max_tokens
         self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self) -> "LlamaClient":
@@ -67,8 +67,8 @@ class LlamaClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "temperature": 0.3,
-            "max_tokens": 2048,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
             "top_p": 0.9,
         }
         if self.model:
@@ -129,21 +129,3 @@ class LlamaClient:
             return parse_translation_response(content, expected_ids)
         except ValueError as e:
             raise LlamaError(f"LLM response unparseable after retry: {e}") from e
-
-    async def translate_state_with_glossary_retry(
-        self,
-        base_system_prompt: str,
-        user_prompt: str,
-        expected_ids: list[int],
-        state_glossary: list[str],
-        detect_violations_fn,
-    ) -> tuple[list[dict], list[dict]]:
-        """Translate, check glossary, retry once with augmented prompt if needed.
-
-        Returns (translated_lines, lines_for_postprocess). `lines_for_postprocess`
-        is the per-line record used by the postprocessor (includes text_key,
-        speaker_en, etc.) for violation detection — the caller passes the
-        detector function.
-        """
-        # ... implemented in orchestrator; this wrapper just exposes the prompt
-        raise NotImplementedError
