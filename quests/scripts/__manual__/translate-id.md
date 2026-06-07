@@ -11,10 +11,14 @@ Run after any non-trivial change. Each box is one verification.
 **Single quest end-to-end:**
 - [ ] `uv run python scripts/translate_id.py <qid> --verbose` runs without errors.
 - [ ] Log line `Concurrency=N (server=..., ...)` shows detected slot count (if `--np auto`).
+- [ ] Progress bar appears: outer bar = quests (1/1), inner bar = states (X/Y with `last: p=N c=M` postfix).
+- [ ] Per-state log lines include `prompt=N completion=M reasoning=K` token counts.
 - [ ] `data/quests_id/<qid>.json` is created with the expected structure.
 - [ ] All `lines[]` have `text_id` non-empty and `flags=[]` for clean lines.
 - [ ] All `lines[]` have `text_key` matching the source.
 - [ ] No `<|channel|>` or `<|think|>` tags leaked into `text_id` (thinking mode parsed correctly).
+- [ ] Final summary log line: `Tokens: N prompt + M completion (K reasoning) = T total | states: X done (Y from memory)`.
+- [ ] `--no-progress` flag: re-run with `--no-progress` — no tqdm bar appears, summary still printed.
 
 **Idempotency:**
 - [ ] Re-run the same command; output file is unchanged (`diff` is empty).

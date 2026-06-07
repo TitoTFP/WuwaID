@@ -57,4 +57,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Print plan, no LLM calls.")
     p.add_argument("--verbose", action="store_true",
                    help="Per-state timing + retry info.")
+    p.add_argument("--no-progress", dest="no_progress", action="store_true",
+                   help="Disable the tqdm progress bar (default: bar shown).")
     return p

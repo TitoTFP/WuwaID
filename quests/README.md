@@ -151,6 +151,13 @@ Useful flags:
 | `--top-k N` | Top-k sampling (default 64, matches model card) |
 | `--timeout F` | HTTP request timeout in seconds (default 300s) |
 | `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `<|think|>` token (default ON). Parser extracts the final-answer channel automatically. |
+| `--no-progress` | Disable the tqdm progress bar (default: bar shown). Useful for log files / CI. |
+
+Progress bar shows two levels: outer = quests done, inner = states within current quest.
+Per-state log line includes `prompt=X completion=Y reasoning=Z` token counts.
+
+Final summary includes total prompt/completion tokens, % from memory, and the
+single state with the highest token usage (for spotting overly-long states).
 
 ## Editor mode
 

@@ -16,6 +16,7 @@ from scripts.translate_id.client import LlamaClient
 from scripts.translate_id.glossary import load_glossary
 from scripts.translate_id.memory import Memory
 from scripts.translate_id.orchestrator import translate_quest
+from scripts.translate_id.progress import ProgressReporter
 from scripts.translate_id.slot_detect import detect_n_parallel
 from scripts.translate_id.state_iter import order_quests_by_chapter
 
@@ -116,70 +117,90 @@ async def run(ns, repo_root: Path) -> int:
     total_from_mem = 0
     total_errors = 0
 
-    async with LlamaClient(
-        base_url=ns.server, model=ns.model,
-        timeout=ns.timeout,
-        temperature=ns.temperature, max_tokens=ns.max_tokens,
-        top_p=ns.top_p, top_k=ns.top_k,
-    ) as client:
-        for p in quest_paths:
-            try:
-                with p.open(encoding="utf-8") as f:
-                    quest_data = json.load(f)
-            except (json.JSONDecodeError, OSError) as e:
-                log.error("Cannot load %s: %s", p, e)
-                continue
+    progress = ProgressReporter(total_quests=len(quest_paths), enabled=not ns.no_progress)
+    try:
+        async with LlamaClient(
+            base_url=ns.server, model=ns.model,
+            timeout=ns.timeout,
+            temperature=ns.temperature, max_tokens=ns.max_tokens,
+            top_p=ns.top_p, top_k=ns.top_k,
+        ) as client:
+            for p in quest_paths:
+                try:
+                    with p.open(encoding="utf-8") as f:
+                        quest_data = json.load(f)
+                except (json.JSONDecodeError, OSError) as e:
+                    log.error("Cannot load %s: %s", p, e)
+                    continue
 
-            # Apply --limit / --state-key filters
-            if ns.state_key:
-                quest_data["all_lines"] = [
-                    l for l in (quest_data.get("all_lines") or [])
-                    if l.get("state_key") == ns.state_key
-                ]
-            if ns.limit is not None:
-                # Group by state, keep first N states
-                from scripts.translate_id.state_iter import group_lines_by_state
-                by_state = group_lines_by_state(quest_data.get("all_lines") or [])
-                kept = []
-                for i, (sk, ls) in enumerate(by_state.items()):
-                    if i >= ns.limit:
-                        break
-                    kept.extend(ls)
-                quest_data["all_lines"] = kept
+                # Apply --limit / --state-key filters
+                if ns.state_key:
+                    quest_data["all_lines"] = [
+                        l for l in (quest_data.get("all_lines") or [])
+                        if l.get("state_key") == ns.state_key
+                    ]
+                if ns.limit is not None:
+                    # Group by state, keep first N states
+                    from scripts.translate_id.state_iter import group_lines_by_state
+                    by_state = group_lines_by_state(quest_data.get("all_lines") or [])
+                    kept = []
+                    for i, (sk, ls) in enumerate(by_state.items()):
+                        if i >= ns.limit:
+                            break
+                        kept.extend(ls)
+                    quest_data["all_lines"] = kept
 
-            stats = await translate_quest(
-                quest_path=p, quest_data=quest_data,
-                output_dir=output_dir, memory=memory, glossary=glossary,
-                client=client, concurrency=concurrency,
-                glossary_categories=glossary_categories,
-                use_cache=not ns.no_cache,
-                force=ns.force,
-                enable_thinking=ns.enable_thinking,
-            )
-            total_lines += stats["lines_translated"] + stats["lines_from_memory"]
-            total_from_mem += stats["lines_from_memory"]
-            total_errors += stats["errors"]
-            log.info(
-                "qid %s: %d/%d states done, %d lines translated (%d from memory), %d errors, %d violations",
-                quest_data.get("quest_id"),
-                stats["states_done"],
-                stats["states_done"] + stats["states_skipped"],
-                stats["lines_translated"] + stats["lines_from_memory"],
-                stats["lines_from_memory"],
-                stats["errors"],
-                stats["violations"],
-            )
+                stats = await translate_quest(
+                    quest_path=p, quest_data=quest_data,
+                    output_dir=output_dir, memory=memory, glossary=glossary,
+                    client=client, concurrency=concurrency,
+                    glossary_categories=glossary_categories,
+                    use_cache=not ns.no_cache,
+                    force=ns.force,
+                    enable_thinking=ns.enable_thinking,
+                    progress=progress,
+                )
+                total_lines += stats["lines_translated"] + stats["lines_from_memory"]
+                total_from_mem += stats["lines_from_memory"]
+                total_errors += stats["errors"]
+                log.info(
+                    "qid %s: %d/%d states done, %d lines translated (%d from memory), %d errors, %d violations",
+                    quest_data.get("quest_id"),
+                    stats["states_done"],
+                    stats["states_done"] + stats["states_skipped"],
+                    stats["lines_translated"] + stats["lines_from_memory"],
+                    stats["lines_from_memory"],
+                    stats["errors"],
+                    stats["violations"],
+                )
 
-            # Flush memory after each quest (unless --no-cache)
-            if not ns.no_cache:
-                memory.save(model=ns.model)
+                # Flush memory after each quest (unless --no-cache)
+                if not ns.no_cache:
+                    memory.save(model=ns.model)
+    finally:
+        progress.close()
 
     elapsed = time.time() - start
+    summary = progress.summary()
+    tu = summary["total_usage"]
     log.info(
         "DONE: %d quests, %d lines (%d from memory), %d errors, %.1f sec (%.2f sec/line)",
         len(quest_paths), total_lines, total_from_mem, total_errors,
         elapsed, elapsed / max(total_lines, 1),
     )
+    log.info(
+        "Tokens: %d prompt + %d completion (%d reasoning) = %d total | "
+        "states: %d done (%d from memory)",
+        tu.prompt_tokens, tu.completion_tokens, tu.reasoning_tokens, tu.total_tokens,
+        summary["states_done"], summary["states_from_memory"],
+    )
+    if summary["max_state_usage"] is not None:
+        mu = summary["max_state_usage"]
+        log.info(
+            "Max state: %s — %d prompt + %d completion (%d reasoning) = %d total",
+            summary["max_state_ref"],
+            mu.prompt_tokens, mu.completion_tokens, mu.reasoning_tokens, mu.total_tokens,
+        )
     return 0
 
 

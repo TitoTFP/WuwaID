@@ -550,6 +550,7 @@ def test_is_state_complete_false_when_no_lines() -> None:
 
 import httpx
 import pytest
+import re
 import respx
 
 from scripts.translate_id.client import LlamaClient
@@ -581,8 +582,8 @@ async def test_translate_state_happy_path() -> None:
             user_prompt="Translate these.",
             expected_ids=[1, 2],
         )
-    assert result[0]["text_id"] == "Halo."
-    assert result[1]["text_id"] == "Dekat."
+    assert result.lines[0]["text_id"] == "Halo."
+    assert result.lines[1]["text_id"] == "Dekat."
 
 
 @pytest.mark.asyncio
@@ -599,7 +600,7 @@ async def test_translate_state_retries_on_5xx() -> None:
     )
     async with LlamaClient(base_url="http://localhost:8080", max_retries=3) as c:
         result = await c.translate_state("sys", "user", [1])
-    assert result[0]["text_id"] == "Halo."
+    assert result.lines[0]["text_id"] == "Halo."
     assert route.call_count == 3
 
 
@@ -627,7 +628,7 @@ async def test_translate_state_retries_on_invalid_json() -> None:
     )
     async with LlamaClient(base_url="http://localhost:8080") as c:
         result = await c.translate_state("sys", "user", [1])
-    assert result[0]["text_id"] == "Halo."
+    assert result.lines[0]["text_id"] == "Halo."
     assert route.call_count == 2
 
 
@@ -1256,6 +1257,357 @@ async def test_detect_n_parallel_returns_default_on_empty_list() -> None:
     from scripts.translate_id.slot_detect import detect_n_parallel
     count = await detect_n_parallel("http://localhost:8080", default=5)
     assert count == 5
+
+
+# --- CLI arg parser: --no-progress ---
+
+
+def test_build_arg_parser_no_progress_flag() -> None:
+    """--no-progress should set ns.no_progress=True; default False."""
+    p = build_arg_parser()
+    ns_default = p.parse_args([])
+    assert ns_default.no_progress is False
+    ns_off = p.parse_args(["--no-progress"])
+    assert ns_off.no_progress is True
+
+
+# --- Orchestrator progress integration ---
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_calls_progress_state_done_with_usage(tmp_path: Path) -> None:
+    """translate_quest must invoke progress.state_done() for each state with the
+    actual Usage from the LLM call, so the progress bar updates and tokens aggregate."""
+    from scripts.translate_id.progress import ProgressReporter
+
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+            {"id": 2, "type": "Talk", "state_key": "s2", "text_key": "k2",
+             "speaker_en": "Rover", "text_en": "Bye."},
+        ],
+    }
+    (tmp_path / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+
+    # Order-independent mock: inspect the user_prompt and return the matching line_id.
+    def cb(request):
+        body = json.loads(request.content)
+        up = body["messages"][1]["content"]
+        m = re.search(r'"line_id":\s*(\d+)', up)
+        lid = int(m.group(1)) if m else 1
+        return httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps([
+                {"line_id": lid, "speaker_id": "Rover", "text_id": f"Translated-{lid}."}
+            ])}}],
+            "usage": {"prompt_tokens": 200, "completion_tokens": 50, "total_tokens": 250},
+        })
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(side_effect=cb)
+
+    progress = ProgressReporter(total_quests=1, enabled=False)
+    memory = Memory(tmp_path / "out" / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=tmp_path / "1.json", quest_data=quest,
+            output_dir=tmp_path / "out", memory=memory, glossary={},
+            client=client, concurrency=1, progress=progress,
+        )
+    progress.close()
+    s = progress.summary()
+    assert s["states_done"] == 2
+    assert s["total_usage"].prompt_tokens == 400  # 200 + 200
+    assert s["total_usage"].completion_tokens == 100  # 50 + 50
+    assert stats["states_done"] == 2
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_no_progress_param_works(tmp_path: Path) -> None:
+    """Backward compat: calling translate_quest without progress= still works (None default)."""
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hi."},
+        ],
+    }
+    (tmp_path / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Rover", "text_id": "Hai."}
+            ])}}],
+            "usage": {"prompt_tokens": 50, "completion_tokens": 10, "total_tokens": 60},
+        })
+    )
+    memory = Memory(tmp_path / "out" / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        stats = await translate_quest(
+            quest_path=tmp_path / "1.json", quest_data=quest,
+            output_dir=tmp_path / "out", memory=memory, glossary={},
+            client=client, concurrency=1,
+            # No progress= param
+        )
+    assert stats["states_done"] == 1
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_cache_only_state_reports_from_memory(tmp_path: Path) -> None:
+    """If all lines for a state are served from cache, state_done is called
+    with from_memory=True and zero usage."""
+    from scripts.translate_id.progress import ProgressReporter
+
+    # Pre-populate the memory file (must include `version: 1` for load() to accept it).
+    mem_path = tmp_path / "out" / "_memory.json"
+    mem_path.parent.mkdir(parents=True, exist_ok=True)
+    mem_path.write_text(json.dumps({
+        "version": 1,
+        "model": "",
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z",
+        "entries": {
+            "k1": {
+                "text_id": "Tersimpan.", "source_text_en": "Hello.",
+                "source_speaker_en": "Rover", "from_quest": 999,
+            },
+        },
+    }), encoding="utf-8")
+
+    quest = {
+        "quest_id": 1, "quest_name": "Q", "chapter_id": 1, "chapter_name": "Ch1", "side": 0,
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+        ],
+    }
+    (tmp_path / "1.json").write_text(json.dumps(quest), encoding="utf-8")
+
+    progress = ProgressReporter(total_quests=1, enabled=False)
+    memory = Memory(mem_path)
+    memory.load()
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        await translate_quest(
+            quest_path=tmp_path / "1.json", quest_data=quest,
+            output_dir=tmp_path / "out", memory=memory, glossary={},
+            client=client, concurrency=1, progress=progress,
+        )
+    progress.close()
+    s = progress.summary()
+    assert s["states_done"] == 1
+    assert s["states_from_memory"] == 1
+    assert s["total_usage"].is_zero()
+
+
+# --- ProgressReporter (tqdm-based live progress) ---
+
+
+def test_progress_reporter_disabled_is_noop(capsys) -> None:
+    """When enabled=False, no tqdm output, no error, all methods are safe no-ops."""
+    from scripts.translate_id.progress import ProgressReporter
+    from scripts.translate_id.usage import Usage
+    pr = ProgressReporter(total_quests=10, enabled=False)
+    pr.quest_start(qid=1, quest_name="Q1", total_states=5)
+    pr.state_done(state_key="s1", usage=Usage(prompt_tokens=100, completion_tokens=50, total_tokens=150), flow_name="Flow 1")
+    pr.state_done(state_key="s2", usage=Usage(), from_memory=True, flow_name="Flow 1")
+    pr.quest_done()
+    pr.close()
+    summary = pr.summary()
+    assert summary["quests_done"] == 1
+    assert summary["states_done"] == 2
+    assert summary["states_from_memory"] == 1
+    assert summary["total_usage"].prompt_tokens == 100
+    assert summary["total_usage"].completion_tokens == 50
+    # No tqdm output should be captured.
+    captured = capsys.readouterr()
+    assert captured.out == "" or "0%" not in captured.out  # tqdm render is empty when disabled
+
+
+def test_progress_reporter_aggregates_token_usage() -> None:
+    from scripts.translate_id.progress import ProgressReporter
+    from scripts.translate_id.usage import Usage
+    pr = ProgressReporter(total_quests=2, enabled=False)
+    pr.quest_start(qid=1, quest_name="Q1", total_states=3)
+    pr.state_done(state_key="s1", usage=Usage(prompt_tokens=200, completion_tokens=80, total_tokens=280, reasoning_tokens=40))
+    pr.state_done(state_key="s2", usage=Usage(prompt_tokens=300, completion_tokens=120, total_tokens=420, reasoning_tokens=60))
+    pr.quest_done()
+    pr.quest_start(qid=2, quest_name="Q2", total_states=1)
+    pr.state_done(state_key="s3", usage=Usage(prompt_tokens=100, completion_tokens=30, total_tokens=130, reasoning_tokens=10))
+    pr.quest_done()
+    pr.close()
+    s = pr.summary()
+    assert s["total_usage"].prompt_tokens == 600
+    assert s["total_usage"].completion_tokens == 230
+    assert s["total_usage"].total_tokens == 830
+    assert s["total_usage"].reasoning_tokens == 110
+
+
+def test_progress_reporter_tracks_max_state() -> None:
+    from scripts.translate_id.progress import ProgressReporter
+    from scripts.translate_id.usage import Usage
+    pr = ProgressReporter(total_quests=1, enabled=False)
+    pr.quest_start(qid=42, quest_name="BigQuest", total_states=4)
+    pr.state_done(state_key="a", usage=Usage(prompt_tokens=100, completion_tokens=50, total_tokens=150))
+    pr.state_done(state_key="b", usage=Usage(prompt_tokens=9999, completion_tokens=4000, total_tokens=13999), from_memory=False)
+    pr.state_done(state_key="c", usage=Usage(prompt_tokens=200, completion_tokens=100, total_tokens=300))
+    pr.quest_done()
+    pr.close()
+    s = pr.summary()
+    # Max state is by total_tokens = 13999, ref = "qid=42 state=b"
+    assert s["max_state_usage"].total_tokens == 13999
+    assert "qid=42" in s["max_state_ref"]
+    assert "state=b" in s["max_state_ref"]
+
+
+def test_progress_reporter_counts_states_and_quests() -> None:
+    from scripts.translate_id.progress import ProgressReporter
+    from scripts.translate_id.usage import Usage
+    pr = ProgressReporter(total_quests=3, enabled=False)
+    for q in range(1, 4):
+        pr.quest_start(qid=q, quest_name=f"Q{q}", total_states=2)
+        for sk in ("s1", "s2"):
+            pr.state_done(state_key=sk, usage=Usage(prompt_tokens=10, completion_tokens=5, total_tokens=15))
+        pr.quest_done()
+    pr.close()
+    s = pr.summary()
+    assert s["quests_done"] == 3
+    assert s["states_done"] == 6
+    assert s["states_from_memory"] == 0
+
+
+def test_progress_reporter_handles_cache_only_state() -> None:
+    """If a state was served entirely from cache, from_memory=True; usage may be 0."""
+    from scripts.translate_id.progress import ProgressReporter
+    from scripts.translate_id.usage import Usage
+    pr = ProgressReporter(total_quests=1, enabled=False)
+    pr.quest_start(qid=1, quest_name="Q", total_states=1)
+    pr.state_done(state_key="s1", usage=Usage(), from_memory=True)
+    pr.quest_done()
+    pr.close()
+    s = pr.summary()
+    assert s["states_done"] == 1
+    assert s["states_from_memory"] == 1
+    assert s["total_usage"].is_zero()
+
+
+def test_progress_reporter_close_is_idempotent() -> None:
+    from scripts.translate_id.progress import ProgressReporter
+    pr = ProgressReporter(total_quests=1, enabled=False)
+    pr.close()
+    pr.close()  # second close should not raise
+
+
+# --- Token usage capture from chat completions response ---
+
+
+def test_usage_from_response_parses_standard_fields() -> None:
+    from scripts.translate_id.usage import Usage
+    u = Usage.from_response({"prompt_tokens": 100, "completion_tokens": 50, "total_tokens": 150})
+    assert u.prompt_tokens == 100
+    assert u.completion_tokens == 50
+    assert u.total_tokens == 150
+    assert u.reasoning_tokens == 0
+
+
+def test_usage_from_response_handles_missing_field() -> None:
+    from scripts.translate_id.usage import Usage
+    # Some older llama-server builds don't include `usage` at all.
+    u = Usage.from_response(None)
+    assert u.prompt_tokens == 0
+    assert u.is_zero()
+    u2 = Usage.from_response({})
+    assert u2.is_zero()
+
+
+def test_usage_from_response_extracts_reasoning_tokens() -> None:
+    """Thinking mode populates `completion_tokens_details.reasoning_tokens`."""
+    from scripts.translate_id.usage import Usage
+    u = Usage.from_response({
+        "prompt_tokens": 200,
+        "completion_tokens": 500,
+        "total_tokens": 700,
+        "completion_tokens_details": {"reasoning_tokens": 350},
+    })
+    assert u.completion_tokens == 500
+    assert u.reasoning_tokens == 350
+
+
+def test_usage_addition_sums_fields() -> None:
+    from scripts.translate_id.usage import Usage
+    a = Usage(prompt_tokens=100, completion_tokens=50, total_tokens=150)
+    b = Usage(prompt_tokens=200, completion_tokens=80, total_tokens=280)
+    summed = a + b
+    assert summed.prompt_tokens == 300
+    assert summed.completion_tokens == 130
+    assert summed.total_tokens == 430
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_returns_state_translation_with_usage() -> None:
+    """translate_state now returns StateTranslation (lines + usage) instead of bare list."""
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps([
+                    {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+                ])}}],
+                "usage": {"prompt_tokens": 500, "completion_tokens": 50, "total_tokens": 550},
+            },
+        )
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        result = await c.translate_state("sys", "user", [1])
+    assert result.lines[0]["text_id"] == "Halo."
+    assert result.usage.prompt_tokens == 500
+    assert result.usage.completion_tokens == 50
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_sums_usage_across_invalid_json_retry() -> None:
+    """When the first response is invalid JSON, usage from BOTH calls is summed."""
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        side_effect=[
+            httpx.Response(200, json={
+                "choices": [{"message": {"content": "not json"}}],
+                "usage": {"prompt_tokens": 100, "completion_tokens": 10, "total_tokens": 110},
+            }),
+            httpx.Response(200, json={
+                "choices": [{"message": {"content": json.dumps([
+                    {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+                ])}}],
+                "usage": {"prompt_tokens": 120, "completion_tokens": 20, "total_tokens": 140},
+            }),
+        ]
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        result = await c.translate_state("sys", "user", [1])
+    # 100+120 prompt, 10+20 completion
+    assert result.usage.prompt_tokens == 220
+    assert result.usage.completion_tokens == 30
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_handles_response_without_usage_field() -> None:
+    """Older llama-server may omit `usage`. We should not crash."""
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+            ])}}]
+            # No `usage` field.
+        })
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        result = await c.translate_state("sys", "user", [1])
+    assert result.lines[0]["text_id"] == "Halo."
+    assert result.usage.is_zero()
 
 
 # --- python -m scripts.translate_id entrypoint ---

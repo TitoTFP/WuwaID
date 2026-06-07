@@ -5,22 +5,36 @@ Features:
 - 1× retry on invalid JSON response (with suffix "Return ONLY a valid JSON array").
 - 1× retry on line-count mismatch.
 - 1× retry on glossary violation (with augmented system prompt).
+- Captures token usage from each response and returns it alongside the result.
 """
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
+from dataclasses import dataclass
 
 import httpx
 
 from .prompt import parse_translation_response
+from .usage import Usage
 
 log = logging.getLogger(__name__)
 
 
 class LlamaError(Exception):
     """Raised when a state cannot be translated after all retries."""
+
+
+@dataclass
+class StateTranslation:
+    """Result of translating one state.
+
+    `lines` is the parsed list of {line_id, speaker_id, text_id} in `expected_ids` order.
+    `usage` is the sum of token usage across all LLM calls for this state (including retries).
+    """
+    lines: list[dict]
+    usage: Usage
 
 
 class LlamaClient:
@@ -58,8 +72,8 @@ class LlamaClient:
         self,
         system_prompt: str,
         user_prompt: str,
-    ) -> dict:
-        """POST to /v1/chat/completions and return the parsed JSON body.
+    ) -> tuple[str, Usage]:
+        """POST to /v1/chat/completions and return (content, usage).
 
         Raises on network errors after retries.
         """
@@ -105,7 +119,10 @@ class LlamaClient:
                 raise LlamaError(f"rate limited (429) after {self.max_retries} retries")
             if 400 <= resp.status_code < 500:
                 raise LlamaError(f"client error {resp.status_code}: {resp.text[:200]}")
-            return resp.json()
+            data = resp.json()
+            content = data["choices"][0]["message"]["content"]
+            usage = Usage.from_response(data.get("usage"))
+            return content, usage
         raise LlamaError(f"unreachable: {last_exc}")
 
     async def translate_state(
@@ -113,24 +130,31 @@ class LlamaClient:
         system_prompt: str,
         user_prompt: str,
         expected_ids: list[int],
-    ) -> list[dict]:
+    ) -> StateTranslation:
         """One call (with internal retries) to translate a state.
 
-        Returns a list of {line_id, speaker_id, text_id} in `expected_ids` order.
+        Returns a StateTranslation with the parsed lines and aggregated token usage.
         Raises LlamaError on hard failure.
         """
-        resp = await self._post_chat(system_prompt, user_prompt)
-        content = resp["choices"][0]["message"]["content"]
+        total_usage = Usage()
         # 1st try
+        content, usage = await self._post_chat(system_prompt, user_prompt)
+        total_usage = total_usage + usage
         try:
-            return parse_translation_response(content, expected_ids)
+            return StateTranslation(
+                lines=parse_translation_response(content, expected_ids),
+                usage=total_usage,
+            )
         except ValueError as e:
             log.warning("JSON parse failed, retrying with suffix: %s", e)
         # 1st retry with suffix
         suffix_user = user_prompt + "\n\nReturn ONLY a valid JSON array, no markdown fences."
-        resp = await self._post_chat(system_prompt, suffix_user)
-        content = resp["choices"][0]["message"]["content"]
+        content, usage = await self._post_chat(system_prompt, suffix_user)
+        total_usage = total_usage + usage
         try:
-            return parse_translation_response(content, expected_ids)
+            return StateTranslation(
+                lines=parse_translation_response(content, expected_ids),
+                usage=total_usage,
+            )
         except ValueError as e:
             raise LlamaError(f"LLM response unparseable after retry: {e}") from e

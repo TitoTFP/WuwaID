@@ -11,7 +11,12 @@ from .client import LlamaClient
 from .glossary import terms_for_state
 from .memory import Memory
 from .postprocess import detect_violations, find_missing_terms
-from .progress import is_state_complete, load_existing_output, write_quest_output
+from .progress import (
+    ProgressReporter,
+    is_state_complete,
+    load_existing_output,
+    write_quest_output,
+)
 from .prompt import (
     build_system_prompt,
     build_user_prompt,
@@ -20,6 +25,7 @@ from .prompt import (
     THINK_TOKEN,
 )
 from .state_iter import group_lines_by_state
+from .usage import Usage
 
 log = logging.getLogger(__name__)
 
@@ -36,12 +42,14 @@ async def translate_quest(
     use_cache: bool = True,
     force: bool = False,
     enable_thinking: bool = True,
+    progress: ProgressReporter | None = None,
 ) -> dict:
     """Translate one quest. Returns stats dict.
 
     `memory` is mutated in place (write-once inserts from new translations).
     `output_dir/<qid>.json` is written atomically at the end.
     `enable_thinking` toggles the Gemma 4 `<|think|>` token in the system prompt.
+    `progress`, if given, is notified at quest_start, state_done, and quest_done.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     qid = int(quest_data.get("quest_id", 0))
@@ -73,6 +81,13 @@ async def translate_quest(
             continue
         todo.append((sk, lines))
 
+    if progress is not None:
+        progress.quest_start(
+            qid=qid,
+            quest_name=quest_data.get("quest_name", ""),
+            total_states=len(todo),
+        )
+
     stats = {
         "states_done": 0,
         "states_skipped": len(by_state) - len(todo),
@@ -97,6 +112,7 @@ async def translate_quest(
                 client=client,
                 use_cache=use_cache,
                 enable_thinking=enable_thinking,
+                progress=progress,
             )
 
     tasks = [run_one(sk, ls) for sk, ls in todo]
@@ -117,6 +133,8 @@ async def translate_quest(
 
     # Atomic write per-quest output
     write_quest_output(output_path, output_payload)
+    if progress is not None:
+        progress.quest_done()
     return stats
 
 
@@ -130,13 +148,16 @@ async def _translate_state(
     client: LlamaClient,
     use_cache: bool,
     enable_thinking: bool = True,
+    progress: ProgressReporter | None = None,
 ) -> dict:
     """Translate one state. Returns the state payload (lines or error)."""
     plot_mode = ""
+    flow_name = ""
     for flow in (quest_data.get("flows") or []):
         for st in (flow.get("states") or []):
             if st.get("state_key") == state_key:
                 plot_mode = st.get("plot_mode", "")
+                flow_name = flow.get("flow_name", "") or flow.get("name", "")
                 break
         if plot_mode:
             break
@@ -206,6 +227,8 @@ async def _translate_state(
 
     if not lines_to_llm:
         # All lines served from memory
+        if progress is not None:
+            progress.state_done(state_key=state_key, usage=Usage(), from_memory=True, flow_name=flow_name)
         return {"plot_mode": plot_mode, "lines": output_lines}
 
     # LLM translate the lines that need it
@@ -218,7 +241,7 @@ async def _translate_state(
     expected_llm_ids = [l["id"] for l in lines_to_llm]
 
     try:
-        llm_lines = await _llm_translate_with_glossary_retry(
+        llm_result = await _llm_translate_with_glossary_retry(
             state_glossary=state_glossary,
             user_prompt=user_prompt,
             expected_ids=expected_llm_ids,
@@ -228,7 +251,11 @@ async def _translate_state(
         )
     except Exception as e:
         log.error("qid %s state %s translation failed: %s", quest_data.get("quest_id"), state_key, e)
+        if progress is not None:
+            progress.state_done(state_key=state_key, usage=Usage(), from_memory=False, flow_name=flow_name)
         return {"error": str(e)[:300]}
+
+    llm_lines = llm_result.lines
 
     # Fill in the LLM results
     for pos, llm_line in zip(llm_line_index, llm_lines):
@@ -263,6 +290,20 @@ async def _translate_state(
             line["flags"] = ["glossary_violation"]
             log.warning("qid %s state %s line %s: glossary violations %s", quest_data.get("quest_id"), state_key, line.get("id"), viols)
 
+    if progress is not None:
+        progress.state_done(
+            state_key=state_key,
+            usage=llm_result.usage,
+            from_memory=False,
+            flow_name=flow_name,
+        )
+    log.info(
+        "qid %s flow=%r state=%s: prompt=%d completion=%d reasoning=%d",
+        quest_data.get("quest_id"), flow_name, state_key,
+        llm_result.usage.prompt_tokens, llm_result.usage.completion_tokens,
+        llm_result.usage.reasoning_tokens,
+    )
+
     return {"plot_mode": plot_mode, "lines": output_lines}
 
 
@@ -273,13 +314,17 @@ async def _llm_translate_with_glossary_retry(
     client: LlamaClient,
     output_lines_template: list[dict],
     enable_thinking: bool = True,
-) -> list[dict]:
+) -> "StateTranslation":
     """Translate + check glossary, retry once with augmented prompt if needed.
 
-    Returns the final list of {line_id, speaker_id, text_id}.
+    Returns a StateTranslation with the final list of {line_id, speaker_id, text_id}
+    and the total token usage (summed across all LLM calls for this state).
     """
+    from .client import StateTranslation
     base_system = build_system_prompt(enable_thinking=enable_thinking)
-    llm_lines = await client.translate_state(base_system, user_prompt, expected_ids)
+    result = await client.translate_state(base_system, user_prompt, expected_ids)
+    llm_lines = result.lines
+    total_usage = result.usage
 
     # Build a "line record" for the postprocessor
     records = []
@@ -292,19 +337,19 @@ async def _llm_translate_with_glossary_retry(
         })
 
     if not state_glossary:
-        return llm_lines
+        return StateTranslation(lines=llm_lines, usage=total_usage)
 
     missing = find_missing_terms(records, state_glossary)
     if not missing:
-        return llm_lines
+        return StateTranslation(lines=llm_lines, usage=total_usage)
 
     log.info("glossary violation: %d terms missing, retrying", len(missing))
     aug_system = build_augmented_system_prompt(missing)
     # Augmented system still includes the think token if enabled.
     if enable_thinking and THINK_TOKEN not in aug_system:
         aug_system = aug_system + "\n" + THINK_TOKEN
-    llm_lines = await client.translate_state(aug_system, user_prompt, expected_ids)
-    return llm_lines
+    result = await client.translate_state(aug_system, user_prompt, expected_ids)
+    return StateTranslation(lines=result.lines, usage=total_usage + result.usage)
 
 
 def _resolve_speaker(speaker_en: str, glossary: dict) -> str:
