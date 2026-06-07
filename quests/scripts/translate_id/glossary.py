@@ -19,8 +19,11 @@ def load(path: Path) -> dict[str, str]:
     out: dict[str, str] = {}
     for entry in data["entries"]:
         en = entry["en"]
-        id_val = entry["id"]
-        out[en.lower()] = id_val
+        if entry.get("keep_in_english", False):
+            value = en
+        else:
+            value = entry["id"]
+        out[en.lower()] = value
     return out
 
 
