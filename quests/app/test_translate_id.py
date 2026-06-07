@@ -1785,3 +1785,181 @@ async def test_logging_records_still_captured_during_translation(
         f"expected orchestrator per-state INFO log with prompt=/completion=, "
         f"got: {[(r.name, r.levelname, r.message) for r in caplog.records]}"
     )
+
+
+# --- --flush-every flag: incremental disk flush ---
+
+
+def _build_three_state_quest() -> dict:
+    """Helper: 3 states, 1 line each, distinct text_keys."""
+    return {
+        "quest_id": 119000000,
+        "quest_name": "Test",
+        "chapter_id": 1,
+        "chapter_name": "X",
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+            {"id": 2, "type": "Talk", "state_key": "s2", "text_key": "k2",
+             "speaker_en": "Chixia", "text_en": "Stay close."},
+            {"id": 3, "type": "Talk", "state_key": "s3", "text_key": "k3",
+             "speaker_en": "Yangyang", "text_en": "Look out!"},
+        ],
+    }
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_flush_every_zero_writes_output_only_at_end(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With default flush_every=0, write_quest_output is called exactly once
+    (at end of quest), not per state. Preserves current behavior."""
+    from scripts.translate_id import orchestrator as orch
+
+    quest = _build_three_state_quest()
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+            {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+            {"line_id": 3, "speaker_id": "Yangyang", "text_id": "Awas!"},
+        ])}}]})
+    )
+
+    call_count = {"write": 0}
+    real_write = orch.write_quest_output
+    def counting_write(path, payload):
+        call_count["write"] += 1
+        return real_write(path, payload)
+    monkeypatch.setattr(orch, "write_quest_output", counting_write)
+
+    memory = Memory(q_out / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        await translate_quest(
+            quest_path=q_in / "119000000.json",
+            quest_data=quest,
+            output_dir=q_out,
+            memory=memory,
+            glossary={},
+            client=client,
+            concurrency=1,
+            # flush_every defaults to 0
+        )
+
+    assert call_count["write"] == 1, (
+        f"flush_every=0 should write output exactly once (end of quest); "
+        f"got {call_count['write']} calls"
+    )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_flush_every_one_writes_output_after_each_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With flush_every=1 and 3 states, write_quest_output is called 4 times:
+    once per state (3 intermediate) + once at the end (final)."""
+    from scripts.translate_id import orchestrator as orch
+
+    quest = _build_three_state_quest()
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+            {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+            {"line_id": 3, "speaker_id": "Yangyang", "text_id": "Awas!"},
+        ])}}]})
+    )
+
+    call_count = {"write": 0}
+    real_write = orch.write_quest_output
+    def counting_write(path, payload):
+        call_count["write"] += 1
+        return real_write(path, payload)
+    monkeypatch.setattr(orch, "write_quest_output", counting_write)
+
+    memory = Memory(q_out / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        await translate_quest(
+            quest_path=q_in / "119000000.json",
+            quest_data=quest,
+            output_dir=q_out,
+            memory=memory,
+            glossary={},
+            client=client,
+            concurrency=1,
+            flush_every=1,
+            model="test-model",
+        )
+
+    # 3 intermediate (one per state) + 1 final at end of translate_quest
+    assert call_count["write"] == 4, (
+        f"flush_every=1 with 3 states should write 4 times (3 intermediate + 1 final); "
+        f"got {call_count['write']} calls"
+    )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_flush_every_one_writes_memory_file_after_each_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With flush_every=1 and 3 states, memory.save is called 3 times from the
+    orchestrator (one per state boundary). The CLI's separate end-of-quest save
+    is not exercised here (we call translate_quest directly)."""
+    from scripts.translate_id import orchestrator as orch
+
+    quest = _build_three_state_quest()
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+            {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+            {"line_id": 3, "speaker_id": "Yangyang", "text_id": "Awas!"},
+        ])}}]})
+    )
+
+    memory = Memory(q_out / "_memory.json")
+    save_count = {"save": 0}
+    real_save = memory.save
+    def counting_save(model: str) -> None:
+        save_count["save"] += 1
+        return real_save(model)
+    monkeypatch.setattr(memory, "save", counting_save)
+
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        await translate_quest(
+            quest_path=q_in / "119000000.json",
+            quest_data=quest,
+            output_dir=q_out,
+            memory=memory,
+            glossary={},
+            client=client,
+            concurrency=1,
+            flush_every=1,
+            model="test-model",
+        )
+
+    # 3 states, each hits the boundary and triggers a memory.save
+    assert save_count["save"] == 3, (
+        f"flush_every=1 with 3 states should save memory 3 times; "
+        f"got {save_count['save']} saves"
+    )
+
+    # And the memory file was actually created (regression: confirm save wasn't a no-op).
+    assert (q_out / "_memory.json").exists(), (
+        "memory.save was called but _memory.json does not exist on disk"
+    )

@@ -53,6 +53,13 @@ Run after any non-trivial change. Each box is one verification.
 - [ ] Kill the process (Ctrl-C) mid-way.
 - [ ] Re-run the same command; only the unfinished states are translated.
 
+**--flush-every (incremental disk flush):**
+- [ ] `uv run python scripts/translate_id.py <qid> --verbose --flush-every 1` runs.
+- [ ] `data/quests_id/<qid>.json` appears after the FIRST state completes (not at end).
+- [ ] `data/quests_id/_memory.json` appears after the FIRST state completes.
+- [ ] File size grows with each subsequent state (verify with `ls -l` in another terminal).
+- [ ] Re-run with `--flush-every 0` (default): both files appear only at end of quest (current behavior preserved).
+
 **--force:**
 - [ ] `uv run python scripts/translate_id.py <qid> --force` re-translates even if `data/quests_id/<qid>.json` already exists.
 

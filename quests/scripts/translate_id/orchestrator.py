@@ -44,6 +44,8 @@ async def translate_quest(
     force: bool = False,
     enable_thinking: bool = True,
     progress: ProgressReporter | None = None,
+    flush_every: int = 0,
+    model: str = "",
 ) -> dict:
     """Translate one quest. Returns stats dict.
 
@@ -51,6 +53,9 @@ async def translate_quest(
     `output_dir/<qid>.json` is written atomically at the end.
     `enable_thinking` toggles the Gemma 4 `<|think|>` token in the system prompt.
     `progress`, if given, is notified at quest_start, state_done, and quest_done.
+    `flush_every` controls intermediate disk flushes: 0 = end-of-quest only
+    (default), N>0 = flush both <qid>.json and memory after every N states.
+    `model` is stored in the memory file when an intermediate flush occurs.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     qid = int(quest_data.get("quest_id", 0))
@@ -121,6 +126,7 @@ async def translate_quest(
     # which clears and redraws the bar so the per-state log line does not
     # break tqdm's cursor and freeze the progress display.
     with logging_redirect_tqdm():
+        done_count = 0
         for coro in asyncio.as_completed(tasks):
             state_key, result = await coro
             output_payload["states"][state_key] = result
@@ -135,8 +141,17 @@ async def translate_quest(
                         stats["lines_translated"] += 1
                     if "glossary_violation" in (line.get("flags") or []):
                         stats["violations"] += 1
+            done_count += 1
+            # Intermediate flush: write quest output + memory to disk so a
+            # crash mid-quest loses at most N states of work. Final write
+            # still happens below (ensures last N states are persisted even
+            # when N doesn't divide total_states evenly).
+            if flush_every > 0 and done_count % flush_every == 0:
+                write_quest_output(output_path, output_payload)
+                if use_cache:
+                    memory.save(model=model)
 
-    # Atomic write per-quest output
+    # Atomic write per-quest output (final; always runs)
     write_quest_output(output_path, output_payload)
     if progress is not None:
         progress.quest_done()

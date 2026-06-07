@@ -152,6 +152,7 @@ Useful flags:
 | `--timeout F` | HTTP request timeout in seconds (default 300s) |
 | `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `<|think|>` token (default ON). Parser extracts the final-answer channel automatically. |
 | `--no-progress` | Disable the tqdm progress bar (default: bar shown). Useful for log files / CI. |
+| `--flush-every N` | Flush `<qid>.json` + `_memory.json` after every N states in a quest (default 0 = end-of-quest only). Set to 1 for crash-safe, real-time progress. |
 
 Progress bar shows two levels: outer = quests done, inner = states within current quest.
 Per-state log line includes `prompt=X completion=Y reasoning=Z` token counts.

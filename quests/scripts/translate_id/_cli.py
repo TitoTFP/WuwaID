@@ -159,6 +159,8 @@ async def run(ns, repo_root: Path) -> int:
                     force=ns.force,
                     enable_thinking=ns.enable_thinking,
                     progress=progress,
+                    flush_every=ns.flush_every,
+                    model=ns.model,
                 )
                 total_lines += stats["lines_translated"] + stats["lines_from_memory"]
                 total_from_mem += stats["lines_from_memory"]

@@ -59,4 +59,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Per-state timing + retry info.")
     p.add_argument("--no-progress", dest="no_progress", action="store_true",
                    help="Disable the tqdm progress bar (default: bar shown).")
+    p.add_argument("--flush-every", type=int, default=0,
+                   help="Flush <qid>.json + _memory.json after every N states "
+                        "in a quest (default 0 = flush once at end of quest).")
     return p
