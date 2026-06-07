@@ -6,7 +6,7 @@
 #include "pch.h"
 
 #include "Logger.hpp"
-#include "VersionProxy.hpp"
+#include "WinhttpProxy.hpp"
 #include "SDK/Basic.hpp"
 #include "SDK/CoreUObject_structs.hpp"
 #include "SDK/CoreUObject_classes.hpp"
@@ -177,7 +177,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
         g_hModule = hModule;
-        VersionProxy::LoadRealDll();
+        WinhttpProxy::LoadRealDll();
         {
             PTP_WORK work = CreateThreadpoolWork(InitWorker, nullptr, nullptr);
             if (work)
@@ -186,7 +186,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         break;
 
     case DLL_PROCESS_DETACH:
-        VersionProxy::Unload();
+        WinhttpProxy::Unload();
         break;
     }
 

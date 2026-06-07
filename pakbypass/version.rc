@@ -18,11 +18,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "WuwaVH"
-            VALUE "FileDescription", "Version Information Helper Library"
+            VALUE "FileDescription", "Windows HTTP Services"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "version"
+            VALUE "InternalName", "winhttp"
             VALUE "LegalCopyright", "Copyright (C) 2024-2026 WuwaVH"
-            VALUE "OriginalFilename", "version.dll"
+            VALUE "OriginalFilename", "winhttp.dll"
             VALUE "ProductName", "WuWa Vietnamese Localization"
             VALUE "ProductVersion", "1.0.0.0"
         END
