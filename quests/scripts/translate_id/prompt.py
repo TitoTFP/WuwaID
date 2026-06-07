@@ -77,6 +77,13 @@ def build_user_prompt(
                 "type": l.get("type", ""),
                 "speaker_en": l.get("speaker_en", ""),
                 "text_en": l.get("text_en", ""),
+                "options_en": [
+                    {
+                        "text_key": o.get("text_key", ""),
+                        "text_en": o.get("text_en", ""),
+                    }
+                    for o in (l.get("options") or [])
+                ],
             }
             for l in lines
         ],
@@ -91,6 +98,13 @@ def build_user_prompt(
                 "line_id": l["id"],
                 "speaker_id": "<translation or English form if kept>",
                 "text_id": "<translation>",
+                "options_id": [
+                    {
+                        "text_key": o.get("text_key", ""),
+                        "text_id": "<translation of option text_en>",
+                    }
+                    for o in (l.get("options") or [])
+                ],
             }
             for l in lines
         ],

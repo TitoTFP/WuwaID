@@ -265,6 +265,36 @@ def test_build_user_prompt_preserves_input_order() -> None:
     assert prompt.index("first") < prompt.index("second")
 
 
+def test_build_user_prompt_includes_options_en() -> None:
+    lines = [
+        {"id": 1, "type": "Talk", "speaker_en": "Rover",
+         "text_en": "Hello.",
+         "options": [
+             {"text_key": "t1opt1", "text_en": "Yes."},
+             {"text_key": "t1opt2", "text_en": "No."},
+         ]},
+        {"id": 2, "type": "Talk", "speaker_en": "Chixia",
+         "text_en": "Bye.", "options": []},
+    ]
+    prompt = build_user_prompt(
+        glossary_subset=[],
+        glossary_categories=None,
+        state_context={
+            "quest_id": 1, "quest_name": "x",
+            "chapter_id": 1, "chapter_name": "y",
+            "flow_name": "Flow", "state_key": "S", "plot_mode": "Normal",
+        },
+        lines=lines,
+    )
+    assert '"options_en"' in prompt
+    assert '"text_key": "t1opt1"' in prompt
+    assert '"text_en": "Yes."' in prompt
+    # No options for line 2 → empty options_en array still present
+    assert '"options_en": []' in prompt
+    # Output example mentions options_id
+    assert '"options_id"' in prompt
+
+
 def test_build_augmented_system_prompt_includes_missing_terms() -> None:
     aug = build_augmented_system_prompt(["Rover", "Echo"])
     # base prompt preserved
