@@ -1051,8 +1051,10 @@ def test_end_to_end_with_sample_quest(tmp_path: Path, sample_quest: dict) -> Non
         respx.post("http://localhost:8080/v1/chat/completions").mock(
             return_value=httpx.Response(200, json={
                 "choices": [{"message": {"content": json.dumps([
-                    {"line_id": lid, "speaker_id": "Speaker", "text_id": f"Translated {lid}"}
-                    for lid in [1, 2, 3]
+                    {"line_id": 1, "speaker_id": "Speaker", "text_id": "Translated 1", "options_id": []},
+                    {"line_id": 2, "speaker_id": "Speaker", "text_id": "Translated 2", "options_id": []},
+                    {"line_id": 3, "speaker_id": "Speaker", "text_id": "Translated 3",
+                     "options_id": [{"text_key": "t3opt1", "text_id": "Translated opt1"}]},
                 ])}}]
             })
         )
