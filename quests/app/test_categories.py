@@ -32,7 +32,8 @@ def test_list_categories(client):
     r = client.get("/api/categories")
     assert r.status_code == 200
     data = r.json()
-    assert data == ["Item", "UI"]
+    names = [c["name"] for c in data]
+    assert names == ["Item", "UI"]
 
 def test_get_category_paginated(client):
     r = client.get("/api/categories/Item?page=1&page_size=2")
@@ -56,3 +57,40 @@ def test_get_category_filter(client):
 def test_get_category_not_found(client):
     r = client.get("/api/categories/NonExistent")
     assert r.status_code == 404
+
+
+def test_list_categories_endpoint(client_with_categories, tmp_path):
+    client, data_dir = client_with_categories
+    res = client.get("/api/categories")
+    assert res.status_code == 200
+    payload = res.json()
+    assert any(c["name"] == "Item" for c in payload)
+    item = next(c for c in payload if c["name"] == "Item")
+    assert item["key_count"] == 2
+
+
+def test_get_category_endpoint_merges_id(client_with_categories, tmp_path):
+    client, data_dir = client_with_categories
+    res = client.get("/api/category/Item")
+    assert res.status_code == 200
+    payload = res.json()
+    assert payload["name"] == "Item"
+    assert "id" in payload["languages"]
+    entries_by_key = {e["key"]: e for e in payload["entries"]}
+    assert entries_by_key["Item_Sword_001_Name"]["id"] == "Pedang Besi"
+    # Keys not translated -> id is null
+    assert entries_by_key["Item_Sword_001_Desc"]["id"] is None
+
+
+def test_get_category_endpoint_404_for_unknown(client_with_categories):
+    client, _ = client_with_categories
+    res = client.get("/api/category/NoSuchCategory")
+    assert res.status_code == 404
+
+
+def test_search_endpoint_with_category_scope(client_with_categories):
+    client, _ = client_with_categories
+    res = client.get("/api/search", params={"q": "Pedang", "lang": "id", "scope": "category"})
+    assert res.status_code == 200
+    payload = res.json()
+    assert isinstance(payload, (list, dict))

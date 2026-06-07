@@ -126,3 +126,41 @@ def tmp_db(tmp_path: Path, sample_quest: dict) -> Path:
     db.set_db_path(db_path)
     yield db_path
     db.set_db_path(None)
+
+
+@pytest.fixture
+def client_with_categories(tmp_path, monkeypatch):
+    """A TestClient wired to a tmpdir with sample category data + translations."""
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from scripts.build_index import build_category_fts
+
+    data_dir = tmp_path / "data"
+    cats = data_dir / "categories"
+    cats.mkdir(parents=True)
+    translations = data_dir / "categories_id"
+    translations.mkdir(parents=True)
+
+    (cats / "Item.json").write_text(json.dumps({
+        "Item_Sword_001_Name": {"zh-Hans": "铁剑", "en": "Iron Sword", "ja": "鉄剣"},
+        "Item_Sword_001_Desc": {"zh-Hans": "desc", "en": "A basic sword.", "ja": "desc"},
+    }, ensure_ascii=False), encoding="utf-8")
+
+    (translations / "Item.json").write_text(json.dumps({
+        "Item_Sword_001_Name": {"zh-Hans": "铁剑", "en": "Iron Sword", "ja": "鉄剣", "id": "Pedang Besi"},
+        # Item_Sword_001_Desc intentionally not translated
+    }, ensure_ascii=False), encoding="utf-8")
+
+    db_path = data_dir / "index.db"
+    build_category_fts(db_path, data_dir)
+
+    from app import main as appmain
+    old_data = appmain.DATA_DIR
+    old_db = appmain.db.DB_PATH
+    appmain.DATA_DIR = data_dir
+    appmain.db.set_db_path(db_path)
+
+    yield TestClient(app), data_dir
+
+    appmain.DATA_DIR = old_data
+    appmain.db.set_db_path(old_db)

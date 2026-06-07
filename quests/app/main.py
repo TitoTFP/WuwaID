@@ -231,7 +231,25 @@ def api_categories():
         return _json([])
     files = sorted(cat_dir.glob("*.json"))
     categories = [f.stem for f in files]
-    return _json(categories)
+    # Try to enrich with DB metadata if available
+    import sqlite3 as _sqlite3
+    db_path = DATA_DIR / "index.db"
+    if db_path.is_file():
+        try:
+            con = _sqlite3.connect(str(db_path))
+            rows = con.execute(
+                "SELECT name, key_count, translated_count FROM categories ORDER BY name"
+            ).fetchall()
+            con.close()
+            meta = {n: (kc, tc) for n, kc, tc in rows}
+            enriched = []
+            for name in categories:
+                kc, tc = meta.get(name, (0, 0))
+                enriched.append({"name": name, "key_count": kc, "translated_count": tc})
+            return _json(enriched)
+        except Exception:
+            pass
+    return _json([{"name": n, "key_count": 0, "translated_count": 0} for n in categories])
 
 
 @app.get("/api/categories/{name}")
@@ -275,14 +293,75 @@ def api_category(
     })
 
 
+@app.get("/api/category/{name}")
+def api_category_single(name: str):
+    """Get a single category's entries, merged with `id` translation if available."""
+    cat_path = DATA_DIR / "categories" / f"{name}.json"
+    if not cat_path.is_file():
+        raise HTTPException(404, f"Category {name} not found")
+    with cat_path.open(encoding="utf-8") as f:
+        cat_data = json.load(f)
+    id_map: dict[str, str] = {}
+    id_path = DATA_DIR / "categories_id" / f"{name}.json"
+    if id_path.is_file():
+        try:
+            id_data = json.loads(id_path.read_text(encoding="utf-8"))
+            for k, v in id_data.items():
+                if isinstance(v, dict) and v.get("id"):
+                    id_map[k] = v["id"]
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    entries = []
+    for key, value in cat_data.items():
+        if not isinstance(value, dict):
+            continue
+        entries.append({
+            "key": key,
+            "zh-Hans": value.get("zh-Hans", ""),
+            "en": value.get("en", ""),
+            "ja": value.get("ja", ""),
+            "id": id_map.get(key),
+        })
+
+    return _json({
+        "name": name,
+        "languages": ["zh-Hans", "en", "ja", "id"],
+        "entries": entries,
+    })
+
+
 @app.get("/api/search")
 def api_search(
     q: str = Query(..., min_length=1),
     lang: str = Query("en", pattern="^(en|zh|ja|id)$"),
     side: int | None = Query(None, ge=0, le=1),
     quest_type: int | None = Query(None),
+    scope: str = Query("quest", pattern="^(quest|category)$"),
     limit: int = Query(50, ge=1, le=200),
 ):
+    import sqlite3 as _sqlite3
+    if scope == "category":
+        data_dir = DATA_DIR
+        db_path = data_dir / "index.db"
+        if not db_path.is_file():
+            return _json({"results": [], "total": 0})
+        con = _sqlite3.connect(str(db_path))
+        con.row_factory = _sqlite3.Row
+        table = "category_text_idx"
+        text_col = f"text_{lang}"
+        try:
+            cur = con.execute(
+                f"SELECT category, key, text_en, text_id FROM {table} WHERE {text_col} MATCH ? LIMIT ?",
+                (q, limit),
+            )
+            results = [
+                {"category": row["category"], "key": row["key"], "text": row["text_id"] or row["text_en"]}
+                for row in cur.fetchall()
+            ]
+        finally:
+            con.close()
+        return _json({"results": results, "total": len(results)})
     hits = db.search(q, lang=lang, side=side, quest_type=quest_type, limit=limit)
     by_qid: dict[int, list[dict]] = {}
     for h in hits:
