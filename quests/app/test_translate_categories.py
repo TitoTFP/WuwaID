@@ -239,11 +239,16 @@ def test_parse_translation_response_for_categories_think_tag_format():
     assert result[0]["text_id"] == "v"
 
 
+import asyncio
 import pytest
 import httpx
 import respx
+from pathlib import Path
 
 from scripts.translate_id.client import LlamaClient, LlamaError
+from scripts.translate_id.glossary import load_glossary
+from scripts.translate_id.memory import Memory
+from scripts.translate_id.categories_orchestrator import translate_category_file
 
 
 @pytest.mark.asyncio
@@ -294,3 +299,96 @@ async def test_translate_lines_raises_on_length_mismatch_after_retry():
     async with LlamaClient(base_url="http://testserver", max_retries=2) as client:
         with pytest.raises(LlamaError):
             await client.translate_lines("S", "U", expected_keys=["A", "B"])
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_category_file_happy_path(tmp_path: Path):
+    """One small category file (5 keys) -> all translated, output schema correct."""
+    cat_in = tmp_path / "data" / "categories" / "Advice.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    cat_in.write_text(json.dumps({
+        "Adv_001": {"zh-Hans": "建议一", "en": "Tip one", "ja": "アドバイス一"},
+        "Adv_002": {"zh-Hans": "建议二", "en": "Tip two", "ja": "アドバイス二"},
+        "Adv_003": {"zh-Hans": "建议三", "en": "Tip three", "ja": "アドバイス三"},
+        "Adv_004": {"zh-Hans": "建议四", "en": "Tip four", "ja": "アドバイス四"},
+        "Adv_005": {"zh-Hans": "建议五", "en": "Tip five", "ja": "アドバイス五"},
+    }, ensure_ascii=False), encoding="utf-8")
+
+    out_dir = tmp_path / "data" / "categories_id"
+    mem_path = tmp_path / "data" / "_translation_memory.json"
+    glossary = load_glossary(tmp_path / "glossary.json")
+
+    respx.post("http://testserver/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps([
+                {"key": "Adv_001", "text_id": "Tip satu"},
+                {"key": "Adv_002", "text_id": "Tip dua"},
+                {"key": "Adv_003", "text_id": "Tip tiga"},
+                {"key": "Adv_004", "text_id": "Tip empat"},
+                {"key": "Adv_005", "text_id": "Tip lima"},
+            ])}}],
+            "usage": {"prompt_tokens": 50, "completion_tokens": 30, "total_tokens": 80},
+        })
+    )
+    async with LlamaClient(base_url="http://testserver") as client:
+        memory = Memory(mem_path)
+        stats = await translate_category_file(
+            category_path=cat_in,
+            output_dir=out_dir,
+            memory=memory,
+            glossary=glossary,
+            client=client,
+            max_keys_per_call=50,
+            concurrency=1,
+        )
+    assert stats["keys_translated"] == 5
+    assert stats["errors"] == 0
+    out = json.loads((out_dir / "Advice.json").read_text(encoding="utf-8"))
+    assert out["Adv_001"]["id"] == "Tip satu"
+    assert out["Adv_001"]["en"] == "Tip one"
+    assert memory.size() == 5
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_category_file_multi_chunk(tmp_path: Path):
+    """File with 7 keys, max=3 -> 3 LLM calls (3 + 3 + 1)."""
+    cat_in = tmp_path / "data" / "categories" / "Test.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    keys_data = {f"Test_{i:03d}": {"zh-Hans": f"z{i}", "en": f"e{i}", "ja": f"j{i}"} for i in range(7)}
+    cat_in.write_text(json.dumps(keys_data, ensure_ascii=False), encoding="utf-8")
+
+    out_dir = tmp_path / "data" / "categories_id"
+    mem_path = tmp_path / "data" / "_translation_memory.json"
+    glossary = load_glossary(tmp_path / "glossary.json")
+
+    call_count = {"n": 0}
+    def make_response(req):
+        call_count["n"] += 1
+        body = json.loads(req.content)
+        raw = body["messages"][1]["content"]
+        json_start = raw.index("[", raw.index("# Input keys"))
+        json_end = raw.index("]", json_start) + 1
+        keys_in = json.loads(raw[json_start:json_end])
+        return httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps(
+                [{"key": k["key"], "text_id": f"id_{k['key']}"} for k in keys_in]
+            )}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        })
+    respx.post("http://testserver/v1/chat/completions").mock(side_effect=make_response)
+
+    async with LlamaClient(base_url="http://testserver") as client:
+        memory = Memory(mem_path)
+        stats = await translate_category_file(
+            category_path=cat_in,
+            output_dir=out_dir,
+            memory=memory,
+            glossary=glossary,
+            client=client,
+            max_keys_per_call=3,
+            concurrency=1,
+        )
+    assert stats["keys_translated"] == 7
+    assert call_count["n"] == 3
