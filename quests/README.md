@@ -123,6 +123,42 @@ Run on one quest:
 uv run python scripts/translate_id.py 119000000
 ```
 
+Translate one category file (e.g. the `Advice` category, ~50 keys):
+
+```sh
+uv run python scripts/translate_id.py --mode categories --category Advice --verbose
+```
+
+Sweep all 87 categories in size-ascending order (smallest first):
+
+```sh
+uv run python scripts/translate_id.py --mode categories --all
+```
+
+Limit to N smallest categories (testing):
+
+```sh
+uv run python scripts/translate_id.py --mode categories --limit 5
+```
+
+Re-translate one category ignoring existing output:
+
+```sh
+uv run python scripts/translate_id.py --mode categories --category UI --force
+```
+
+Translate all categories AND all quests (in sequence):
+
+```sh
+uv run python scripts/translate_id.py --mode all
+```
+
+> **Migration note:** If you have a `data/quests_id/_memory.json` from a
+> prior version, the first run with the new tool moves it to
+> `data/_translation_memory.json` automatically. The new shared cache is
+> read by both quest and category mode, so a `text_key` translated once
+> is reused everywhere.
+
 Sweep all 940 quests in chapter-priority order (ch 1 → 2 → 3 → side):
 
 ```sh
@@ -155,6 +191,10 @@ Useful flags:
 | `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `<|think|>` token (default ON). Parser extracts the final-answer channel automatically. |
 | `--no-progress` | Disable the tqdm progress bar (default: bar shown). Useful for log files / CI. |
 | `--flush-every N` | Flush `<qid>.json` + `_memory.json` after every N states in a quest (default 0 = end-of-quest only). Set to 1 for crash-safe, real-time progress. |
+| `--mode {quests,categories,all}` | Pipeline mode (default `quests`) |
+| `--max-keys-per-call N` | Max keys per LLM call in categories mode (default 50) |
+| `--category NAME` | Translate one category file by name (skips all-files sweep) |
+| `--all` | (categories mode) Sweep all 87 categories in size-ascending order |
 
 Progress bar shows two levels: outer = quests done, inner = states within current quest.
 Per-state log line includes `prompt=X completion=Y reasoning=Z` token counts.
