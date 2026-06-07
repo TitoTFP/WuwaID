@@ -192,6 +192,7 @@ def _load_quest_overrides(qid: int) -> dict[int, dict]:
     if quest is None:
         return {}
     db.apply_edits(qid, quest)
+    _merge_id_translation(quest, qid)
     return {l["id"]: l for l in quest["all_lines"]}
 
 
@@ -288,7 +289,12 @@ def api_search(
         by_qid.setdefault(h["qid"], []).append(h)
     for qid, group in by_qid.items():
         overrides = _load_quest_overrides(qid)
-        text_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja"}[lang]
+        text_key = {
+            "en": "text_en",
+            "zh": "text_zh-Hans",
+            "ja": "text_ja",
+            "id": "text_id",
+        }[lang]
         for h in group:
             line = overrides.get(h["line_id"])
             if line is None:
