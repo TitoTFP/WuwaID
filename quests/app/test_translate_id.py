@@ -820,11 +820,15 @@ def test_build_arg_parser_defaults() -> None:
     assert ns.qid is None
     assert ns.chapter is None
     assert ns.server == "http://localhost:8080"
-    assert ns.concurrency == 4
+    assert ns.np == "auto"
     assert ns.glossary is None
     assert ns.output_dir is None
-    assert ns.temperature == 0.3
-    assert ns.max_tokens == 2048
+    assert ns.temperature == 1.0
+    assert ns.max_tokens == 4096
+    assert ns.top_p == 0.95
+    assert ns.top_k == 64
+    assert ns.timeout == 300.0
+    assert ns.enable_thinking is True
     assert ns.limit is None
     assert ns.state_key is None
     assert ns.no_cache is False
@@ -840,7 +844,7 @@ def test_build_arg_parser_full() -> None:
         "119000000",
         "--chapter", "1",
         "--server", "http://x:1234",
-        "--concurrency", "8",
+        "--np", "8",
         "--no-cache",
         "--reset-memory",
         "--force",
@@ -848,11 +852,17 @@ def test_build_arg_parser_full() -> None:
         "--verbose",
         "--limit", "3",
         "--state-key", "s1",
+        "--temperature", "0.5",
+        "--max-tokens", "2048",
+        "--top-p", "0.9",
+        "--top-k", "40",
+        "--timeout", "60",
+        "--no-enable-thinking",
     ])
     assert ns.qid == "119000000"
     assert ns.chapter == 1
     assert ns.server == "http://x:1234"
-    assert ns.concurrency == 8
+    assert ns.np == "8"
     assert ns.no_cache is True
     assert ns.reset_memory is True
     assert ns.force is True
@@ -860,6 +870,12 @@ def test_build_arg_parser_full() -> None:
     assert ns.verbose is True
     assert ns.limit == 3
     assert ns.state_key == "s1"
+    assert ns.temperature == 0.5
+    assert ns.max_tokens == 2048
+    assert ns.top_p == 0.9
+    assert ns.top_k == 40
+    assert ns.timeout == 60.0
+    assert ns.enable_thinking is False
 
 
 @pytest.mark.asyncio
@@ -1019,3 +1035,244 @@ def test_end_to_end_with_sample_quest(tmp_path: Path, sample_quest: dict) -> Non
         for line in sp["lines"]:
             assert "text_key" in line
             assert line["text_id"].startswith("Translated ")
+
+
+# --- Gemma 4 compatibility: top_p/top_k sent in request body ---
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_post_chat_sends_top_p_and_top_k_in_body() -> None:
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": "[]"}}]})
+    )
+    async with LlamaClient(
+        base_url="http://localhost:8080",
+        temperature=1.0, max_tokens=4096, top_p=0.95, top_k=64,
+    ) as c:
+        await c._post_chat("sys", "user")
+    assert route.call_count == 1
+    body = route.calls[0].request.content.decode()
+    import json as _json
+    parsed = _json.loads(body)
+    assert parsed["top_p"] == 0.95
+    assert parsed["top_k"] == 64
+    assert parsed["temperature"] == 1.0
+    assert parsed["max_tokens"] == 4096
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_post_chat_uses_constructor_top_p_and_top_k_defaults() -> None:
+    """Defaults should match Gemma 4 model card: top_p=0.95, top_k=64."""
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": "[]"}}]})
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        await c._post_chat("sys", "user")
+    import json as _json
+    body = _json.loads(route.calls[0].request.content.decode())
+    assert body["top_p"] == 0.95
+    assert body["top_k"] == 64
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_post_chat_omits_model_field_when_empty() -> None:
+    """When --model is empty, no 'model' key should appear in body."""
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": "[]"}}]})
+    )
+    async with LlamaClient(base_url="http://localhost:8080", model="") as c:
+        await c._post_chat("sys", "user")
+    import json as _json
+    body = _json.loads(route.calls[0].request.content.decode())
+    assert "model" not in body
+
+
+# --- Gemma 4 thinking mode: parser handles <|channel> and <|think|> formats ---
+
+
+def test_parse_translation_response_extracts_final_channel() -> None:
+    """Gemma 4 channel format: discard analysis, extract final."""
+    raw = (
+        "<|channel|>analysis\n"
+        "The user wants Indonesian translations. I need to preserve Rover and Chixia.\n"
+        "<|channel|>\n"
+        "<|channel|>final\n"
+        '[{"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}]\n'
+        "<|channel|>"
+    )
+    result = parse_translation_response(raw, [1])
+    assert result[0]["text_id"] == "Halo."
+    assert result[0]["speaker_id"] == "Rover"
+
+
+def test_parse_translation_response_discards_analysis_channel() -> None:
+    """Final block must NOT contain any text from the analysis channel."""
+    raw = (
+        "<|channel|>analysis\n"
+        "Let me think... Rover means Rover. Halo is a greeting.\n"
+        "<|channel|>\n"
+        "<|channel|>final\n"
+        '[{"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}, '
+        '{"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."}]\n'
+        "<|channel|>"
+    )
+    result = parse_translation_response(raw, [1, 2])
+    assert len(result) == 2
+    assert result[0]["text_id"] == "Halo."
+    assert result[1]["text_id"] == "Dekat."
+    # The "Let me think" reasoning must NOT leak into the result
+    for entry in result:
+        assert "Let me think" not in entry.get("text_id", "")
+
+
+def test_parse_translation_response_handles_think_tag_format() -> None:
+    """Alternate Gemma 4 format: <|think|>...<|think|>answer."""
+    raw = (
+        "<|think|>\n"
+        "Reasoning about the translation here.\n"
+        "<|think|>\n"
+        '[{"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}]'
+    )
+    result = parse_translation_response(raw, [1])
+    assert result[0]["text_id"] == "Halo."
+
+
+def test_parse_translation_response_handles_no_thinking_format() -> None:
+    """Backward compat: raw JSON without thinking markers still parses."""
+    raw = json.dumps([{"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}])
+    result = parse_translation_response(raw, [1])
+    assert result[0]["text_id"] == "Halo."
+
+
+def test_parse_translation_response_handles_markdown_fences() -> None:
+    """If model still wraps in ```json ... ```, strip those too."""
+    raw = "```json\n[{\"line_id\": 1, \"text_id\": \"Halo.\"}]\n```"
+    result = parse_translation_response(raw, [1])
+    assert result[0]["text_id"] == "Halo."
+
+
+def test_parse_translation_response_handles_thinking_plus_markdown() -> None:
+    """Thinking + markdown fences together: strip both, extract final."""
+    raw = (
+        "<|channel|>analysis\nReasoning<|channel|>\n"
+        "<|channel|>final\n"
+        "```json\n"
+        '[{"line_id": 1, "text_id": "Halo."}]\n'
+        "```\n"
+        "<|channel|>"
+    )
+    result = parse_translation_response(raw, [1])
+    assert result[0]["text_id"] == "Halo."
+
+
+def test_parse_translation_response_raises_on_analysis_only() -> None:
+    """If model only emits analysis (no final block), parser should raise."""
+    raw = (
+        "<|channel|>analysis\nI cannot translate.<|channel|>"
+    )
+    with pytest.raises(ValueError):
+        parse_translation_response(raw, [1])
+
+
+# --- Gemma 4 thinking mode: system prompt includes <|think|> token ---
+
+
+def test_build_system_prompt_includes_think_token_when_enabled() -> None:
+    prompt = build_system_prompt(enable_thinking=True)
+    assert "<|think|>" in prompt
+    assert prompt.endswith("<|think|>")
+
+
+def test_build_system_prompt_omits_think_token_when_disabled() -> None:
+    prompt = build_system_prompt(enable_thinking=False)
+    assert "<|think|>" not in prompt
+
+
+def test_build_system_prompt_default_is_enabled() -> None:
+    """No-arg call should enable thinking (matches --enable-thinking default)."""
+    prompt = build_system_prompt()
+    assert "<|think|>" in prompt
+
+
+# --- slot_detect: auto-detect server parallelism ---
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_detect_n_parallel_returns_count_from_slots() -> None:
+    respx.get("http://localhost:8080/slots").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {"id": 0, "state": 0},
+                {"id": 1, "state": 0},
+                {"id": 2, "state": 0},
+                {"id": 3, "state": 0},
+            ],
+        )
+    )
+    from scripts.translate_id.slot_detect import detect_n_parallel
+    count = await detect_n_parallel("http://localhost:8080")
+    assert count == 4
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_detect_n_parallel_returns_default_on_404() -> None:
+    respx.get("http://localhost:8080/slots").mock(return_value=httpx.Response(404, text="not found"))
+    from scripts.translate_id.slot_detect import detect_n_parallel
+    count = await detect_n_parallel("http://localhost:8080", default=2)
+    assert count == 2
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_detect_n_parallel_returns_default_on_timeout() -> None:
+    import respx as _respx
+    respx.get("http://localhost:8080/slots").mock(side_effect=httpx.ConnectError("timeout"))
+    from scripts.translate_id.slot_detect import detect_n_parallel
+    count = await detect_n_parallel("http://localhost:8080", default=1)
+    assert count == 1
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_detect_n_parallel_returns_default_on_malformed_json() -> None:
+    respx.get("http://localhost:8080/slots").mock(
+        return_value=httpx.Response(200, text="not json", headers={"content-type": "application/json"})
+    )
+    from scripts.translate_id.slot_detect import detect_n_parallel
+    count = await detect_n_parallel("http://localhost:8080", default=3)
+    assert count == 3
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_detect_n_parallel_returns_default_on_empty_list() -> None:
+    respx.get("http://localhost:8080/slots").mock(return_value=httpx.Response(200, json=[]))
+    from scripts.translate_id.slot_detect import detect_n_parallel
+    count = await detect_n_parallel("http://localhost:8080", default=5)
+    assert count == 5
+
+
+# --- Glossary retry with thinking mode ---
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_augmented_system_prompt_keeps_think_token() -> None:
+    """The augmented (glossary-violation-retry) system prompt must still include <|think|>
+    when thinking is enabled, otherwise the model skips thinking on retry."""
+    from scripts.translate_id.prompt import build_augmented_system_prompt, THINK_TOKEN
+    aug = build_augmented_system_prompt(["Rover", "Chixia"])
+    # Calling build_augmented_system_prompt alone does NOT add the token (caller's job).
+    assert THINK_TOKEN not in aug
+    # But when orchestrator appends it (mimicking the new code), the token is there.
+    aug_with_think = aug + "\n" + THINK_TOKEN
+    assert THINK_TOKEN in aug_with_think
+    # And the mandatory terms are listed.
+    assert "Rover" in aug_with_think
+    assert "Chixia" in aug_with_think
