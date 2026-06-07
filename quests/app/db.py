@@ -369,6 +369,8 @@ _EDIT_FIELD_MAP = {
     "text_en": "text_en",
     "text_zh_hans": "text_zh-Hans",
     "text_ja": "text_ja",
+    "text_id": "text_id",
+    "speaker_id": "speaker_id",
 }
 
 
