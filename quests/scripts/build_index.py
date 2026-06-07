@@ -291,13 +291,33 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
     """)
     rows: list[tuple] = []
     for q in quests:
+        id_lookup: dict[int, str] = {}
+        id_path = db_path.parent / "quests_id" / f"{q['quest_id']}.json"
+        if id_path.is_file():
+            try:
+                id_data = json.loads(id_path.read_text(encoding="utf-8"))
+                for state in (id_data.get("states") or {}).values():
+                    if not isinstance(state, dict) or "error" in state:
+                        continue
+                    for entry in (state.get("lines") or []):
+                        if not isinstance(entry, dict):
+                            continue
+                        lid = entry.get("line_id")
+                        tid = entry.get("text_id")
+                        if lid is not None and tid is not None:
+                            id_lookup[int(lid)] = tid
+            except (json.JSONDecodeError, OSError):
+                pass
+
         for line in q.get("all_lines", []):
+            lid = int(line.get("id", 0))
             text_en = line.get("text_en", "")
             text_zh = cjk_bigrams(line.get("text_zh-Hans", ""))
             text_ja = cjk_bigrams(line.get("text_ja", ""))
+            text_id = id_lookup.get(lid, "")
             rows.append((
                 q["quest_id"],
-                line.get("id", 0),
+                lid,
                 q.get("side", 0),
                 q.get("chapter_id", 0),
                 q.get("chapter_name", ""),
@@ -309,7 +329,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                 text_en,
                 text_zh,
                 text_ja,
-                "",
+                text_id,
             ))
     cur.executemany(
         "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows
