@@ -894,3 +894,48 @@ async def test_main_dry_run_prints_quest_order(tmp_path: Path, capsys) -> None:
     captured = capsys.readouterr().out
     # main story first, then side
     assert "1" in captured  # quest 1 (ch 1) printed
+
+
+def test_end_to_end_with_sample_quest(tmp_path: Path, sample_quest: dict) -> None:
+    """Smoke test: take the existing sample_quest fixture, write it to disk,
+    mock the LLM, run translate_quest, verify output structure + memory."""
+    import asyncio
+
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    qid = sample_quest["quest_id"]
+    (q_in / f"{qid}.json").write_text(json.dumps(sample_quest), encoding="utf-8")
+    q_out = tmp_path / "out"; q_out.mkdir()
+
+    # Mock one LLM response per state
+    with respx.mock:
+        # 3 states, but the fixture's all_lines has 3 lines in 3 different states
+        respx.post("http://localhost:8080/v1/chat/completions").mock(
+            return_value=httpx.Response(200, json={
+                "choices": [{"message": {"content": json.dumps([
+                    {"line_id": lid, "speaker_id": "Speaker", "text_id": f"Translated {lid}"}
+                    for lid in [1, 2, 3]
+                ])}}]
+            })
+        )
+        memory = Memory(q_out / "_memory.json")
+        async def go():
+            async with LlamaClient(base_url="http://localhost:8080") as c:
+                return await translate_quest(
+                    quest_path=q_in / f"{qid}.json",
+                    quest_data=sample_quest,
+                    output_dir=q_out,
+                    memory=memory, glossary={}, client=c, concurrency=1,
+                )
+        stats = asyncio.run(go())
+    assert stats["errors"] == 0
+    # All 3 states translated (no skip — fresh output dir)
+    assert stats["states_done"] == 3
+    out = json.loads((q_out / f"{qid}.json").read_text(encoding="utf-8"))
+    states = out["states"]
+    assert set(states.keys()) == {"Flow_1_1", "Flow_1_2", "Flow_1_3"}
+    # Verify text_key is preserved in the output
+    for sk, sp in states.items():
+        for line in sp["lines"]:
+            assert "text_key" in line
+            assert line["text_id"].startswith("Translated ")
