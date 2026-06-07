@@ -440,6 +440,106 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
     return len(rows)
 
 
+def build_category_fts(db_path: Path, data_dir: Path) -> int:
+    """Build the `category_text_idx` FTS5 table and `categories` metadata table.
+
+    Reads:
+      data_dir/categories/<Cat>.json       (input: {key: {zh, en, ja}})
+      data_dir/categories_id/<Cat>.json    (optional translations: adds `id`)
+
+    Writes:
+      db_path (SQLite) with:
+        - category_text_idx (FTS5)
+        - categories (metadata)
+    """
+    categories_dir = data_dir / "categories"
+    translations_dir = data_dir / "categories_id"
+    if not categories_dir.is_dir():
+        return 0
+
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    cur.execute("DROP TABLE IF EXISTS category_text_idx")
+    cur.execute("DROP TABLE IF EXISTS categories")
+    cur.execute("""
+        CREATE VIRTUAL TABLE category_text_idx USING fts5(
+            category UNINDEXED,
+            key UNINDEXED,
+            prefix UNINDEXED,
+            text_zh,
+            text_en,
+            text_ja,
+            text_id,
+            tokenize = 'unicode61 remove_diacritics 2'
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE categories (
+            name TEXT PRIMARY KEY,
+            file TEXT NOT NULL,
+            key_count INTEGER NOT NULL,
+            translated_count INTEGER NOT NULL
+        )
+    """)
+
+    rows = []
+    metadata = []
+    for cat_path in sorted(categories_dir.glob("*.json")):
+        if cat_path.name.startswith("_"):
+            continue
+        cat_name = cat_path.stem
+        try:
+            with cat_path.open(encoding="utf-8") as f:
+                cat_data = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"  WARN: failed to load {cat_path}: {e}", file=sys.stderr)
+            continue
+
+        # Load translations (if any)
+        id_map: dict[str, str] = {}
+        id_path = translations_dir / f"{cat_name}.json"
+        if id_path.is_file():
+            try:
+                id_data = json.loads(id_path.read_text(encoding="utf-8"))
+                for k, v in id_data.items():
+                    if isinstance(v, dict) and v.get("id"):
+                        id_map[k] = v["id"]
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        translated_count = 0
+        for key, value in cat_data.items():
+            if not isinstance(value, dict):
+                continue
+            prefix = key.split("_", 1)[0] if "_" in key else "NoPrefix"
+            text_en = value.get("en", "")
+            text_zh = value.get("zh-Hans", "")
+            text_ja = value.get("ja", "")
+            text_id = id_map.get(key, "")
+            if text_id:
+                translated_count += 1
+            rows.append((
+                cat_name, key, prefix,
+                cjk_bigrams(text_zh),
+                text_en,
+                cjk_bigrams(text_ja),
+                text_id,
+            ))
+
+        metadata.append((cat_name, cat_path.name, len(cat_data), translated_count))
+
+    rows.sort(key=lambda r: r[1])
+    cur.executemany(
+        "INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?)", rows
+    )
+    cur.executemany(
+        "INSERT INTO categories VALUES (?,?,?,?)", metadata
+    )
+    con.commit()
+    con.close()
+    return len(rows)
+
+
 def copy_categories(source_parent: Path, data_dir: Path) -> int:
     cat_src = source_parent / "categories"
     cat_dst = data_dir / "categories"
@@ -516,6 +616,10 @@ def main() -> int:
     print("Building FTS5 index...")
     rows = build_fts(db_path, quests)
     print(f"  indexed {rows} lines")
+
+    print("Building category FTS5 index...")
+    cat_rows = build_category_fts(db_path, data_dir)
+    print(f"  indexed {cat_rows} category lines")
 
     (data_dir / "chapters.json").write_text(
         json.dumps(chapters, ensure_ascii=False, indent=2), encoding="utf-8"
