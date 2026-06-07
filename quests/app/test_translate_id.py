@@ -5,6 +5,12 @@ import pytest
 from scripts.translate_id.glossary import load_glossary, terms_for_state
 from scripts.translate_id.state_iter import group_lines_by_state, order_quests_by_chapter
 from scripts.translate_id.atomic import atomic_write_json
+from scripts.translate_id.prompt import (
+    build_system_prompt,
+    build_user_prompt,
+    build_augmented_system_prompt,
+    parse_translation_response,
+)
 
 
 def test_load_glossary_parses_valid_json(tmp_path: Path) -> None:
@@ -177,3 +183,124 @@ def test_atomic_write_json_nested_dirs(tmp_path: Path) -> None:
     p = tmp_path / "deep" / "nested" / "out.json"
     atomic_write_json(p, {"a": 1})
     assert p.exists()
+
+
+def test_build_system_prompt_contains_key_rules() -> None:
+    s = build_system_prompt()
+    assert "Indonesian" in s
+    assert "Wuthering Waves" in s
+    assert "glossary" in s.lower() or "Glossary" in s
+    assert "JSON" in s
+    assert "PhoneMessage" in s  # tone hint rule
+    assert "{PlayerName}" in s or "markup" in s.lower()  # token rule
+
+
+def test_build_system_prompt_is_static() -> None:
+    """No params — same every call. Glossary lives in the user prompt."""
+    assert build_system_prompt() == build_system_prompt()
+
+
+def test_build_user_prompt_includes_glossary_and_state() -> None:
+    prompt = build_user_prompt(
+        glossary_subset=["Rover", "Jinzhou"],
+        glossary_categories={"Rover": "Character", "Jinzhou": "Location"},
+        state_context={
+            "quest_id": 119000000, "quest_name": "Beneath",
+            "chapter_id": 3, "chapter_name": "To the Stars",
+            "flow_name": "剧情_3_3_拉海洛主线_下半",
+            "state_key": "剧情_3_3_拉海洛主线_下半_1_1",
+            "plot_mode": "LevelC",
+        },
+        lines=[
+            {"id": 1, "type": "Talk", "speaker_en": "Rover", "text_en": "Hello."},
+            {"id": 2, "type": "Option", "speaker_en": "", "text_en": "Yes."},
+        ],
+    )
+    assert "# Glossary" in prompt
+    assert "- Rover (Character)" in prompt
+    assert "- Jinzhou (Location)" in prompt
+    assert "剧情_3_3_拉海洛主线_下半_1_1" in prompt
+    assert "LevelC" in prompt
+    # Input lines JSON
+    assert '"line_id": 1' in prompt
+    assert '"text_en": "Hello."' in prompt
+    # Output format guidance
+    assert "speaker_id" in prompt
+    assert "text_id" in prompt
+
+
+def test_build_user_prompt_empty_glossary_marker() -> None:
+    prompt = build_user_prompt(
+        glossary_subset=[],
+        glossary_categories=None,
+        state_context={"quest_id": 1, "quest_name": "Q", "state_key": "s", "plot_mode": "Normal"},
+        lines=[],
+    )
+    assert "(no glossary terms needed" in prompt
+
+
+def test_build_user_prompt_preserves_input_order() -> None:
+    lines = [
+        {"id": 5, "type": "Talk", "speaker_en": "A", "text_en": "first"},
+        {"id": 3, "type": "Talk", "speaker_en": "B", "text_en": "second"},
+    ]
+    prompt = build_user_prompt(
+        glossary_subset=[], glossary_categories=None,
+        state_context={"state_key": "s", "plot_mode": "Normal"},
+        lines=lines,
+    )
+    # First occurrence in the prompt of "first" should come before "second"
+    assert prompt.index("first") < prompt.index("second")
+
+
+def test_build_augmented_system_prompt_includes_missing_terms() -> None:
+    aug = build_augmented_system_prompt(["Rover", "Echo"])
+    # base prompt preserved
+    assert "Indonesian" in aug
+    # injection present
+    assert "Mandatory terms" in aug
+    assert "- Rover" in aug
+    assert "- Echo" in aug
+
+
+def test_parse_translation_response_happy_path() -> None:
+    raw = json.dumps([
+        {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+        {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+    ])
+    result = parse_translation_response(raw, expected_ids=[1, 2])
+    assert result[0]["text_id"] == "Halo."
+    assert result[1]["text_id"] == "Dekat."
+
+
+def test_parse_translation_response_reorders_to_expected_ids() -> None:
+    raw = json.dumps([
+        {"line_id": 2, "speaker_id": "X", "text_id": "B"},
+        {"line_id": 1, "speaker_id": "X", "text_id": "A"},
+    ])
+    result = parse_translation_response(raw, expected_ids=[1, 2])
+    assert result[0]["text_id"] == "A"
+    assert result[1]["text_id"] == "B"
+
+
+def test_parse_translation_response_strips_markdown_fences() -> None:
+    raw = "```json\n[{\"line_id\": 1, \"speaker_id\": \"Rover\", \"text_id\": \"Halo.\"}]\n```"
+    result = parse_translation_response(raw, expected_ids=[1])
+    assert result[0]["text_id"] == "Halo."
+
+
+def test_parse_translation_response_invalid_json_raises() -> None:
+    with pytest.raises(ValueError, match="not valid JSON"):
+        parse_translation_response("not json", expected_ids=[1])
+
+
+def test_parse_translation_response_missing_line_id_raises() -> None:
+    raw = json.dumps([{"line_id": 1, "text_id": "A"}])
+    with pytest.raises(ValueError, match="missing line_id 2"):
+        parse_translation_response(raw, expected_ids=[1, 2])
+
+
+def test_parse_translation_response_not_array_raises() -> None:
+    raw = json.dumps({"line_id": 1, "text_id": "A"})
+    with pytest.raises(ValueError, match="not a JSON array"):
+        parse_translation_response(raw, expected_ids=[1])
