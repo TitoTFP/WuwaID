@@ -61,6 +61,76 @@ def _load_quest(qid: int) -> dict | None:
     return _load_quest_cached(qid, st.st_mtime_ns)
 
 
+def _merge_id_translation(quest: dict, qid: int) -> bool:
+    """Overlay `text_id` / `speaker_id` from data/quests_id/<qid>.json onto
+    `quest['all_lines']`. Returns True iff at least one line was merged.
+
+    Editor overlays from `apply_edits` are already in `quest['all_lines']`
+    when this function runs. We respect any already-set `text_id` /
+    `speaker_id` / `options[i].text_id` (editor-wins).
+    """
+    import sys
+    quests_id_dir = DATA_DIR / "quests_id"
+    id_path = quests_id_dir / f"{qid}.json"
+    if not id_path.is_file():
+        return False
+    try:
+        id_data = json.loads(id_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"WARN: cannot read {id_path}: {e}", file=sys.stderr)
+        return False
+
+    # Build a text_key → entry map; line_id as fallback.
+    by_text_key: dict[str, dict] = {}
+    by_line_id: dict[int, dict] = {}
+    for state in (id_data.get("states") or {}).values():
+        if not isinstance(state, dict) or "error" in state:
+            continue
+        for entry in (state.get("lines") or []):
+            if not isinstance(entry, dict):
+                continue
+            tk = entry.get("text_key")
+            lid = entry.get("line_id")
+            if tk:
+                by_text_key.setdefault(tk, entry)
+            if lid is not None:
+                by_line_id.setdefault(int(lid), entry)
+
+    merged_count = 0
+    for line in quest.get("all_lines") or []:
+        tk = line.get("text_key")
+        lid = line.get("id")
+        entry = by_text_key.get(tk) if tk else None
+        if entry is None and lid is not None:
+            entry = by_line_id.get(int(lid))
+        if entry is None:
+            continue
+        # Editor-wins: skip if already set.
+        if not line.get("text_id"):
+            tid = entry.get("text_id")
+            if tid is not None:
+                line["text_id"] = tid
+                merged_count += 1
+        if not line.get("speaker_id"):
+            sid = entry.get("speaker_id")
+            if sid is not None:
+                line["speaker_id"] = sid
+        # Options: build a text_key → text_id map from the entry, then overlay.
+        if line.get("options") and entry.get("options"):
+            opt_lookup = {
+                o.get("text_key"): o.get("text_id")
+                for o in entry["options"]
+                if isinstance(o, dict) and o.get("text_key")
+            }
+            for opt in line["options"]:
+                if opt.get("text_id"):
+                    continue  # editor wins
+                otk = opt.get("text_key")
+                if otk and otk in opt_lookup and opt_lookup[otk] is not None:
+                    opt["text_id"] = opt_lookup[otk]
+    return merged_count > 0
+
+
 @app.on_event("startup")
 def _startup():
     if not (DATA_DIR / "index.db").is_file():
@@ -130,16 +200,20 @@ def api_quest(qid: int):
     quest = _load_quest(qid)
     if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
-    db.apply_edits(qid, quest)
+    db.apply_edits(qid, quest)  # EN/ZH/JA/ID overlay (text_id/speaker_id)
+    id_merged = _merge_id_translation(quest, qid)  # NEW: overlay MT output
     plot_mode_by_state: dict[str, str] = {}
     for f in quest.get("flows", []):
         for s in f.get("states") or []:
             plot_mode_by_state[s["state_key"]] = s["plot_mode"]
+    languages = list(quest.get("languages") or [])
+    if id_merged and "id" not in languages:
+        languages.append("id")
     return _json({
         "quest_id": quest["quest_id"],
         "quest_name": quest["quest_name"],
         "quest_type": quest["quest_type"],
-        "languages": quest["languages"],
+        "languages": languages,
         "total_lines": quest["total_lines"],
         "all_lines": quest["all_lines"],
         "plot_mode_by_state": plot_mode_by_state,
