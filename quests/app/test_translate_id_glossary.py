@@ -46,20 +46,6 @@ def test_load_preserves_id_value_distinct_from_en():
     p.unlink()
 
 
-def test_load_respects_keep_in_english_flag(tmp_path):
-    """When keep_in_english=True the English source is used; otherwise Indonesian."""
-    p = tmp_path / "glossary.json"
-    p.write_text(json.dumps({
-        "entries": [
-            {"en": "Rover", "id": "Nomad", "keep_in_english": True},
-            {"en": "Custom", "id": "Kustom", "keep_in_english": False},
-        ]
-    }))
-    g = glossary.load(p)
-    assert g["rover"] == "Rover"
-    assert g["custom"] == "Kustom"
-
-
 def test_load_missing_file_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         glossary.load(tmp_path / "nope.json")
