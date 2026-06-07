@@ -516,3 +516,56 @@ def test_arg_parser_default_max_keys_per_call_is_50():
     parser = build_arg_parser()
     args = parser.parse_args([])
     assert args.max_keys_per_call == 50
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_run_categories_one_file(tmp_path: Path, monkeypatch):
+    """CLI flag --mode categories --category X runs translate_category_file."""
+    from scripts.translate_id import _cli
+    cat_in = tmp_path / "data" / "categories" / "X.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    cat_in.write_text(json.dumps({
+        "X_001": {"zh-Hans": "一", "en": "one", "ja": "一"},
+    }, ensure_ascii=False), encoding="utf-8")
+    respx.post("http://testserver/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps([{"key": "X_001", "text_id": "satu"}])}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        })
+    )
+
+    class FakeNS:
+        mode = "categories"
+        category = "X"
+        chapter = None
+        all = False
+        server = "http://testserver"
+        api_key = None
+        headers = None
+        model = None
+        np = 1
+        glossary = tmp_path / "glossary.json"
+        output_dir = tmp_path / "data" / "categories_id"
+        memory = tmp_path / "data" / "_translation_memory.json"
+        temperature = 1.0
+        max_tokens = 4096
+        top_p = 0.95
+        top_k = None
+        timeout = 300.0
+        enable_thinking = True
+        state_key = None
+        limit = None
+        no_cache = False
+        no_progress = True
+        reset_memory = False
+        force = False
+        dry_run = False
+        verbose = False
+        flush_every = 0
+        max_keys_per_call = 50
+
+    rc = await _cli.run_categories(FakeNS(), tmp_path)
+    assert rc == 0
+    out = json.loads((tmp_path / "data" / "categories_id" / "X.json").read_text(encoding="utf-8"))
+    assert out["X_001"]["id"] == "satu"

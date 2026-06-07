@@ -4,9 +4,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from scripts.translate_id._cli import main, run
+from scripts.translate_id._cli import main, run, run_categories
 
-__all__ = ["build_arg_parser", "main", "run"]
+__all__ = ["build_arg_parser", "main", "run", "run_categories"]
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
