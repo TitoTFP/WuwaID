@@ -6,6 +6,7 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "en", label: "EN" },
   { value: "zh-Hans", label: "ZH-HANS" },
   { value: "ja", label: "JA" },
+  { value: "id", label: "ID" },
   { value: "META", label: "META" },
 ];
 

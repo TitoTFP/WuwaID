@@ -5,6 +5,7 @@ const OPTS: { code: Lang; label: string }[] = [
   { code: "zh-Hans", label: "中文" },
   { code: "en", label: "EN" },
   { code: "ja", label: "JA" },
+  { code: "id", label: "ID" },
 ];
 
 export default function LangSwitcher() {

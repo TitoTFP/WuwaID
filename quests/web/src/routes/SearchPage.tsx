@@ -7,12 +7,13 @@ const LANG_LABEL: Record<string, string> = {
   en: "EN",
   zh: "中文",
   ja: "JA",
+  id: "ID",
 };
 
 export default function SearchPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
-  const lang = (params.get("lang") ?? "en") as "en" | "zh" | "ja";
+  const lang = (params.get("lang") ?? "en") as "en" | "zh" | "ja" | "id";
   const [draft, setDraft] = useState("");
 
   // initialize draft from URL
@@ -70,7 +71,7 @@ export default function SearchPage() {
           onChange={(e) => setDraft(e.target.value)}
         />
         <div className="flex gap-0.5 rounded-md border border-white/10 bg-bg-1 p-0.5">
-          {(["en", "zh", "ja"] as const).map((l) => (
+          {(["en", "zh", "ja", "id"] as const).map((l) => (
             <button
               key={l}
               type="button"

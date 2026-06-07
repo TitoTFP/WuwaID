@@ -11,9 +11,10 @@ const LANG_LABEL: Record<Lang, string> = {
   en: "EN",
   "zh-Hans": "中",
   ja: "JA",
+  id: "ID",
 };
 
-const ORDER: Lang[] = ["en", "zh-Hans", "ja"];
+const ORDER: Lang[] = ["en", "zh-Hans", "ja", "id"];
 
 const PLOT_MODE_LABEL: Partial<Record<string, string>> = {
   PhoneMessage: "WavesLine",

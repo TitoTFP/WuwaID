@@ -169,7 +169,7 @@ export default function EditorPage() {
   const [searchQ, setSearchQ] = useState("");
   const [previewLines, setPreviewLines] = useState<DialogueLine[]>([]);
   const [reorderPreview, setReorderPreview] = useState<ReorderPreview[]>([]);
-  const [tab, setTab] = useState<"en" | "zh-Hans" | "ja" | "META">("META");
+  const [tab, setTab] = useState<"en" | "zh-Hans" | "ja" | "id" | "META">("META");
   const [filters, setFilters] = useState<TreeFilters>({
     editedOnly: false,
     pendingOnly: false,

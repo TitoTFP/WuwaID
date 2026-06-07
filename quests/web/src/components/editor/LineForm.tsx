@@ -10,18 +10,22 @@ import { useToast } from "../Toast";
 import { useHotkey } from "../../lib/keyboard";
 
 type Tab = Lang | "META";
-type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja";
-type TextKey = "text_en" | "text_zh-Hans" | "text_ja";
+type SpeakerKey = "speaker_en" | "speaker_zh-Hans" | "speaker_ja" | "speaker_id";
+type TextKey = "text_en" | "text_zh-Hans" | "text_ja" | "text_id";
 
-const LANG_KEYS: Lang[] = ["en", "zh-Hans", "ja"];
-const TAB_ORDER: Tab[] = ["META", "en", "zh-Hans", "ja"];
+const LANG_KEYS: Lang[] = ["en", "zh-Hans", "ja", "id"];
+const TAB_ORDER: Tab[] = ["META", "en", "zh-Hans", "ja", "id"];
 
 function speakerKey(lang: Lang): SpeakerKey {
-  return lang === "zh-Hans" ? "speaker_zh-Hans" : `speaker_${lang}`;
+  if (lang === "zh-Hans") return "speaker_zh-Hans";
+  if (lang === "id") return "speaker_id";
+  return `speaker_${lang}`;
 }
 
 function textKey(lang: Lang): TextKey {
-  return lang === "zh-Hans" ? "text_zh-Hans" : `text_${lang}`;
+  if (lang === "zh-Hans") return "text_zh-Hans";
+  if (lang === "id") return "text_id";
+  return `text_${lang}`;
 }
 
 function basePatch(line: DialogueLine, draft: DialogueLine): DraftPatch {

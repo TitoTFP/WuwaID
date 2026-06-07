@@ -3,12 +3,14 @@ import type { DialogueLine, DialogueLineOption, Lang } from "../../lib/types";
 import DiffField from "./DiffField";
 import { useToast } from "../Toast";
 
-type TextKey = "text_en" | "text_zh-Hans" | "text_ja";
+type TextKey = "text_en" | "text_zh-Hans" | "text_ja" | "text_id";
 
-const LANGS: Lang[] = ["en", "zh-Hans", "ja"];
+const LANGS: Lang[] = ["en", "zh-Hans", "ja", "id"];
 
 function textKey(lang: Lang): TextKey {
-  return lang === "zh-Hans" ? "text_zh-Hans" : `text_${lang}`;
+  if (lang === "zh-Hans") return "text_zh-Hans";
+  if (lang === "id") return "text_id";
+  return `text_${lang}`;
 }
 
 function blankOption(): DialogueLineOption {
@@ -232,7 +234,7 @@ export default function OptionsSubform({
                     <DiffField
                       key={lang}
                       label={`option text_${lang}`}
-                      value={option[key]}
+                      value={option[key] ?? ""}
                       original={original?.[key]}
                       onChange={(value) => updateOption(index, { ...option, [key]: value })}
                       onReset={() => updateOption(index, { ...option, [key]: original?.[key] ?? "" })}

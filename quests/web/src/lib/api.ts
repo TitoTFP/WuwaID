@@ -66,7 +66,7 @@ export const api = {
   quest: (qid: number) => get<Quest>(`/quests/${qid}`),
   search: (params: {
     q: string;
-    lang?: "en" | "zh" | "ja";
+    lang?: "en" | "zh" | "ja" | "id";
     side?: 0 | 1;
     quest_type?: number;
     limit?: number;

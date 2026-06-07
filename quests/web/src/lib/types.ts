@@ -1,7 +1,7 @@
 // Types matching the dialogue.json schema from export_text_grouped.py
 
 export type QuestType = number; // 1=main, 2,3,4,7,9,10,11,14,100
-export type Lang = "en" | "zh-Hans" | "ja";
+export type Lang = "en" | "zh-Hans" | "ja" | "id";
 export type LineType = "Talk" | "Option" | "CenterText" | "PhoneMessage" | "NoTextItem" | "SystemOption";
 
 // Plot mode is the last SetPlotMode.Mode seen in a flow state.
@@ -22,6 +22,8 @@ export interface DialogueLineOption {
   "text_zh-Hans": string;
   text_en: string;
   text_ja: string;
+  // Indonesian (added by viewer integration):
+  text_id?: string;
   // Optional cross-reference to the line this option jumps to
   plot_line_id?: number;
   plot_line_key?: string;
@@ -45,6 +47,9 @@ export interface DialogueLine {
   "text_zh-Hans": string;
   text_en: string;
   text_ja: string;
+  // Indonesian (added by viewer integration):
+  text_id?: string;
+  speaker_id?: string;
   options?: DialogueLineOption[];
   // For cross-state/cross-line linking (player choice → target line)
   plot_line_id?: number;
@@ -138,6 +143,8 @@ export type EditableField =
   | "text_en"
   | "text_zh-Hans"
   | "text_ja"
+  | "speaker_id"
+  | "text_id"
   | "options";
 
 export type DraftPatch = Partial<{
@@ -150,6 +157,8 @@ export type DraftPatch = Partial<{
   text_en: string;
   "text_zh-Hans": string;
   text_ja: string;
+  speaker_id: string;
+  text_id: string;
   options: DialogueLineOption[];
   _op: "reorder";
 }>;
