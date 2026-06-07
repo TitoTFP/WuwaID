@@ -285,6 +285,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             text_en,
             text_zh,
             text_ja,
+            text_id,
             tokenize = 'unicode61 remove_diacritics 2'
         )
     """)
@@ -308,9 +309,10 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                 text_en,
                 text_zh,
                 text_ja,
+                "",
             ))
     cur.executemany(
-        "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", rows
+        "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows
     )
     # also build a small meta table for quest-level filters
     cur.execute("""
