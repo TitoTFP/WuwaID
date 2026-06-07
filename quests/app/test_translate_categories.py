@@ -476,3 +476,43 @@ async def test_translate_category_file_cache_hits_skip_llm(tmp_path: Path):
     assert out["M_001"]["id"] == "satu"
     assert out["M_002"]["id"] == "dua"
     assert out["M_003"]["id"] == "id_M_003"
+
+
+import argparse
+from scripts.translate_id import build_arg_parser
+
+
+def test_arg_parser_has_mode_flag():
+    parser = build_arg_parser()
+    args = parser.parse_args(["--mode", "categories"])
+    assert args.mode == "categories"
+
+
+def test_arg_parser_default_mode_is_quests():
+    parser = build_arg_parser()
+    args = parser.parse_args([])
+    assert args.mode == "quests"
+
+
+def test_arg_parser_accepts_all_mode():
+    parser = build_arg_parser()
+    args = parser.parse_args(["--mode", "all"])
+    assert args.mode == "all"
+
+
+def test_arg_parser_rejects_invalid_mode():
+    parser = build_arg_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--mode", "bogus"])
+
+
+def test_arg_parser_has_max_keys_per_call():
+    parser = build_arg_parser()
+    args = parser.parse_args(["--mode", "categories", "--max-keys-per-call", "25"])
+    assert args.max_keys_per_call == 25
+
+
+def test_arg_parser_default_max_keys_per_call_is_50():
+    parser = build_arg_parser()
+    args = parser.parse_args([])
+    assert args.max_keys_per_call == 50

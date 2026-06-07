@@ -67,4 +67,22 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--flush-every", type=int, default=0,
                    help="Flush <qid>.json + _memory.json after every N states "
                         "in a quest (default 0 = flush once at end of quest).")
+    p.add_argument(
+        "--mode",
+        choices=["quests", "categories", "all"],
+        default="quests",
+        help="Mode of operation: 'quests' (default), 'categories', or 'all' (run both).",
+    )
+    p.add_argument(
+        "--max-keys-per-call",
+        type=int,
+        default=50,
+        help="Max keys per LLM call in categories mode (default 50).",
+    )
+    p.add_argument(
+        "--category",
+        dest="category",
+        default=None,
+        help="Translate one category file by name (e.g. 'Item', 'UI'). Skips the all-files sweep.",
+    )
     return p
