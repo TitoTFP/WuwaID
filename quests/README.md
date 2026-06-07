@@ -1,7 +1,7 @@
 # wuwaid-quests
 
 Web viewer for Wuthering Waves quest dialogue exported by
-[`WuwaID/export_quest_ordered.py`](../WuwaID).
+[`WuwaID/export_text_grouped.py`](../WuwaID).
 
 - **Frontend**: React 18 + Vite + TypeScript + Tailwind
 - **Backend**: FastAPI + SQLite FTS5 (search)
@@ -14,7 +14,7 @@ Web viewer for Wuthering Waves quest dialogue exported by
 ```
 wuwaid-quests/
 ├── scripts/
-│   ├── build_index.py       # rebuilds data/ from ../WuwaID/export_quest_ordered
+│   ├── build_index.py       # rebuilds data/ from ../WuwaID/export_text_grouped/export_quest_ordered
 │   ├── dev-check.js         # fails fast if :5173/:8000 busy
 │   └── serve-check.js       # fails fast if :8000 busy
 ├── app/                     # FastAPI backend
@@ -90,6 +90,51 @@ the rebuild:
 Rows targeting quests or line ids that no longer exist in the updated game data
 are skipped as stale. The command prints how many editor rows were restored or
 skipped.
+
+## Translating to Indonesian (machine translation)
+
+The tool under `scripts/translate_id.py` translates `data/quests/*.json` to
+Indonesian using a local `llama-server`. Output goes to `data/quests_id/`.
+
+Setup (one time):
+
+```sh
+# 1. Make sure data/quests/ is populated (see "Reindexing" above).
+# 2. Copy the glossary draft into the data dir.
+cp ../WuwaID/glossary_draft.json data/glossary.json
+# 3. Start a llama-server on http://localhost:8080.
+llama-server -m your-model.gguf --port 8080
+```
+
+Run on one quest:
+
+```sh
+uv run python scripts/translate_id.py 119000000
+```
+
+Sweep all 940 quests in chapter-priority order (ch 1 → 2 → 3 → side):
+
+```sh
+uv run python scripts/translate_id.py --all
+```
+
+Translate one chapter:
+
+```sh
+uv run python scripts/translate_id.py --chapter 1
+```
+
+Useful flags:
+
+| Flag | Effect |
+|---|---|
+| `--dry-run` | Print the quest order; no LLM calls |
+| `--verbose` | Per-state timing + retry info |
+| `--no-cache` | Bypass translation-memory cache; force LLM for every line |
+| `--reset-memory` | Wipe `data/quests_id/_memory.json` before starting |
+| `--force` | Re-translate even if output already exists |
+| `--limit N` | Translate only first N states (testing) |
+| `--state-key KEY` | Translate only one state within the quest (testing) |
 
 ## Editor mode
 
