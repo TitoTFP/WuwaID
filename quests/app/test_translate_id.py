@@ -807,3 +807,90 @@ async def test_translate_quest_records_glossary_violation_after_retry(tmp_path: 
     assert "glossary_violation" in line["flags"]
     # No infinite loop — the run completed (we don't recheck after the second call
     # in the current design; violations are just recorded).
+
+
+import argparse
+
+from scripts.translate_id import build_arg_parser
+
+
+def test_build_arg_parser_defaults() -> None:
+    p = build_arg_parser()
+    ns = p.parse_args([])
+    assert ns.qid is None
+    assert ns.chapter is None
+    assert ns.server == "http://localhost:8080"
+    assert ns.concurrency == 4
+    assert ns.glossary is None
+    assert ns.output_dir is None
+    assert ns.temperature == 0.3
+    assert ns.max_tokens == 2048
+    assert ns.limit is None
+    assert ns.state_key is None
+    assert ns.no_cache is False
+    assert ns.reset_memory is False
+    assert ns.force is False
+    assert ns.dry_run is False
+    assert ns.verbose is False
+
+
+def test_build_arg_parser_full() -> None:
+    p = build_arg_parser()
+    ns = p.parse_args([
+        "119000000",
+        "--chapter", "1",
+        "--server", "http://x:1234",
+        "--concurrency", "8",
+        "--no-cache",
+        "--reset-memory",
+        "--force",
+        "--dry-run",
+        "--verbose",
+        "--limit", "3",
+        "--state-key", "s1",
+    ])
+    assert ns.qid == "119000000"
+    assert ns.chapter == 1
+    assert ns.server == "http://x:1234"
+    assert ns.concurrency == 8
+    assert ns.no_cache is True
+    assert ns.reset_memory is True
+    assert ns.force is True
+    assert ns.dry_run is True
+    assert ns.verbose is True
+    assert ns.limit == 3
+    assert ns.state_key == "s1"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_main_dry_run_prints_quest_order(tmp_path: Path, capsys) -> None:
+    # Set up quest source dir
+    src = tmp_path / "data" / "quests"
+    src.mkdir(parents=True)
+    for qid in (1, 2):
+        (src / f"{qid}.json").write_text(json.dumps({
+            "quest_id": qid, "quest_name": f"Q{qid}", "all_lines": [],
+        }), encoding="utf-8")
+    # Set up chapters.json
+    chapters = tmp_path / "data" / "chapters.json"
+    chapters.parent.mkdir(parents=True, exist_ok=True)
+    chapters.write_text(json.dumps([
+        {"id": 1, "name": "Ch1", "quest_count": 1, "line_count": 0},
+        {"id": 0, "name": "Side", "quest_count": 1, "line_count": 0},
+    ]), encoding="utf-8")
+
+    out = tmp_path / "data" / "quests_id"
+    ns = build_arg_parser().parse_args([
+        "--all", "--dry-run",
+        "--glossary", str(tmp_path / "gloss.json"),
+        "--output-dir", str(out),
+    ])
+
+    # Patch REPO_ROOT-relative paths via a small refactor in main (see Step 6)
+    from scripts.translate_id import _cli as main_mod
+    rc = await main_mod.run(ns, repo_root=tmp_path)
+    assert rc == 0
+    captured = capsys.readouterr().out
+    # main story first, then side
+    assert "1" in captured  # quest 1 (ch 1) printed
