@@ -146,7 +146,7 @@ Useful flags:
 | `--state-key KEY` | Translate only one state within the quest (testing) |
 | `--np N\|auto` | Parallel requests (default `auto`: queries llama-server `/slots` to get slot count) |
 | `--temperature F` | Sampling temperature (default 1.0, matches Gemma 4 model card) |
-| `--max-tokens N` | Max response tokens (default 4096; accommodates thinking + 83-line state) |
+| `--max-tokens N` | Max response tokens (default 32768; matches the 32K context window) |
 | `--top-p F` | Nucleus sampling (default 0.95, matches model card) |
 | `--top-k N` | Top-k sampling (default 64, matches model card) |
 | `--timeout F` | HTTP request timeout in seconds (default 300s) |

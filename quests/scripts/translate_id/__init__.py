@@ -32,8 +32,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Output directory (default data/quests_id).")
     p.add_argument("--temperature", type=float, default=1.0,
                    help="Sampling temperature (default 1.0, matches Gemma 4 model card).")
-    p.add_argument("--max-tokens", type=int, default=4096,
-                   help="Max response tokens (default 4096, accommodates thinking + 83-line state).")
+    p.add_argument("--max-tokens", type=int, default=32768,
+                   help="Max response tokens (default 32768, matches the 32K context window).")
     p.add_argument("--top-p", type=float, default=0.95,
                    help="Nucleus sampling top_p (default 0.95, matches model card).")
     p.add_argument("--top-k", type=int, default=64,

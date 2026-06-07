@@ -33,6 +33,17 @@ def test_load_glossary_missing_file_returns_empty(tmp_path: Path) -> None:
     assert g == {}
 
 
+def test_load_glossary_missing_file_warns(tmp_path: Path, caplog) -> None:
+    missing = tmp_path / "does_not_exist.json"
+    with caplog.at_level("WARNING", logger="scripts.translate_id.glossary"):
+        g = load_glossary(missing)
+    assert g == {}
+    assert any(
+        rec.levelname == "WARNING" and str(missing) in rec.message
+        for rec in caplog.records
+    ), f"expected WARNING containing {missing}, got: {[r.message for r in caplog.records]}"
+
+
 def test_load_glossary_corrupt_file_returns_empty(tmp_path: Path) -> None:
     p = tmp_path / "bad.json"
     p.write_text("not json {{{", encoding="utf-8")
@@ -825,7 +836,7 @@ def test_build_arg_parser_defaults() -> None:
     assert ns.glossary is None
     assert ns.output_dir is None
     assert ns.temperature == 1.0
-    assert ns.max_tokens == 4096
+    assert ns.max_tokens == 32768
     assert ns.top_p == 0.95
     assert ns.top_k == 64
     assert ns.timeout == 300.0
