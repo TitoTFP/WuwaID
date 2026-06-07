@@ -40,16 +40,21 @@ Each item gets its own spec → plan → implementation cycle when picked up.
 
 ## Content scope expansion
 
-- [ ] **Categories translation** — `data/categories/*.json` (87 files). Same
-      per-line, per-state-style pipeline but the input format is a flat
-      list of `{key, en, zh-Hans, ja}` objects. Smaller, faster, but
-      still benefits from the same glossary.
-- [ ] **Speakers translation** — `data/speakers.json` (counters of speaker
-      names). Often a no-op (most names are proper nouns kept in English),
-      but the tool should support it.
-- [ ] **UI / menu / option text** — `data/categories/UI.json`,
-      `ConfirmBox.json`, `ErrorCode.json`, `Message.json`, etc. Most of
-      this is short and high-volume; may need its own batching strategy.
+- [x] **Categories translation** — done 2026-06-07.
+      Spec: `docs/superpowers/specs/2026-06-07-content-scope-expansion-design.md`.
+      Plan: `docs/superpowers/plans/2026-06-07-content-scope-expansion.md`.
+      Pipeline: `--mode categories` on `translate_id.py`. 158,336 keys across
+      87 category files translate via prefix-grouped chunks of 50 keys/LLM
+      call. Output goes to `data/categories_id/<Cat>.json` with an `id`
+      field added per key. Shared `data/_translation_memory.json` cache.
+- [x] **UI / menu / option text** — covered by the same categories
+      pipeline (`UI.json`, `ConfirmBox.json`, `ErrorCode.json`,
+      `Message.json`, etc., all live in `data/categories/` and translate
+      through the same `--mode categories` flow).
+- [ ] **Speakers translation** — REMOVED. `data/speakers.json` is metadata
+      (count list of speaker names), not translatable text. Speaker names
+      themselves are proper nouns covered by the glossary (2,750
+      Speaker/NPC terms with `indonesian_translation` defaulted to English).
 
 ## Quality and reuse
 
