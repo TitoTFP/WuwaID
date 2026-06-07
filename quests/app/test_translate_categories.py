@@ -155,3 +155,85 @@ def test_chunk_keys_invalid_max():
     import pytest
     with pytest.raises(ValueError):
         list(chunk_keys([{"key": "k"}], max_size=0))
+
+
+import json
+from scripts.translate_id.prompt import (
+    CATEGORY_SYSTEM_PROMPT,
+    build_user_prompt_for_categories,
+    build_augmented_system_prompt_for_categories,
+    parse_translation_response_for_categories,
+)
+
+
+def test_category_system_prompt_mentions_category():
+    assert "category" in CATEGORY_SYSTEM_PROMPT.lower()
+
+
+def test_build_user_prompt_for_categories_includes_category_and_prefix():
+    keys = [
+        {"key": "Item_Sword_001_Name", "text_en": "Iron Sword", "text_zh": "铁剑", "text_ja": "鉄剣"},
+    ]
+    prompt = build_user_prompt_for_categories(
+        glossary_subset=["Glacio"],
+        glossary_categories={"Glacio": "Core Gameplay Term"},
+        category="Item",
+        prefix="Item",
+        keys=keys,
+    )
+    assert "Glacio (Core Gameplay Term)" in prompt
+    assert "category: Item" in prompt
+    assert "prefix group: Item" in prompt
+    # Extract JSON from output format section (skip the header suffix)
+    output_section = prompt.split("# Output format")[1]
+    json_start = output_section.index("[")
+    parsed = json.loads(output_section[json_start:])
+    assert parsed[0]["key"] == "Item_Sword_001_Name"
+    assert "text_id" in parsed[0]
+
+
+def test_build_user_prompt_for_categories_empty_glossary():
+    keys = [{"key": "UI_16:08", "text_en": "16:08", "text_zh": "16:08", "text_ja": "16:08"}]
+    prompt = build_user_prompt_for_categories(
+        glossary_subset=[],
+        glossary_categories={},
+        category="UI",
+        prefix="UI",
+        keys=keys,
+    )
+    assert "(no glossary terms needed for this chunk)" in prompt
+
+
+def test_build_augmented_system_prompt_for_categories():
+    aug = build_augmented_system_prompt_for_categories(["Glacio", "Spectro"])
+    assert "Glacio" in aug
+    assert "Spectro" in aug
+    assert "do NOT translate" in aug
+
+
+def test_parse_translation_response_for_categories_happy_path():
+    raw = '[{"key": "Item_Sword_001_Name", "text_id": "Pedang Besi"}]'
+    result = parse_translation_response_for_categories(raw, expected_keys=["Item_Sword_001_Name"])
+    assert result == [{"key": "Item_Sword_001_Name", "text_id": "Pedang Besi"}]
+
+
+def test_parse_translation_response_for_categories_length_mismatch():
+    raw = '[{"key": "Item_Sword_001_Name", "text_id": "Pedang Besi"}]'
+    try:
+        parse_translation_response_for_categories(raw, expected_keys=["A", "B"])
+    except ValueError as e:
+        assert "missing key" in str(e).lower() or "expected" in str(e).lower()
+    else:
+        raise AssertionError("Expected ValueError on length mismatch")
+
+
+def test_parse_translation_response_for_categories_thinking_mode():
+    raw = '<|channel|>analysis\nreasoning<|channel|>\n<|channel|>final\n[{"key": "K", "text_id": "v"}]<|channel|>'
+    result = parse_translation_response_for_categories(raw, expected_keys=["K"])
+    assert result[0]["text_id"] == "v"
+
+
+def test_parse_translation_response_for_categories_think_tag_format():
+    raw = '<|think|>reasoning<|think|>[{"key": "K", "text_id": "v"}]'
+    result = parse_translation_response_for_categories(raw, expected_keys=["K"])
+    assert result[0]["text_id"] == "v"

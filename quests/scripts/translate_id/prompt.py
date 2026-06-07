@@ -232,3 +232,122 @@ def _extract_json_from_thinking(s: str) -> str:
         )
         s = re.sub(r"<\|think\|>.*?<\|think\|>", "", s, flags=re.DOTALL)
     return s
+
+
+CATEGORY_SYSTEM_PROMPT = """You are a professional translator localizing short game text from English to Indonesian (Bahasa Indonesia). The game is "Wuthering Waves", a Chinese open-world action RPG with anime aesthetics.
+
+The text in this batch is from the "<CATEGORY>" category (e.g. item names, skill descriptions, UI labels, NPC titles). Translate it concisely and naturally, matching the register of the original (proper-noun name, short label, descriptive blurb, etc.).
+
+Rules:
+1. Keep the following proper nouns, game terms, and character names in their English form exactly as listed in the Glossary below. Do NOT translate them.
+2. Preserve any in-game markup tokens (e.g., {Item#123}, {NpcName}, {PlayerName}, color tags, {0}, {1}) exactly as they appear. Do NOT translate tokens.
+3. Preserve capitalization and punctuation style of the source (e.g., "COST 3 (Glacio)" stays title-cased; "16:08" stays as-is).
+4. Preserve sentence meaning faithfully. Do not add or omit information.
+5. Return ONLY a valid JSON array, no markdown fences, no commentary.
+"""
+
+
+def build_user_prompt_for_categories(
+    glossary_subset: list[str],
+    glossary_categories: dict[str, str] | None,
+    category: str,
+    prefix: str,
+    keys: list[dict],
+) -> str:
+    """Build the per-chunk user prompt for category translation.
+
+    `keys` is a list of `{key, text_en, text_zh, text_ja}` dicts (in order).
+    Output schema uses `key`/`text_id` (vs quest's `line_id`/`text_id`).
+    """
+    parts: list[str] = ["# Glossary (terms to keep in English exactly as written)"]
+    if glossary_subset:
+        if glossary_categories:
+            for t in glossary_subset:
+                cat = glossary_categories.get(t, "")
+                parts.append(f"- {t} ({cat})" if cat else f"- {t}")
+        else:
+            for t in glossary_subset:
+                parts.append(f"- {t}")
+    else:
+        parts.append("(no glossary terms needed for this chunk)")
+
+    parts.append("")
+    parts.append("# Category context")
+    parts.append(f"- category: {category}")
+    parts.append(f"- prefix group: {prefix}")
+
+    parts.append("")
+    parts.append("# Input keys (preserve order in output)")
+    parts.append(json.dumps(
+        [
+            {
+                "key": k["key"],
+                "text_zh": k.get("text_zh", ""),
+                "text_en": k.get("text_en", ""),
+                "text_ja": k.get("text_ja", ""),
+            }
+            for k in keys
+        ],
+        ensure_ascii=False,
+    ))
+
+    parts.append("")
+    parts.append("# Output format (JSON array, same length, same order)")
+    parts.append(json.dumps(
+        [
+            {"key": k["key"], "text_id": "<translation>"}
+            for k in keys
+        ],
+        ensure_ascii=False,
+    ))
+
+    return "\n".join(parts)
+
+
+def build_augmented_system_prompt_for_categories(missing_terms: list[str]) -> str:
+    """Augmented system prompt for the glossary-violation retry.
+
+    Same shape as `build_augmented_system_prompt` (quest version).
+    """
+    injection = (
+        "\n\n# Mandatory terms (these MUST appear in English in the output, do NOT translate)\n"
+        + "\n".join(f"- {t}" for t in missing_terms)
+    )
+    return CATEGORY_SYSTEM_PROMPT + injection
+
+
+def parse_translation_response_for_categories(
+    raw: str,
+    expected_keys: list[str],
+) -> list[dict]:
+    """Parse the LLM JSON-array response for category translation.
+
+    Reuses `_extract_json_from_thinking` (already defined in this module)
+    to handle Gemma 4 thinking-mode wrappers. Re-orders to match
+    `expected_keys`. Raises ValueError on parse error, missing keys.
+    """
+    s = raw.strip()
+    s = _extract_json_from_thinking(s)
+    if s.startswith("```"):
+        s = re.sub(r"^```(?:json)?\s*", "", s)
+        s = re.sub(r"\s*```$", "", s)
+    try:
+        data = json.loads(s)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"LLM response is not valid JSON: {e}\n--- raw ---\n{raw[:500]}") from e
+    if not isinstance(data, list):
+        raise ValueError(f"LLM response is not a JSON array, got {type(data).__name__}")
+    by_key: dict[str, dict] = {}
+    for entry in data:
+        if not isinstance(entry, dict):
+            raise ValueError(f"LLM array contains non-object entry: {entry!r}")
+        k = entry.get("key")
+        if k is None:
+            raise ValueError(f"LLM array entry missing key: {entry!r}")
+        by_key[str(k)] = entry
+    result: list[dict] = []
+    for k in expected_keys:
+        if k not in by_key:
+            raise ValueError(f"LLM response missing key {k}; got {sorted(by_key.keys())[:10]}...")
+        result.append(by_key[k])
+    return result
