@@ -11,15 +11,26 @@ from .glossary import is_term_in_text
 
 
 def detect_violations(line: dict, state_glossary: list[str]) -> list[str]:
-    """Return glossary terms present in EN but missing from ID for this line."""
-    en_text = " ".join([
+    """Return glossary terms present in EN but missing from ID for this line.
+
+    Includes checking each option's English and Indonesian text.
+    """
+    en_parts: list[str] = [
         line.get("speaker_en", "") or "",
         line.get("text_en", "") or "",
-    ])
-    id_text = " ".join([
+    ]
+    id_parts: list[str] = [
         line.get("speaker_id", "") or "",
         line.get("text_id", "") or "",
-    ])
+    ]
+    # Add option text to the source/target checks
+    for opt in (line.get("options") or []):
+        if isinstance(opt, dict):
+            en_parts.append(opt.get("text_en", "") or "")
+            id_parts.append(opt.get("text_id", "") or "")
+
+    en_text = " ".join(en_parts)
+    id_text = " ".join(id_parts)
 
     violations: list[str] = []
     for term in state_glossary:

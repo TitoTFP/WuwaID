@@ -386,6 +386,26 @@ def test_detect_violations_empty_glossary() -> None:
     assert detect_violations(line, []) == []
 
 
+def test_detect_violations_includes_options() -> None:
+    """A glossary term in option.text_en that's missing from option.text_id
+    is detected as a violation."""
+    line = {
+        "speaker_en": "Rover",
+        "text_en": "Let's go.",
+        "speaker_id": "Rover",
+        "text_id": "Ayo pergi.",
+        "options": [
+            {"text_en": "Yes, to Jinzhou!", "text_id": "Ya, ke Jinzhou!"},
+        ],
+    }
+    # 'Jinzhou' appears in option.text_en AND in option.text_id — no violation
+    assert detect_violations(line, ["Jinzhou"]) == []
+
+    # Now make the option drop the term
+    line["options"][0]["text_id"] = "Ya, ke sana!"
+    assert detect_violations(line, ["Jinzhou"]) == ["Jinzhou"]
+
+
 def test_find_missing_terms_collects_unique() -> None:
     lines = [
         {"speaker_en": "X", "text_en": "Rover Echo Rover", "speaker_id": "X", "text_id": "Pengembara Gema"},
