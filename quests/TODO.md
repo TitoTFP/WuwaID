@@ -9,7 +9,7 @@ Each item gets its own spec → plan → implementation cycle when picked up.
 
 ## v1 dependencies (must be done first)
 
-- [ ] **v1 standalone MT tool** — `scripts/translate_id.py`. The foundation
+- [x] **v1 standalone MT tool** — `scripts/translate_id.py`. The foundation
       everything below depends on. Spec:
       [`docs/superpowers/specs/2026-06-07-translate-id-design.md`](docs/superpowers/specs/2026-06-07-translate-id-design.md).
       Includes **translation memory** (`text_key` cache) — the
@@ -17,10 +17,15 @@ Each item gets its own spec → plan → implementation cycle when picked up.
       at startup and consulted before each LLM call, so duplicate
       dialogue across quests is translated only once. See spec
       §Translation memory.
+- [x] **Translation MCP Server** — `scripts/mcp_server.py`. Exposes the translation pipeline
+      as Model Context Protocol tools for AI agents to translate dialogue/quests, and
+      read/write glossary entries.
 
-## Viewer integration (highest priority follow-up)
+## Viewer integration
 
-- [ ] **Indonesian as 4th language in the web UI**
+- [x] **Indonesian as 4th language in the web UI** — done 2026-06-07.
+      Spec: `docs/superpowers/specs/2026-06-07-viewer-id-integration-design.md`.
+      Plan: `docs/superpowers/plans/2026-06-07-viewer-id-integration.md`.
   - Add `"id"` to the `Lang` union in `web/src/lib/types.ts`
   - Add `text_id` / `speaker_id` fields to `DialogueLine`, `QuestFlowState`,
     and `DialogueLineOption` interfaces
@@ -62,9 +67,10 @@ Each item gets its own spec → plan → implementation cycle when picked up.
 
 ## Tooling extensibility
 
-- [ ] **Multi-model support** — refactor `client.py` to an interface
-      with providers for `llama-cpp` (default), OpenAI, Anthropic, etc.
-      Same prompt + glossary code, swappable backend.
+- [x] **Multi-model support** — `client.py` natively supports standard OpenAI-compatible
+      cloud APIs (OpenAI, OpenRouter, etc.) via custom base URL, model name, API key,
+      and headers. A formal provider interface refactoring was skipped since the single
+      OpenAI-compatible client already covers most backends.
 - [ ] **Configurable prompt templates** — let users override the system
       prompt, user prompt template, and model parameters via a YAML or
       TOML config file. Useful for A/B testing different phrasings.
