@@ -546,3 +546,110 @@ def test_is_state_complete_false_when_no_lines() -> None:
     assert is_state_complete({}, source_line_count=0) is False
     # Even when source has 0 lines, an empty state is "complete" (nothing to do)
     assert is_state_complete({"lines": []}, source_line_count=0) is True
+
+
+import httpx
+import pytest
+import respx
+
+from scripts.translate_id.client import LlamaClient
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_happy_path() -> None:
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps([
+                                {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+                                {"line_id": 2, "speaker_id": "Chixia", "text_id": "Dekat."},
+                            ])
+                        }
+                    }
+                ]
+            },
+        )
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        result = await c.translate_state(
+            system_prompt="You are a translator.",
+            user_prompt="Translate these.",
+            expected_ids=[1, 2],
+        )
+    assert result[0]["text_id"] == "Halo."
+    assert result[1]["text_id"] == "Dekat."
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_retries_on_5xx() -> None:
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        side_effect=[
+            httpx.Response(503, text="server busy"),
+            httpx.Response(503, text="server busy"),
+            httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+            ])}}]}),
+        ]
+    )
+    async with LlamaClient(base_url="http://localhost:8080", max_retries=3) as c:
+        result = await c.translate_state("sys", "user", [1])
+    assert result[0]["text_id"] == "Halo."
+    assert route.call_count == 3
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_raises_after_max_5xx() -> None:
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(503, text="down")
+    )
+    async with LlamaClient(base_url="http://localhost:8080", max_retries=3) as c:
+        with pytest.raises(Exception):  # LlamaError
+            await c.translate_state("sys", "user", [1])
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_retries_on_invalid_json() -> None:
+    route = respx.post("http://localhost:8080/v1/chat/completions").mock(
+        side_effect=[
+            httpx.Response(200, json={"choices": [{"message": {"content": "not json"}}]}),
+            httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+                {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+            ])}}]}),
+        ]
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        result = await c.translate_state("sys", "user", [1])
+    assert result[0]["text_id"] == "Halo."
+    assert route.call_count == 2
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_raises_after_invalid_json_retry() -> None:
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": "not json"}}]})
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        with pytest.raises(Exception):
+            await c.translate_state("sys", "user", [1])
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_state_line_count_mismatch_retries_then_raises() -> None:
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."}
+        ])}}]})
+    )
+    async with LlamaClient(base_url="http://localhost:8080") as c:
+        with pytest.raises(Exception, match="missing line_id 2"):
+            await c.translate_state("sys", "user", [1, 2])
