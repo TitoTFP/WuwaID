@@ -157,6 +157,7 @@ class LlamaClient:
         system_prompt: str,
         user_prompt: str,
         expected_ids: list[int],
+        expected_options_counts: list[int] | None = None,
     ) -> StateTranslation:
         """One call (with internal retries) to translate a state.
 
@@ -169,7 +170,10 @@ class LlamaClient:
         total_usage = total_usage + usage
         try:
             return StateTranslation(
-                lines=parse_translation_response(content, expected_ids),
+                lines=parse_translation_response(
+                    content, expected_ids,
+                    expected_options_counts=expected_options_counts,
+                ),
                 usage=total_usage,
             )
         except ValueError as e:
@@ -180,7 +184,10 @@ class LlamaClient:
         total_usage = total_usage + usage
         try:
             return StateTranslation(
-                lines=parse_translation_response(content, expected_ids),
+                lines=parse_translation_response(
+                    content, expected_ids,
+                    expected_options_counts=expected_options_counts,
+                ),
                 usage=total_usage,
             )
         except ValueError as e:

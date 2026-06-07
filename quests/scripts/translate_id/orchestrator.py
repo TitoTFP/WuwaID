@@ -194,6 +194,7 @@ async def _translate_state(
 
     state_glossary = terms_for_state(glossary, lines)
     expected_ids = [l["id"] for l in lines]
+    expected_options_counts = [len(l.get("options") or []) for l in lines]
 
     output_lines: list[dict] = []
     lines_to_llm: list[dict] = []
@@ -210,6 +211,7 @@ async def _translate_state(
             out_line["text_id"] = ""
             out_line["from_memory"] = False
             out_line["flags"] = []
+            out_line["options"] = []
             out_line["source_text_en"] = ""
             out_line["source_speaker_en"] = ""
             output_lines.append(out_line)
@@ -236,6 +238,7 @@ async def _translate_state(
                 out_line["speaker_id"] = _resolve_speaker(line.get("speaker_en", ""), glossary)
                 out_line["from_memory"] = True
                 out_line["flags"] = []
+                out_line["options"] = []  # cache only stores text_id; options are LLM-only
                 out_line["source_text_en"] = entry.get("source_text_en", "")
                 out_line["source_speaker_en"] = entry.get("source_speaker_en", "")
                 output_lines.append(out_line)
@@ -259,6 +262,9 @@ async def _translate_state(
         lines=lines_to_llm,
     )
     expected_llm_ids = [l["id"] for l in lines_to_llm]
+    expected_options_counts_for_llm = [
+        len(l.get("options") or []) for l in lines_to_llm
+    ]
 
     try:
         llm_result = await _llm_translate_with_glossary_retry(
@@ -268,6 +274,7 @@ async def _translate_state(
             client=client,
             output_lines_template=lines_to_llm,
             enable_thinking=enable_thinking,
+            expected_options_counts=expected_options_counts_for_llm,
         )
     except Exception as e:
         log.error("qid %s state %s translation failed: %s", quest_data.get("quest_id"), state_key, e)
@@ -283,6 +290,9 @@ async def _translate_state(
         out_line = dict(source_line)
         out_line["speaker_id"] = llm_line.get("speaker_id", "")
         out_line["text_id"] = llm_line.get("text_id", "")
+        # Extract options_id from the LLM response. Match by text_key
+        # against the source options; fall back to array index.
+        out_line["options"] = _merge_options_id(source_line, llm_line)
         out_line["from_memory"] = False
         out_line["flags"] = []
         out_line["source_text_en"] = source_line.get("text_en", "")
@@ -334,6 +344,7 @@ async def _llm_translate_with_glossary_retry(
     client: LlamaClient,
     output_lines_template: list[dict],
     enable_thinking: bool = True,
+    expected_options_counts: list[int] | None = None,
 ) -> "StateTranslation":
     """Translate + check glossary, retry once with augmented prompt if needed.
 
@@ -342,7 +353,10 @@ async def _llm_translate_with_glossary_retry(
     """
     from .client import StateTranslation
     base_system = build_system_prompt(enable_thinking=enable_thinking)
-    result = await client.translate_state(base_system, user_prompt, expected_ids)
+    result = await client.translate_state(
+        base_system, user_prompt, expected_ids,
+        expected_options_counts=expected_options_counts,
+    )
     llm_lines = result.lines
     total_usage = result.usage
 
@@ -368,7 +382,10 @@ async def _llm_translate_with_glossary_retry(
     # Augmented system still includes the think token if enabled.
     if enable_thinking and THINK_TOKEN not in aug_system:
         aug_system = aug_system + "\n" + THINK_TOKEN
-    result = await client.translate_state(aug_system, user_prompt, expected_ids)
+    result = await client.translate_state(
+        aug_system, user_prompt, expected_ids,
+        expected_options_counts=expected_options_counts,
+    )
     return StateTranslation(lines=result.lines, usage=total_usage + result.usage)
 
 
@@ -384,3 +401,30 @@ def _resolve_speaker(speaker_en: str, glossary: dict) -> str:
     if not id_form or id_form == speaker_en:
         return speaker_en
     return id_form
+
+
+def _merge_options_id(source_line: dict, llm_line: dict) -> list[dict]:
+    """Merge `options_id` from the LLM response into the source line's
+    `options[]`. Match by `text_key` first, fall back to array index.
+    Returns a list of `[{text_key, text_id}]` dicts.
+    """
+    source_opts = source_line.get("options") or []
+    llm_opts = llm_line.get("options_id") or []
+    if not source_opts:
+        return []
+    # Build a text_key → text_id map from the LLM response
+    by_key: dict[str, str] = {}
+    for o in llm_opts:
+        if isinstance(o, dict) and o.get("text_key") is not None:
+            by_key[o["text_key"]] = o.get("text_id", "")
+    out: list[dict] = []
+    for i, src in enumerate(source_opts):
+        tk = src.get("text_key", "")
+        if tk in by_key:
+            tid = by_key[tk]
+        elif i < len(llm_opts) and isinstance(llm_opts[i], dict):
+            tid = llm_opts[i].get("text_id", "")
+        else:
+            tid = ""
+        out.append({"text_key": tk, "text_id": tid})
+    return out
