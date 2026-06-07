@@ -392,3 +392,87 @@ async def test_translate_category_file_multi_chunk(tmp_path: Path):
         )
     assert stats["keys_translated"] == 7
     assert call_count["n"] == 3
+
+
+@pytest.mark.asyncio
+async def test_translate_category_file_skip_when_fully_translated(tmp_path: Path):
+    """If output exists with all keys translated, no LLM calls."""
+    cat_in = tmp_path / "data" / "categories" / "Done.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    cat_in.write_text(json.dumps({
+        "D_001": {"zh-Hans": "一", "en": "one", "ja": "一"},
+        "D_002": {"zh-Hans": "二", "en": "two", "ja": "二"},
+    }, ensure_ascii=False), encoding="utf-8")
+    out_dir = tmp_path / "data" / "categories_id"
+    out_dir.mkdir(parents=True)
+    out_dir.joinpath("Done.json").write_text(json.dumps({
+        "D_001": {"zh-Hans": "一", "en": "one", "ja": "一", "id": "satu"},
+        "D_002": {"zh-Hans": "二", "en": "two", "ja": "二", "id": "dua"},
+    }, ensure_ascii=False), encoding="utf-8")
+
+    mem_path = tmp_path / "data" / "_translation_memory.json"
+    glossary = load_glossary(tmp_path / "glossary.json")
+
+    with respx.mock(assert_all_called=False) as respx_mock:
+        respx_mock.post("http://testserver/v1/chat/completions").mock(return_value=httpx.Response(500))
+        async with LlamaClient(base_url="http://testserver") as client:
+            memory = Memory(mem_path)
+            stats = await translate_category_file(
+                category_path=cat_in, output_dir=out_dir, memory=memory,
+                glossary=glossary, client=client,
+            )
+    assert stats["keys_translated"] == 0
+    assert stats.get("keys_from_memory", 0) == 2
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_category_file_cache_hits_skip_llm(tmp_path: Path):
+    """Keys already in memory -> LLM is only called for the missing ones."""
+    cat_in = tmp_path / "data" / "categories" / "Mixed.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    cat_in.write_text(json.dumps({
+        "M_001": {"zh-Hans": "一", "en": "one", "ja": "一"},
+        "M_002": {"zh-Hans": "二", "en": "two", "ja": "二"},
+        "M_003": {"zh-Hans": "三", "en": "three", "ja": "三"},
+    }, ensure_ascii=False), encoding="utf-8")
+    out_dir = tmp_path / "data" / "categories_id"
+    mem_path = tmp_path / "data" / "_translation_memory.json"
+    mem_path.parent.mkdir(parents=True, exist_ok=True)
+    glossary = load_glossary(tmp_path / "glossary.json")
+
+    # Pre-populate memory with 2 of 3 keys
+    memory = Memory(mem_path)
+    memory.insert(text_key="M_001", text_id="satu", source_text_en="one", source_speaker_en="", from_quest="Mixed")
+    memory.insert(text_key="M_002", text_id="dua", source_text_en="two", source_speaker_en="", from_quest="Mixed")
+    memory.save(model="test")
+
+    call_count = {"n": 0}
+    def make_response(req):
+        call_count["n"] += 1
+        body = json.loads(req.content)
+        raw = body["messages"][1]["content"]
+        json_start = raw.index("[", raw.index("# Input keys"))
+        json_end = raw.index("]", json_start) + 1
+        keys_in = json.loads(raw[json_start:json_end])
+        return httpx.Response(200, json={
+            "choices": [{"message": {"content": json.dumps(
+                [{"key": k["key"], "text_id": f"id_{k['key']}"} for k in keys_in]
+            )}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+        })
+    with respx.mock(assert_all_called=False) as respx_mock:
+        respx_mock.post("http://testserver/v1/chat/completions").mock(side_effect=make_response)
+        async with LlamaClient(base_url="http://testserver") as client:
+            memory = Memory(mem_path)
+            memory.load()
+            stats = await translate_category_file(
+                category_path=cat_in, output_dir=out_dir, memory=memory,
+                glossary=glossary, client=client,
+            )
+    assert call_count["n"] == 1  # only M_003 missing from cache
+    assert stats["keys_translated"] == 3  # 2 from memory + 1 fresh
+    out = json.loads((out_dir / "Mixed.json").read_text(encoding="utf-8"))
+    assert out["M_001"]["id"] == "satu"
+    assert out["M_002"]["id"] == "dua"
+    assert out["M_003"]["id"] == "id_M_003"
