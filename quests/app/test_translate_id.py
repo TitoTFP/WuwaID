@@ -11,6 +11,7 @@ from scripts.translate_id.prompt import (
     build_augmented_system_prompt,
     parse_translation_response,
 )
+from scripts.translate_id.postprocess import detect_violations, find_missing_terms
 
 
 def test_load_glossary_parses_valid_json(tmp_path: Path) -> None:
@@ -304,3 +305,54 @@ def test_parse_translation_response_not_array_raises() -> None:
     raw = json.dumps({"line_id": 1, "text_id": "A"})
     with pytest.raises(ValueError, match="not a JSON array"):
         parse_translation_response(raw, expected_ids=[1])
+
+
+def test_detect_violations_no_violation() -> None:
+    line = {
+        "speaker_en": "Rover",
+        "text_en": "Hello, Jinhsi!",
+        "speaker_id": "Rover",
+        "text_id": "Halo, Jinhsi!",
+    }
+    assert detect_violations(line, ["Rover", "Jinhsi"]) == []
+
+
+def test_detect_violations_term_dropped_in_text() -> None:
+    """If 'Rover' was in EN text but missing in ID text, it's a violation."""
+    line = {
+        "speaker_en": "Yangyang",
+        "text_en": "Rover! Are you okay?",
+        "speaker_id": "Yangyang",
+        "text_id": "Pengembara! Apakah kamu baik-baik saja?",
+    }
+    violations = detect_violations(line, ["Rover", "Jinhsi"])
+    assert "Rover" in violations
+    assert "Jinhsi" not in violations  # not in EN source → not checked
+
+
+def test_detect_violations_case_insensitive() -> None:
+    line = {
+        "speaker_en": "Rover",
+        "text_en": "rover here",
+        "speaker_id": "Rover",
+        "text_id": "rOver here",
+    }
+    assert detect_violations(line, ["Rover"]) == []
+
+
+def test_detect_violations_empty_glossary() -> None:
+    line = {"speaker_en": "X", "text_en": "X", "speaker_id": "X", "text_id": "Y"}
+    assert detect_violations(line, []) == []
+
+
+def test_find_missing_terms_collects_unique() -> None:
+    lines = [
+        {"speaker_en": "X", "text_en": "Rover Echo Rover", "speaker_id": "X", "text_id": "Pengembara Gema"},
+        {"speaker_en": "X", "text_en": "Echo", "speaker_id": "X", "text_id": "Gema"},
+    ]
+    missing = find_missing_terms(lines, ["Rover", "Echo", "Jinhsi"])
+    assert set(missing) == {"Rover", "Echo"}
+
+
+def test_find_missing_terms_empty() -> None:
+    assert find_missing_terms([], ["Rover"]) == []
