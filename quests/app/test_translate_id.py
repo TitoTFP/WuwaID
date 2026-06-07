@@ -1258,6 +1258,23 @@ async def test_detect_n_parallel_returns_default_on_empty_list() -> None:
     assert count == 5
 
 
+# --- python -m scripts.translate_id entrypoint ---
+
+
+def test_module_invocation_via_dash_m() -> None:
+    """`uv run python -m scripts.translate_id` should work (regression test for
+    'No module named scripts.translate_id.__main__' error)."""
+    import subprocess
+    import sys
+    result = subprocess.run(
+        [sys.executable, "-m", "scripts.translate_id", "--help"],
+        capture_output=True, text=True, timeout=15,
+    )
+    assert result.returncode == 0
+    assert "translate_id" in result.stdout
+    assert "--np" in result.stdout  # confirms new flag is visible
+
+
 # --- Glossary retry with thinking mode ---
 
 
