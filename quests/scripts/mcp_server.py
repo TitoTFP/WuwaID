@@ -296,5 +296,143 @@ def add_glossary_term(
         }
 
 
+@mcp.tool()
+async def translate_category_file(
+    name: str,
+    force: bool = False,
+    no_cache: bool = False,
+    backend_override: dict | None = None,
+) -> dict:
+    """Translate one category file by name (e.g. 'Item', 'UI', 'Skill').
+
+    Returns {"exit_code": int, "status": "success"|"error",
+            "output_path": str, "stats": {...}}
+    """
+    log.info("Received request to translate category file name=%s", name)
+    repo_root = Path.cwd()
+    glossary_path = repo_root / "data" / "glossary.json"
+    output_dir = repo_root / "data" / "categories_id"
+    memory_path = repo_root / "data" / "_translation_memory.json"
+
+    class Namespace:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+    bo = backend_override or {}
+    base_url = bo.get("base_url") or os.environ.get("MTL_BASE_URL")
+    model = bo.get("model") or os.environ.get("MTL_MODEL")
+    api_key = bo.get("api_key") or os.environ.get("MTL_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+    headers = bo.get("headers")
+    headers_str = json.dumps(headers) if isinstance(headers, dict) else headers
+
+    ns = Namespace(
+        mode="categories",
+        category=name,
+        chapter=None,
+        all=False,
+        server=base_url,
+        api_key=api_key,
+        headers=headers_str,
+        model=model,
+        np=1,
+        glossary=glossary_path,
+        output_dir=output_dir,
+        memory=memory_path,
+        temperature=1.0,
+        max_tokens=4096,
+        top_p=0.95,
+        top_k=None,
+        timeout=300.0,
+        enable_thinking=True,
+        state_key=None,
+        limit=None,
+        no_cache=no_cache,
+        no_progress=True,
+        reset_memory=False,
+        force=force,
+        dry_run=False,
+        verbose=True,
+        flush_every=0,
+        max_keys_per_call=50,
+    )
+
+    from scripts.translate_id._cli import run_categories
+    exit_code = await run_categories(ns, repo_root)
+    return {
+        "exit_code": exit_code,
+        "status": "success" if exit_code == 0 else "error",
+        "output_path": str(output_dir / f"{name}.json"),
+    }
+
+
+@mcp.tool()
+async def translate_all_categories(
+    force: bool = False,
+    no_cache: bool = False,
+    backend_override: dict | None = None,
+    limit: int | None = None,
+) -> dict:
+    """Sweep all 87 category files in size-ascending order.
+
+    Returns {"exit_code": int, "status": "success"|"error", "summary": {...}}
+    """
+    log.info("Received request to translate all categories (limit=%s)", limit)
+    repo_root = Path.cwd()
+    glossary_path = repo_root / "data" / "glossary.json"
+    output_dir = repo_root / "data" / "categories_id"
+    memory_path = repo_root / "data" / "_translation_memory.json"
+
+    class Namespace:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+    bo = backend_override or {}
+    base_url = bo.get("base_url") or os.environ.get("MTL_BASE_URL")
+    model = bo.get("model") or os.environ.get("MTL_MODEL")
+    api_key = bo.get("api_key") or os.environ.get("MTL_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+    headers = bo.get("headers")
+    headers_str = json.dumps(headers) if isinstance(headers, dict) else headers
+
+    ns = Namespace(
+        mode="categories",
+        category=None,
+        chapter=None,
+        all=True,
+        server=base_url,
+        api_key=api_key,
+        headers=headers_str,
+        model=model,
+        np=1,
+        glossary=glossary_path,
+        output_dir=output_dir,
+        memory=memory_path,
+        temperature=1.0,
+        max_tokens=4096,
+        top_p=0.95,
+        top_k=None,
+        timeout=300.0,
+        enable_thinking=True,
+        state_key=None,
+        limit=limit,
+        no_cache=no_cache,
+        no_progress=True,
+        reset_memory=False,
+        force=force,
+        dry_run=False,
+        verbose=True,
+        flush_every=0,
+        max_keys_per_call=50,
+    )
+
+    from scripts.translate_id._cli import run_categories
+    exit_code = await run_categories(ns, repo_root)
+    return {
+        "exit_code": exit_code,
+        "status": "success" if exit_code == 0 else "error",
+    }
+
+
 if __name__ == "__main__":
     mcp.run()
