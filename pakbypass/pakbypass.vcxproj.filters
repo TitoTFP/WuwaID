@@ -36,7 +36,7 @@
     <ClInclude Include="PakBypass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HidProxy.hpp">
+    <ClInclude Include="WinhttpProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,13 +48,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="hid.def">
+    <None Include="winhttp.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="hid.rc">
+    <ResourceCompile Include="winhttp.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

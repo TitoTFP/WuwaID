@@ -16,13 +16,12 @@ BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904b0"
-        BEGIN
             VALUE "CompanyName", "WuwaID"
-            VALUE "FileDescription", "Human Interface Device Library Proxy"
+            VALUE "FileDescription", "Windows HTTP Services Proxy"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "hid"
+            VALUE "InternalName", "winhttp"
             VALUE "LegalCopyright", "Copyright (C) 2024-2026 WuwaID"
-            VALUE "OriginalFilename", "hid.dll"
+            VALUE "OriginalFilename", "winhttp.dll"
             VALUE "ProductName", "WuWa Indonesian Localization"
             VALUE "ProductVersion", "1.0.0.0"
         END
