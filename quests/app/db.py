@@ -39,6 +39,15 @@ def ensure_editor_schema() -> None:
         cols = {r["name"] for r in con.execute("PRAGMA table_info(editor_session)").fetchall()}
         if "role" not in cols:
             con.execute("ALTER TABLE editor_session ADD COLUMN role TEXT NOT NULL DEFAULT 'editor'")
+
+        # Idempotent column migration for the edits table.
+        # The edits table itself is created by build_index.py:build_fts;
+        # here we only add new columns.
+        edits_cols = {r["name"] for r in con.execute("PRAGMA table_info(edits)").fetchall()}
+        if "text_id" not in edits_cols:
+            con.execute("ALTER TABLE edits ADD COLUMN text_id TEXT")
+        if "speaker_id" not in edits_cols:
+            con.execute("ALTER TABLE edits ADD COLUMN speaker_id TEXT")
         con.commit()
     finally:
         con.close()
