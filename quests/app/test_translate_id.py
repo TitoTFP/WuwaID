@@ -356,3 +356,147 @@ def test_find_missing_terms_collects_unique() -> None:
 
 def test_find_missing_terms_empty() -> None:
     assert find_missing_terms([], ["Rover"]) == []
+
+
+from scripts.translate_id.memory import Memory
+
+
+def test_memory_starts_empty(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "_memory.json")
+    assert m.size() == 0
+    assert m.lookup("any_key") is None
+
+
+def test_memory_insert_and_lookup(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "_memory.json")
+    m.insert(
+        text_key="t1",
+        text_id="Halo.",
+        source_text_en="Hello.",
+        source_speaker_en="Rover",
+        from_quest=100,
+    )
+    entry = m.lookup("t1")
+    assert entry is not None
+    assert entry["text_id"] == "Halo."
+    assert entry["source_text_en"] == "Hello."
+    assert entry["source_speaker_en"] == "Rover"
+    assert entry["from_quest"] == 100
+
+
+def test_memory_write_once_no_overwrite(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "_memory.json")
+    m.insert("t1", "Halo.", "Hello.", "Rover", 100)
+    m.insert("t1", "Hai.", "Hello.", "Rover", 200)  # second insertion ignored
+    assert m.lookup("t1")["text_id"] == "Halo."
+
+
+def test_memory_source_mismatch_warning(tmp_path: Path) -> None:
+    """If text_en differs from cached, returns the entry but flags mismatch."""
+    m = Memory(tmp_path / "_memory.json")
+    m.insert("t1", "Halo.", "Hello.", "Rover", 100)
+    warn = m.lookup_with_check("t1", current_text_en="Howdy.", current_speaker_en="Rover")
+    assert warn is not None
+    entry, mismatches = warn
+    assert entry["text_id"] == "Halo."
+    assert "text_en" in mismatches
+
+
+def test_memory_lookup_with_check_no_mismatch(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "_memory.json")
+    m.insert("t1", "Halo.", "Hello.", "Rover", 100)
+    warn = m.lookup_with_check("t1", current_text_en="Hello.", current_speaker_en="Rover")
+    assert warn is not None
+    entry, mismatches = warn
+    assert mismatches == []
+
+
+def test_memory_save_and_reload(tmp_path: Path) -> None:
+    p = tmp_path / "_memory.json"
+    m1 = Memory(p)
+    m1.insert("k1", "Halo.", "Hello.", "Rover", 100)
+    m1.insert("k2", "Dekat.", "Stay close.", "Chixia", 200)
+    m1.save(model="test-model")
+
+    m2 = Memory(p)
+    m2.load()
+    assert m2.size() == 2
+    assert m2.lookup("k1")["text_id"] == "Halo."
+    assert m2.lookup("k2")["text_id"] == "Dekat."
+    assert m2.model == "test-model"
+
+
+def test_memory_load_missing_file_keeps_empty(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "nope.json")
+    m.load()
+    assert m.size() == 0
+
+
+def test_memory_load_corrupt_file_backs_up_and_starts_empty(tmp_path: Path) -> None:
+    p = tmp_path / "_memory.json"
+    p.write_text("not json {{{", encoding="utf-8")
+    m = Memory(p)
+    m.load()
+    assert m.size() == 0
+    # A backup file was created
+    backups = list(tmp_path.glob("_memory.json.corrupt-*"))
+    assert len(backups) == 1
+    # The original corrupt file is moved aside (no longer at p)
+    assert not p.exists()
+
+
+def test_memory_load_wrong_version_starts_empty(tmp_path: Path) -> None:
+    p = tmp_path / "_memory.json"
+    p.write_text(json.dumps({"version": 999, "entries": {"k": "v"}}), encoding="utf-8")
+    m = Memory(p)
+    m.load()
+    assert m.size() == 0
+
+
+def test_memory_load_seeds_from_per_quest_outputs(tmp_path: Path) -> None:
+    """When memory.json is missing but per-quest outputs exist, seed from them."""
+    output_dir = tmp_path
+    quest = {
+        "quest_id": 119000000,
+        "states": {
+            "state_1": {
+                "lines": [
+                    {"text_key": "k1", "text_id": "Halo."},
+                    {"text_key": "k2", "text_id": "Dekat."},
+                ]
+            }
+        },
+    }
+    (output_dir / "119000000.json").write_text(
+        json.dumps(quest), encoding="utf-8"
+    )
+    memory_path = output_dir / "_memory.json"
+    assert not memory_path.exists()  # confirm precondition
+
+    m = Memory(memory_path)
+    m.load()
+    assert m.size() == 2
+    assert m.lookup("k1")["text_id"] == "Halo."
+    assert m.lookup("k1")["from_quest"] == 119000000
+
+
+def test_memory_seed_from_quest_helper(tmp_path: Path) -> None:
+    m = Memory(tmp_path / "_memory.json")
+    added = m.seed_from_quest({
+        "quest_id": 1,
+        "states": {
+            "s": {
+                "lines": [
+                    {"text_key": "a", "text_id": "A_id"},
+                    {"text_key": "b", "text_id": "B_id"},
+                ]
+            }
+        },
+    })
+    assert added == 2
+    added_again = m.seed_from_quest({
+        "quest_id": 2,
+        "states": {"s": {"lines": [{"text_key": "a", "text_id": "DIFFERENT"}]}},
+    })
+    assert added_again == 0
+    assert m.lookup("a")["text_id"] == "A_id"  # write-once
