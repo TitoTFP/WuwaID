@@ -195,8 +195,9 @@ $RECYCLE.BIN/
 export_localization_db/export_l.*/
 ConfigDB/
 export_quest_ordered/
+export_text_grouped/
 Javascript/*
-WuwaDBExport/
+WuwaDBExport*/
 export_quest_raw_all/
 experiments/
 build-artifacts/

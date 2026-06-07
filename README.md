@@ -73,6 +73,29 @@ Hapus file `hid.dll` dan folder `wuwaIndonesia`.
 - Setelah game mendapatkan update, kamu mungkin perlu mengunduh ulang patch terjemahan terbaru dari halaman Releases.
 - Gunakan patch ini dengan risiko masing-masing.
 
+## Pengembangan & Ekspor Data (Developer)
+
+Repositori ini menyediakan skrip Python untuk mengekstrak teks lokalisasi dari database game Wuthering Waves (`ConfigDB` atau `WuwaDBExport`).
+
+### Persiapan
+Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai (misal: sejajar dengan skrip ini) atau tentukan path secara manual saat menjalankan skrip.
+
+### 1. Ekspor Dialog Quest Terurut
+Skrip `export_quest_ordered.py` mengekstrak dialog quest yang diorganisasikan berdasarkan chapter cerita utama dan side quest.
+
+```sh
+python export_quest_ordered.py [path_ke_ConfigDB]
+```
+Output akan disimpan di folder `export_quest_ordered/`.
+
+### 2. Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
+Skrip `export_text_grouped.py` mengekstrak dan mengelompokkan semua teks lokalisasi (item, skill, dialog quest, UI, dll.) berdasarkan kategori ke dalam file JSON. Skrip ini menghasilkan format data yang dibutuhkan oleh aplikasi web [wuwaid-quests](../wuwaid-quests).
+
+```sh
+python export_text_grouped.py [path_ke_ConfigDB]
+```
+Output akan disimpan di folder `export_text_grouped/`.
+
 ## Credits
 
 - **[Lai-Hoang](https://github.com/Lai-Hoang)** — Terima kasih untuk repo [wuwa-viet-hoa](https://github.com/Lai-Hoang/wuwa-viet-hoa) dan metode code injector.
