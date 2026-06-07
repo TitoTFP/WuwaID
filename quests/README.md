@@ -96,6 +96,10 @@ skipped.
 The tool under `scripts/translate_id.py` translates `data/quests/*.json` to
 Indonesian using a local `llama-server`. Output goes to `data/quests_id/`.
 
+Default settings target `unsloth/gemma-4-12B-it-qat-GGUF` with the model's
+recommended sampling (`temperature=1.0, top_p=0.95, top_k=64`) and
+Gemma 4 thinking mode enabled.
+
 Setup (one time):
 
 ```sh
@@ -103,7 +107,12 @@ Setup (one time):
 # 2. Copy the glossary draft into the data dir.
 cp ../WuwaID/glossary_draft.json data/glossary.json
 # 3. Start a llama-server on http://localhost:8080.
-llama-server -m your-model.gguf --port 8080
+#    Example for Gemma 4 12B (Q4_K_XL, 30 GPU layers, 64K context, 1 slot):
+llama-server \
+  -m ~/.models/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf \
+  -ngl 30 -c 65536 -np 1 -fa \
+  -ctk q8_0 -ctv q8_0 \
+  --host 127.0.0.1 --port 8080
 ```
 
 Run on one quest:
@@ -135,6 +144,13 @@ Useful flags:
 | `--force` | Re-translate even if output already exists |
 | `--limit N` | Translate only first N states (testing) |
 | `--state-key KEY` | Translate only one state within the quest (testing) |
+| `--np N\|auto` | Parallel requests (default `auto`: queries llama-server `/slots` to get slot count) |
+| `--temperature F` | Sampling temperature (default 1.0, matches Gemma 4 model card) |
+| `--max-tokens N` | Max response tokens (default 4096; accommodates thinking + 83-line state) |
+| `--top-p F` | Nucleus sampling (default 0.95, matches model card) |
+| `--top-k N` | Top-k sampling (default 64, matches model card) |
+| `--timeout F` | HTTP request timeout in seconds (default 300s) |
+| `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `<|think|>` token (default ON). Parser extracts the final-answer channel automatically. |
 
 ## Editor mode
 

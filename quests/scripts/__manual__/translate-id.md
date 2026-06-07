@@ -5,14 +5,16 @@ Run after any non-trivial change. Each box is one verification.
 **Setup:**
 - [ ] `data/quests/<qid>.json` exists for a small main-story quest (~50 lines).
 - [ ] `data/glossary.json` exists (copy of `WuwaID/glossary_draft.json`).
-- [ ] `llama-server` running on `http://localhost:8080`.
+- [ ] `llama-server` running on `http://localhost:8080` with a Gemma 4 12B model loaded (or compatible).
 - [ ] No `data/quests_id/_memory.json` (or delete it for a clean run).
 
 **Single quest end-to-end:**
 - [ ] `uv run python scripts/translate_id.py <qid> --verbose` runs without errors.
+- [ ] Log line `Concurrency=N (server=..., ...)` shows detected slot count (if `--np auto`).
 - [ ] `data/quests_id/<qid>.json` is created with the expected structure.
 - [ ] All `lines[]` have `text_id` non-empty and `flags=[]` for clean lines.
 - [ ] All `lines[]` have `text_key` matching the source.
+- [ ] No `<|channel|>` or `<|think|>` tags leaked into `text_id` (thinking mode parsed correctly).
 
 **Idempotency:**
 - [ ] Re-run the same command; output file is unchanged (`diff` is empty).
