@@ -26,6 +26,7 @@ from .prompt import (
 )
 from .state_iter import group_lines_by_state
 from .usage import Usage
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 log = logging.getLogger(__name__)
 
@@ -116,20 +117,24 @@ async def translate_quest(
             )
 
     tasks = [run_one(sk, ls) for sk, ls in todo]
-    for coro in asyncio.as_completed(tasks):
-        state_key, result = await coro
-        output_payload["states"][state_key] = result
-        if "error" in result:
-            stats["errors"] += 1
-        else:
-            stats["states_done"] += 1
-            for line in result.get("lines", []):
-                if line.get("from_memory"):
-                    stats["lines_from_memory"] += 1
-                else:
-                    stats["lines_translated"] += 1
-                if "glossary_violation" in (line.get("flags") or []):
-                    stats["violations"] += 1
+    # logging_redirect_tqdm routes log.info/warn calls through tqdm.write,
+    # which clears and redraws the bar so the per-state log line does not
+    # break tqdm's cursor and freeze the progress display.
+    with logging_redirect_tqdm():
+        for coro in asyncio.as_completed(tasks):
+            state_key, result = await coro
+            output_payload["states"][state_key] = result
+            if "error" in result:
+                stats["errors"] += 1
+            else:
+                stats["states_done"] += 1
+                for line in result.get("lines", []):
+                    if line.get("from_memory"):
+                        stats["lines_from_memory"] += 1
+                    else:
+                        stats["lines_translated"] += 1
+                    if "glossary_violation" in (line.get("flags") or []):
+                        stats["violations"] += 1
 
     # Atomic write per-quest output
     write_quest_output(output_path, output_payload)

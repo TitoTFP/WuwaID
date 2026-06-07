@@ -12,6 +12,7 @@ Run after any non-trivial change. Each box is one verification.
 - [ ] `uv run python scripts/translate_id.py <qid> --verbose` runs without errors.
 - [ ] Log line `Concurrency=N (server=..., ...)` shows detected slot count (if `--np auto`).
 - [ ] Progress bar appears: outer bar = quests (1/1), inner bar = states (X/Y with `last: p=N c=M` postfix).
+- [ ] Progress bar advances in real-time as states complete (does not freeze at 0/1).
 - [ ] Per-state log lines include `prompt=N completion=M reasoning=K` token counts.
 - [ ] `data/quests_id/<qid>.json` is created with the expected structure.
 - [ ] All `lines[]` have `text_id` non-empty and `flags=[]` for clean lines.

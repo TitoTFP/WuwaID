@@ -1656,3 +1656,132 @@ async def test_augmented_system_prompt_keeps_think_token() -> None:
     # And the mandatory terms are listed.
     assert "Rover" in aug_with_think
     assert "Chixia" in aug_with_think
+
+
+# --- Progress bar / logging coexistence ---
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_quest_wraps_async_loop_in_logging_redirect_tqdm(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression: the orchestrator's async loop must run inside
+    `tqdm.contrib.logging.logging_redirect_tqdm()` so log.info calls
+    do not break tqdm's cursor and freeze the progress bar.
+
+    Without the wrap, the test fails because the mock context manager
+    is never entered.
+    """
+    from scripts.translate_id import orchestrator as orch_mod
+
+    entered = {"count": 0}
+
+    def fake_redirect():
+        from contextlib import contextmanager
+
+        @contextmanager
+        def _cm():
+            entered["count"] += 1
+            yield
+
+        return _cm()
+
+    monkeypatch.setattr(orch_mod, "logging_redirect_tqdm", fake_redirect)
+
+    quest = {
+        "quest_id": 119000000,
+        "quest_name": "Test",
+        "chapter_id": 1,
+        "chapter_name": "X",
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+        ],
+    }
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+        ])}}]})
+    )
+
+    memory = Memory(q_out / "_memory.json")
+    async with LlamaClient(base_url="http://localhost:8080") as client:
+        await translate_quest(
+            quest_path=q_in / "119000000.json",
+            quest_data=quest,
+            output_dir=q_out,
+            memory=memory,
+            glossary={},
+            client=client,
+            concurrency=1,
+        )
+
+    assert entered["count"] >= 1, (
+        "translate_quest must wrap its async loop in "
+        "tqdm.contrib.logging.logging_redirect_tqdm() — otherwise "
+        "log.info() lines break tqdm's cursor and freeze the progress bar."
+    )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_logging_records_still_captured_during_translation(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Regression: wrapping the loop in logging_redirect_tqdm must NOT
+    drop log records. The orchestrator's per-state INFO line must still
+    reach subscribers.
+    """
+    quest = {
+        "quest_id": 119000000,
+        "quest_name": "Test",
+        "chapter_id": 1,
+        "chapter_name": "X",
+        "all_lines": [
+            {"id": 1, "type": "Talk", "state_key": "s1", "text_key": "k1",
+             "speaker_en": "Rover", "text_en": "Hello."},
+        ],
+    }
+    q_in = tmp_path / "in"
+    q_in.mkdir()
+    (q_in / "119000000.json").write_text(json.dumps(quest), encoding="utf-8")
+    q_out = tmp_path / "out"
+
+    respx.post("http://localhost:8080/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([
+            {"line_id": 1, "speaker_id": "Rover", "text_id": "Halo."},
+        ])}}]})
+    )
+
+    memory = Memory(q_out / "_memory.json")
+    import logging
+    with caplog.at_level(logging.INFO, logger="scripts.translate_id.orchestrator"):
+        async with LlamaClient(base_url="http://localhost:8080") as client:
+            await translate_quest(
+                quest_path=q_in / "119000000.json",
+                quest_data=quest,
+                output_dir=q_out,
+                memory=memory,
+                glossary={},
+                client=client,
+                concurrency=1,
+            )
+
+    # Per-state INFO log must still be emitted (not swallowed by the redirect).
+    state_logs = [
+        r for r in caplog.records
+        if r.name == "scripts.translate_id.orchestrator"
+        and r.levelno == logging.INFO
+        and "prompt=" in r.message
+        and "completion=" in r.message
+    ]
+    assert state_logs, (
+        f"expected orchestrator per-state INFO log with prompt=/completion=, "
+        f"got: {[(r.name, r.levelname, r.message) for r in caplog.records]}"
+    )
