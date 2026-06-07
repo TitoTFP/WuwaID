@@ -2004,3 +2004,36 @@ async def test_flush_every_one_writes_memory_file_after_each_state(
     assert (q_out / "_memory.json").exists(), (
         "memory.save was called but _memory.json does not exist on disk"
     )
+
+
+# --- parse_translation_response: options_id count validation ---
+
+
+def test_parse_translation_response_validates_options_id_count() -> None:
+    raw = json.dumps([
+        {"line_id": 1, "speaker_id": "x", "text_id": "y",
+         "options_id": [{"text_key": "o1", "text_id": "ya"}]},
+        {"line_id": 2, "speaker_id": "x", "text_id": "y", "options_id": []},
+    ])
+    # Expected: line 1 has 1 option, line 2 has 0 — matches
+    out = parse_translation_response(raw, [1, 2], [1, 0])
+    assert len(out) == 2
+    assert out[0]["options_id"][0]["text_id"] == "ya"
+
+
+def test_parse_translation_response_raises_on_options_count_mismatch() -> None:
+    raw = json.dumps([
+        {"line_id": 1, "speaker_id": "x", "text_id": "y",
+         "options_id": []},  # 0 options but expected 1
+    ])
+    with pytest.raises(ValueError, match="expected 1 options_id"):
+        parse_translation_response(raw, [1], [1])
+
+
+def test_parse_translation_response_skips_validation_when_no_expected() -> None:
+    """Without expected_options_counts, no validation occurs (back-compat)."""
+    raw = json.dumps([
+        {"line_id": 1, "speaker_id": "x", "text_id": "y"},
+    ])
+    out = parse_translation_response(raw, [1])
+    assert len(out) == 1

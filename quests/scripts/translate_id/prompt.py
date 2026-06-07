@@ -124,7 +124,11 @@ def build_augmented_system_prompt(missing_terms: list[str]) -> str:
     return base + injection
 
 
-def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
+def parse_translation_response(
+    raw: str,
+    expected_ids: list[int],
+    expected_options_counts: list[int] | None = None,
+) -> list[dict]:
     """Parse the LLM JSON-array response, re-ordering to match `expected_ids`.
 
     Supports three response formats:
@@ -136,7 +140,11 @@ def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
 
     Markdown code fences are also stripped defensively.
 
-    Raises ValueError on parse error or missing line_ids.
+    If `expected_options_counts` is provided (a list parallel to `expected_ids`),
+    each line's `options_id` array length is validated against the expected count.
+    A mismatch raises `ValueError` so the caller can retry.
+
+    Raises ValueError on parse error, missing line_ids, or options_id length mismatch.
     """
     s = raw.strip()
 
@@ -170,14 +178,23 @@ def parse_translation_response(raw: str, expected_ids: list[int]) -> list[dict]:
         by_id[resolved_lid] = entry
 
     result: list[dict] = []
-    for lid in expected_ids:
+    for idx, lid in enumerate(expected_ids):
         try:
             resolved_lid = int(lid)
         except (ValueError, TypeError):
             resolved_lid = lid
         if resolved_lid not in by_id:
             raise ValueError(f"LLM response missing line_id {lid}; got {sorted(str(k) for k in by_id.keys())[:10]}...")
-        result.append(by_id[resolved_lid])
+        entry = by_id[resolved_lid]
+        # Validate options_id count if requested
+        if expected_options_counts is not None:
+            expected_count = expected_options_counts[idx]
+            actual_count = len(entry.get("options_id") or [])
+            if actual_count != expected_count:
+                raise ValueError(
+                    f"line_id {lid}: expected {expected_count} options_id entries, got {actual_count}"
+                )
+        result.append(entry)
     return result
 
 
