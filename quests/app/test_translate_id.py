@@ -500,3 +500,49 @@ def test_memory_seed_from_quest_helper(tmp_path: Path) -> None:
     })
     assert added_again == 0
     assert m.lookup("a")["text_id"] == "A_id"  # write-once
+
+
+from scripts.translate_id.progress import (
+    load_existing_output,
+    is_state_complete,
+    write_quest_output,
+)
+
+
+def test_load_existing_output_missing_returns_empty(tmp_path: Path) -> None:
+    out = load_existing_output(tmp_path / "nope.json")
+    assert out == {}
+
+
+def test_load_existing_output_parses_states(tmp_path: Path) -> None:
+    p = tmp_path / "119000000.json"
+    p.write_text(json.dumps({
+        "quest_id": 119000000,
+        "states": {
+            "s1": {"lines": [{"line_id": 1, "text_id": "Halo."}]},
+            "s2": {"error": "server down"},
+        },
+    }), encoding="utf-8")
+    out = load_existing_output(p)
+    assert "s1" in out
+    assert "s2" in out
+    assert "error" in out["s2"]
+
+
+def test_is_state_complete_true_when_line_count_matches(tmp_path: Path) -> None:
+    state_payload = {"lines": [{"line_id": 1}, {"line_id": 2}, {"line_id": 3}]}
+    assert is_state_complete(state_payload, source_line_count=3) is True
+
+
+def test_is_state_complete_false_when_error(tmp_path: Path) -> None:
+    assert is_state_complete({"error": "x"}, source_line_count=0) is False
+
+
+def test_is_state_complete_false_when_short(tmp_path: Path) -> None:
+    assert is_state_complete({"lines": [{"line_id": 1}]}, source_line_count=5) is False
+
+
+def test_is_state_complete_false_when_no_lines() -> None:
+    assert is_state_complete({}, source_line_count=0) is False
+    # Even when source has 0 lines, an empty state is "complete" (nothing to do)
+    assert is_state_complete({"lines": []}, source_line_count=0) is True
