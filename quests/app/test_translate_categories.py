@@ -46,3 +46,52 @@ def test_terms_for_category_chunk_no_matches():
     keys = [{"text_en": "Hello world", "text_zh": "你好世界"}]
     out = terms_for_category_chunk(glossary, keys)
     assert out == []
+
+
+from scripts.translate_id.postprocess import (
+    detect_violations_for_category,
+    find_missing_terms_for_category,
+)
+
+
+def test_detect_violations_for_category_text_en_vs_text_id():
+    record = {"text_en": "Glacio damage", "text_id": "Kerusakan es"}
+    state_glossary = ["Glacio"]
+    viols = detect_violations_for_category(record, state_glossary)
+    assert viols == ["Glacio"]
+
+
+def test_detect_violations_for_category_no_violation_when_term_preserved():
+    record = {"text_en": "Glacio damage", "text_id": "Kerusakan Glacio"}
+    state_glossary = ["Glacio"]
+    viols = detect_violations_for_category(record, state_glossary)
+    assert viols == []
+
+
+def test_detect_violations_for_category_term_not_in_source():
+    """Term not in source EN -> no violation, even if missing from ID."""
+    record = {"text_en": "Some other text", "text_id": "Teks lain"}
+    state_glossary = ["Glacio"]
+    viols = detect_violations_for_category(record, state_glossary)
+    assert viols == []
+
+
+def test_detect_violations_for_category_empty_glossary():
+    record = {"text_en": "Anything", "text_id": "Apapun"}
+    viols = detect_violations_for_category(record, [])
+    assert viols == []
+
+
+def test_find_missing_terms_for_category_aggregates_unique():
+    records = [
+        {"text_en": "Glacio damage", "text_id": "Kerusakan es"},
+        {"text_en": "Spectro burst", "text_id": "Ledakan Spektrum"},
+    ]
+    out = find_missing_terms_for_category(records, ["Glacio", "Spectro"])
+    assert set(out) == {"Glacio", "Spectro"}
+
+
+def test_find_missing_terms_for_category_empty():
+    records = [{"text_en": "Hi", "text_id": "Hai"}]
+    out = find_missing_terms_for_category(records, ["Glacio"])
+    assert out == []
