@@ -516,7 +516,8 @@ def test_memory_load_wrong_version_starts_empty(tmp_path: Path) -> None:
 
 def test_memory_load_seeds_from_per_quest_outputs(tmp_path: Path) -> None:
     """When memory.json is missing but per-quest outputs exist, seed from them."""
-    output_dir = tmp_path
+    quests_dir = tmp_path / "quests_id"
+    quests_dir.mkdir()
     quest = {
         "quest_id": 119000000,
         "states": {
@@ -528,10 +529,10 @@ def test_memory_load_seeds_from_per_quest_outputs(tmp_path: Path) -> None:
             }
         },
     }
-    (output_dir / "119000000.json").write_text(
+    (quests_dir / "119000000.json").write_text(
         json.dumps(quest), encoding="utf-8"
     )
-    memory_path = output_dir / "_memory.json"
+    memory_path = tmp_path / "_memory.json"
     assert not memory_path.exists()  # confirm precondition
 
     m = Memory(memory_path)

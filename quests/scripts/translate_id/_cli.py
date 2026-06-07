@@ -67,7 +67,7 @@ async def run(ns, repo_root: Path) -> int:
     log = logging.getLogger("translate_id")
     glossary_path = ns.glossary or repo_root / "data" / "glossary.json"
     output_dir = ns.output_dir or repo_root / "data" / "quests_id"
-    memory_path = output_dir / "_memory.json"
+    memory_path = repo_root / "data" / "_translation_memory.json"
 
     if ns.reset_memory and memory_path.exists():
         log.info("Wiping memory file %s", memory_path)
@@ -77,6 +77,7 @@ async def run(ns, repo_root: Path) -> int:
     log.info("Loaded %d glossary terms from %s", len(glossary), glossary_path)
 
     memory = Memory(memory_path)
+    memory.legacy_path = output_dir / "_memory.json"
     memory.load()
     log.info("Memory: %d entries (path=%s)", memory.size(), memory_path)
 

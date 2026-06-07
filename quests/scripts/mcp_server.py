@@ -71,7 +71,7 @@ async def translate_dialogue(
 
     glossary_path = _REPO_ROOT / "data" / "glossary.json"
     output_dir = _REPO_ROOT / "data" / "quests_id"
-    memory_path = output_dir / "_memory.json"
+    memory_path = _REPO_ROOT / "data" / "_translation_memory.json"
 
     # Ensure output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -80,6 +80,7 @@ async def translate_dialogue(
     glossary = load_glossary(glossary_path)
     glossary_categories = {t: meta.get("category", "") for t, meta in glossary.items()}
     memory = Memory(memory_path)
+    memory.legacy_path = output_dir / "_memory.json"
     memory.load()
 
     # Build context

@@ -7,12 +7,14 @@ is never overwritten (consistency > freshness). Atomic save via tmp + rename.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Any
 
 from .atomic import atomic_write_json
 
+log = logging.getLogger(__name__)
 
 CURRENT_VERSION = 1
 
@@ -24,6 +26,7 @@ class Memory:
         self.model: str = ""
         self.created_at: str = ""
         self.updated_at: str = ""
+        self.legacy_path: Path | None = None
 
     def size(self) -> int:
         return len(self.entries)
@@ -59,16 +62,20 @@ class Memory:
         text_id: str,
         source_text_en: str,
         source_speaker_en: str,
-        from_quest: int,
+        from_quest: int | str,
     ) -> bool:
-        """Insert if not already present. Returns True if inserted, False if existed."""
+        """Insert if not already present. Returns True if inserted, False if existed.
+
+        `from_quest` may be an int (quest id, v1 behavior) or a str (category
+        file name, v2 behavior). Stored as-is.
+        """
         if text_key in self.entries:
             return False
         self.entries[text_key] = {
             "text_id": text_id,
             "source_text_en": source_text_en,
             "source_speaker_en": source_speaker_en,
-            "from_quest": int(from_quest),
+            "from_quest": from_quest,
         }
         return True
 
@@ -89,18 +96,18 @@ class Memory:
         atomic_write_json(self.path, payload)
 
     def load(self) -> None:
-        """Load memory from `self.path` (if valid), else seed from per-quest outputs.
+        """Load memory from `self.path` (if valid), else migrate from legacy path.
 
         Behavior:
         - If `self.path` exists and parses cleanly with `version` matching
           `CURRENT_VERSION`, load it as the source of truth.
         - If it is corrupt (JSON error), back it up to `<path>.corrupt-<ts>`
           and start with empty memory.
-        - If it is missing, scan `output_dir/<qid>.json` files (siblings of
-          the memory file) and seed the memory from any `text_id` entries.
-          The per-quest output JSON structure is documented in the spec.
-        - If the memory file has a wrong/unknown `version`, start empty
-          (without backing up — it's a different format, not a corruption).
+        - If it is missing but `self.legacy_path` is set and exists, migrate:
+          load from legacy, save to new path, delete legacy.
+        - If the memory file has a wrong/unknown `version`, start empty.
+        - If the new path doesn't exist and no legacy path, fall through to
+          one-time seed from per-quest outputs (sibling scan).
         """
         if self.path.exists():
             try:
@@ -110,7 +117,6 @@ class Memory:
                 self._backup_corrupt()
                 return
             if not isinstance(data, dict) or data.get("version") != CURRENT_VERSION:
-                # wrong shape or version — start fresh without backup
                 return
             self.entries = data.get("entries", {}) or {}
             self.model = data.get("model", "") or ""
@@ -118,13 +124,36 @@ class Memory:
             self.updated_at = data.get("updated_at", "") or ""
             return
 
-        # Missing file: one-time migration from per-quest outputs.
+        # New path missing: try one-time migration from legacy path.
+        legacy = self.legacy_path
+        if legacy is not None and legacy.exists():
+            try:
+                with legacy.open(encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and data.get("version") == CURRENT_VERSION:
+                    self.entries = data.get("entries", {}) or {}
+                    self.model = data.get("model", "") or ""
+                    self.created_at = data.get("created_at", "") or ""
+                    self.updated_at = data.get("updated_at", "") or ""
+                    # Save to new path, then delete legacy.
+                    self.save(model=self.model or "")
+                    legacy.unlink()
+                    log.info(
+                        "Migrated translation memory: %s -> %s (%d entries)",
+                        legacy, self.path, len(self.entries),
+                    )
+                    return
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        # No new path, no legacy: one-time seed from per-quest outputs (sibling
+        # of the memory file's parent dir, scanning **/quests_id/*.json).
         output_dir = self.path.parent
         if not output_dir.is_dir():
             return
-        for quest_path in sorted(output_dir.glob("*.json")):
+        for quest_path in sorted(output_dir.glob("**/quests_id/*.json")):
             if quest_path.name.startswith("_"):
-                continue  # skip other metadata files
+                continue
             try:
                 with quest_path.open(encoding="utf-8") as f:
                     quest = json.load(f)
