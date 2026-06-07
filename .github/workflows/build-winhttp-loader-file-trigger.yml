@@ -1,4 +1,4 @@
-name: Build hid.dll file trigger loader
+name: Build winhttp.dll file trigger loader
 
 on:
   workflow_dispatch:
@@ -17,16 +17,16 @@ jobs:
       - name: Create file trigger loader proxy project
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path hid_loader_file | Out-Null
+          New-Item -ItemType Directory -Force -Path winhttp_loader_file | Out-Null
 
-          Copy-Item pakbypass/HidProxy.hpp hid_loader_file/HidProxy.hpp
-          Copy-Item pakbypass/Logger.hpp hid_loader_file/Logger.hpp
-          Copy-Item pakbypass/hid.def hid_loader_file/hid.def
+          Copy-Item pakbypass/WinhttpProxy.hpp winhttp_loader_file/WinhttpProxy.hpp
+          Copy-Item pakbypass/Logger.hpp winhttp_loader_file/Logger.hpp
+          Copy-Item pakbypass/winhttp.def winhttp_loader_file/winhttp.def
 
           @'
           #include <windows.h>
           #include <string>
-          #include "HidProxy.hpp"
+          #include "WinhttpProxy.hpp"
 
           static void WriteLog(const char* msg)
           {
@@ -56,7 +56,7 @@ jobs:
 
           DWORD WINAPI WaitForTriggerThenLoadExporter(LPVOID)
           {
-              WriteLog("hid.dll loaded. Waiting for wuwaid_trigger.txt...");
+              WriteLog("winhttp.dll loaded. Waiting for wuwaid_trigger.txt...");
 
               while (!FileExists("wuwaid_trigger.txt")) {
                   Sleep(1000);
@@ -98,18 +98,18 @@ jobs:
               {
               case DLL_PROCESS_ATTACH:
                   DisableThreadLibraryCalls(hModule);
-                  HidProxy::LoadRealDll();
+                  WinhttpProxy::LoadRealDll();
                   CreateThread(nullptr, 0, WaitForTriggerThenLoadExporter, nullptr, 0, nullptr);
                   break;
 
               case DLL_PROCESS_DETACH:
-                  HidProxy::Unload();
+                  WinhttpProxy::Unload();
                   break;
               }
 
               return TRUE;
           }
-          '@ | Set-Content hid_loader_file/dllmain.cpp -Encoding UTF8
+          '@ | Set-Content winhttp_loader_file/dllmain.cpp -Encoding UTF8
 
           @'
           <?xml version="1.0" encoding="utf-8"?>
@@ -125,7 +125,7 @@ jobs:
               <VCProjectVersion>17.0</VCProjectVersion>
               <Keyword>Win32Proj</Keyword>
               <ProjectGuid>{33333333-3333-3333-3333-333333333333}</ProjectGuid>
-              <RootNamespace>HidLoaderFile</RootNamespace>
+              <RootNamespace>WinhttpLoaderFile</RootNamespace>
               <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
             </PropertyGroup>
 
@@ -142,7 +142,7 @@ jobs:
             <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
             <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-              <TargetName>hid</TargetName>
+              <TargetName>winhttp</TargetName>
               <OutDir>$(ProjectDir)x64\Release\</OutDir>
               <IntDir>$(ProjectDir)x64\Release\obj\</IntDir>
             </PropertyGroup>
@@ -164,7 +164,7 @@ jobs:
                 <EnableCOMDATFolding>true</EnableCOMDATFolding>
                 <OptimizeReferences>true</OptimizeReferences>
                 <GenerateDebugInformation>true</GenerateDebugInformation>
-                <ModuleDefinitionFile>hid.def</ModuleDefinitionFile>
+                <ModuleDefinitionFile>winhttp.def</ModuleDefinitionFile>
               </Link>
             </ItemDefinitionGroup>
 
@@ -174,21 +174,21 @@ jobs:
 
             <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
           </Project>
-          '@ | Set-Content hid_loader_file/hid_loader_file.vcxproj -Encoding UTF8
+          '@ | Set-Content winhttp_loader_file/winhttp_loader_file.vcxproj -Encoding UTF8
 
-      - name: Build hid.dll file trigger loader
+      - name: Build winhttp.dll file trigger loader
         shell: cmd
         run: |
-          msbuild hid_loader_file\hid_loader_file.vcxproj ^
+          msbuild winhttp_loader_file\winhttp_loader_file.vcxproj ^
             /p:Configuration=Release ^
             /p:Platform=x64 ^
             /m ^
             /v:normal
 
-      - name: Upload hid.dll file trigger loader
+      - name: Upload winhttp.dll file trigger loader
         uses: actions/upload-artifact@v4
         with:
-          name: hid-loader-file-trigger
+          name: winhttp-loader-file-trigger
           path: |
-            hid_loader_file/x64/Release/hid.dll
-            hid_loader_file/x64/Release/hid.pdb
+            winhttp_loader_file/x64/Release/winhttp.dll
+            winhttp_loader_file/x64/Release/winhttp.pdb
