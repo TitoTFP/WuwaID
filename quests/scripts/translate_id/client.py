@@ -192,3 +192,42 @@ class LlamaClient:
             )
         except ValueError as e:
             raise LlamaError(f"LLM response unparseable after retry: {e}") from e
+
+    async def translate_lines(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        expected_keys: list[str],
+    ) -> StateTranslation:
+        """One call (with internal retries) to translate a category chunk.
+
+        Same retry semantics as `translate_state`:
+        - 3x retry on 5xx/timeout/connection error (in `_post_chat`)
+        - 1x retry on invalid JSON (with suffix "Return ONLY a valid JSON array")
+        - Raises LlamaError on hard failure (parse error after retry, or
+          length mismatch).
+        """
+        from .prompt import parse_translation_response_for_categories
+
+        total_usage = Usage()
+        # 1st try
+        content, usage = await self._post_chat(system_prompt, user_prompt)
+        total_usage = total_usage + usage
+        try:
+            return StateTranslation(
+                lines=parse_translation_response_for_categories(content, expected_keys),
+                usage=total_usage,
+            )
+        except ValueError as e:
+            log.warning("translate_lines: JSON parse failed, retrying with suffix: %s", e)
+        # 1st retry with suffix
+        suffix_user = user_prompt + "\n\nReturn ONLY a valid JSON array, no markdown fences."
+        content, usage = await self._post_chat(system_prompt, suffix_user)
+        total_usage = total_usage + usage
+        try:
+            return StateTranslation(
+                lines=parse_translation_response_for_categories(content, expected_keys),
+                usage=total_usage,
+            )
+        except ValueError as e:
+            raise LlamaError(f"LLM response unparseable after retry: {e}") from e

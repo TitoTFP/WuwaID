@@ -237,3 +237,60 @@ def test_parse_translation_response_for_categories_think_tag_format():
     raw = '<|think|>reasoning<|think|>[{"key": "K", "text_id": "v"}]'
     result = parse_translation_response_for_categories(raw, expected_keys=["K"])
     assert result[0]["text_id"] == "v"
+
+
+import pytest
+import httpx
+import respx
+
+from scripts.translate_id.client import LlamaClient, LlamaError
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_lines_happy_path():
+    """Server returns valid JSON; client parses and returns in expected order."""
+    respx.post("http://testserver/v1/chat/completions").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps([
+                    {"key": "Item_Sword_001_Name", "text_id": "Pedang Besi"},
+                    {"key": "Item_Sword_001_Desc", "text_id": "Sebuah pedang dasar."},
+                ])}}],
+                "usage": {"prompt_tokens": 100, "completion_tokens": 30, "total_tokens": 130},
+            },
+        )
+    )
+    async with LlamaClient(base_url="http://testserver") as client:
+        result = await client.translate_lines(
+            system_prompt="SYSTEM",
+            user_prompt="USER",
+            expected_keys=["Item_Sword_001_Name", "Item_Sword_001_Desc"],
+        )
+    assert [r["text_id"] for r in result.lines] == ["Pedang Besi", "Sebuah pedang dasar."]
+    assert result.usage.total_tokens == 130
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_lines_retries_on_invalid_json():
+    respx.post("http://testserver/v1/chat/completions").mock(side_effect=[
+        httpx.Response(200, json={"choices": [{"message": {"content": "not json"}}], "usage": {}}),
+        httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([{"key": "K", "text_id": "v"}])}}], "usage": {}}),
+    ])
+    async with LlamaClient(base_url="http://testserver", max_retries=2) as client:
+        result = await client.translate_lines("S", "U", expected_keys=["K"])
+    assert result.lines[0]["text_id"] == "v"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_translate_lines_raises_on_length_mismatch_after_retry():
+    respx.post("http://testserver/v1/chat/completions").mock(side_effect=[
+        httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([{"key": "A", "text_id": "x"}])}}], "usage": {}}),
+        httpx.Response(200, json={"choices": [{"message": {"content": json.dumps([{"key": "A", "text_id": "x"}])}}], "usage": {}}),
+    ])
+    async with LlamaClient(base_url="http://testserver", max_retries=2) as client:
+        with pytest.raises(LlamaError):
+            await client.translate_lines("S", "U", expected_keys=["A", "B"])
