@@ -226,3 +226,23 @@ export interface CategoryResponse {
   page_size: number;
   items: CategoryItem[];
 }
+
+export interface CategorySummary {
+  name: string;
+  key_count: number;
+  translated_count: number;
+}
+
+export interface CategorySingleEntry {
+  key: string;
+  "zh-Hans": string;
+  en: string;
+  ja: string;
+  id: string | null;
+}
+
+export interface CategorySingleResponse {
+  name: string;
+  languages: string[];
+  entries: CategorySingleEntry[];
+}

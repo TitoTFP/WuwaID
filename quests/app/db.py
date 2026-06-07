@@ -43,11 +43,13 @@ def ensure_editor_schema() -> None:
         # Idempotent column migration for the edits table.
         # The edits table itself is created by build_index.py:build_fts;
         # here we only add new columns.
-        edits_cols = {r["name"] for r in con.execute("PRAGMA table_info(edits)").fetchall()}
-        if "text_id" not in edits_cols:
-            con.execute("ALTER TABLE edits ADD COLUMN text_id TEXT")
-        if "speaker_id" not in edits_cols:
-            con.execute("ALTER TABLE edits ADD COLUMN speaker_id TEXT")
+        has_edits = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='edits'").fetchone()
+        if has_edits:
+            edits_cols = {r["name"] for r in con.execute("PRAGMA table_info(edits)").fetchall()}
+            if "text_id" not in edits_cols:
+                con.execute("ALTER TABLE edits ADD COLUMN text_id TEXT")
+            if "speaker_id" not in edits_cols:
+                con.execute("ALTER TABLE edits ADD COLUMN speaker_id TEXT")
         con.commit()
     finally:
         con.close()

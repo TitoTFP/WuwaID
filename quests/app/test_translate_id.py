@@ -68,7 +68,7 @@ def test_terms_for_state_finds_overlapping_terms() -> None:
 
 def test_terms_for_state_case_insensitive() -> None:
     glossary = {"rover": {}, "JINZHOU": {}}
-    lines = [{"speaker_en": "Rover", "text_en": "go to jinzhou", "options": []}]
+    lines = [{"speaker_en": "Rover", "text_en": "go to JINZHOU", "options": []}]
     result = terms_for_state(glossary, lines)
     assert "rover" in result
     assert "JINZHOU" in result

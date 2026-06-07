@@ -41,73 +41,88 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
   const progressText = `${translatedCount} / ${entries.length} translated`;
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">{category}</h2>
-        <span className="text-sm text-gray-500">{progressText}</span>
+    <div className="space-y-4">
+      <div className="flex items-baseline justify-between border-b border-white/5 pb-2">
+        <h2 className="font-serif text-xl text-accent-gold" id="category-table-title">{category}</h2>
+        <span className="text-xs text-slate-500">{progressText}</span>
       </div>
-      <div className="mb-4">
+
+      <div>
         <input
           type="text"
-          placeholder="Filter..."
+          id="category-filter-input"
+          placeholder="Filter by key, english, translation..."
           value={filter}
           onChange={(e) => {
             setFilter(e.target.value);
             setPage(0);
           }}
-          className="w-full rounded border border-gray-300 px-3 py-2"
+          className="input"
         />
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+
+      <div className="overflow-x-auto card">
+        <table className="w-full text-sm border-collapse" aria-labelledby="category-table-title">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="px-3 py-2 text-left font-medium">Key</th>
-              <th className="px-3 py-2 text-left font-medium">Prefix</th>
-              <th className="px-3 py-2 text-left font-medium">ZH</th>
-              <th className="px-3 py-2 text-left font-medium">EN</th>
-              <th className="px-3 py-2 text-left font-medium">JA</th>
+            <tr className="border-b border-white/5 bg-bg-2">
+              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Key</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Prefix</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ZH</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">EN</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">JA</th>
               {showIdColumn && (
-                <th className="px-3 py-2 text-left font-medium">ID</th>
+                <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ID</th>
               )}
             </tr>
           </thead>
           <tbody>
             {pageEntries.map((entry) => (
-              <tr key={entry.key} className="border-b border-gray-100">
-                <td className="px-3 py-1 font-mono text-xs">{entry.key}</td>
-                <td className="px-3 py-1 text-xs text-gray-500">{entry.prefix}</td>
-                <td className="px-3 py-1">{entry["zh-Hans"]}</td>
-                <td className="px-3 py-1">{entry.en}</td>
-                <td className="px-3 py-1">{entry.ja}</td>
+              <tr key={entry.key} className="border-b border-white/5 bg-bg-1/40 hover:bg-bg-1/80 transition-colors">
+                <td className="px-4 py-2 font-mono text-[10px] text-accent-gold select-all">{entry.key}</td>
+                <td className="px-4 py-2 text-xs text-slate-500 font-mono">{entry.prefix}</td>
+                <td className="px-4 py-2 text-slate-300 font-sans leading-relaxed">{entry["zh-Hans"]}</td>
+                <td className="px-4 py-2 text-slate-200 font-sans leading-relaxed">{entry.en}</td>
+                <td className="px-4 py-2 text-slate-300 font-sans leading-relaxed">{entry.ja}</td>
                 {showIdColumn && (
-                  <td className="px-3 py-1 text-gray-700">
-                    {entry.id ?? <span className="text-gray-300">&mdash;</span>}
+                  <td className="px-4 py-2 font-sans leading-relaxed">
+                    {entry.id ? (
+                      <span className="text-accent-teal font-medium">{entry.id}</span>
+                    ) : (
+                      <span className="text-slate-600 select-none">&mdash;</span>
+                    )}
                   </td>
                 )}
               </tr>
             ))}
+            {pageEntries.length === 0 && (
+              <tr>
+                <td colSpan={showIdColumn ? 6 : 5} className="px-4 py-8 text-center text-sm text-slate-500">
+                  No matching entries found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
       {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-between">
+        <div className="flex items-center justify-between text-sm pt-2">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="rounded border border-gray-300 px-3 py-1 disabled:opacity-50"
+            className="btn disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Prev
+            &larr; Prev
           </button>
-          <span className="text-sm text-gray-500">
+          <span className="text-slate-500 font-mono">
             Page {page + 1} of {pageCount}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
             disabled={page === pageCount - 1}
-            className="rounded border border-gray-300 px-3 py-1 disabled:opacity-50"
+            className="btn disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Next
+            Next &rarr;
           </button>
         </div>
       )}

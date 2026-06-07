@@ -379,6 +379,8 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             text_zh_hans TEXT,
             text_ja TEXT,
             options_json TEXT,
+            text_id TEXT,
+            speaker_id TEXT,
             approved_by TEXT NOT NULL,
             approved_at TEXT NOT NULL,
             PRIMARY KEY (qid, line_id)

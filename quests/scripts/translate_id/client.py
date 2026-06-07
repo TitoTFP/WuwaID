@@ -147,6 +147,9 @@ class LlamaClient:
             if 400 <= resp.status_code < 500:
                 raise LlamaError(f"client error {resp.status_code}: {resp.text[:200]}")
             data = resp.json()
+            if "choices" not in data:
+                error_msg = data.get("error", {}).get("message") if isinstance(data, dict) and "error" in data else str(data)
+                raise LlamaError(f"LLM API response missing 'choices'. Response: {error_msg}")
             content = data["choices"][0]["message"]["content"]
             usage = Usage.from_response(data.get("usage"))
             return content, usage

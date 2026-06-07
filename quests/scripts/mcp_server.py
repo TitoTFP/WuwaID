@@ -309,7 +309,7 @@ async def translate_category_file(
             "output_path": str, "stats": {...}}
     """
     log.info("Received request to translate category file name=%s", name)
-    repo_root = Path.cwd()
+    repo_root = Path.cwd() if (Path.cwd() / "data").is_dir() else _REPO_ROOT
     glossary_path = repo_root / "data" / "glossary.json"
     output_dir = repo_root / "data" / "categories_id"
     memory_path = repo_root / "data" / "_translation_memory.json"
@@ -378,7 +378,7 @@ async def translate_all_categories(
     Returns {"exit_code": int, "status": "success"|"error", "summary": {...}}
     """
     log.info("Received request to translate all categories (limit=%s)", limit)
-    repo_root = Path.cwd()
+    repo_root = Path.cwd() if (Path.cwd() / "data").is_dir() else _REPO_ROOT
     glossary_path = repo_root / "data" / "glossary.json"
     output_dir = repo_root / "data" / "categories_id"
     memory_path = repo_root / "data" / "_translation_memory.json"

@@ -9,6 +9,8 @@ import type {
   SearchHit,
   Speaker,
   CategoryResponse,
+  CategorySummary,
+  CategorySingleResponse,
 } from "./types";
 
 const BASE = "/api";
@@ -112,7 +114,7 @@ export const api = {
     send<{ role: "editor" }>("POST", "/login", { password }),
   logout: () => send<{ role: "anon" }>("POST", "/logout"),
   me: () => get<MeResponse>(`/me`),
-  categories: () => get<string[]>(`/categories`),
+  categories: () => get<CategorySummary[]>(`/categories`),
   category: (name: string, params: { q?: string; page?: number; page_size?: number }) => {
     const u = new URLSearchParams();
     if (params.q) u.set("q", params.q);
@@ -120,4 +122,5 @@ export const api = {
     if (params.page_size !== undefined) u.set("page_size", String(params.page_size));
     return get<CategoryResponse>(`/categories/${name}?${u.toString()}`);
   },
+  categorySingle: (name: string) => get<CategorySingleResponse>(`/category/${name}`),
 };
