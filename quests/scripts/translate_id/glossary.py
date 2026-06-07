@@ -77,3 +77,25 @@ def terms_for_state(
             hits.append(term)
     return hits
 
+
+def terms_for_category_chunk(
+    glossary: dict[str, dict],
+    keys: list[dict],
+) -> list[str]:
+    """Return glossary terms that appear in any text_en/text_zh of the chunk.
+
+    Same word-boundary rules as `terms_for_state` (case-insensitive for
+    non-capitalized terms, case-sensitive for capitalized ones). Naturally
+    bounded by chunk content -- no cap. Matches the term KEY (English) only;
+    does NOT match against the glossary entry's `zh` alias.
+    """
+    haystack = " ".join(
+        (k.get("text_en", "") or "") + " " + (k.get("text_zh", "") or "")
+        for k in keys
+    )
+    hits: list[str] = []
+    for term in glossary:
+        if is_term_in_text(term, haystack):
+            hits.append(term)
+    return hits
+
