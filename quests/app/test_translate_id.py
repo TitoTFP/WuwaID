@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from scripts.translate_id.glossary import load_glossary, terms_for_state
+from scripts.translate_id.state_iter import group_lines_by_state, order_quests_by_chapter
 
 
 def test_load_glossary_parses_valid_json(tmp_path: Path) -> None:
@@ -78,3 +79,66 @@ def test_terms_for_state_includes_options() -> None:
 
 def test_terms_for_state_empty_glossary() -> None:
     assert terms_for_state({}, [{"speaker_en": "Rover", "text_en": "Hi", "options": []}]) == []
+
+
+def test_group_lines_by_state_preserves_source_order() -> None:
+    all_lines = [
+        {"id": 1, "state_key": "s1", "text_en": "A"},
+        {"id": 2, "state_key": "s2", "text_en": "B"},
+        {"id": 3, "state_key": "s1", "text_en": "C"},
+        {"id": 4, "state_key": "s1", "text_en": "D"},
+    ]
+    by_state = group_lines_by_state(all_lines)
+    assert list(by_state.keys()) == ["s1", "s2"]
+    assert [l["id"] for l in by_state["s1"]] == [1, 3, 4]
+    assert [l["id"] for l in by_state["s2"]] == [2]
+
+
+def test_group_lines_by_state_skips_lines_with_no_state_key() -> None:
+    all_lines = [
+        {"id": 1, "state_key": "s1", "text_en": "A"},
+        {"id": 2, "text_en": "no state"},  # no state_key
+    ]
+    by_state = group_lines_by_state(all_lines)
+    assert list(by_state.keys()) == ["s1"]
+    assert [l["id"] for l in by_state["s1"]] == [1]
+
+
+def test_group_lines_by_state_empty() -> None:
+    assert group_lines_by_state([]) == {}
+
+
+def test_group_lines_by_state_iterates_states_in_source_order() -> None:
+    """State order should follow first appearance in all_lines."""
+    all_lines = [
+        {"id": 1, "state_key": "state_b", "text_en": "x"},
+        {"id": 2, "state_key": "state_a", "text_en": "y"},
+        {"id": 3, "state_key": "state_b", "text_en": "z"},
+    ]
+    by_state = group_lines_by_state(all_lines)
+    assert list(by_state.keys()) == ["state_b", "state_a"]
+
+
+def test_order_quests_by_chapter_main_first_then_side() -> None:
+    quests = [
+        {"quest_id": 100, "chapter_id": 0, "order": 1},   # side
+        {"quest_id": 1,   "chapter_id": 1, "order": 5},   # ch 1
+        {"quest_id": 2,   "chapter_id": 2, "order": 1},   # ch 2
+        {"quest_id": 3,   "chapter_id": 1, "order": 2},   # ch 1
+        {"quest_id": 200, "chapter_id": 0, "order": 2},   # side
+    ]
+    ordered = order_quests_by_chapter(quests)
+    assert [q["quest_id"] for q in ordered] == [3, 1, 2, 100, 200]
+
+
+def test_order_quests_by_chapter_missing_order_sorts_last() -> None:
+    quests = [
+        {"quest_id": 1, "chapter_id": 1, "order": None},
+        {"quest_id": 2, "chapter_id": 1, "order": 1},
+    ]
+    ordered = order_quests_by_chapter(quests)
+    assert [q["quest_id"] for q in ordered] == [2, 1]
+
+
+def test_order_quests_by_chapter_empty() -> None:
+    assert order_quests_by_chapter([]) == []
