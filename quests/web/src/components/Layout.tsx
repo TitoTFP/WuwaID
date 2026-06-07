@@ -105,7 +105,7 @@ export default function Layout() {
         <a className="link" href="https://github.com/TitoTFP/WuwaID" target="_blank" rel="noreferrer">
           WuwaID/export_text_grouped.py
         </a>{" "}
-        · 504 quests · 71,469 lines · 3 languages
+        · 504 quests · 71,469 lines · 4 languages
       </footer>
     </div>
   );

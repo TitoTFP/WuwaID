@@ -113,9 +113,11 @@ function lineMatchesSearch(line: DialogueLine & { is_edited?: boolean }, query: 
     line.speaker_en,
     line["speaker_zh-Hans"],
     line.speaker_ja,
+    line.speaker_id,
     line.text_en,
     line["text_zh-Hans"],
     line.text_ja,
+    line.text_id,
   ].some((value) => String(value ?? "").toLowerCase().includes(q));
 }
 
@@ -687,7 +689,7 @@ export default function EditorPage() {
                     onChange={(e) => setMultiLang(e.target.checked)}
                     className="accent-accent-gold"
                   />
-                  3-lang view
+                  4-lang view
                 </label>
               </div>
               <LineForm
