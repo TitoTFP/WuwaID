@@ -22,7 +22,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any
+
 
 from .atomic import atomic_write_json
 from .client import LlamaClient, LlamaError
@@ -37,7 +37,7 @@ from .prompt import (
     build_user_prompt_for_categories,
 )
 from .state_iter import chunk_keys, group_category_keys_by_prefix
-from .usage import Usage
+
 
 log = logging.getLogger(__name__)
 
@@ -162,6 +162,7 @@ async def translate_category_file(
                 client=client,
                 use_cache=use_cache,
                 enable_thinking=enable_thinking,
+                glossary_categories=glossary_categories,
             )
 
     tasks = [run_one(p, c) for p, c in chunks]
@@ -226,6 +227,7 @@ async def _translate_chunk(
     client: LlamaClient,
     use_cache: bool,
     enable_thinking: bool,
+    glossary_categories: dict[str, str] | None = None,
 ) -> tuple[list[dict], str | None]:
     """Translate one chunk. Returns (results, error_message_or_None)."""
     results: list[dict] = []
@@ -255,7 +257,7 @@ async def _translate_chunk(
     state_glossary = terms_for_category_chunk(glossary, to_translate)
     user_prompt = build_user_prompt_for_categories(
         glossary_subset=state_glossary,
-        glossary_categories=None,
+        glossary_categories=glossary_categories,
         category=category_name,
         prefix=prefix,
         keys=to_translate,
