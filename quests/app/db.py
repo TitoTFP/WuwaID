@@ -123,15 +123,16 @@ def search(
 ) -> list[dict]:
     """Full-text search over dialogue lines.
 
-    lang: 'en' (text_en), 'zh' (text_zh), 'ja' (text_ja)
+    lang: 'en' (text_en), 'zh' (text_zh, bigrams of text_zh-Hans),
+          'ja' (text_ja, bigrams of text_ja), 'id' (text_id)
     side: 0 = main story, 1 = side quest, None = both
     quest_type: filter by questdata.Type
     """
     fts_q = _prepare_fts_query(q, lang)
     if not fts_q:
         return []
-    col = {"en": "text_en", "zh": "text_zh", "ja": "text_ja"}[lang]
-    col_idx = {"en": 10, "zh": 11, "ja": 12}[lang]
+    col = {"en": "text_en", "zh": "text_zh", "ja": "text_ja", "id": "text_id"}[lang]
+    col_idx = {"en": 10, "zh": 11, "ja": 12, "id": 13}[lang]
 
     where = ["dialogue_idx MATCH ?"]
     params: list = [fts_q]
