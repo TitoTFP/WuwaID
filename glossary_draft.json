@@ -2514,6 +2514,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Colleen"
   },
+  "Commentator": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Commentator"
+  },
   "Competent Pioneer Association Photographer": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -3919,6 +3924,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Exile Commoner"
   },
+  "Exile Examiner": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Exile Examiner"
+  },
   "Exile Handoff": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -4228,6 +4238,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Female Voice Soft As a Sea Bunny"
+  },
+  "Fenella": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Fenella"
   },
   "Feng": {
     "zh": "",
@@ -5369,6 +5384,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Hazel"
   },
+  "He Chang": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "He Chang"
+  },
   "Heavily-injured Midnight Ranger": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -5659,11 +5679,6 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Hymer"
   },
-  "Hé Chang": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Hé Chang"
-  },
   "Hé Chou": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -5768,6 +5783,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Infrastructure Division Member"
+  },
+  "Injured Club Member": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Injured Club Member"
   },
   "Injured Gladiator": {
     "zh": "",
@@ -6539,6 +6559,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Kaleb"
   },
+  "Kamerel": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Kamerel"
+  },
   "Kamil": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -6974,6 +6999,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Lenie"
   },
+  "Lenie & Mysterious Girl": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Lenie & Mysterious Girl"
+  },
   "Lennart": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -7098,6 +7128,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Lightcrusher"
+  },
+  "Liheng": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Liheng"
   },
   "Lil. Liu": {
     "zh": "",
@@ -7264,6 +7299,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Livia"
   },
+  "Lixian": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Lixian"
+  },
   "Lize": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -7418,6 +7458,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Lucretia"
+  },
+  "Lucy": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Lucy"
   },
   "Ludens": {
     "zh": "",
@@ -7959,6 +8004,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Melina"
   },
+  "Meliora": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Meliora"
+  },
   "Melissa": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -8164,6 +8214,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Misha"
   },
+  "Misty": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Misty"
+  },
   "Mizar": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -8203,6 +8258,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Moku"
+  },
+  "Momo": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Momo"
   },
   "Monica": {
     "zh": "",
@@ -8399,6 +8459,16 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Nameless Knight"
   },
+  "Nameless Old Researcher": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Nameless Old Researcher"
+  },
+  "Nameless Young Researcher": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Nameless Young Researcher"
+  },
   "Namipon": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -8549,6 +8619,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Nevana"
   },
+  "Nevin": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Nevin"
+  },
   "New Arrival": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -8583,6 +8658,16 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Night of Remembrance Guide"
+  },
+  "Nightmare: Adam Smasher": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Nightmare: Adam Smasher"
+  },
+  "Nightmare: Armed Corpo": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Nightmare: Armed Corpo"
   },
   "Nikolaus": {
     "zh": "",
@@ -9144,6 +9229,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Past Dazed Researcher"
   },
+  "Past Frequency": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Past Frequency"
+  },
   "Past Gentle Roya": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -9639,6 +9729,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Professor Sakya"
   },
+  "Professor's Frequency": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Professor's Frequency"
+  },
   "Protagonist": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -9919,6 +10014,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Reassured Gladiator"
   },
+  "Rebecca": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Rebecca"
+  },
   "Rebellious Male": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -10068,6 +10168,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Researcher Studying the Dimmr Plains"
+  },
+  "Researcher in Protection Suit": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Researcher in Protection Suit"
   },
   "Researcher's Silhouette": {
     "zh": "",
@@ -11249,6 +11354,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Songfeng"
   },
+  "Sonia": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Sonia"
+  },
   "Sonny": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12219,11 +12329,6 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Tove"
   },
-  "Training Exile": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Training Exile"
-  },
   "Trapped Robot": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12574,6 +12679,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Verina"
   },
+  "Verma": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Verma"
+  },
   "Vero": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12694,6 +12804,16 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Voice"
   },
+  "Voice from the Past": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Voice from the Past"
+  },
+  "Voice from the Present": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Voice from the Present"
+  },
   "Voice from the Silence": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12719,6 +12839,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Voice of a Gladiator"
   },
+  "Voices of Nightmare TDs": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Voices of Nightmare TDs"
+  },
   "Voko": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12733,6 +12858,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Vora"
+  },
+  "Waleo": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Waleo"
   },
   "Wang Su": {
     "zh": "",
@@ -12759,6 +12889,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Warm Male Voice"
   },
+  "Warning": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Warning"
+  },
   "Warren": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -12778,6 +12913,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Weak Elder"
+  },
+  "Weak Frequency": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Weak Frequency"
   },
   "Weak Male Voice": {
     "zh": "",
@@ -13113,11 +13253,6 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Xiaojue"
-  },
-  "Xiaomo": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Xiaomo"
   },
   "Xiaomu": {
     "zh": "",
@@ -13734,6 +13869,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Zorah"
   },
+  "dnt/艾罗拉": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "dnt/艾罗拉"
+  },
   "os": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -13764,10 +13904,25 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Resonance Beacon"
   },
+  "Sonance Casket": {
+    "zh": "声匣",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Sonance Casket"
+  },
+  "Synthesizer": {
+    "zh": "合成台",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Synthesizer"
+  },
   "Resonance Nexus": {
     "zh": "中枢信标",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Resonance Nexus"
+  },
+  "Immobilize": {
+    "zh": "瘫痪",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Immobilize"
   },
   "Counterattack": {
     "zh": "逆势回击",
@@ -13779,15 +13934,15 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Dodge"
   },
-  "Immobilize": {
-    "zh": "瘫痪",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Immobilize"
-  },
   "Grapple & Grapple Point": {
     "zh": "钩索与钩索点",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Grapple & Grapple Point"
+  },
+  "Explosive Charge & Levitator": {
+    "zh": "爆炸果+控物",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Explosive Charge & Levitator"
   },
   "Sensor": {
     "zh": "感知",
@@ -13799,6 +13954,31 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Outro Skill & Intro Skill"
   },
+  "Union EXP & Union Level": {
+    "zh": "联觉经验与联觉等级",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Union EXP & Union Level"
+  },
+  "Utility": {
+    "zh": "探索工具",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Utility"
+  },
+  "Fast Travel": {
+    "zh": "快速旅行",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Fast Travel"
+  },
+  "Rally": {
+    "zh": "势态重整",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Rally"
+  },
+  "Attack Weak Point": {
+    "zh": "弱点攻击",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Attack Weak Point"
+  },
   "SOL3 Phase Ascension: I": {
     "zh": "索拉等级提升·一",
     "category": "Core Gameplay Term",
@@ -13809,15 +13989,15 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Tacet Field: Rewards"
   },
+  "Sonance Casket Delivery": {
+    "zh": "声匣交付",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Sonance Casket Delivery"
+  },
   "Simulation Training Ground": {
     "zh": "模拟训练场",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Simulation Training Ground"
-  },
-  "Sonance Casket": {
-    "zh": "声匣",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Sonance Casket"
   },
   "Mutterfly": {
     "zh": "隙声蝶",
@@ -14109,6 +14289,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Kerasaur"
   },
+  "Pilgrim's Shell": {
+    "zh": "传道者的遗形",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Pilgrim's Shell"
+  },
   "Holy Summon: Retribution": {
     "zh": "圣召·裁罚",
     "category": "Core Gameplay Term",
@@ -14173,6 +14358,11 @@
     "zh": "格洛犸图",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Glommoth"
+  },
+  "Break Sandevistan": {
+    "zh": "破除「斯安威斯坦」",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Break Sandevistan"
   },
   "SOL3 Phase Ascension: II": {
     "zh": "索拉等级提升·二",
@@ -14293,6 +14483,11 @@
     "zh": "浸梦海床·融觉爆发",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Dreaming Deep: Synergy Burst"
+  },
+  "Prestige Points": {
+    "zh": "荣光点数",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Prestige Points"
   },
   "Endless Challenge": {
     "zh": "无尽挑战",
@@ -14524,6 +14719,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Encryption Block"
   },
+  "Grapple": {
+    "zh": "定点钩索",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Grapple"
+  },
   "Grapple Shooter": {
     "zh": "钩锚发射器",
     "category": "Core Gameplay Term",
@@ -14538,6 +14738,11 @@
     "zh": "荆棘陷阱与炸药苞",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Vine Trap & Explosive Charge"
+  },
+  "Vine Trap": {
+    "zh": "荆棘陷阱",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Vine Trap"
   },
   "Magnetic Cube": {
     "zh": "无序密方",
@@ -14558,6 +14763,11 @@
     "zh": "引力涡流",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Gravitation Vortex"
+  },
+  "Backflip": {
+    "zh": "后空翻",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Backflip"
   },
   "Transmit Frequency Signal": {
     "zh": "发送频率信号",
@@ -14814,10 +15024,20 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Overflowing Palette"
   },
+  "Beacon": {
+    "zh": "信标",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Beacon"
+  },
   "Sonance Casket: Ragunna": {
     "zh": "声匣·拉古那",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Sonance Casket: Ragunna"
+  },
+  "Plushie Village in the Garden of the Lost": {
+    "zh": "失乐园的布偶村",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Plushie Village in the Garden of the Lost"
   },
   "Gondola: Waterfall Surge": {
     "zh": "贡多拉·登瀑",
@@ -14974,6 +15194,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Scatter Prism"
   },
+  "Alertness": {
+    "zh": "警戒值",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Alertness"
+  },
   "Vault Defense Laser": {
     "zh": "金库内的防御光束",
     "category": "Core Gameplay Term",
@@ -15033,6 +15258,11 @@
     "zh": "黑潮荆棘·一",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Dark Tide Vines: I"
+  },
+  "Dark Tide Vines: II": {
+    "zh": "黑潮荆棘-二",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Dark Tide Vines: II"
   },
   "Remnant Spark": {
     "zh": "回音火种",
@@ -15158,6 +15388,11 @@
     "zh": "特殊战旗",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Special Banners"
+  },
+  "Battle Engagement Points": {
+    "zh": "临场点",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Battle Engagement Points"
   },
   "Dream Contagion": {
     "zh": "染秽之梦",
@@ -15689,6 +15924,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Motorbike Track Challenge: Speed Pipe"
   },
+  "Motorbike Track Challenge: Score Ring": {
+    "zh": "摩托赛道挑战·积分圈",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Motorbike Track Challenge: Score Ring"
+  },
   "Motorbike Track Challenge: Fixed Track": {
     "zh": "摩托赛道挑战·固定赛道",
     "category": "Core Gameplay Term",
@@ -15713,6 +15953,46 @@
     "zh": "虚质残留",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Residual Voidmatter"
+  },
+  "Memory Palace": {
+    "zh": "「记忆宫殿」",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Memory Palace"
+  },
+  "Memory Palace: Photos as the Keys": {
+    "zh": "「记忆宫殿」-相片即钥匙",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Memory Palace: Photos as the Keys"
+  },
+  "Memory Palace: Tainted Photos": {
+    "zh": "「记忆宫殿」-脏污的相片",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Memory Palace: Tainted Photos"
+  },
+  "Initial Hack: Remote Control": {
+    "zh": "初次骇入·控制终端",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Initial Hack: Remote Control"
+  },
+  "Second Hack: Camera": {
+    "zh": "第二次骇入·摄像头",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Second Hack: Camera"
+  },
+  "Breach Protocol": {
+    "zh": "「入侵协议」",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Breach Protocol"
+  },
+  "How to use Quickhacks": {
+    "zh": "「快速破解」使用规则",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "How to use Quickhacks"
+  },
+  "Quickhack Timer": {
+    "zh": "「快速破解」倒计时时限",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Quickhack Timer"
   },
   "Resilience": {
     "zh": "强韧",
@@ -15739,6 +16019,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Strength"
   },
+  "Motivation": {
+    "zh": "激励",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Motivation"
+  },
   "Inspiration": {
     "zh": "渐强",
     "category": "Core Gameplay Term",
@@ -15748,6 +16033,11 @@
     "zh": "瘫痪抵抗",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Immobilization RES"
+  },
+  "Shockwave": {
+    "zh": "震爆",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Shockwave"
   },
   "Recovery": {
     "zh": "恢复",
@@ -16219,6 +16509,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Destructibles & Drops"
   },
+  "Burst": {
+    "zh": "爆发",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Burst"
+  },
   "Prism Formation Mechanics": {
     "zh": "棱镜合体·机制",
     "category": "Core Gameplay Term",
@@ -16263,6 +16558,26 @@
     "zh": "深坠异想奇境·调梦模因",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Depths of Illusive Realm: Memetic Tuning"
+  },
+  "Depths of Illusive Realm: Dreamchasers": {
+    "zh": "深坠异想奇境·寻梦者",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Depths of Illusive Realm: Dreamchasers"
+  },
+  "Dream Tracker": {
+    "zh": "筑梦追忆",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Dream Tracker"
+  },
+  "Using Dream Tracker": {
+    "zh": "使用筑梦追忆",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Using Dream Tracker"
+  },
+  "Dream Abode in Fissure": {
+    "zh": "扉渊梦居",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Dream Abode in Fissure"
   },
   "Basic Rules": {
     "zh": "基础规则",
@@ -16339,6 +16654,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Smartprint Cube: Laser Beam Module"
   },
+  "Cruisewing Echo Challenge": {
+    "zh": "游弋蝶声骸挑战",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Cruisewing Echo Challenge"
+  },
   "Incinero Petal": {
     "zh": "焚焰花",
     "category": "Core Gameplay Term",
@@ -16393,6 +16713,16 @@
     "zh": "清除毒雾孢子·拟核",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Clear Toxic Spores: Offshoot Core"
+  },
+  "Resonance Mode - Glacio Chafe": {
+    "zh": "共鸣模态·霜渐",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Mode - Glacio Chafe"
+  },
+  "Resonance Mode - Echo": {
+    "zh": "共鸣模态·声骸",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Mode - Echo"
   },
   "Resonance Mode - Tune Rupture": {
     "zh": "共鸣模态·震谐",
@@ -16513,6 +16843,11 @@
     "zh": "飞身式·翻山越涧伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Mountain Roamer Damage"
+  },
+  "Mountain Roamer Additional Damage": {
+    "zh": "飞身式·翻山越涧额外伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mountain Roamer Additional Damage"
   },
   "Stormy Kicks Damage": {
     "zh": "凌云式·腿打连环伤害",
@@ -16784,6 +17119,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Containment Tactics Concerto Regen"
   },
+  "Final Bow Duration": {
+    "zh": "揭幕者持续时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Final Bow Duration"
+  },
   "Basic Attack - Present Self Stage 1 DMG": {
     "zh": "普攻·常世身第一段伤害",
     "category": "Skill/Stat",
@@ -16798,6 +17138,11 @@
     "zh": "普攻·常世身第三段伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Basic Attack - Present Self Stage 3 DMG"
+  },
+  "Heavy Attack - Present Self DMG": {
+    "zh": "重击·常世身伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Present Self DMG"
   },
   "Heavy Attack - Frost Splinter: Present Self DMG": {
     "zh": "重击·寒簇·常世身伤害",
@@ -16899,6 +17244,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Basic Attack - Iai DMG"
   },
+  "Iai DMG (no Frostharden Iai)": {
+    "zh": "居合不消耗【武霜·居合】伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Iai DMG (no Frostharden Iai)"
+  },
   "Resonance Skill - Present Self Cooldown": {
     "zh": "共鸣技能·常世身冷却时间",
     "category": "Skill/Stat",
@@ -16918,6 +17268,11 @@
     "zh": "预求我身·归刃冷却时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Foreclaiming: Blade Liberation Cooldown"
+  },
+  "Heavy Attack - Present Self STA Cost": {
+    "zh": "重击·常世身耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Present Self STA Cost"
   },
   "Mid-air Attack - Present Self STA Cost": {
     "zh": "空中攻击·常世身耐力消耗",
@@ -16963,6 +17318,116 @@
     "zh": "重击·预求身耐力消耗",
     "category": "Skill/Stat",
     "indonesian_translation": "Heavy Attack - Foreclaimed Self STA Cost"
+  },
+  "Basic Attack Stage 1 DMG": {
+    "zh": "普攻第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 1 DMG"
+  },
+  "Basic Attack Stage 2 DMG": {
+    "zh": "普攻第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 2 DMG"
+  },
+  "Basic Attack Stage 3 - Unremarkable DMG": {
+    "zh": "普攻第三段·乏善可陈伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3 - Unremarkable DMG"
+  },
+  "Basic Attack Stage 3 - Commendable DMG": {
+    "zh": "普攻第三段·可圈可点伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3 - Commendable DMG"
+  },
+  "Phantom Frame DMG": {
+    "zh": "幻象定帧伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Phantom Frame DMG"
+  },
+  "Compensate DMG": {
+    "zh": "补光伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Compensate DMG"
+  },
+  "Spotlight DMG": {
+    "zh": "追光伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Spotlight DMG"
+  },
+  "Resonance Skill Cooldown": {
+    "zh": "共鸣技能冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill Cooldown"
+  },
+  "Concerto Regen during Spotlight": {
+    "zh": "追光期间回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Concerto Regen during Spotlight"
+  },
+  "Clear As Day DMG": {
+    "zh": "历历在目伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clear As Day DMG"
+  },
+  "Basic Attack - Tracing Forms Stage 1 DMG": {
+    "zh": "普攻·溯念留形第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Tracing Forms Stage 1 DMG"
+  },
+  "Basic Attack - Tracing Forms Stage 2 DMG": {
+    "zh": "普攻·溯念留形第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Tracing Forms Stage 2 DMG"
+  },
+  "Basic Attack - Tracing Forms Stage 3 DMG": {
+    "zh": "普攻·溯念留形第三段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Tracing Forms Stage 3 DMG"
+  },
+  "Letting It Go DMG": {
+    "zh": "断舍离伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Letting It Go DMG"
+  },
+  "Mid-air Attack - Reminiscence DMG": {
+    "zh": "空中攻击·追忆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Reminiscence DMG"
+  },
+  "Dodge Counter - Reminiscence DMG": {
+    "zh": "闪避反击·追忆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter - Reminiscence DMG"
+  },
+  "Mid-air Attack - Reminiscence STA Cost": {
+    "zh": "空中攻击·追忆耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Reminiscence STA Cost"
+  },
+  "Clip It DMG": {
+    "zh": "剪辑伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clip It DMG"
+  },
+  "Clip It: Hard Cut DMG": {
+    "zh": "剪辑·硬切伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clip It: Hard Cut DMG"
+  },
+  "Clip It Concerto Regen": {
+    "zh": "剪辑回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clip It Concerto Regen"
+  },
+  "Oblivion DMG": {
+    "zh": "遗忘伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Oblivion DMG"
+  },
+  "Clip It: Hard Cut Concerto Regen": {
+    "zh": "剪辑·硬切回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clip It: Hard Cut Concerto Regen"
   },
   "Woolies Damage": {
     "zh": "咩咩伤害",
@@ -17058,6 +17523,86 @@
     "zh": "黑咩·暴走之炎回复协奏能量",
     "category": "Skill/Stat",
     "indonesian_translation": "Cosmos Rupture Concerto Regen"
+  },
+  "Basic Attack Stage 1: Mayhem": {
+    "zh": "普攻第一段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 1: Mayhem"
+  },
+  "Basic Attack Stage 2: Mayhem": {
+    "zh": "普攻第二段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 2: Mayhem"
+  },
+  "Basic Attack Stage 3: Mayhem": {
+    "zh": "普攻第三段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3: Mayhem"
+  },
+  "Basic Attack Stage 4: Mayhem": {
+    "zh": "普攻第四段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 4: Mayhem"
+  },
+  "Woolies: Mayhem": {
+    "zh": "咩咩·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Woolies: Mayhem"
+  },
+  "Heavy Attack: Mayhem": {
+    "zh": "重击·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Mayhem"
+  },
+  "Mid-air Attack: Mayhem": {
+    "zh": "空中攻击·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack: Mayhem"
+  },
+  "Woolies Helpers: Mayhem": {
+    "zh": "咩咩帮手·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Woolies Helpers: Mayhem"
+  },
+  "Flaming Woolies: Mayhem": {
+    "zh": "热力羊咩·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Flaming Woolies: Mayhem"
+  },
+  "Energetic Welcome: Mayhem": {
+    "zh": "热情欢迎试·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Energetic Welcome: Mayhem"
+  },
+  "Cosmos: Frolicking Stage 1: Mayhem": {
+    "zh": "黑咩·胡闹第一段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos: Frolicking Stage 1: Mayhem"
+  },
+  "Cosmos: Frolicking Stage 2: Mayhem": {
+    "zh": "黑咩·胡闹第二段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos: Frolicking Stage 2: Mayhem"
+  },
+  "Cosmos: Frolicking Stage 3: Mayhem": {
+    "zh": "黑咩·胡闹第三段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos: Frolicking Stage 3: Mayhem"
+  },
+  "Cosmos: Frolicking Stage 4: Mayhem": {
+    "zh": "黑咩·胡闹第四段·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos: Frolicking Stage 4: Mayhem"
+  },
+  "Cosmos: Heavy Attack: Mayhem": {
+    "zh": "黑咩·重击·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos: Heavy Attack: Mayhem"
+  },
+  "Cosmos Rampage: Mayhem": {
+    "zh": "黑咩·狂热·失序值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Cosmos Rampage: Mayhem"
   },
   "Basic Attack 1 DMG": {
     "zh": "普攻第一段伤害",
@@ -17343,16 +17888,6 @@
     "zh": "你无法逃离！回复协奏能量",
     "category": "Skill/Stat",
     "indonesian_translation": "Nowhere to Run! Concerto Regen"
-  },
-  "Basic Attack Stage 1 DMG": {
-    "zh": "普攻第一段伤害",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Basic Attack Stage 1 DMG"
-  },
-  "Basic Attack Stage 2 DMG": {
-    "zh": "普攻第二段伤害",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Basic Attack Stage 2 DMG"
   },
   "Basic Attack Stage 3 DMG": {
     "zh": "普攻第三段伤害",
@@ -17894,6 +18429,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Phantom Bubble - Stagecraft Form DMG"
   },
+  "Fantasy Bait - Stagecraft Form DMG": {
+    "zh": "美梦探饵·布景之形伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Fantasy Bait - Stagecraft Form DMG"
+  },
   "Beckon - Breakdown Form DMG": {
     "zh": "轻唤·幻灭之形伤害",
     "category": "Skill/Stat",
@@ -17913,6 +18453,11 @@
     "zh": "拟态泡泡·布景之形冷却时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Phantom Bubble - Stagecraft Form Cooldown"
+  },
+  "Fantasy Bait - Stagecraft Form Cooldown": {
+    "zh": "美梦探饵·布景之形冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Fantasy Bait - Stagecraft Form Cooldown"
   },
   "Beckon - Breakdown Form Cooldown": {
     "zh": "轻唤·幻灭之形冷却时间",
@@ -18119,6 +18664,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Judgment Strike Damage"
   },
+  "Duration": {
+    "zh": "持续时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Duration"
+  },
   "Magnetic Roar Concerto Regen": {
     "zh": "磁殛咆哮回复协奏能量",
     "category": "Skill/Stat",
@@ -18293,6 +18843,11 @@
     "zh": "逐天取月冷却时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Crescent Divinity Cooldown"
+  },
+  "Jinhsi's Skill Cooldown": {
+    "zh": "龙舞光华冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Jinhsi's Skill Cooldown"
   },
   "Crescent Divinity Concerto Regen": {
     "zh": "逐天取月回复协奏能量",
@@ -18614,6 +19169,16 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Undaunted Wayfarer Concerto Regen"
   },
+  "{0}s": {
+    "zh": "{0}秒",
+    "category": "Skill/Stat",
+    "indonesian_translation": "{0}s"
+  },
+  "Dodge Counter Concerto Regen": {
+    "zh": "闪避反击回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter Concerto Regen"
+  },
   "Thus Spoke the Blade: Inkwash Stage 1 DMG": {
     "zh": "答剑·质黑相青第一段伤害",
     "category": "Skill/Stat",
@@ -18653,6 +19218,11 @@
     "zh": "风吟伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Zephyr Song Damage"
+  },
+  "Juggle Damage": {
+    "zh": "击飞伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Juggle Damage"
   },
   "Stormy Strike Damage": {
     "zh": "风袭伤害",
@@ -18713,6 +19283,66 @@
     "zh": "破阵状态持续时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Qingloong Mode Duration"
+  },
+  "Basic Attack Stage 1: Resolve": {
+    "zh": "普攻第一段·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 1: Resolve"
+  },
+  "Basic Attack Stage 2: Resolve": {
+    "zh": "普攻第二段·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 2: Resolve"
+  },
+  "Basic Attack Stage 3: Resolve": {
+    "zh": "普攻第三段·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3: Resolve"
+  },
+  "Basic Attack Stage 4: Resolve": {
+    "zh": "普攻第四段·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 4: Resolve"
+  },
+  "Basic Attack Stage 5: Resolve": {
+    "zh": "普攻第五段·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 5: Resolve"
+  },
+  "Heavy Attack: Resolve": {
+    "zh": "重击·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Resolve"
+  },
+  "Windborne Strike: Resolve": {
+    "zh": "凌空击·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Windborne Strike: Resolve"
+  },
+  "Abyssal Slash: Resolve": {
+    "zh": "潜渊斩·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Abyssal Slash: Resolve"
+  },
+  "Dodge Counter: Resolve": {
+    "zh": "闪避反击·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter: Resolve"
+  },
+  "Mid-air Attack: Resolve": {
+    "zh": "空中攻击·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack: Resolve"
+  },
+  "Banner Of Triumph: Resolve": {
+    "zh": "长空不坠·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Banner Of Triumph: Resolve"
+  },
+  "Tactical Strike: Resolve": {
+    "zh": "攻其不备·破阵值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Strike: Resolve"
   },
   "Chi Counter Damage": {
     "zh": "行气反击伤害",
@@ -18809,6 +19439,46 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Shield Healing"
   },
+  "Basic Attack Stage 3: Chi": {
+    "zh": "普攻第三段·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3: Chi"
+  },
+  "Basic Attack Stage 4: Chi": {
+    "zh": "普攻第四段·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 4: Chi"
+  },
+  "Heavy Attack: Chi": {
+    "zh": "重击·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Chi"
+  },
+  "Mid-air Attack: Chi": {
+    "zh": "空中攻击·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack: Chi"
+  },
+  "Essence Of Tao: Chi": {
+    "zh": "掌息之要·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Essence Of Tao: Chi"
+  },
+  "Calming Air: Chi": {
+    "zh": "静气循行·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Calming Air: Chi"
+  },
+  "Chi Counter: Chi": {
+    "zh": "行气反击·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Chi Counter: Chi"
+  },
+  "Chi Parry : Chi": {
+    "zh": "降气反击·气",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Chi Parry : Chi"
+  },
   "Pushing Punch Concerto Regen": {
     "zh": "冲拳回复协奏能量",
     "category": "Skill/Stat",
@@ -18833,6 +19503,11 @@
     "zh": "推手回复协奏能量",
     "category": "Skill/Stat",
     "indonesian_translation": "Yielding Pull Concerto Regen"
+  },
+  "Blade Flurry DMG": {
+    "zh": "飞刃伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Blade Flurry DMG"
   },
   "Razor Wind DMG": {
     "zh": "绞息伤害",
@@ -18999,11 +19674,6 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Blade of Howling Squall DMG"
   },
-  "Resonance Skill Cooldown": {
-    "zh": "共鸣技能冷却时间",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Resonance Skill Cooldown"
-  },
   "Blade of Howling Squall Cooldown": {
     "zh": "看潮怒风哮之刃冷却时间",
     "category": "Skill/Stat",
@@ -19058,6 +19728,11 @@
     "zh": "化身冷却时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Avatar Cooldown"
+  },
+  "Avatar - Fleurdelys": {
+    "zh": "化身·芙露德莉斯",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Avatar - Fleurdelys"
   },
   "Enhanced Heavy Attack STA Cost": {
     "zh": "强化重击耐力消耗",
@@ -19303,6 +19978,191 @@
     "zh": "重击·流变耐力消耗",
     "category": "Skill/Stat",
     "indonesian_translation": "Heavy Attack - Flux STA Cost"
+  },
+  "Basic Attack - Huntress Stage 1 DMG": {
+    "zh": "普攻·猎手第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Huntress Stage 1 DMG"
+  },
+  "Basic Attack - Huntress Stage 2 DMG": {
+    "zh": "普攻·猎手第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Huntress Stage 2 DMG"
+  },
+  "Basic Attack - Huntress Stage 3 DMG": {
+    "zh": "普攻·猎手第三段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Huntress Stage 3 DMG"
+  },
+  "Heavy Attack - Huntress DMG": {
+    "zh": "重击·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Huntress DMG"
+  },
+  "Mid-air Attack - Huntress DMG": {
+    "zh": "空中攻击·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Huntress DMG"
+  },
+  "Dodge Counter - Huntress DMG": {
+    "zh": "闪避反击·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter - Huntress DMG"
+  },
+  "Tactical Dodge - Huntress DMG": {
+    "zh": "战术闪避·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Huntress DMG"
+  },
+  "Tactical Dodge - Huntress Successful Dodge DMG": {
+    "zh": "战术闪避·猎手闪避成功伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Huntress Successful Dodge DMG"
+  },
+  "Basic Attack - Guts Stage 1 DMG": {
+    "zh": "普攻·铁胆第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Guts Stage 1 DMG"
+  },
+  "Basic Attack - Guts Stage 2 DMG": {
+    "zh": "普攻·铁胆第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Guts Stage 2 DMG"
+  },
+  "Basic Attack - Guts Stage 3 DMG": {
+    "zh": "普攻·铁胆第三段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Guts Stage 3 DMG"
+  },
+  "Heavy Attack - Guts DMG": {
+    "zh": "重击·铁胆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Guts DMG"
+  },
+  "Mid-air Attack - Guts DMG": {
+    "zh": "空中攻击·铁胆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Guts DMG"
+  },
+  "Dodge Counter - Guts DMG": {
+    "zh": "闪避反击·铁胆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter - Guts DMG"
+  },
+  "Tactical Dodge - Guts DMG": {
+    "zh": "战术闪避·铁胆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Guts DMG"
+  },
+  "Tactical Dodge - Guts Successful Dodge DMG": {
+    "zh": "战术闪避·铁胆闪避成功伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Guts Successful Dodge DMG"
+  },
+  "Mid-air Attack - Huntress STA Cost": {
+    "zh": "空中攻击·猎手耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Huntress STA Cost"
+  },
+  "Tactical Dodge - Huntress STA Cost": {
+    "zh": "战术闪避·猎手耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Huntress STA Cost"
+  },
+  "Mid-air Attack - Guts STA Cost": {
+    "zh": "空中攻击·铁胆耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Guts STA Cost"
+  },
+  "Tactical Dodge - Guts STA Cost": {
+    "zh": "战术闪避·铁胆耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Dodge - Guts STA Cost"
+  },
+  "Resonance Skill - It's Big Boomin' Time! DMG": {
+    "zh": "共鸣技能·来发大的！伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - It's Big Boomin' Time! DMG"
+  },
+  "Resonance Skill - Come 'n' Get Me! DMG": {
+    "zh": "共鸣技能·有本事来抓我！伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Come 'n' Get Me! DMG"
+  },
+  "Resonance Skill - It's Big Boomin' Time! Cooldown": {
+    "zh": "共鸣技能·来发大的！冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - It's Big Boomin' Time! Cooldown"
+  },
+  "Resonance Skill - Come 'n' Get Me! Cooldown": {
+    "zh": "共鸣技能·有本事来抓我！冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Come 'n' Get Me! Cooldown"
+  },
+  "Rat-tat-tat!: Huntress DMG": {
+    "zh": "哒哒哒！·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Rat-tat-tat!: Huntress DMG"
+  },
+  "Bang-bang-bang!: Guts DMG": {
+    "zh": "砰砰砰！·铁胆伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Bang-bang-bang!: Guts DMG"
+  },
+  "Mk. 31 HMG DMG": {
+    "zh": "【31型重机枪】伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mk. 31 HMG DMG"
+  },
+  "Mk. 31 HMG 1st Enhancement DMG": {
+    "zh": "【31型重机枪】威力提升1次伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mk. 31 HMG 1st Enhancement DMG"
+  },
+  "Mk. 31 HMG 2nd Enhancement DMG": {
+    "zh": "【31型重机枪】威力提升2次伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mk. 31 HMG 2nd Enhancement DMG"
+  },
+  "BOOM! Fireworks! DMG": {
+    "zh": "大烟花！伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "BOOM! Fireworks! DMG"
+  },
+  "Yo, It's Big Boomin' Time! DMG": {
+    "zh": "呜呼，来发大的！伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Yo, It's Big Boomin' Time! DMG"
+  },
+  "Hey, Leadhead, Come 'n' Get Me! DMG": {
+    "zh": "蠢货，有本事来抓我！伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Hey, Leadhead, Come 'n' Get Me! DMG"
+  },
+  "Yo, It's Big Boomin' Time! Concerto Regen": {
+    "zh": "呜呼，来发大的！回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Yo, It's Big Boomin' Time! Concerto Regen"
+  },
+  "Hey, Leadhead, Come 'n' Get Me! Concerto Regen": {
+    "zh": "蠢货，有本事来抓我！回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Hey, Leadhead, Come 'n' Get Me! Concerto Regen"
+  },
+  "Heavy Attack - Eat Lead!: Huntress DMG": {
+    "zh": "重击·吃枪子吧！·猎手伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Eat Lead!: Huntress DMG"
+  },
+  "Hack Response - Meltdown DMG": {
+    "zh": "骇破响应·熔触伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Hack Response - Meltdown DMG"
+  },
+  "Heavy Attack - Huntress STA Cost": {
+    "zh": "重击·猎手耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Huntress STA Cost"
   },
   "Basic Attack - Elucidated DMG": {
     "zh": "普攻·明悟伤害",
@@ -19574,10 +20434,20 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Transmutation Concerto Regen"
   },
+  "Heavy Attack: Starflash DMG": {
+    "zh": "重击·星辉伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Starflash DMG"
+  },
   "Chamuel's Star: Dodge Counter DMG": {
     "zh": "夏弥尔之星·闪避反击伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Chamuel's Star: Dodge Counter DMG"
+  },
+  "Heavy Attack: Starflash STA Cost": {
+    "zh": "重击·星辉耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Starflash STA Cost"
   },
   "Ring of Mirrors: Refracted Holy Light DMG": {
     "zh": "【镜之环】折射圣辉伤害",
@@ -19598,16 +20468,6 @@
     "zh": "夏弥尔之星第三段伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Chamuel's Star: Stage 3 DMG"
-  },
-  "Heavy Attack: Starflash DMG": {
-    "zh": "重击·星辉伤害",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Heavy Attack: Starflash DMG"
-  },
-  "Heavy Attack: Starflash STA Cost": {
-    "zh": "重击·星辉耐力消耗",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Heavy Attack: Starflash STA Cost"
   },
   "Absolution Litany DMG": {
     "zh": "圣祷赦罪伤害",
@@ -19859,6 +20719,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Sawring - Eradication Concerto Regen"
   },
+  "Sawring - Eradication Resonance Energy Regen": {
+    "zh": "锯环·终结恢复共鸣能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Sawring - Eradication Resonance Energy Regen"
+  },
   "Sawring - Blitz Stage 2 Hold DMG": {
     "zh": "锯环·疾攻第二段长按伤害",
     "category": "Skill/Stat",
@@ -20104,10 +20969,20 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Ichor Deposit DMG"
   },
+  "Endnotes on the Endgame DMG Multiplier Boost": {
+    "zh": "终局之释义伤害倍率提升",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Endnotes on the Endgame DMG Multiplier Boost"
+  },
   "Golden Reflux Cooldown": {
     "zh": "流金回潮冷却时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Golden Reflux Cooldown"
+  },
+  "Aureole of Execution Concerto Regen": {
+    "zh": "斩杀日冕回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Aureole of Execution Concerto Regen"
   },
   "Gavel of Earthshaker Concerto Regen": {
     "zh": "判决大地裂响回复协奏能量",
@@ -20119,6 +20994,16 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Ichor Blade DMG (per 0.15s)"
   },
+  "Aureate Judge DMG Multiplier Boost": {
+    "zh": "黄金的裁量伤害倍率提升",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Aureate Judge DMG Multiplier Boost"
+  },
+  "Dawnlit Keep DMG Reduction": {
+    "zh": "【日辉庇覆】受到伤害降低",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dawnlit Keep DMG Reduction"
+  },
   "Mid-air Attack Stage 4 STA Cost": {
     "zh": "空中攻击第4段耐力消耗",
     "category": "Skill/Stat",
@@ -20129,10 +21014,185 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Mid-air Suspension STA Cost (per second)"
   },
+  "Aureole of Execution: Breach Blade DMG (per 0.15s)": {
+    "zh": "斩杀日冕·破飞刃伤害（每0.15秒）",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Aureole of Execution: Breach Blade DMG (per 0.15s)"
+  },
+  "Aureole of Execution: Breach Blade Duration": {
+    "zh": "斩杀日冕·破飞刃持续时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Aureole of Execution: Breach Blade Duration"
+  },
   "Ichor Blade Duration": {
     "zh": "日髓碎刃持续时间",
     "category": "Skill/Stat",
     "indonesian_translation": "Ichor Blade Duration"
+  },
+  "Heavy Attack 1 DMG": {
+    "zh": "重击第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack 1 DMG"
+  },
+  "Heavy Attack 2 DMG": {
+    "zh": "重击第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack 2 DMG"
+  },
+  "Mid-air Attack - Algorithm Compaction DMG": {
+    "zh": "空中攻击·算法压缩伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Algorithm Compaction DMG"
+  },
+  "Dodge Counter - Algorithm Compaction DMG": {
+    "zh": "闪避反击·算法压缩伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter - Algorithm Compaction DMG"
+  },
+  "Basic Attack - Thread Shredding Stage 1 DMG": {
+    "zh": "普攻·线程撕裂第一段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Thread Shredding Stage 1 DMG"
+  },
+  "Basic Attack - Thread Shredding Stage 2 DMG": {
+    "zh": "普攻·线程撕裂第二段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Thread Shredding Stage 2 DMG"
+  },
+  "Basic Attack - Thread Shredding Stage 3 DMG": {
+    "zh": "普攻·线程撕裂第三段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Thread Shredding Stage 3 DMG"
+  },
+  "Basic Attack - Thread Shredding Stage 4 DMG": {
+    "zh": "普攻·线程撕裂第四段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Thread Shredding Stage 4 DMG"
+  },
+  "Heavy Attack - Single Threading DMG": {
+    "zh": "重击·单线程伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Single Threading DMG"
+  },
+  "Heavy Attack - Dual Threading DMG": {
+    "zh": "重击·双线程伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Dual Threading DMG"
+  },
+  "Heavy Attack - Multithreading DMG": {
+    "zh": "重击·多线程伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Multithreading DMG"
+  },
+  "Heavy Attack Stage 1 STA Cost": {
+    "zh": "重击第一段耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack Stage 1 STA Cost"
+  },
+  "Heavy Attack Stage 2 STA Cost": {
+    "zh": "重击第二段耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack Stage 2 STA Cost"
+  },
+  "Heavy Attack - Single Threading STA Cost": {
+    "zh": "重击·单线程耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Single Threading STA Cost"
+  },
+  "Heavy Attack - Dual Threading STA Cost": {
+    "zh": "重击·双线程耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Dual Threading STA Cost"
+  },
+  "Heavy Attack - Multithreading STA Cost": {
+    "zh": "重击·多线程耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Multithreading STA Cost"
+  },
+  "Resonance Skill - Payload Charge DMG": {
+    "zh": "共鸣技能·有效载荷突进攻击伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Payload Charge DMG"
+  },
+  "Resonance Skill - Pulse Interference DMG": {
+    "zh": "共鸣技能·脉冲干扰伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Pulse Interference DMG"
+  },
+  "Resonance Skill - Deadlock DMG": {
+    "zh": "共鸣技能·死锁伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Deadlock DMG"
+  },
+  "Resonance Skill - Payload Cooldown": {
+    "zh": "共鸣技能·有效载荷冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Payload Cooldown"
+  },
+  "Resonance Liberation - Netrunner: Override DMG": {
+    "zh": "共鸣解放·网络行者·覆写篡改伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Liberation - Netrunner: Override DMG"
+  },
+  "Spoofing Program: Ping DMG": {
+    "zh": "欺骗程式·集群入侵伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Spoofing Program: Ping DMG"
+  },
+  "Spoofing Program: Synapse Burnout DMG": {
+    "zh": "欺骗程式·突触熔融伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Spoofing Program: Synapse Burnout DMG"
+  },
+  "Spoofing Program: Cripple Movement DMG": {
+    "zh": "欺骗程式·运动失能伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Spoofing Program: Cripple Movement DMG"
+  },
+  "Concerto  Regen": {
+    "zh": "回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Concerto  Regen"
+  },
+  "Intro Skill - Outdated Hallucination DMG": {
+    "zh": "变奏技能·过时幻觉伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Intro Skill - Outdated Hallucination DMG"
+  },
+  "Hack Response - Data Crash DMG": {
+    "zh": "骇破响应·数据崩解伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Hack Response - Data Crash DMG"
+  },
+  "Resonance Skill - Deadlock Cooldown": {
+    "zh": "共鸣技能·死锁冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Deadlock Cooldown"
+  },
+  "Heavy Attack -  Dual Threading Concerto Regen": {
+    "zh": "重击·双线程回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack -  Dual Threading Concerto Regen"
+  },
+  "Heavy Attack - Multi-Threading Concerto Regen": {
+    "zh": "重击·多线程回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack - Multi-Threading Concerto Regen"
+  },
+  "Mid-air Attack - Algorithm Compaction STA Cost": {
+    "zh": "空中攻击·算法压缩耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack - Algorithm Compaction STA Cost"
+  },
+  "Resonance Skill - Deadlock Concerto Regen": {
+    "zh": "共鸣技能·死锁回复协奏能量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Deadlock Concerto Regen"
+  },
+  "Resonance Skill - Payload Follow-Up Attack DMG": {
+    "zh": "共鸣技能·有效载荷追加攻击伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resonance Skill - Payload Follow-Up Attack DMG"
   },
   "Devastation Damage": {
     "zh": "灭音伤害",
@@ -20209,6 +21269,21 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Lifetaker Concerto Regen"
   },
+  "Instant of Annihilation Umbra Recovery": {
+    "zh": "化刹恢复暗流",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Instant of Annihilation Umbra Recovery"
+  },
+  "Wingblade Umbra Recovery": {
+    "zh": "行刃恢复暗流",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Wingblade Umbra Recovery"
+  },
+  "Lifetaker: Umbra": {
+    "zh": "破命恢复暗流",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Lifetaker: Umbra"
+  },
   "Stage 1 Concerto Regen": {
     "zh": "第一段回复协奏能量",
     "category": "Skill/Stat",
@@ -20233,6 +21308,11 @@
     "zh": "浮潜幻海伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Delusive Dive DMG"
+  },
+  "Delusive Dive STA Cost": {
+    "zh": "浮潜幻海耐力消耗",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Delusive Dive STA Cost"
   },
   "Graceful Step DMG": {
     "zh": "翩跹伤害",
@@ -20404,6 +21484,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Basic Attack - Hecate Stage 2 DMG"
   },
+  "Basic Attack - Hecate Stage 3 DMG": {
+    "zh": "普攻·赫卡忒第三段伤害",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack - Hecate Stage 3 DMG"
+  },
   "Enhanced Attack - Hecate: Strings DMG": {
     "zh": "强化攻击·弦乐·赫卡忒伤害",
     "category": "Skill/Stat",
@@ -20463,6 +21548,11 @@
     "zh": "永不消逝的梦呓伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Murmurs in a Haunting Dream DMG"
+  },
+  "Scarlet Coda Cooldown": {
+    "zh": "谱曲终末冷却时间",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Scarlet Coda Cooldown"
   },
   "Mid-air Heavy Attack DMG": {
     "zh": "空中重击伤害",
@@ -20624,10 +21714,10 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Heavy Attack - Aftertune DMG"
   },
-  "Concerto  Regen": {
-    "zh": "回复协奏能量",
+  "Explosion Damage": {
+    "zh": "爆炸伤害",
     "category": "Skill/Stat",
-    "indonesian_translation": "Concerto  Regen"
+    "indonesian_translation": "Explosion Damage"
   },
   "Resonating Spin DMG": {
     "zh": "浮声千斩·旋音伤害",
@@ -20683,6 +21773,11 @@
     "zh": "烬灭第一段伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Sanguine Pulse Stage 1 DMG"
+  },
+  "Incinerating Will Damage Boost": {
+    "zh": "朱蚀之刻增伤效果",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Incinerating Will Damage Boost"
   },
   "Sanguine Pulse Stage 2 DMG": {
     "zh": "烬灭第二段伤害",
@@ -20774,6 +21869,26 @@
     "category": "Skill/Stat",
     "indonesian_translation": "HP recovery"
   },
+  "Resolving Caliber Healing": {
+    "zh": "刚柔化势回复量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Resolving Caliber Healing"
+  },
+  "Timed Counters Stage 1 Fixed Value Shield": {
+    "zh": "御反之隙第一段固定值护盾",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Timed Counters Stage 1 Fixed Value Shield"
+  },
+  "Timed Counters Stage 2 Fixed Value Shield": {
+    "zh": "御反之隙第二段固定值护盾",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Timed Counters Stage 2 Fixed Value Shield"
+  },
+  "Timed Counters Stage 3 Fixed Value Shield": {
+    "zh": "御反之隙第三段固定值护盾",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Timed Counters Stage 3 Fixed Value Shield"
+  },
   "Timed Counters Stage 1 Shield": {
     "zh": "御反之隙第一段护盾",
     "category": "Skill/Stat",
@@ -20839,20 +21954,70 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Marcato Damage"
   },
-  "Duration": {
-    "zh": "持续时间",
-    "category": "Skill/Stat",
-    "indonesian_translation": "Duration"
-  },
   "Fury Fugue Damage": {
     "zh": "怒火赋格伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Fury Fugue Damage"
   },
+  "Basic Attack Stage 1: Annoyance": {
+    "zh": "普攻第一段·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 1: Annoyance"
+  },
+  "Basic Attack Stage 2: Annoyance": {
+    "zh": "普攻第二段·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 2: Annoyance"
+  },
+  "Basic Attack Stage 3: Annoyance": {
+    "zh": "普攻第三段·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 3: Annoyance"
+  },
+  "Basic Attack Stage 4: Annoyance": {
+    "zh": "普攻第四段·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Basic Attack Stage 4: Annoyance"
+  },
+  "Heavy Attack: Annoyance": {
+    "zh": "重击非瞄准·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Heavy Attack: Annoyance"
+  },
+  "Aimed Heavy Attack: Annoyance": {
+    "zh": "重击瞄准·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Aimed Heavy Attack: Annoyance"
+  },
+  "Mid-air Attack: Annoyance": {
+    "zh": "空中攻击·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mid-air Attack: Annoyance"
+  },
+  "Dissonance: Annoyance": {
+    "zh": "不协和音·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dissonance: Annoyance"
+  },
+  "Dodge Counter: Annoyance": {
+    "zh": "闪避反击·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Dodge Counter: Annoyance"
+  },
+  "Passionate Variation: Annoyance": {
+    "zh": "激昂变奏·怒气值",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Passionate Variation: Annoyance"
+  },
   "Full Charge Heavy Attack DMG": {
     "zh": "满蓄力重击伤害",
     "category": "Skill/Stat",
     "indonesian_translation": "Full Charge Heavy Attack DMG"
+  },
+  "Thermobaric Bullets Gained": {
+    "zh": "热压弹积攒数量",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Thermobaric Bullets Gained"
   },
   "Thermobaric Bullets Damage": {
     "zh": "热压弹伤害",
@@ -23104,6 +24269,131 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Silent Debate of Light"
   },
+  "Mix-'n'-Match": {
+    "zh": "混搭战术",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Mix-'n'-Match"
+  },
+  "Tactical Tweaks": {
+    "zh": "战术性调整",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tactical Tweaks"
+  },
+  "Party 'til Dawn!": {
+    "zh": "狂欢时间！",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Party 'til Dawn!"
+  },
+  "Tag, You're It!": {
+    "zh": "该你了！",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Tag, You're It!"
+  },
+  "Left an Opening!": {
+    "zh": "有破绽！",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Left an Opening!"
+  },
+  "My Turn!": {
+    "zh": "到我了！",
+    "category": "Skill/Stat",
+    "indonesian_translation": "My Turn!"
+  },
+  "Gloves Are Comin' Off!": {
+    "zh": "我要认真了！",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Gloves Are Comin' Off!"
+  },
+  "Preem Choom": {
+    "zh": "好搭档",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Preem Choom"
+  },
+  "Hack - Meltdown": {
+    "zh": "骇破·熔触",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Hack - Meltdown"
+  },
+  "Locked Thread": {
+    "zh": "靶定线程",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Locked Thread"
+  },
+  "Protocol Breach": {
+    "zh": "协议突破",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Protocol Breach"
+  },
+  "Netrunner": {
+    "zh": "网络行者",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Netrunner"
+  },
+  "Ghost Cyberware": {
+    "zh": "幽灵义体",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Ghost Cyberware"
+  },
+  "Function Cracking": {
+    "zh": "进程破解",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Function Cracking"
+  },
+  "Outdated Hallucination": {
+    "zh": "过时幻觉",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Outdated Hallucination"
+  },
+  "Depths of Blackwall": {
+    "zh": "黑墙深度",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Depths of Blackwall"
+  },
+  "Countermeasure Program": {
+    "zh": "反制程序",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Countermeasure Program"
+  },
+  "Data Crash": {
+    "zh": "数据崩解",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Data Crash"
+  },
+  "Snapshot": {
+    "zh": "抓拍",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Snapshot"
+  },
+  "Phantom Frame": {
+    "zh": "幻象定帧",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Phantom Frame"
+  },
+  "Clear As Day": {
+    "zh": "历历在目",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clear As Day"
+  },
+  "Slow Motion": {
+    "zh": "慢镜头",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Slow Motion"
+  },
+  "Remembrance": {
+    "zh": "铭记",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Remembrance"
+  },
+  "Clip It": {
+    "zh": "剪辑",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Clip It"
+  },
+  "Montage": {
+    "zh": "蒙太奇",
+    "category": "Skill/Stat",
+    "indonesian_translation": "Montage"
+  },
   "One, Two, Three": {
     "zh": "一、二、三……",
     "category": "Skill/Stat",
@@ -23229,6 +24519,11 @@
     "category": "Skill/Stat",
     "indonesian_translation": "Shattered Hours"
   },
+  "Test1-Short Sword": {
+    "zh": "dnt/测试1-短剑",
+    "category": "Weapon",
+    "indonesian_translation": "Test1-Short Sword"
+  },
   "Training Broadblade": {
     "zh": "教学长刃",
     "category": "Weapon",
@@ -23243,6 +24538,11 @@
     "zh": "暗夜长刃·玄明",
     "category": "Weapon",
     "indonesian_translation": "Broadblade of Night"
+  },
+  "Ultrasonic Judgement": {
+    "zh": "超声裁决",
+    "category": "Weapon",
+    "indonesian_translation": "Ultrasonic Judgement"
   },
   "Lustrous Razor": {
     "zh": "浩境粼光",
@@ -23304,6 +24604,11 @@
     "category": "Weapon",
     "indonesian_translation": "Guardian Broadblade"
   },
+  "T4-5Jinzhou+ Series Greatsword": {
+    "zh": "dnt/测试武器",
+    "category": "Weapon",
+    "indonesian_translation": "T4-5Jinzhou+ Series Greatsword"
+  },
   "Kumokiri": {
     "zh": "昙切",
     "category": "Weapon",
@@ -23358,6 +24663,11 @@
     "zh": "暗夜迅刀·黑闪",
     "category": "Weapon",
     "indonesian_translation": "Sword of Night"
+  },
+  "Ultrasonic Razor": {
+    "zh": "超声锋刃",
+    "category": "Weapon",
+    "indonesian_translation": "Ultrasonic Razor"
   },
   "Emerald of Genesis": {
     "zh": "千古洑流",
@@ -23424,6 +24734,11 @@
     "category": "Weapon",
     "indonesian_translation": "Guardian Sword"
   },
+  "T4-5Jinzhou+ series short sword": {
+    "zh": "dnt/测试武器",
+    "category": "Weapon",
+    "indonesian_translation": "T4-5Jinzhou+ series short sword"
+  },
   "Defier's Thorn": {
     "zh": "不屈命定之冠",
     "category": "Weapon",
@@ -23483,6 +24798,11 @@
     "zh": "暗夜佩枪·暗星",
     "category": "Weapon",
     "indonesian_translation": "Pistols of Night"
+  },
+  "Ultrasonic Roscoe": {
+    "zh": "超声赫轮",
+    "category": "Weapon",
+    "indonesian_translation": "Ultrasonic Roscoe"
   },
   "Static Mist": {
     "zh": "停驻之烟",
@@ -23544,10 +24864,25 @@
     "category": "Weapon",
     "indonesian_translation": "Guardian Pistols"
   },
+  "T4-5Jinzhou+ series pistols": {
+    "zh": "dnt/测试武器",
+    "category": "Weapon",
+    "indonesian_translation": "T4-5Jinzhou+ series pistols"
+  },
+  "Spectral Trigger": {
+    "zh": "蜃影",
+    "category": "Weapon",
+    "indonesian_translation": "Spectral Trigger"
+  },
   "Novaburst": {
     "zh": "飞逝",
     "category": "Weapon",
     "indonesian_translation": "Novaburst"
+  },
+  "Skull Thrasher": {
+    "zh": "碎骨",
+    "category": "Weapon",
+    "indonesian_translation": "Skull Thrasher"
   },
   "Thunderbolt": {
     "zh": "奔雷",
@@ -23583,6 +24918,11 @@
     "zh": "暗夜臂铠·夜芒",
     "category": "Weapon",
     "indonesian_translation": "Gauntlets of Night"
+  },
+  "Ultrasonic Rockbreaker": {
+    "zh": "超声碎岩",
+    "category": "Weapon",
+    "indonesian_translation": "Ultrasonic Rockbreaker"
   },
   "Abyss Surges": {
     "zh": "擎渊怒涛",
@@ -23694,6 +25034,11 @@
     "category": "Weapon",
     "indonesian_translation": "Rectifier of Night"
   },
+  "Ultrasonic Matrix": {
+    "zh": "超声矩阵",
+    "category": "Weapon",
+    "indonesian_translation": "Ultrasonic Matrix"
+  },
   "Cosmic Ripples": {
     "zh": "漪澜浮录",
     "category": "Weapon",
@@ -23764,6 +25109,11 @@
     "category": "Weapon",
     "indonesian_translation": "Guardian Rectifier"
   },
+  "T4-5Jinzhou+ series of law instruments": {
+    "zh": "dnt/测试武器",
+    "category": "Weapon",
+    "indonesian_translation": "T4-5Jinzhou+ series of law instruments"
+  },
   "Whispers of Sirens": {
     "zh": "海的呢喃",
     "category": "Weapon",
@@ -23793,6 +25143,11 @@
     "zh": "核熔星盘",
     "category": "Weapon",
     "indonesian_translation": "Fusion Accretion"
+  },
+  "Freeze Frame": {
+    "zh": "存帧",
+    "category": "Weapon",
+    "indonesian_translation": "Freeze Frame"
   },
   "Waltz in Masquerade": {
     "zh": "虚饰的华尔兹",
@@ -24139,6 +25494,16 @@
     "category": "Monster",
     "indonesian_translation": "Fractsidus Mawdoll"
   },
+  "Nightmare: Security Corpo": {
+    "zh": "梦魇·安保公司狗",
+    "category": "Monster",
+    "indonesian_translation": "Nightmare: Security Corpo"
+  },
+  "Nightmare: Spec Ops Corpo": {
+    "zh": "梦魇·突击公司狗",
+    "category": "Monster",
+    "indonesian_translation": "Nightmare: Spec Ops Corpo"
+  },
   "Stonewall Bracer": {
     "zh": "坚岩斗士",
     "category": "Monster",
@@ -24253,11 +25618,6 @@
     "zh": "荣光节使",
     "category": "Monster",
     "indonesian_translation": "Capitaneus"
-  },
-  "Pilgrim's Shell": {
-    "zh": "传道者的遗形",
-    "category": "Monster",
-    "indonesian_translation": "Pilgrim's Shell"
   },
   "Flamecrest Gladiator": {
     "zh": "炽冠角斗家",
@@ -24519,6 +25879,11 @@
     "category": "Monster",
     "indonesian_translation": "Reminiscence: Denia"
   },
+  "Reminiscence - Nightmare: Adam Smasher": {
+    "zh": "共鸣回响·梦魇亚当·重锤",
+    "category": "Monster",
+    "indonesian_translation": "Reminiscence - Nightmare: Adam Smasher"
+  },
   "Phantom: Mourning Aix": {
     "zh": "异相·哀声鸷",
     "category": "Monster",
@@ -24708,6 +26073,11 @@
     "zh": "异相·冠顶苍隼",
     "category": "Monster",
     "indonesian_translation": "Phantom: Kronaclaw"
+  },
+  "Phantom: Glommoth": {
+    "zh": "异相·格洛犸图",
+    "category": "Monster",
+    "indonesian_translation": "Phantom: Glommoth"
   },
   "Lollo Warehouse": {
     "zh": "呜呜仓储站",
@@ -26204,6 +27574,11 @@
     "category": "Location/Map",
     "indonesian_translation": "Moon Shooter"
   },
+  "Loong Dance": {
+    "zh": "游龙舞",
+    "category": "Location/Map",
+    "indonesian_translation": "Loong Dance"
+  },
   "Hedgepuff": {
     "zh": "棘刺河豚",
     "category": "Location/Map",
@@ -26564,6 +27939,31 @@
     "category": "Location/Map",
     "indonesian_translation": "Preparation Area"
   },
+  "Warehouse": {
+    "zh": "仓库",
+    "category": "Location/Map",
+    "indonesian_translation": "Warehouse"
+  },
+  "Cafe Decorator": {
+    "zh": "店铺装潢",
+    "category": "Location/Map",
+    "indonesian_translation": "Cafe Decorator"
+  },
+  "Namipon Case Files": {
+    "zh": "波仔档案",
+    "category": "Location/Map",
+    "indonesian_translation": "Namipon Case Files"
+  },
+  "Supply Restock": {
+    "zh": "物资补给",
+    "category": "Location/Map",
+    "indonesian_translation": "Supply Restock"
+  },
+  "Let's Go": {
+    "zh": "出发",
+    "category": "Location/Map",
+    "indonesian_translation": "Let's Go"
+  },
   "Namipon Lightbox": {
     "zh": "波仔灯箱",
     "category": "Location/Map",
@@ -26684,6 +28084,11 @@
     "category": "Location/Map",
     "indonesian_translation": "Avinoleum Dreamscape Nexus"
   },
+  "Contamination": {
+    "zh": "污染残留",
+    "category": "Location/Map",
+    "indonesian_translation": "Contamination"
+  },
   "[Echo Challenge: Flight]": {
     "zh": "【声骸挑战·翱翔】",
     "category": "Location/Map",
@@ -26723,11 +28128,6 @@
     "zh": "印造台",
     "category": "Location/Map",
     "indonesian_translation": "Weapon Crafting"
-  },
-  "Synthesizer": {
-    "zh": "合成台",
-    "category": "Location/Map",
-    "indonesian_translation": "Synthesizer"
   },
   "Experiment Records": {
     "zh": "幽域实验场",
@@ -27134,6 +28534,11 @@
     "category": "Location/Map",
     "indonesian_translation": "Dreams of Cindertide: Finale"
   },
+  "Rabelle College Entrance": {
+    "zh": "dnt/",
+    "category": "Location/Map",
+    "indonesian_translation": "Rabelle College Entrance"
+  },
   "Special Response Force": {
     "zh": "特别对策组",
     "category": "Location/Map",
@@ -27278,6 +28683,11 @@
     "zh": "摩托-特技赛道1",
     "category": "Location/Map",
     "indonesian_translation": "Motorbike - Stunt Track 1"
+  },
+  "Motorbike - Stunt Track 2": {
+    "zh": "摩托-特技赛道2",
+    "category": "Location/Map",
+    "indonesian_translation": "Motorbike - Stunt Track 2"
   },
   "Voidthirst Cradle": {
     "zh": "虚妄摇篮",
@@ -28079,6 +29489,11 @@
     "category": "Location/Map",
     "indonesian_translation": "Whispers Between Stars - Lucilla"
   },
+  "Track Event Quest": {
+    "zh": "活动任务追踪",
+    "category": "Location/Map",
+    "indonesian_translation": "Track Event Quest"
+  },
   "Rachel the Fishing Boat": {
     "zh": "「拉结号」捕鱼船",
     "category": "Location/Map",
@@ -28149,6 +29564,181 @@
     "category": "Location/Map",
     "indonesian_translation": "Capturing Starlight IX"
   },
+  "Backpack": {
+    "zh": "行囊万物",
+    "category": "General Term",
+    "indonesian_translation": "Backpack"
+  },
+  "Huanglong: Borderland City": {
+    "zh": "瑝珑·此世的关隘",
+    "category": "General Term",
+    "indonesian_translation": "Huanglong: Borderland City"
+  },
+  "First Stage": {
+    "zh": "第一阶段",
+    "category": "General Term",
+    "indonesian_translation": "First Stage"
+  },
+  "Second Stage": {
+    "zh": "第二阶段",
+    "category": "General Term",
+    "indonesian_translation": "Second Stage"
+  },
+  "Third Stage": {
+    "zh": "第三阶段",
+    "category": "General Term",
+    "indonesian_translation": "Third Stage"
+  },
+  "Fourth Stage": {
+    "zh": "第四阶段",
+    "category": "General Term",
+    "indonesian_translation": "Fourth Stage"
+  },
+  "Fifth Stage": {
+    "zh": "第五阶段",
+    "category": "General Term",
+    "indonesian_translation": "Fifth Stage"
+  },
+  "Phoenix Butterfly": {
+    "zh": "霄凤蝶",
+    "category": "General Term",
+    "indonesian_translation": "Phoenix Butterfly"
+  },
+  "Red Feather Butterfly": {
+    "zh": "赤羽蝶",
+    "category": "General Term",
+    "indonesian_translation": "Red Feather Butterfly"
+  },
+  "Blue Feather Butterfly": {
+    "zh": "蓝羽蝶",
+    "category": "General Term",
+    "indonesian_translation": "Blue Feather Butterfly"
+  },
+  "Chrysopa": {
+    "zh": "叶翅蛉",
+    "category": "General Term",
+    "indonesian_translation": "Chrysopa"
+  },
+  "Golden-ringed Dragonfly": {
+    "zh": "金环蜓",
+    "category": "General Term",
+    "indonesian_translation": "Golden-ringed Dragonfly"
+  },
+  "Close Quarters Only": {
+    "zh": "近战限定",
+    "category": "General Term",
+    "indonesian_translation": "Close Quarters Only"
+  },
+  "Ranged Only": {
+    "zh": "远程限定",
+    "category": "General Term",
+    "indonesian_translation": "Ranged Only"
+  },
+  "Lorelei - Ultra I": {
+    "zh": "罗蕾莱·极Ⅰ",
+    "category": "General Term",
+    "indonesian_translation": "Lorelei - Ultra I"
+  },
+  "Fleurdelys - Ultra I": {
+    "zh": "芙露德莉斯·极Ⅰ",
+    "category": "General Term",
+    "indonesian_translation": "Fleurdelys - Ultra I"
+  },
+  "Feilian Beringal - Ultra I": {
+    "zh": "飞廉之猩·极Ⅰ",
+    "category": "General Term",
+    "indonesian_translation": "Feilian Beringal - Ultra I"
+  },
+  "Fallacy of No Return - Ultra I": {
+    "zh": "无归的谬误·极Ⅰ",
+    "category": "General Term",
+    "indonesian_translation": "Fallacy of No Return - Ultra I"
+  },
+  "Lollo Joy Album": {
+    "zh": "呜呜欢乐集",
+    "category": "General Term",
+    "indonesian_translation": "Lollo Joy Album"
+  },
+  "Phase I: Foundation": {
+    "zh": "阶段Ⅰ：拓原工程",
+    "category": "General Term",
+    "indonesian_translation": "Phase I: Foundation"
+  },
+  "Phase II: Platform": {
+    "zh": "阶段Ⅱ：悬台工程",
+    "category": "General Term",
+    "indonesian_translation": "Phase II: Platform"
+  },
+  "Phase III: Overwatch": {
+    "zh": "阶段Ⅲ：望域工程",
+    "category": "General Term",
+    "indonesian_translation": "Phase III: Overwatch"
+  },
+  "Student of the Department of Light Energy Sciences": {
+    "zh": "光矩能源学部的学生",
+    "category": "General Term",
+    "indonesian_translation": "Student of the Department of Light Energy Sciences"
+  },
+  "Observatory-Academy Highway": {
+    "zh": "深星公路",
+    "category": "General Term",
+    "indonesian_translation": "Observatory-Academy Highway"
+  },
+  "Student of the Department of Voidmatters Science": {
+    "zh": "虚质科学部的学生",
+    "category": "General Term",
+    "indonesian_translation": "Student of the Department of Voidmatters Science"
+  },
+  "Student of Rabelle College": {
+    "zh": "拉贝尔开发学部的学生",
+    "category": "General Term",
+    "indonesian_translation": "Student of Rabelle College"
+  },
+  "Sandreach Passage": {
+    "zh": "沙原通路",
+    "category": "General Term",
+    "indonesian_translation": "Sandreach Passage"
+  },
+  "Teacher of the Startorch Academy": {
+    "zh": "星炬学院的老师",
+    "category": "General Term",
+    "indonesian_translation": "Teacher of the Startorch Academy"
+  },
+  "Farer's Road": {
+    "zh": "远行公路",
+    "category": "General Term",
+    "indonesian_translation": "Farer's Road"
+  },
+  "Researcher of the Spacetrek Collective": {
+    "zh": "深空联合的研究员",
+    "category": "General Term",
+    "indonesian_translation": "Researcher of the Spacetrek Collective"
+  },
+  "Sol's Embrace": {
+    "zh": "朔尔之挽",
+    "category": "General Term",
+    "indonesian_translation": "Sol's Embrace"
+  },
+  "Roya from Solisylum": {
+    "zh": "来自引日殿的罗伊人",
+    "category": "General Term",
+    "indonesian_translation": "Roya from Solisylum"
+  },
+  "Starleap Ascent": {
+    "zh": "星跃公路",
+    "category": "General Term",
+    "indonesian_translation": "Starleap Ascent"
+  },
+  "Howling Tunnel": {
+    "zh": "呼啸隧道",
+    "category": "General Term",
+    "indonesian_translation": "Howling Tunnel"
+  },
+  "Spacetrek–Bjartr Bridge": {
+    "zh": "深光大桥",
+    "category": "General Term",
+    "indonesian_translation": "Spacetrek–Bjartr Bridge"
+  },
   "Assistant Chef": {
     "zh": "烹调助理",
     "category": "General Term",
@@ -28168,6 +29758,1881 @@
     "zh": "特级厨师",
     "category": "General Term",
     "indonesian_translation": "Top Chef"
+  },
+  "Glacio resistance": {
+    "zh": "冷凝抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Glacio resistance"
+  },
+  "Fusion resistance": {
+    "zh": "热熔抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Fusion resistance"
+  },
+  "Electro resistance": {
+    "zh": "导电抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Electro resistance"
+  },
+  "Aero resistance": {
+    "zh": "气动抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Aero resistance"
+  },
+  "Spectro resistance": {
+    "zh": "衍射抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Spectro resistance"
+  },
+  "Havoc resistance": {
+    "zh": "湮灭抵抗",
+    "category": "General Term",
+    "indonesian_translation": "Havoc resistance"
+  },
+  "HP Enhancement": {
+    "zh": "生命强化",
+    "category": "General Term",
+    "indonesian_translation": "HP Enhancement"
+  },
+  "ATK Enhancement": {
+    "zh": "攻击强化",
+    "category": "General Term",
+    "indonesian_translation": "ATK Enhancement"
+  },
+  "Top Drive Track": {
+    "zh": "顶驱轨道",
+    "category": "General Term",
+    "indonesian_translation": "Top Drive Track"
+  },
+  "Navigation Unit": {
+    "zh": "导向单元",
+    "category": "General Term",
+    "indonesian_translation": "Navigation Unit"
+  },
+  "Power Module": {
+    "zh": "动力模组",
+    "category": "General Term",
+    "indonesian_translation": "Power Module"
+  },
+  "Rift Runner VII": {
+    "zh": "异梦封锁-Ⅶ",
+    "category": "General Term",
+    "indonesian_translation": "Rift Runner VII"
+  },
+  "Physical": {
+    "zh": "物理",
+    "category": "General Term",
+    "indonesian_translation": "Physical"
+  },
+  "Glacio": {
+    "zh": "冷凝",
+    "category": "General Term",
+    "indonesian_translation": "Glacio"
+  },
+  "Fusion": {
+    "zh": "热熔",
+    "category": "General Term",
+    "indonesian_translation": "Fusion"
+  },
+  "Electro": {
+    "zh": "导电",
+    "category": "General Term",
+    "indonesian_translation": "Electro"
+  },
+  "Aero": {
+    "zh": "气动",
+    "category": "General Term",
+    "indonesian_translation": "Aero"
+  },
+  "Spectro": {
+    "zh": "衍射",
+    "category": "General Term",
+    "indonesian_translation": "Spectro"
+  },
+  "Havoc": {
+    "zh": "湮灭",
+    "category": "General Term",
+    "indonesian_translation": "Havoc"
+  },
+  "Glacio Harmony": {
+    "zh": "冷凝齐奏",
+    "category": "General Term",
+    "indonesian_translation": "Glacio Harmony"
+  },
+  "Cold and Hot Ensemble": {
+    "zh": "冷热合奏",
+    "category": "General Term",
+    "indonesian_translation": "Cold and Hot Ensemble"
+  },
+  "Fusion Ensemble": {
+    "zh": "热熔齐奏",
+    "category": "General Term",
+    "indonesian_translation": "Fusion Ensemble"
+  },
+  "combined heat and power (physics)": {
+    "zh": "冷电合奏",
+    "category": "General Term",
+    "indonesian_translation": "combined heat and power (physics)"
+  },
+  "thermoelectric ensemble": {
+    "zh": "热电合奏",
+    "category": "General Term",
+    "indonesian_translation": "thermoelectric ensemble"
+  },
+  "air-cooled ensemble (music)": {
+    "zh": "气冷合奏",
+    "category": "General Term",
+    "indonesian_translation": "air-cooled ensemble (music)"
+  },
+  "air-heat ensemble": {
+    "zh": "气热合奏",
+    "category": "General Term",
+    "indonesian_translation": "air-heat ensemble"
+  },
+  "Electrical Ensemble": {
+    "zh": "电气合奏",
+    "category": "General Term",
+    "indonesian_translation": "Electrical Ensemble"
+  },
+  "Aero.": {
+    "zh": "气动齐奏",
+    "category": "General Term",
+    "indonesian_translation": "Aero."
+  },
+  "Glacio Extension": {
+    "zh": "冷凝延奏",
+    "category": "General Term",
+    "indonesian_translation": "Glacio Extension"
+  },
+  "Fusion Extension": {
+    "zh": "热熔延奏",
+    "category": "General Term",
+    "indonesian_translation": "Fusion Extension"
+  },
+  "Electro Extension": {
+    "zh": "导电延奏",
+    "category": "General Term",
+    "indonesian_translation": "Electro Extension"
+  },
+  "Aero Extension": {
+    "zh": "气动延奏",
+    "category": "General Term",
+    "indonesian_translation": "Aero Extension"
+  },
+  "Spectro Unison": {
+    "zh": "衍射齐奏",
+    "category": "General Term",
+    "indonesian_translation": "Spectro Unison"
+  },
+  "Glacio continuo": {
+    "zh": "冷凝连奏",
+    "category": "General Term",
+    "indonesian_translation": "Glacio continuo"
+  },
+  "Fusion Continuous": {
+    "zh": "热熔连奏",
+    "category": "General Term",
+    "indonesian_translation": "Fusion Continuous"
+  },
+  "Electro continuo": {
+    "zh": "导电连奏",
+    "category": "General Term",
+    "indonesian_translation": "Electro continuo"
+  },
+  "Aero Continuous": {
+    "zh": "气动连奏",
+    "category": "General Term",
+    "indonesian_translation": "Aero Continuous"
+  },
+  "duplex": {
+    "zh": "二相重奏",
+    "category": "General Term",
+    "indonesian_translation": "duplex"
+  },
+  "Havoc.": {
+    "zh": "湮灭齐奏",
+    "category": "General Term",
+    "indonesian_translation": "Havoc."
+  },
+  "Choral Atlas": {
+    "zh": "索拉图谱",
+    "category": "General Term",
+    "indonesian_translation": "Choral Atlas"
+  },
+  "Threat Level": {
+    "zh": "威胁等级",
+    "category": "General Term",
+    "indonesian_translation": "Threat Level"
+  },
+  "Tacet Field Type": {
+    "zh": "无音区类型",
+    "category": "General Term",
+    "indonesian_translation": "Tacet Field Type"
+  },
+  "Claim Material": {
+    "zh": "获得材料",
+    "category": "General Term",
+    "indonesian_translation": "Claim Material"
+  },
+  "Recipe": {
+    "zh": "食谱",
+    "category": "General Term",
+    "indonesian_translation": "Recipe"
+  },
+  "Dish Type": {
+    "zh": "料理类型",
+    "category": "General Term",
+    "indonesian_translation": "Dish Type"
+  },
+  "Decoction Formula": {
+    "zh": "制药配方",
+    "category": "General Term",
+    "indonesian_translation": "Decoction Formula"
+  },
+  "Construction Formula": {
+    "zh": "构造配方",
+    "category": "General Term",
+    "indonesian_translation": "Construction Formula"
+  },
+  "Attribute": {
+    "zh": "共鸣属性",
+    "category": "General Term",
+    "indonesian_translation": "Attribute"
+  },
+  "Equipped": {
+    "zh": "是否装配",
+    "category": "General Term",
+    "indonesian_translation": "Equipped"
+  },
+  "Owned": {
+    "zh": "是否拥有",
+    "category": "General Term",
+    "indonesian_translation": "Owned"
+  },
+  "Category": {
+    "zh": "分类",
+    "category": "General Term",
+    "indonesian_translation": "Category"
+  },
+  "Discard": {
+    "zh": "弃置",
+    "category": "General Term",
+    "indonesian_translation": "Discard"
+  },
+  "Rarity": {
+    "zh": "品质",
+    "category": "General Term",
+    "indonesian_translation": "Rarity"
+  },
+  "Combat Role": {
+    "zh": "战斗风格",
+    "category": "General Term",
+    "indonesian_translation": "Combat Role"
+  },
+  "Weapon": {
+    "zh": "武器",
+    "category": "General Term",
+    "indonesian_translation": "Weapon"
+  },
+  "Set": {
+    "zh": "套装",
+    "category": "General Term",
+    "indonesian_translation": "Set"
+  },
+  "The Laureate": {
+    "zh": "摘桂之人",
+    "category": "General Term",
+    "indonesian_translation": "The Laureate"
+  },
+  "Dawn upon Thorns": {
+    "zh": "荆辉黎明",
+    "category": "General Term",
+    "indonesian_translation": "Dawn upon Thorns"
+  },
+  "Moment of Triumph": {
+    "zh": "凯旋时刻",
+    "category": "General Term",
+    "indonesian_translation": "Moment of Triumph"
+  },
+  "Clear Day": {
+    "zh": "晴日",
+    "category": "General Term",
+    "indonesian_translation": "Clear Day"
+  },
+  "Crimson Sky": {
+    "zh": "茜色天空",
+    "category": "General Term",
+    "indonesian_translation": "Crimson Sky"
+  },
+  "Cosmic Spindle": {
+    "zh": "缀星纺宙之缍",
+    "category": "General Term",
+    "indonesian_translation": "Cosmic Spindle"
+  },
+  "Resonators": {
+    "zh": "共鸣者",
+    "category": "General Term",
+    "indonesian_translation": "Resonators"
+  },
+  "Quests": {
+    "zh": "任务",
+    "category": "General Term",
+    "indonesian_translation": "Quests"
+  },
+  "Team": {
+    "zh": "编队",
+    "category": "General Term",
+    "indonesian_translation": "Team"
+  },
+  "Store": {
+    "zh": "商城",
+    "category": "General Term",
+    "indonesian_translation": "Store"
+  },
+  "Friends": {
+    "zh": "好友",
+    "category": "General Term",
+    "indonesian_translation": "Friends"
+  },
+  "Trophies": {
+    "zh": "成就",
+    "category": "General Term",
+    "indonesian_translation": "Trophies"
+  },
+  "Map": {
+    "zh": "地图",
+    "category": "General Term",
+    "indonesian_translation": "Map"
+  },
+  "Guidebook": {
+    "zh": "索拉指南",
+    "category": "General Term",
+    "indonesian_translation": "Guidebook"
+  },
+  "Synthesis": {
+    "zh": "合成",
+    "category": "General Term",
+    "indonesian_translation": "Synthesis"
+  },
+  "Pioneer Podcast": {
+    "zh": "先约电台",
+    "category": "General Term",
+    "indonesian_translation": "Pioneer Podcast"
+  },
+  "Gallery": {
+    "zh": "万物图鉴",
+    "category": "General Term",
+    "indonesian_translation": "Gallery"
+  },
+  "Events": {
+    "zh": "活动",
+    "category": "General Term",
+    "indonesian_translation": "Events"
+  },
+  "KURO APP": {
+    "zh": "库街区",
+    "category": "General Term",
+    "indonesian_translation": "KURO APP"
+  },
+  "Link Email": {
+    "zh": "邮箱绑定",
+    "category": "General Term",
+    "indonesian_translation": "Link Email"
+  },
+  "Guide Depot": {
+    "zh": "攻略站",
+    "category": "General Term",
+    "indonesian_translation": "Guide Depot"
+  },
+  "Pioneer Experience": {
+    "zh": "先行体验",
+    "category": "General Term",
+    "indonesian_translation": "Pioneer Experience"
+  },
+  "Overview": {
+    "zh": "信息一览",
+    "category": "General Term",
+    "indonesian_translation": "Overview"
+  },
+  "Settings": {
+    "zh": "设置",
+    "category": "General Term",
+    "indonesian_translation": "Settings"
+  },
+  "Vibe Gauge": {
+    "zh": "聚乐值",
+    "category": "General Term",
+    "indonesian_translation": "Vibe Gauge"
+  },
+  "Camera": {
+    "zh": "相机",
+    "category": "General Term",
+    "indonesian_translation": "Camera"
+  },
+  "Hyvatia's Eye": {
+    "zh": "海维夏之眼",
+    "category": "General Term",
+    "indonesian_translation": "Hyvatia's Eye"
+  },
+  "Enemies": {
+    "zh": "千般强敌",
+    "category": "General Term",
+    "indonesian_translation": "Enemies"
+  },
+  "Archives": {
+    "zh": "万象见闻",
+    "category": "General Term",
+    "indonesian_translation": "Archives"
+  },
+  "Echoes": {
+    "zh": "鸣声束骸",
+    "category": "General Term",
+    "indonesian_translation": "Echoes"
+  },
+  "Sceneries": {
+    "zh": "地域风光",
+    "category": "General Term",
+    "indonesian_translation": "Sceneries"
+  },
+  "Weapons": {
+    "zh": "百战锻形",
+    "category": "General Term",
+    "indonesian_translation": "Weapons"
+  },
+  "Creatures": {
+    "zh": "百种生灵",
+    "category": "General Term",
+    "indonesian_translation": "Creatures"
+  },
+  "Items": {
+    "zh": "存世风物",
+    "category": "General Term",
+    "indonesian_translation": "Items"
+  },
+  "Records": {
+    "zh": "残鸣余律",
+    "category": "General Term",
+    "indonesian_translation": "Records"
+  },
+  "Main Story": {
+    "zh": "往昔留影",
+    "category": "General Term",
+    "indonesian_translation": "Main Story"
+  },
+  "Talk to the girl studying the poster": {
+    "zh": "和注视海报的女孩交谈",
+    "category": "General Term",
+    "indonesian_translation": "Talk to the girl studying the poster"
+  },
+  "Take down the Namipon Poster in Sakura Quarter": {
+    "zh": "撕下樱漫町的波仔海报",
+    "category": "General Term",
+    "indonesian_translation": "Take down the Namipon Poster in Sakura Quarter"
+  },
+  "Eliminate the anomaly in any one area": {
+    "zh": "消灭任意一区域中的怪异源头个体",
+    "category": "General Term",
+    "indonesian_translation": "Eliminate the anomaly in any one area"
+  },
+  "Cleanse a Lament-Contaminated Zone": {
+    "zh": "净化一次悲鸣污染区",
+    "category": "General Term",
+    "indonesian_translation": "Cleanse a Lament-Contaminated Zone"
+  },
+  "Fish Windsock": {
+    "zh": "鱼旗",
+    "category": "General Term",
+    "indonesian_translation": "Fish Windsock"
+  },
+  "Tiny KU-Roro": {
+    "zh": "娇小库洛洛",
+    "category": "General Term",
+    "indonesian_translation": "Tiny KU-Roro"
+  },
+  "Star of Solaris": {
+    "zh": "索拉里斯之星",
+    "category": "General Term",
+    "indonesian_translation": "Star of Solaris"
+  },
+  "Secret Edition Namipon Plushie": {
+    "zh": "隐藏款波仔公仔",
+    "category": "General Term",
+    "indonesian_translation": "Secret Edition Namipon Plushie"
+  },
+  "Namipon Lantern": {
+    "zh": "波仔灯笼",
+    "category": "General Term",
+    "indonesian_translation": "Namipon Lantern"
+  },
+  "Namipon Capsule Machine": {
+    "zh": "波仔扭蛋机",
+    "category": "General Term",
+    "indonesian_translation": "Namipon Capsule Machine"
+  },
+  "Lament Residue Zone": {
+    "zh": "悲鸣残留区域",
+    "category": "General Term",
+    "indonesian_translation": "Lament Residue Zone"
+  },
+  "Buff": {
+    "zh": "增益",
+    "category": "General Term",
+    "indonesian_translation": "Buff"
+  },
+  "Multi-Stage DMG": {
+    "zh": "高频伤害",
+    "category": "General Term",
+    "indonesian_translation": "Multi-Stage DMG"
+  },
+  "Single-Stage DMG": {
+    "zh": "单段伤害",
+    "category": "General Term",
+    "indonesian_translation": "Single-Stage DMG"
+  },
+  "Namipon Projectile": {
+    "zh": "投射波仔",
+    "category": "General Term",
+    "indonesian_translation": "Namipon Projectile"
+  },
+  "DoT": {
+    "zh": "持续伤害",
+    "category": "General Term",
+    "indonesian_translation": "DoT"
+  },
+  "Debuff": {
+    "zh": "负面效果",
+    "category": "General Term",
+    "indonesian_translation": "Debuff"
+  },
+  "Tuner *50": {
+    "zh": "调谐器*50",
+    "category": "General Term",
+    "indonesian_translation": "Tuner *50"
+  },
+  "Astrite *100": {
+    "zh": "星声*100",
+    "category": "General Term",
+    "indonesian_translation": "Astrite *100"
+  },
+  "Modifier *5": {
+    "zh": "调频仪*5",
+    "category": "General Term",
+    "indonesian_translation": "Modifier *5"
+  },
+  "Combat and Exploration": {
+    "zh": "战斗和探索",
+    "category": "General Term",
+    "indonesian_translation": "Combat and Exploration"
+  },
+  "Interface": {
+    "zh": "界面操作",
+    "category": "General Term",
+    "indonesian_translation": "Interface"
+  },
+  "Shortcuts": {
+    "zh": "辅助功能",
+    "category": "General Term",
+    "indonesian_translation": "Shortcuts"
+  },
+  "Combat": {
+    "zh": "战斗",
+    "category": "General Term",
+    "indonesian_translation": "Combat"
+  },
+  "Controls": {
+    "zh": "操作",
+    "category": "General Term",
+    "indonesian_translation": "Controls"
+  },
+  "Log in to the game": {
+    "zh": "登录游戏",
+    "category": "General Term",
+    "indonesian_translation": "Log in to the game"
+  },
+  "Complete 1 Daily Quest": {
+    "zh": "完成1次日常任务",
+    "category": "General Term",
+    "indonesian_translation": "Complete 1 Daily Quest"
+  },
+  "Complete Simulation Challenge 1 time": {
+    "zh": "完成1次「模拟领域」挑战",
+    "category": "General Term",
+    "indonesian_translation": "Complete Simulation Challenge 1 time"
+  },
+  "Complete Forgery Challenge 1 time": {
+    "zh": "完成1次「凝素领域」挑战",
+    "category": "General Term",
+    "indonesian_translation": "Complete Forgery Challenge 1 time"
+  },
+  "Complete Tacet Field Challenge 1 time": {
+    "zh": "完成1次「无音区」挑战",
+    "category": "General Term",
+    "indonesian_translation": "Complete Tacet Field Challenge 1 time"
+  },
+  "Defeat 1 Overlord Class enemy": {
+    "zh": "击败1次怒涛级敌人",
+    "category": "General Term",
+    "indonesian_translation": "Defeat 1 Overlord Class enemy"
+  },
+  "Defeat 1 Calamity Class enemy": {
+    "zh": "击败1次海啸级敌人",
+    "category": "General Term",
+    "indonesian_translation": "Defeat 1 Calamity Class enemy"
+  },
+  "Upgrade Echo Level once": {
+    "zh": "提升1次声骸等级",
+    "category": "General Term",
+    "indonesian_translation": "Upgrade Echo Level once"
+  },
+  "Tune 1 Echo": {
+    "zh": "完成1次声骸调谐",
+    "category": "General Term",
+    "indonesian_translation": "Tune 1 Echo"
+  },
+  "Upgrade Weapon Level once": {
+    "zh": "提升1次武器等级",
+    "category": "General Term",
+    "indonesian_translation": "Upgrade Weapon Level once"
+  },
+  "Obtain 1 Echo": {
+    "zh": "获得任意1个声骸",
+    "category": "General Term",
+    "indonesian_translation": "Obtain 1 Echo"
+  },
+  "Collect 5 Materials": {
+    "zh": "采集任意5个采集物",
+    "category": "General Term",
+    "indonesian_translation": "Collect 5 Materials"
+  },
+  "Complete Synthesis once": {
+    "zh": "完成1次合成",
+    "category": "General Term",
+    "indonesian_translation": "Complete Synthesis once"
+  },
+  "Complete Cooking once": {
+    "zh": "完成1次烹饪",
+    "category": "General Term",
+    "indonesian_translation": "Complete Cooking once"
+  },
+  "Complete Crafting once": {
+    "zh": "完成1次印造",
+    "category": "General Term",
+    "indonesian_translation": "Complete Crafting once"
+  },
+  "Use 1 Supply": {
+    "zh": "使用任意1个补给品",
+    "category": "General Term",
+    "indonesian_translation": "Use 1 Supply"
+  },
+  "Defeat 15 enemies in total": {
+    "zh": "累计击败15个敌人",
+    "category": "General Term",
+    "indonesian_translation": "Defeat 15 enemies in total"
+  },
+  "Perform Intro Skill 3 times in total": {
+    "zh": "累计触发3次变奏技能",
+    "category": "General Term",
+    "indonesian_translation": "Perform Intro Skill 3 times in total"
+  },
+  "Successfully Dodge or Counterattack once": {
+    "zh": "成功闪避或逆势回击1次",
+    "category": "General Term",
+    "indonesian_translation": "Successfully Dodge or Counterattack once"
+  },
+  "Perform Resonance Liberation 3 times in total": {
+    "zh": "累计释放3次共鸣解放",
+    "category": "General Term",
+    "indonesian_translation": "Perform Resonance Liberation 3 times in total"
+  },
+  "Upgrade Resonator Level once": {
+    "zh": "将任意角色等级提升1次",
+    "category": "General Term",
+    "indonesian_translation": "Upgrade Resonator Level once"
+  },
+  "Open 1 Supply Chest": {
+    "zh": "开启1个奇藏",
+    "category": "General Term",
+    "indonesian_translation": "Open 1 Supply Chest"
+  },
+  "Collect 1 special collectible.": {
+    "zh": "收集1个特殊收集物",
+    "category": "General Term",
+    "indonesian_translation": "Collect 1 special collectible."
+  },
+  "Activate 1 Resonance Beacon": {
+    "zh": "激活1个信标",
+    "category": "General Term",
+    "indonesian_translation": "Activate 1 Resonance Beacon"
+  },
+  "Complete 1 Main Quest": {
+    "zh": "完成1个潮汐任务",
+    "category": "General Term",
+    "indonesian_translation": "Complete 1 Main Quest"
+  },
+  "Complete 1 Side Quest": {
+    "zh": "完成1个纪闻任务",
+    "category": "General Term",
+    "indonesian_translation": "Complete 1 Side Quest"
+  },
+  "Complete 1 Exploration Quest": {
+    "zh": "完成1个危行任务",
+    "category": "General Term",
+    "indonesian_translation": "Complete 1 Exploration Quest"
+  },
+  "Spend 180 Waveplates": {
+    "zh": "累计消耗180点结晶波片",
+    "category": "General Term",
+    "indonesian_translation": "Spend 180 Waveplates"
+  },
+  "Complete 1 Floor in Tower of Adversity": {
+    "zh": "在「逆境深塔」中完成任意1层挑战",
+    "category": "General Term",
+    "indonesian_translation": "Complete 1 Floor in Tower of Adversity"
+  },
+  "Clear Nightmare Nest or Tacet Discord Nest 1 time": {
+    "zh": "通关1次梦魇聚落或残象聚落",
+    "category": "General Term",
+    "indonesian_translation": "Clear Nightmare Nest or Tacet Discord Nest 1 time"
+  },
+  "Collect 5 Pavo Plums": {
+    "zh": "采集5个雀翎果",
+    "category": "General Term",
+    "indonesian_translation": "Collect 5 Pavo Plums"
+  },
+  "Collect 5 Loong's Pearls": {
+    "zh": "采集5个龙吐珠",
+    "category": "General Term",
+    "indonesian_translation": "Collect 5 Loong's Pearls"
+  },
+  "Collect 5 Fluorites": {
+    "zh": "采集5个龙萤石",
+    "category": "General Term",
+    "indonesian_translation": "Collect 5 Fluorites"
+  },
+  "Sounds": {
+    "zh": "声音",
+    "category": "General Term",
+    "indonesian_translation": "Sounds"
+  },
+  "Graphics": {
+    "zh": "图像",
+    "category": "General Term",
+    "indonesian_translation": "Graphics"
+  },
+  "Language": {
+    "zh": "语言",
+    "category": "General Term",
+    "indonesian_translation": "Language"
+  },
+  "Other": {
+    "zh": "其他设置",
+    "category": "General Term",
+    "indonesian_translation": "Other"
+  },
+  "Gameplay": {
+    "zh": "控制",
+    "category": "General Term",
+    "indonesian_translation": "Gameplay"
+  },
+  "Account": {
+    "zh": "账户设置",
+    "category": "General Term",
+    "indonesian_translation": "Account"
+  },
+  "The Crownless": {
+    "zh": "无冠者",
+    "category": "General Term",
+    "indonesian_translation": "The Crownless"
+  },
+  "Phantom: Hyvatia": {
+    "zh": "异相·海维夏",
+    "category": "General Term",
+    "indonesian_translation": "Phantom: Hyvatia"
+  },
+  "\"Little Savior\"": {
+    "zh": "“小小救世主”",
+    "category": "General Term",
+    "indonesian_translation": "\"Little Savior\""
+  },
+  "Hiyuki Cube": {
+    "zh": "绯雪团子",
+    "category": "General Term",
+    "indonesian_translation": "Hiyuki Cube"
+  },
+  "Mornye Cube": {
+    "zh": "莫宁团子",
+    "category": "General Term",
+    "indonesian_translation": "Mornye Cube"
+  },
+  "Factory New": {
+    "zh": "崭新出厂",
+    "category": "General Term",
+    "indonesian_translation": "Factory New"
+  },
+  "Voyaging Star": {
+    "zh": "远航星",
+    "category": "General Term",
+    "indonesian_translation": "Voyaging Star"
+  },
+  "Crystal Sky": {
+    "zh": "「霁」",
+    "category": "General Term",
+    "indonesian_translation": "Crystal Sky"
+  },
+  "Obtain 1 Modding Point": {
+    "zh": "获取1个摩托车改装点数",
+    "category": "General Term",
+    "indonesian_translation": "Obtain 1 Modding Point"
+  },
+  "Obtain 4 Modding Points": {
+    "zh": "获取4个摩托车改装点数",
+    "category": "General Term",
+    "indonesian_translation": "Obtain 4 Modding Points"
+  },
+  "Obtain 8 Modding Points": {
+    "zh": "获取8个摩托车改装点数",
+    "category": "General Term",
+    "indonesian_translation": "Obtain 8 Modding Points"
+  },
+  "Obtain 12 Modding Points": {
+    "zh": "获取12个摩托车改装点数",
+    "category": "General Term",
+    "indonesian_translation": "Obtain 12 Modding Points"
+  },
+  "Obtain the vehicle permit": {
+    "zh": "获取摩托车驾驶权限",
+    "category": "General Term",
+    "indonesian_translation": "Obtain the vehicle permit"
+  },
+  "Reach Modding Level 5": {
+    "zh": "摩托车开发等级达到5级",
+    "category": "General Term",
+    "indonesian_translation": "Reach Modding Level 5"
+  },
+  "Reach Modding Level 10": {
+    "zh": "摩托车开发等级达到10级",
+    "category": "General Term",
+    "indonesian_translation": "Reach Modding Level 10"
+  },
+  "Reach Modding Level 15": {
+    "zh": "摩托车开发等级达到15级",
+    "category": "General Term",
+    "indonesian_translation": "Reach Modding Level 15"
+  },
+  "Use Ram Dynamics 5 times": {
+    "zh": "累计使用5次摩托车「冲角动力」技能",
+    "category": "General Term",
+    "indonesian_translation": "Use Ram Dynamics 5 times"
+  },
+  "Earn 5,000 Modding EXP via Supply Chests": {
+    "zh": "通过开启奇藏箱获得5000摩托车调试经验",
+    "category": "General Term",
+    "indonesian_translation": "Earn 5,000 Modding EXP via Supply Chests"
+  },
+  "Tutorial Track": {
+    "zh": "《试玩关卡》",
+    "category": "General Term",
+    "indonesian_translation": "Tutorial Track"
+  },
+  "De Anima": {
+    "zh": "《论灵魂De Anima》",
+    "category": "General Term",
+    "indonesian_translation": "De Anima"
+  },
+  "Whispers of Stars": {
+    "zh": "《万千星语》",
+    "category": "General Term",
+    "indonesian_translation": "Whispers of Stars"
+  },
+  "Moments Captured Among the Stars": {
+    "zh": "《此刻寻光星间》",
+    "category": "General Term",
+    "indonesian_translation": "Moments Captured Among the Stars"
+  },
+  "To Bright Warm Gold": {
+    "zh": "《致那暖明黄金》",
+    "category": "General Term",
+    "indonesian_translation": "To Bright Warm Gold"
+  },
+  "Dancing Through Fantasies": {
+    "zh": "《悠忽舞于梦中》",
+    "category": "General Term",
+    "indonesian_translation": "Dancing Through Fantasies"
+  },
+  "With Glory I Shall Fall": {
+    "zh": "《愿戴荣光坠入天渊》",
+    "category": "General Term",
+    "indonesian_translation": "With Glory I Shall Fall"
+  },
+  "Daisy Crown": {
+    "zh": "《Daisy Crown》",
+    "category": "General Term",
+    "indonesian_translation": "Daisy Crown"
+  },
+  "Till Dawn": {
+    "zh": "《逐光筑昼》",
+    "category": "General Term",
+    "indonesian_translation": "Till Dawn"
+  },
+  "Radiance Across Sea and Sky": {
+    "zh": "《光耀诸天群海》",
+    "category": "General Term",
+    "indonesian_translation": "Radiance Across Sea and Sky"
+  },
+  "A Splash of True Colors (Throttle Up!)": {
+    "zh": "《于无羁之昼点亮真彩（Throttle Up!)》",
+    "category": "General Term",
+    "indonesian_translation": "A Splash of True Colors (Throttle Up!)"
+  },
+  "O Sun, Witness My Name": {
+    "zh": "《烈阳啊，请见我真名》",
+    "category": "General Term",
+    "indonesian_translation": "O Sun, Witness My Name"
+  },
+  "The Sound of Lost Joy": {
+    "zh": "《死秽失乐福音》",
+    "category": "General Term",
+    "indonesian_translation": "The Sound of Lost Joy"
+  },
+  "Drizzle & Dolce": {
+    "zh": "《雨后甜点》",
+    "category": "General Term",
+    "indonesian_translation": "Drizzle & Dolce"
+  },
+  "Final Step!": {
+    "zh": "《Final Step！》",
+    "category": "General Term",
+    "indonesian_translation": "Final Step!"
+  },
+  "Cthugha": {
+    "zh": "《Cthugha》",
+    "category": "General Term",
+    "indonesian_translation": "Cthugha"
+  },
+  "Tiger's Maw Eatery": {
+    "zh": "虎口大排档",
+    "category": "General Term",
+    "indonesian_translation": "Tiger's Maw Eatery"
+  },
+  "Windchimer Store": {
+    "zh": "定风铎商店",
+    "category": "General Term",
+    "indonesian_translation": "Windchimer Store"
+  },
+  "Squire of the Roving Knight": {
+    "zh": "漂泊骑士的学徒",
+    "category": "General Term",
+    "indonesian_translation": "Squire of the Roving Knight"
+  },
+  "Waiter": {
+    "zh": "家庭餐厅的服务员",
+    "category": "General Term",
+    "indonesian_translation": "Waiter"
+  },
+  "Commis Chef": {
+    "zh": "家庭餐厅的厨艺学徒",
+    "category": "General Term",
+    "indonesian_translation": "Commis Chef"
+  },
+  "Chef": {
+    "zh": "家庭餐厅的厨师",
+    "category": "General Term",
+    "indonesian_translation": "Chef"
+  },
+  "Simulation Training": {
+    "zh": "模拟训练场",
+    "category": "General Term",
+    "indonesian_translation": "Simulation Training"
+  },
+  "Intelligent Retrieval & Indexing System": {
+    "zh": "智能检索与索引系统",
+    "category": "General Term",
+    "indonesian_translation": "Intelligent Retrieval & Indexing System"
+  },
+  "Nightingale Autonomous Nursing Assistant": {
+    "zh": "南丁格尔自主医护助手",
+    "category": "General Term",
+    "indonesian_translation": "Nightingale Autonomous Nursing Assistant"
+  },
+  "Royan Merchant": {
+    "zh": "罗伊行商",
+    "category": "General Term",
+    "indonesian_translation": "Royan Merchant"
+  },
+  "Lahai-Roi Tape of Last Words Collector": {
+    "zh": "拉海洛终声残卷回收",
+    "category": "General Term",
+    "indonesian_translation": "Lahai-Roi Tape of Last Words Collector"
+  },
+  "Soliskin Reunion": {
+    "zh": "归还之灵",
+    "category": "General Term",
+    "indonesian_translation": "Soliskin Reunion"
+  },
+  "Lone Star": {
+    "zh": "孤星的晚宴",
+    "category": "General Term",
+    "indonesian_translation": "Lone Star"
+  },
+  "Signal Intelligent Guidance & Management Automaton": {
+    "zh": "融合信号指挥员",
+    "category": "General Term",
+    "indonesian_translation": "Signal Intelligent Guidance & Management Automaton"
+  },
+  "Prism Fruit Spectrometer": {
+    "zh": "折光果解析",
+    "category": "General Term",
+    "indonesian_translation": "Prism Fruit Spectrometer"
+  },
+  "Anonymous": {
+    "zh": "匿名",
+    "category": "General Term",
+    "indonesian_translation": "Anonymous"
+  },
+  "Co-op Ranking": {
+    "zh": "联机排名",
+    "category": "General Term",
+    "indonesian_translation": "Co-op Ranking"
+  },
+  "Solo Ranking": {
+    "zh": "单人排名",
+    "category": "General Term",
+    "indonesian_translation": "Solo Ranking"
+  },
+  "Online": {
+    "zh": "在线玩家",
+    "category": "General Term",
+    "indonesian_translation": "Online"
+  },
+  "Fashion Union": {
+    "zh": "时装联合会",
+    "category": "General Term",
+    "indonesian_translation": "Fashion Union"
+  },
+  "Lunite Subscription": {
+    "zh": "月相观测卡",
+    "category": "General Term",
+    "indonesian_translation": "Lunite Subscription"
+  },
+  "Special Offers": {
+    "zh": "特惠专区",
+    "category": "General Term",
+    "indonesian_translation": "Special Offers"
+  },
+  "Level Bundles": {
+    "zh": "等级礼包",
+    "category": "General Term",
+    "indonesian_translation": "Level Bundles"
+  },
+  "Standard Bundles": {
+    "zh": "常驻礼包",
+    "category": "General Term",
+    "indonesian_translation": "Standard Bundles"
+  },
+  "New Voyage Bundles": {
+    "zh": "新旅礼包",
+    "category": "General Term",
+    "indonesian_translation": "New Voyage Bundles"
+  },
+  "Afterglow Coral": {
+    "zh": "余波珊瑚",
+    "category": "General Term",
+    "indonesian_translation": "Afterglow Coral"
+  },
+  "Oscillated Coral": {
+    "zh": "残振珊瑚",
+    "category": "General Term",
+    "indonesian_translation": "Oscillated Coral"
+  },
+  "Tidal Exchange": {
+    "zh": "聆听星声",
+    "category": "General Term",
+    "indonesian_translation": "Tidal Exchange"
+  },
+  "Illusive Coral": {
+    "zh": "幻梦珊瑚",
+    "category": "General Term",
+    "indonesian_translation": "Illusive Coral"
+  },
+  "Adversity Exchange": {
+    "zh": "深塔兑换所",
+    "category": "General Term",
+    "indonesian_translation": "Adversity Exchange"
+  },
+  "Simulation Training Store": {
+    "zh": "演练商店",
+    "category": "General Term",
+    "indonesian_translation": "Simulation Training Store"
+  },
+  "Trial Store": {
+    "zh": "试炼商店",
+    "category": "General Term",
+    "indonesian_translation": "Trial Store"
+  },
+  "Synchro Shop": {
+    "zh": "同步商店",
+    "category": "General Term",
+    "indonesian_translation": "Synchro Shop"
+  },
+  "Outfit Display": {
+    "zh": "服饰橱窗",
+    "category": "General Term",
+    "indonesian_translation": "Outfit Display"
+  },
+  "Aspects": {
+    "zh": "换影橱窗",
+    "category": "General Term",
+    "indonesian_translation": "Aspects"
+  },
+  "Accessory Store": {
+    "zh": "饰品橱窗",
+    "category": "General Term",
+    "indonesian_translation": "Accessory Store"
+  },
+  "All": {
+    "zh": "全部",
+    "category": "General Term",
+    "indonesian_translation": "All"
+  },
+  "Details": {
+    "zh": "属性详情",
+    "category": "General Term",
+    "indonesian_translation": "Details"
+  },
+  "Character Model": {
+    "zh": "角色模型",
+    "category": "General Term",
+    "indonesian_translation": "Character Model"
+  },
+  "Player Name and UID": {
+    "zh": "玩家名称和UID",
+    "category": "General Term",
+    "indonesian_translation": "Player Name and UID"
+  },
+  "Face the Camera": {
+    "zh": "角色看向镜头",
+    "category": "General Term",
+    "indonesian_translation": "Face the Camera"
+  },
+  "DOF (Depth of Field)": {
+    "zh": "景深虚化",
+    "category": "General Term",
+    "indonesian_translation": "DOF (Depth of Field)"
+  },
+  "Focal Distance": {
+    "zh": "虚化距离",
+    "category": "General Term",
+    "indonesian_translation": "Focal Distance"
+  },
+  "Depth Blur Radius": {
+    "zh": "虚化半径",
+    "category": "General Term",
+    "indonesian_translation": "Depth Blur Radius"
+  },
+  "Rotate": {
+    "zh": "镜头倾斜",
+    "category": "General Term",
+    "indonesian_translation": "Rotate"
+  },
+  "Image Quality": {
+    "zh": "照片画质",
+    "category": "General Term",
+    "indonesian_translation": "Image Quality"
+  },
+  "The Book of Moments": {
+    "zh": "霎那之书",
+    "category": "General Term",
+    "indonesian_translation": "The Book of Moments"
+  },
+  "Moment of Resonance": {
+    "zh": "鸣响一瞬",
+    "category": "General Term",
+    "indonesian_translation": "Moment of Resonance"
+  },
+  "Fragrance of Tea": {
+    "zh": "茶香悠潮",
+    "category": "General Term",
+    "indonesian_translation": "Fragrance of Tea"
+  },
+  "Outstanding Commander": {
+    "zh": "号令群辉",
+    "category": "General Term",
+    "indonesian_translation": "Outstanding Commander"
+  },
+  "TD Terminator": {
+    "zh": "残象终结者",
+    "category": "General Term",
+    "indonesian_translation": "TD Terminator"
+  },
+  "Wax and Wane": {
+    "zh": "弦望晦朔",
+    "category": "General Term",
+    "indonesian_translation": "Wax and Wane"
+  },
+  "Lighthouse and Blake Bloom": {
+    "zh": "灯塔与黑花",
+    "category": "General Term",
+    "indonesian_translation": "Lighthouse and Blake Bloom"
+  },
+  "Post-Doomsday Coffee": {
+    "zh": "末日后咖啡",
+    "category": "General Term",
+    "indonesian_translation": "Post-Doomsday Coffee"
+  },
+  "Mellow Hours": {
+    "zh": "醇郁时光",
+    "category": "General Term",
+    "indonesian_translation": "Mellow Hours"
+  },
+  "Come On, Smile": {
+    "zh": "来，笑一个吧",
+    "category": "General Term",
+    "indonesian_translation": "Come On, Smile"
+  },
+  "Choir of Stars": {
+    "zh": "星之祝宴",
+    "category": "General Term",
+    "indonesian_translation": "Choir of Stars"
+  },
+  "Tidesong Once More": {
+    "zh": "再鸣潮音",
+    "category": "General Term",
+    "indonesian_translation": "Tidesong Once More"
+  },
+  "Chuluu!": {
+    "zh": "啾噜！",
+    "category": "General Term",
+    "indonesian_translation": "Chuluu!"
+  },
+  "Dream's Edge": {
+    "zh": "边缘幻梦",
+    "category": "General Term",
+    "indonesian_translation": "Dream's Edge"
+  },
+  "Sharp Instinct": {
+    "zh": "锐目直觉",
+    "category": "General Term",
+    "indonesian_translation": "Sharp Instinct"
+  },
+  "Time Reverse": {
+    "zh": "逆转时序",
+    "category": "General Term",
+    "indonesian_translation": "Time Reverse"
+  },
+  "Mind Scalpel": {
+    "zh": "洞彻人心",
+    "category": "General Term",
+    "indonesian_translation": "Mind Scalpel"
+  },
+  "Instant Veto": {
+    "zh": "即刻否决",
+    "category": "General Term",
+    "indonesian_translation": "Instant Veto"
+  },
+  "Combo!!": {
+    "zh": "连击！！",
+    "category": "General Term",
+    "indonesian_translation": "Combo!!"
+  },
+  "Tale of Moontree Lodge": {
+    "zh": "祈愿月树屋",
+    "category": "General Term",
+    "indonesian_translation": "Tale of Moontree Lodge"
+  },
+  "Moments": {
+    "zh": "经营轶事",
+    "category": "General Term",
+    "indonesian_translation": "Moments"
+  },
+  "Until the Long Night Ends": {
+    "zh": "直至永夜终结",
+    "category": "General Term",
+    "indonesian_translation": "Until the Long Night Ends"
+  },
+  "Your Summer Will Never Wither": {
+    "zh": "唯你的长夏永不凋落",
+    "category": "General Term",
+    "indonesian_translation": "Your Summer Will Never Wither"
+  },
+  "Startorch Academy Anecdotes": {
+    "zh": "星炬学院逸话",
+    "category": "General Term",
+    "indonesian_translation": "Startorch Academy Anecdotes"
+  },
+  "Health": {
+    "zh": "体力",
+    "category": "General Term",
+    "indonesian_translation": "Health"
+  },
+  "Martialism": {
+    "zh": "武技",
+    "category": "General Term",
+    "indonesian_translation": "Martialism"
+  },
+  "Willpower": {
+    "zh": "意志",
+    "category": "General Term",
+    "indonesian_translation": "Willpower"
+  },
+  "Reputation": {
+    "zh": "声望",
+    "category": "General Term",
+    "indonesian_translation": "Reputation"
+  },
+  "Leisure Tasks": {
+    "zh": "休闲任务",
+    "category": "General Term",
+    "indonesian_translation": "Leisure Tasks"
+  },
+  "Challenge Tasks": {
+    "zh": "挑战任务",
+    "category": "General Term",
+    "indonesian_translation": "Challenge Tasks"
+  },
+  "Zephyr Symphony": {
+    "zh": "风乐交响",
+    "category": "General Term",
+    "indonesian_translation": "Zephyr Symphony"
+  },
+  "Ashen Oath": {
+    "zh": "焚尽魔影",
+    "category": "General Term",
+    "indonesian_translation": "Ashen Oath"
+  },
+  "Waxing Moon": {
+    "zh": "月矢流明",
+    "category": "General Term",
+    "indonesian_translation": "Waxing Moon"
+  },
+  "Breeze Breaker": {
+    "zh": "风息裂象",
+    "category": "General Term",
+    "indonesian_translation": "Breeze Breaker"
+  },
+  "EncoreCharacter task": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "EncoreCharacter task"
+  },
+  "JiyanCharacter mission": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "JiyanCharacter mission"
+  },
+  "YinlinCharacter mission": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "YinlinCharacter mission"
+  },
+  "LingyangCharacter mission": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "LingyangCharacter mission"
+  },
+  "Silent Icefield": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "Silent Icefield"
+  },
+  "YangyangCharacter mission": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "YangyangCharacter mission"
+  },
+  "ChixiaCharacter mission": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "ChixiaCharacter mission"
+  },
+  "Reach Avinoleum in the sky.": {
+    "zh": "抵达空中的阿维纽林神学院",
+    "category": "General Term",
+    "indonesian_translation": "Reach Avinoleum in the sky."
+  },
+  "Spend the first night in Avinoleum.": {
+    "zh": "在阿维纽林神学院度过第一个夜晚",
+    "category": "General Term",
+    "indonesian_translation": "Spend the first night in Avinoleum."
+  },
+  "Complete Treasure Spot Challenge II.": {
+    "zh": "完成藏宝地挑战II",
+    "category": "General Term",
+    "indonesian_translation": "Complete Treasure Spot Challenge II."
+  },
+  "Complete Flash Dodge II.": {
+    "zh": "完成闪翼挑战II",
+    "category": "General Term",
+    "indonesian_translation": "Complete Flash Dodge II."
+  },
+  "Spend the second night in Avinoleum.": {
+    "zh": "在阿维纽林神学院度过第二个夜晚",
+    "category": "General Term",
+    "indonesian_translation": "Spend the second night in Avinoleum."
+  },
+  "Complete Cloud Platformer once.": {
+    "zh": "完成一次浮沉云梦挑战",
+    "category": "General Term",
+    "indonesian_translation": "Complete Cloud Platformer once."
+  },
+  "Complete Flash Dodge I.": {
+    "zh": "完成闪翼挑战I",
+    "category": "General Term",
+    "indonesian_translation": "Complete Flash Dodge I."
+  },
+  "Return to Porto-Veno Castle and find Cantarella.": {
+    "zh": "返回波蒂维诺堡找到坎特蕾拉",
+    "category": "General Term",
+    "indonesian_translation": "Return to Porto-Veno Castle and find Cantarella."
+  },
+  "Complete Boat Racing I": {
+    "zh": "完成行船竞速挑战I",
+    "category": "General Term",
+    "indonesian_translation": "Complete Boat Racing I"
+  },
+  "Complete Ace Wings II": {
+    "zh": "完成飞翼竞速挑战II",
+    "category": "General Term",
+    "indonesian_translation": "Complete Ace Wings II"
+  },
+  "Defeat Coercitors: The Verdict": {
+    "zh": "击败「妄罪节使·裁决」",
+    "category": "General Term",
+    "indonesian_translation": "Defeat Coercitors: The Verdict"
+  },
+  "Weapon Shop": {
+    "zh": "锻造商店",
+    "category": "General Term",
+    "indonesian_translation": "Weapon Shop"
+  },
+  "Waveplates Exchange": {
+    "zh": "干涉波片兑换处",
+    "category": "General Term",
+    "indonesian_translation": "Waveplates Exchange"
+  },
+  "Panhua's Restaurant": {
+    "zh": "攀花饭馆",
+    "category": "General Term",
+    "indonesian_translation": "Panhua's Restaurant"
+  },
+  "Fireworks Store": {
+    "zh": "烟花铺",
+    "category": "General Term",
+    "indonesian_translation": "Fireworks Store"
+  },
+  "Wishing Stall": {
+    "zh": "祈愿摊",
+    "category": "General Term",
+    "indonesian_translation": "Wishing Stall"
+  },
+  "Solis Tavern": {
+    "zh": "「烈日」酒馆",
+    "category": "General Term",
+    "indonesian_translation": "Solis Tavern"
+  },
+  "The Silver Helmet": {
+    "zh": "银盔杂货铺",
+    "category": "General Term",
+    "indonesian_translation": "The Silver Helmet"
+  },
+  "AI Variety Store": {
+    "zh": "人工智能杂货铺",
+    "category": "General Term",
+    "indonesian_translation": "AI Variety Store"
+  },
+  "7号无音区": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "7号无音区"
+  },
+  "8号无音区": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "General Term",
+    "indonesian_translation": "8号无音区"
+  },
+  "Weekly Challenge: Bell of Archaic Chants": {
+    "zh": "昔日咏叹之钟·战歌重奏",
+    "category": "General Term",
+    "indonesian_translation": "Weekly Challenge: Bell of Archaic Chants"
+  },
+  "End": {
+    "zh": "结束",
+    "category": "General Term",
+    "indonesian_translation": "End"
+  },
+  "Throw": {
+    "zh": "投掷",
+    "category": "General Term",
+    "indonesian_translation": "Throw"
+  },
+  "Put down": {
+    "zh": "放下",
+    "category": "General Term",
+    "indonesian_translation": "Put down"
+  },
+  "Aim": {
+    "zh": "瞄准",
+    "category": "General Term",
+    "indonesian_translation": "Aim"
+  },
+  "Nose Down": {
+    "zh": "压低",
+    "category": "General Term",
+    "indonesian_translation": "Nose Down"
+  },
+  "Hold": {
+    "zh": "长按",
+    "category": "General Term",
+    "indonesian_translation": "Hold"
+  },
+  "Lift": {
+    "zh": "抬升",
+    "category": "General Term",
+    "indonesian_translation": "Lift"
+  },
+  "Stat Bonus": {
+    "zh": "属性加成",
+    "category": "General Term",
+    "indonesian_translation": "Stat Bonus"
+  },
+  "\"Script\"": {
+    "zh": "「剧本」",
+    "category": "General Term",
+    "indonesian_translation": "\"Script\""
+  },
+  "Resonator": {
+    "zh": "角色",
+    "category": "General Term",
+    "indonesian_translation": "Resonator"
+  },
+  "Extra Rewards": {
+    "zh": "额外奖励",
+    "category": "General Term",
+    "indonesian_translation": "Extra Rewards"
+  },
+  "Select Item": {
+    "zh": "道具选择",
+    "category": "General Term",
+    "indonesian_translation": "Select Item"
+  },
+  "Chest Rewards": {
+    "zh": "奇藏奖励",
+    "category": "General Term",
+    "indonesian_translation": "Chest Rewards"
+  },
+  "Select Weapon": {
+    "zh": "武装选择",
+    "category": "General Term",
+    "indonesian_translation": "Select Weapon"
+  },
+  "ATK Bonus": {
+    "zh": "攻击加成",
+    "category": "General Term",
+    "indonesian_translation": "ATK Bonus"
+  },
+  "ATK": {
+    "zh": "攻击力",
+    "category": "General Term",
+    "indonesian_translation": "ATK"
+  },
+  "Attack Speed Bonus": {
+    "zh": "攻击速度加成",
+    "category": "General Term",
+    "indonesian_translation": "Attack Speed Bonus"
+  },
+  "Crit. DMG": {
+    "zh": "暴击伤害",
+    "category": "General Term",
+    "indonesian_translation": "Crit. DMG"
+  },
+  "Crit. Rate": {
+    "zh": "暴击",
+    "category": "General Term",
+    "indonesian_translation": "Crit. Rate"
+  },
+  "Glacio DMG Bonus": {
+    "zh": "冷凝伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Glacio DMG Bonus"
+  },
+  "Fusion DMG Bonus": {
+    "zh": "热熔伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Fusion DMG Bonus"
+  },
+  "Electro DMG Bonus": {
+    "zh": "导电伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Electro DMG Bonus"
+  },
+  "Aero DMG Bonus": {
+    "zh": "气动伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Aero DMG Bonus"
+  },
+  "Spectro DMG Bonus": {
+    "zh": "衍射伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Spectro DMG Bonus"
+  },
+  "Havoc DMG Bonus": {
+    "zh": "湮灭伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Havoc DMG Bonus"
+  },
+  "All DMG Bonus": {
+    "zh": "通用伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "All DMG Bonus"
+  },
+  "Physical DMG Bonus": {
+    "zh": "物理伤害加成",
+    "category": "General Term",
+    "indonesian_translation": "Physical DMG Bonus"
+  },
+  "DMG Multiplier Bonus": {
+    "zh": "伤害倍率加成",
+    "category": "General Term",
+    "indonesian_translation": "DMG Multiplier Bonus"
+  },
+  "DMG Reduction": {
+    "zh": "伤害减免",
+    "category": "General Term",
+    "indonesian_translation": "DMG Reduction"
+  },
+  "HP Regen": {
+    "zh": "生命再生",
+    "category": "General Term",
+    "indonesian_translation": "HP Regen"
+  },
+  "DEF Penetration": {
+    "zh": "防御穿透",
+    "category": "General Term",
+    "indonesian_translation": "DEF Penetration"
+  },
+  "Nightmare": {
+    "zh": "噩梦",
+    "category": "General Term",
+    "indonesian_translation": "Nightmare"
+  },
+  "Helltide Mode": {
+    "zh": "炼狱",
+    "category": "General Term",
+    "indonesian_translation": "Helltide Mode"
+  },
+  "Realistic": {
+    "zh": "拟真",
+    "category": "General Term",
+    "indonesian_translation": "Realistic"
+  },
+  "Easy": {
+    "zh": "简单",
+    "category": "General Term",
+    "indonesian_translation": "Easy"
+  },
+  "Stage 1": {
+    "zh": "第1关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 1"
+  },
+  "Stage 2": {
+    "zh": "第2关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 2"
+  },
+  "Stage 3": {
+    "zh": "第3关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 3"
+  },
+  "Stage 4": {
+    "zh": "第4关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 4"
+  },
+  "Stage 5": {
+    "zh": "第5关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 5"
+  },
+  "Stage 6": {
+    "zh": "第6关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 6"
+  },
+  "Stage 7": {
+    "zh": "第7关",
+    "category": "General Term",
+    "indonesian_translation": "Stage 7"
+  },
+  "Max HP": {
+    "zh": "最大生命值",
+    "category": "General Term",
+    "indonesian_translation": "Max HP"
+  },
+  "Level": {
+    "zh": "等级",
+    "category": "General Term",
+    "indonesian_translation": "Level"
+  },
+  "Movement Speed Bonus": {
+    "zh": "移动速度加成",
+    "category": "General Term",
+    "indonesian_translation": "Movement Speed Bonus"
+  },
+  "Movement Speed": {
+    "zh": "移动速度",
+    "category": "General Term",
+    "indonesian_translation": "Movement Speed"
+  },
+  "Max STA & Recovery": {
+    "zh": "耐力上限及回复",
+    "category": "General Term",
+    "indonesian_translation": "Max STA & Recovery"
+  },
+  "Pickup Range": {
+    "zh": "拾取范围加成",
+    "category": "General Term",
+    "indonesian_translation": "Pickup Range"
+  },
+  "Evolve 6 weapons into their Ultimate Forms": {
+    "zh": "累计合成6种极限形态武装",
+    "category": "General Term",
+    "indonesian_translation": "Evolve 6 weapons into their Ultimate Forms"
+  },
+  "Unlock 30 Items in the Gallery": {
+    "zh": "道具图鉴解锁30个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 30 Items in the Gallery"
+  },
+  "Unlock 45 Items in the Gallery": {
+    "zh": "道具图鉴解锁45个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 45 Items in the Gallery"
+  },
+  "Unlock 55 Items in the Gallery": {
+    "zh": "道具图鉴解锁55个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 55 Items in the Gallery"
+  },
+  "Unlock 2 Weapons in the Gallery": {
+    "zh": "武装图鉴解锁2个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 2 Weapons in the Gallery"
+  },
+  "Unlock 4 Weapons in the Gallery": {
+    "zh": "武装图鉴解锁4个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 4 Weapons in the Gallery"
+  },
+  "Unlock 8 Weapons in the Gallery": {
+    "zh": "武装图鉴解锁8个",
+    "category": "General Term",
+    "indonesian_translation": "Unlock 8 Weapons in the Gallery"
+  },
+  "Evolve 1 weapon into their Ultimate Forms": {
+    "zh": "累计合成1种极限形态武装",
+    "category": "General Term",
+    "indonesian_translation": "Evolve 1 weapon into their Ultimate Forms"
+  },
+  "Evolve 2 weapons into their Ultimate Forms": {
+    "zh": "累计合成2种极限形态武装",
+    "category": "General Term",
+    "indonesian_translation": "Evolve 2 weapons into their Ultimate Forms"
+  },
+  "Evolve 4 weapons into their Ultimate Forms": {
+    "zh": "累计合成4种极限形态武装",
+    "category": "General Term",
+    "indonesian_translation": "Evolve 4 weapons into their Ultimate Forms"
+  },
+  "Achievement Tasks": {
+    "zh": "成就任务",
+    "category": "General Term",
+    "indonesian_translation": "Achievement Tasks"
+  },
+  "Complete Drill Stage 1": {
+    "zh": "完成演习第1关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 1"
+  },
+  "Complete Drill Stage 2": {
+    "zh": "完成演习第2关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 2"
+  },
+  "Complete Drill Stage 3": {
+    "zh": "完成演习第3关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 3"
+  },
+  "Complete Drill Stage 4": {
+    "zh": "完成演习第4关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 4"
+  },
+  "Complete Drill Stage 5": {
+    "zh": "完成演习第5关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 5"
+  },
+  "Complete Drill Stage 6": {
+    "zh": "完成演习第6关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 6"
+  },
+  "Complete Drill Stage 7": {
+    "zh": "完成演习第7关",
+    "category": "General Term",
+    "indonesian_translation": "Complete Drill Stage 7"
+  },
+  "Milestone Tasks": {
+    "zh": "历程任务",
+    "category": "General Term",
+    "indonesian_translation": "Milestone Tasks"
+  },
+  "Total Kills": {
+    "zh": "累计击败",
+    "category": "General Term",
+    "indonesian_translation": "Total Kills"
+  },
+  "Isomer Bolt": {
+    "zh": "异构飞弹",
+    "category": "General Term",
+    "indonesian_translation": "Isomer Bolt"
+  },
+  "Blazing Star": {
+    "zh": "炽灼之星",
+    "category": "General Term",
+    "indonesian_translation": "Blazing Star"
+  },
+  "Feilian Shock": {
+    "zh": "飞廉冲击",
+    "category": "General Term",
+    "indonesian_translation": "Feilian Shock"
+  },
+  "Zenith Windblade": {
+    "zh": "天渊风剑",
+    "category": "General Term",
+    "indonesian_translation": "Zenith Windblade"
+  },
+  "Sanguine Wheel": {
+    "zh": "猩红轮链",
+    "category": "General Term",
+    "indonesian_translation": "Sanguine Wheel"
+  },
+  "Glittering Ray": {
+    "zh": "闪映华光",
+    "category": "General Term",
+    "indonesian_translation": "Glittering Ray"
+  },
+  "Rampant Fire": {
+    "zh": "无序暗火",
+    "category": "General Term",
+    "indonesian_translation": "Rampant Fire"
+  },
+  "Explosive Omen": {
+    "zh": "爆裂征兆",
+    "category": "General Term",
+    "indonesian_translation": "Explosive Omen"
   },
   "Novice Pharmacist": {
     "zh": "制药学徒",
@@ -28193,5 +31658,95 @@
     "zh": "制药大师",
     "category": "General Term",
     "indonesian_translation": "Master Pharmacist"
+  },
+  "Daylight Pebble": {
+    "zh": "筑昼辉砾",
+    "category": "General Term",
+    "indonesian_translation": "Daylight Pebble"
+  },
+  "Frequency Cassette Recorder": {
+    "zh": "频录装置",
+    "category": "General Term",
+    "indonesian_translation": "Frequency Cassette Recorder"
+  },
+  "Obscura Lumis": {
+    "zh": "晦明",
+    "category": "General Term",
+    "indonesian_translation": "Obscura Lumis"
+  },
+  "basic single team challenge": {
+    "zh": "dnt/基础单队伍挑战",
+    "category": "General Term",
+    "indonesian_translation": "basic single team challenge"
+  },
+  "final single team challenge": {
+    "zh": "dnt/最终单队伍挑战",
+    "category": "General Term",
+    "indonesian_translation": "final single team challenge"
+  },
+  "basic dual team challenge": {
+    "zh": "dnt/基础双队伍挑战",
+    "category": "General Term",
+    "indonesian_translation": "basic dual team challenge"
+  },
+  "final double team challenge": {
+    "zh": "dnt/最终双队伍挑战",
+    "category": "General Term",
+    "indonesian_translation": "final double team challenge"
+  },
+  "???": {
+    "zh": "？？？",
+    "category": "General Term",
+    "indonesian_translation": "???"
+  },
+  "Max Stability increased": {
+    "zh": "稳定值上升",
+    "category": "General Term",
+    "indonesian_translation": "Max Stability increased"
+  },
+  "{0}": {
+    "zh": "{0}",
+    "category": "General Term",
+    "indonesian_translation": "{0}"
+  },
+  "Base Camp Lv. 1": {
+    "zh": "基站等级I",
+    "category": "General Term",
+    "indonesian_translation": "Base Camp Lv. 1"
+  },
+  "Base Camp Lv. 2": {
+    "zh": "基站等级II",
+    "category": "General Term",
+    "indonesian_translation": "Base Camp Lv. 2"
+  },
+  "Base Camp Lv. 3": {
+    "zh": "基站等级III",
+    "category": "General Term",
+    "indonesian_translation": "Base Camp Lv. 3"
+  },
+  "Base Camp Lv. 4": {
+    "zh": "基站等级IV",
+    "category": "General Term",
+    "indonesian_translation": "Base Camp Lv. 4"
+  },
+  "Base Camp Lv. 5": {
+    "zh": "基站等级V",
+    "category": "General Term",
+    "indonesian_translation": "Base Camp Lv. 5"
+  },
+  "Weapon Projection": {
+    "zh": "武器投影",
+    "category": "General Term",
+    "indonesian_translation": "Weapon Projection"
+  },
+  "Matrix Mimic": {
+    "zh": "矩阵奇藏",
+    "category": "General Term",
+    "indonesian_translation": "Matrix Mimic"
+  },
+  "Matrix Swarm": {
+    "zh": "矩阵集群",
+    "category": "General Term",
+    "indonesian_translation": "Matrix Swarm"
   }
 }

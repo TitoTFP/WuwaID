@@ -16,6 +16,7 @@ BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904b0"
+        BEGIN
             VALUE "CompanyName", "WuwaID"
             VALUE "FileDescription", "Windows HTTP Services Proxy"
             VALUE "FileVersion", "1.0.0.0"
