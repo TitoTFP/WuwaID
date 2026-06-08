@@ -30,8 +30,8 @@ Vào trang [**Releases**](../../releases) và tải về các file sau:
 | File | Mô tả |
 |------|--------|
 | `WuWaVH_99_P.pak` | File Việt hóa chính |
-| `UTMAlexander_100_P.pak` | Font tiếng Việt |
-| `version.dll` | Loader tự động mount bản dịch |
+| `Signika-Bold_100_P.pak` | Font tiếng Việt |
+| `winhttp.dll` | Loader tự động mount bản dịch |
 
 ### 2. Cài đặt
 
@@ -43,7 +43,7 @@ Vào trang [**Releases**](../../releases) và tải về các file sau:
 
 > Nếu chưa có thư mục `wuwaVietHoa`, hãy tạo mới.
 
-**Bước 2** — Copy `version.dll` vào cùng thư mục với file `.exe` của game:
+**Bước 2** — Copy `winhttp.dll` vào cùng thư mục với file `.exe` của game:
 
 ```
 {Thư mục game}\Client\Binaries\Win64\
@@ -53,22 +53,22 @@ Vào trang [**Releases**](../../releases) và tải về các file sau:
 
 ```
 Client\Binaries\Win64\
-├── version.dll
+├── winhttp.dll
 ├── Client-Win64-Shipping.exe
 └── wuwaVietHoa\
     ├── WuWaVH_99_P.pak
-    └── UTMAlexander_100_P.pak
+    └── Signika-Bold_100_P.pak
 ```
 
 ### 3. Gỡ cài đặt
 
-Xóa file `version.dll` và thư mục `wuwaVietHoa` là xong.
+Xóa file `winhttp.dll` và thư mục `wuwaVietHoa` là xong.
 
 ---
 
 ## Ghi chú
 
-- Bản Việt hóa hoạt động bằng cách mount thêm file `.pak` qua `version.dll` proxy — **không** chỉnh sửa file gốc của game.
+- Bản Việt hóa hoạt động bằng cách mount thêm file `.pak` qua `winhttp.dll` proxy — **không** chỉnh sửa file gốc của game.
 - Sau mỗi bản cập nhật game, có thể cần tải lại file Việt hóa mới từ Releases.
 
 ## Credits
