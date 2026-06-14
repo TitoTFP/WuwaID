@@ -114,6 +114,10 @@ export const api = {
     send<{ role: "editor" }>("POST", "/login", { password }),
   logout: () => send<{ role: "anon" }>("POST", "/logout"),
   me: () => get<MeResponse>(`/me`),
+  exportTranslations: (payload?: { quest_ids?: number[]; category_names?: string[]; only_untranslated?: boolean }) =>
+    send<{ ok: boolean; files?: string[] }>("POST", "/editor/export", payload),
+  importTranslations: (db_path: string) =>
+    send<{ ok: boolean; stats: any }>("POST", "/editor/import", { db_path }),
   categories: () => get<CategorySummary[]>(`/categories`),
   category: (name: string, params: { q?: string; page?: number; page_size?: number }) => {
     const u = new URLSearchParams();

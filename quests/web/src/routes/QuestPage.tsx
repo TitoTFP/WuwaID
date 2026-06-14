@@ -1,6 +1,8 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useToast } from "../components/Toast";
+import ExportDialog from "../components/editor/ExportDialog";
 import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
 import DialogueLine, { type LineIndex } from "../components/DialogueLine";
@@ -111,6 +113,26 @@ export default function QuestPage() {
   const [params] = useSearchParams();
   const primary = (params.get("lang") ?? "en") as Lang;
   const highlightQ = params.get("q");
+
+  const toast = useToast();
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const exportMutation = useMutation({
+    mutationFn: (onlyUntranslated: boolean) =>
+      api.exportTranslations({ quest_ids: [qidN], only_untranslated: onlyUntranslated }),
+    onSuccess: (res) => {
+      setShowExportModal(false);
+      const file = res.files?.[0];
+      if (file) {
+        toast.success(`Quest successfully exported to output_db/id/${file}!`);
+      } else {
+        toast.success("Quest successfully exported to output_db/id!");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(`Export failed: ${err.message || err}`);
+    }
+  });
 
   const listRef = useRef<List>(null);
   const sizeMap = useRef<Record<number, number>>({});
@@ -234,9 +256,18 @@ export default function QuestPage() {
           <Link to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`} className="link text-xs">
             ← {quest.side === 1 ? "side quests" : (quest.chapter_name ?? "chapter")}
           </Link>
-          <Link to={`/editor/${quest.quest_id}`} className="btn text-xs">
-            Edit
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowExportModal(true)}
+              className="btn text-xs btn-active"
+            >
+              Export to SQLite
+            </button>
+            <Link to={`/editor/${quest.quest_id}`} className="btn text-xs">
+              Edit
+            </Link>
+          </div>
         </div>
         <h1 className="mt-1 font-serif text-2xl text-slate-100">
           {quest.quest_name}
@@ -270,6 +301,13 @@ export default function QuestPage() {
         </List>
         </ErrorBoundary>
       </div>
+      <ExportDialog
+        open={showExportModal}
+        title="Export Quest to SQLite"
+        isPending={exportMutation.isPending}
+        onCancel={() => setShowExportModal(false)}
+        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+      />
     </div>
   );
 }

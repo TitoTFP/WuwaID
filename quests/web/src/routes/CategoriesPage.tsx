@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "../components/Toast";
 import { CategoryTable, CategoryEntry } from "../components/CategoryTable";
 import { api } from "../lib/api";
 import type { CategorySummary } from "../lib/types";
+import ExportDialog from "../components/editor/ExportDialog";
 
 export function CategoriesPage() {
   const [categories, setCategories] = useState<CategorySummary[]>([]);
@@ -9,6 +12,29 @@ export function CategoriesPage() {
   const [entries, setEntries] = useState<CategoryEntry[]>([]);
   const [showIdColumn, setShowIdColumn] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const toast = useToast();
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const exportMutation = useMutation({
+    mutationKey: ["export-category", selected],
+    mutationFn: (onlyUntranslated: boolean) => {
+      if (!selected) return Promise.resolve({ ok: false, files: [] });
+      return api.exportTranslations({ category_names: [selected], only_untranslated: onlyUntranslated });
+    },
+    onSuccess: (res) => {
+      setShowExportModal(false);
+      const file = res.files?.[0];
+      if (file) {
+        toast.success(`Category successfully exported to output_db/id/${file}!`);
+      } else {
+        toast.success("Category successfully exported to output_db/id!");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(`Export failed: ${err.message || err}`);
+    }
+  });
 
   // Set page title and load categories list on mount
   useEffect(() => {
@@ -110,7 +136,7 @@ export function CategoriesPage() {
 
   return (
     <div className="container-narrow space-y-4">
-      <div>
+      <div className="flex items-center justify-between">
         <button
           id="back-to-categories-btn"
           onClick={() => setSelected(null)}
@@ -118,12 +144,26 @@ export function CategoriesPage() {
         >
           <span aria-hidden="true">&larr;</span> Back to categories
         </button>
+        <button
+          type="button"
+          onClick={() => setShowExportModal(true)}
+          className="btn text-xs btn-active"
+        >
+          Export Category to SQLite
+        </button>
       </div>
       
       <CategoryTable
         category={selected}
         entries={entries}
         showIdColumn={showIdColumn}
+      />
+      <ExportDialog
+        open={showExportModal}
+        title="Export Category to SQLite"
+        isPending={exportMutation.isPending}
+        onCancel={() => setShowExportModal(false)}
+        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
       />
     </div>
   );

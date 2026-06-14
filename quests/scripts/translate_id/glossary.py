@@ -52,7 +52,7 @@ def is_term_in_text(term: str, text: str) -> bool:
         pattern = r'\b' + pattern
     if term and (term[-1].isalnum() or term[-1] == '_'):
         if term[-1].isalpha():
-            pattern = pattern + r'(?:s|es)?\b'
+            pattern = pattern + r'(?:s|es|nya|ku|mu|lah|kah|pun)?\b'
         else:
             pattern = pattern + r'\b'
     has_upper = any(c.isupper() for c in term)

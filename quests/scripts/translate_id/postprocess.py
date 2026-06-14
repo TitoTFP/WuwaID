@@ -10,41 +10,53 @@ from __future__ import annotations
 from .glossary import is_term_in_text
 
 
-def detect_violations(line: dict, state_glossary: list[str]) -> list[str]:
+def detect_violations(line: dict, state_glossary: list[str], glossary: dict | None = None) -> list[str]:
     """Return glossary terms present in EN but missing from ID for this line.
 
     Includes checking each option's English and Indonesian text.
     """
-    en_parts: list[str] = [
-        line.get("speaker_en", "") or "",
-        line.get("text_en", "") or "",
-    ]
-    id_parts: list[str] = [
-        line.get("speaker_id", "") or "",
-        line.get("text_id", "") or "",
-    ]
+    speaker_en = line.get("speaker_en", "") or ""
+    speaker_id = line.get("speaker_id", "") or ""
+
+    text_en_parts: list[str] = [line.get("text_en", "") or ""]
+    text_id_parts: list[str] = [line.get("text_id", "") or ""]
     # Add option text to the source/target checks
     for opt in (line.get("options") or []):
         if isinstance(opt, dict):
-            en_parts.append(opt.get("text_en", "") or "")
-            id_parts.append(opt.get("text_id", "") or "")
+            text_en_parts.append(opt.get("text_en", "") or "")
+            text_id_parts.append(opt.get("text_id", "") or "")
 
-    en_text = " ".join(en_parts)
-    id_text = " ".join(id_parts)
+    text_en = " ".join(text_en_parts)
+    text_id = " ".join(text_id_parts)
 
     violations: list[str] = []
     for term in state_glossary:
-        if is_term_in_text(term, en_text) and not is_term_in_text(term, id_text):
-            violations.append(term)
+        # Determine category if glossary is provided
+        category = ""
+        if glossary is not None:
+            entry = glossary.get(term)
+            if entry:
+                category = entry.get("category", "")
+
+        if category == "Speaker/NPC":
+            # For Speaker/NPC name category, only validate against the speaker name field.
+            # Do NOT validate in the dialogue text body, to avoid homonym false positives (e.g. Do, Will, Cat, Everyone).
+            if is_term_in_text(term, speaker_en) and not is_term_in_text(term, speaker_id):
+                violations.append(term)
+        else:
+            # For other categories (gameplay terms, locations, etc.), validate against both speaker and text.
+            combined_en = speaker_en + " " + text_en
+            combined_id = speaker_id + " " + text_id
+            if is_term_in_text(term, combined_en) and not is_term_in_text(term, combined_id):
+                violations.append(term)
     return violations
 
 
-
-def find_missing_terms(lines: list[dict], state_glossary: list[str]) -> list[str]:
+def find_missing_terms(lines: list[dict], state_glossary: list[str], glossary: dict | None = None) -> list[str]:
     """Aggregate violations across all lines, returning unique missing terms."""
     seen: set[str] = set()
     for line in lines:
-        for t in detect_violations(line, state_glossary):
+        for t in detect_violations(line, state_glossary, glossary):
             seen.add(t)
     return sorted(seen)
 

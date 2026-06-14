@@ -560,16 +560,44 @@ def api_approve_draft(draft_id: int, role: str = Depends(require_editor)):
     return {"ok": True}
 
 
-@app.post("/api/drafts/{draft_id}/reject")
-def api_reject_draft(draft_id: int, role: str = Depends(require_editor)):
+@app.post("/api/editor/export")
+def api_export_translations(payload: dict | None = None, role: str = Depends(get_role)):
+    if role != "editor":
+        raise HTTPException(403, "editor role required to export")
     try:
-        db.reject_draft(draft_id, approver=role)
-    except ValueError as e:
-        msg = str(e)
-        if "already" in msg:
-            raise HTTPException(409, msg)
-        raise HTTPException(400, msg)
-    return {"ok": True}
+        quest_ids = payload.get("quest_ids") if payload else None
+        category_names = payload.get("category_names") if payload else None
+        only_untranslated = payload.get("only_untranslated", False) if payload else False
+        
+        if quest_ids or category_names:
+            from .export import export_selective_translations
+            exported = export_selective_translations(REPO_ROOT, quest_ids, category_names, only_untranslated)
+            return {"ok": True, "files": exported}
+        else:
+            from .export import export_indonesian_translations
+            export_indonesian_translations(REPO_ROOT)
+            return {"ok": True, "files": ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]}
+    except Exception as e:
+        raise HTTPException(500, f"Export failed: {e}")
+
+
+@app.post("/api/editor/import")
+def api_import_translations(payload: dict, role: str = Depends(get_role)):
+    if role != "editor":
+        raise HTTPException(403, "editor role required to import")
+    db_path_str = payload.get("db_path")
+    if not db_path_str:
+        raise HTTPException(422, "db_path parameter is required")
+    db_path = Path(db_path_str)
+    if not db_path.is_file():
+        raise HTTPException(404, f"Database file not found at: {db_path_str}")
+        
+    try:
+        from .import_translations import import_translations_from_db
+        stats = import_translations_from_db(REPO_ROOT, db_path)
+        return {"ok": True, "stats": stats}
+    except Exception as e:
+        raise HTTPException(500, f"Import failed: {str(e)}")
 
 
 # ---------------------------------------------------------------------------

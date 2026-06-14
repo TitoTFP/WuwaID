@@ -275,6 +275,7 @@ async def _translate_state(
             output_lines_template=lines_to_llm,
             enable_thinking=enable_thinking,
             expected_options_counts=expected_options_counts_for_llm,
+            glossary=glossary,
         )
     except Exception as e:
         log.error("qid %s state %s translation failed: %s", quest_data.get("quest_id"), state_key, e)
@@ -315,7 +316,7 @@ async def _translate_state(
     for line in output_lines:
         if not line or line.get("from_memory"):
             continue
-        viols = detect_violations(line, state_glossary)
+        viols = detect_violations(line, state_glossary, glossary)
         if viols:
             line["flags"] = ["glossary_violation"]
             log.warning("qid %s state %s line %s: glossary violations %s", quest_data.get("quest_id"), state_key, line.get("id"), viols)
@@ -345,6 +346,7 @@ async def _llm_translate_with_glossary_retry(
     output_lines_template: list[dict],
     enable_thinking: bool = True,
     expected_options_counts: list[int] | None = None,
+    glossary: dict | None = None,
 ) -> "StateTranslation":
     """Translate + check glossary, retry once with augmented prompt if needed.
 
@@ -373,7 +375,7 @@ async def _llm_translate_with_glossary_retry(
     if not state_glossary:
         return StateTranslation(lines=llm_lines, usage=total_usage)
 
-    missing = find_missing_terms(records, state_glossary)
+    missing = find_missing_terms(records, state_glossary, glossary)
     if not missing:
         return StateTranslation(lines=llm_lines, usage=total_usage)
 

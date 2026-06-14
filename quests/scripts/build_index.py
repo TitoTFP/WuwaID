@@ -302,7 +302,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                     for entry in (state.get("lines") or []):
                         if not isinstance(entry, dict):
                             continue
-                        lid = entry.get("line_id")
+                        lid = entry.get("line_id") or entry.get("id")
                         tid = entry.get("text_id")
                         if lid is not None and tid is not None:
                             id_lookup[int(lid)] = tid

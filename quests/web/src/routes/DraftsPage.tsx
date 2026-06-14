@@ -230,6 +230,19 @@ function QueueView() {
   const [filters, setFilters] = useState<Filters>({ qid: "", author: "", status: "", dateFrom: "", dateTo: "" });
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const exportMutation = useMutation({
+    mutationFn: () => api.exportTranslations(),
+    onMutate: () => setExporting(true),
+    onSuccess: () => {
+      setExporting(false);
+      toast.success("Translations successfully exported to output_db/id!");
+    },
+    onError: (err: any) => {
+      setExporting(false);
+      toast.error(`Export failed: ${err.message || err}`);
+    }
+  });
 
   const all = draftsQ.data ?? [];
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters]);
@@ -297,15 +310,27 @@ function QueueView() {
           <h1 className="font-serif text-2xl text-slate-100">Drafts</h1>
           <div className="mt-1 text-xs text-slate-500">role: {role}</div>
         </div>
-        {role === "editor" ? (
-          <button type="button" className="btn" onClick={() => void logout()}>
-            Log out
-          </button>
-        ) : (
-          <Link to="/login?next=/drafts" className="btn">
-            Log in
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {role === "editor" && (
+            <button
+              type="button"
+              className="btn btn-active"
+              disabled={exporting}
+              onClick={() => exportMutation.mutate()}
+            >
+              {exporting ? "Exporting..." : "Export to SQLite"}
+            </button>
+          )}
+          {role === "editor" ? (
+            <button type="button" className="btn" onClick={() => void logout()}>
+              Log out
+            </button>
+          ) : (
+            <Link to="/login?next=/drafts" className="btn">
+              Log in
+            </Link>
+          )}
+        </div>
       </div>
 
       <FilterBar filters={filters} onChange={setFilters} qids={qids} authors={authors} />

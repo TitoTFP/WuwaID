@@ -7,6 +7,7 @@
 # build output
 /web/dist
 /web/.vite
+/output_db/
 
 # data (rebuilt by scripts/build_index.py)
 /data
@@ -49,3 +50,6 @@ docs/superpowers/
 
 # Command Code
 .commandcode/
+
+Experiments
+experiments/
