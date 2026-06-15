@@ -576,7 +576,10 @@ def api_export_translations(payload: dict | None = None, role: str = Depends(get
         else:
             from .export import export_indonesian_translations
             export_indonesian_translations(REPO_ROOT)
-            return {"ok": True, "files": ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]}
+            files = ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]
+            if (REPO_ROOT / "output_db" / "id" / "lang_multi_text_2ndhalf.db").is_file():
+                files.append("lang_multi_text_2ndhalf.db")
+            return {"ok": True, "files": files}
     except Exception as e:
         raise HTTPException(500, f"Export failed: {e}")
 

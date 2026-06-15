@@ -24,6 +24,9 @@ export default function QuestCard({
   dupTotal?: number;
 }) {
   const isDup = (dupTotal ?? 0) > 1;
+  const pct = q.total_lines > 0 ? (q.translated_count / q.total_lines) * 100 : 0;
+  const isFullyTranslated = pct >= 100;
+
   return (
     <Link
       to={`/quests/${q.qid}`}
@@ -31,24 +34,41 @@ export default function QuestCard({
         isDup ? "border-l-2 border-l-accent-gold/60" : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-[10px] text-slate-500">
-            <span className="font-mono">#{q.qid}</span>
-            {isDup && (
-              <span className="text-accent-gold">
-                {dupIndex}/{dupTotal}
-              </span>
-            )}
-            {q.side === 1 && <span className="text-accent-teal">side</span>}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-[10px] text-slate-500">
+              <span className="font-mono">#{q.qid}</span>
+              {isDup && (
+                <span className="text-accent-gold">
+                  {dupIndex}/{dupTotal}
+                </span>
+              )}
+              {q.side === 1 && <span className="text-accent-teal">side</span>}
+            </div>
+            <div className="mt-0.5 truncate text-sm font-medium text-slate-100 group-hover:text-accent-gold">
+              {q.quest_name}
+            </div>
           </div>
-          <div className="mt-0.5 truncate text-sm font-medium text-slate-100 group-hover:text-accent-gold">
-            {q.quest_name}
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="chip">{TYPE_LABEL[q.quest_type] ?? `t${q.quest_type}`}</span>
+            <span className="text-[10px] text-slate-500">{q.total_lines} lines</span>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="chip">{TYPE_LABEL[q.quest_type] ?? `t${q.quest_type}`}</span>
-          <span className="text-[10px] text-slate-500">{q.total_lines} lines</span>
+
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-[10px] text-slate-500">
+            <span>Translated: {q.translated_count} / {q.total_lines}</span>
+            <span>{pct.toFixed(0)}%</span>
+          </div>
+          <div className="h-1 w-full rounded bg-white/5 overflow-hidden">
+            <div
+              className={`h-1 rounded transition-all duration-500 ${
+                isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"
+              }`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
         </div>
       </div>
     </Link>

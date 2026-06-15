@@ -121,6 +121,7 @@ export interface QuestListItem {
   chapter_id: number;
   chapter_name: string;
   total_lines: number;
+  translated_count: number;
 }
 
 export interface QuestListResponse {

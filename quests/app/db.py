@@ -295,6 +295,8 @@ def list_quests(
         "name": "q.quest_name",
         "lines": "q.total_lines DESC",
         "lines_asc": "q.total_lines",
+        "translated": "(CAST(q.translated_count AS REAL) / NULLIF(q.total_lines, 0)) DESC",
+        "translated_asc": "(CAST(q.translated_count AS REAL) / NULLIF(q.total_lines, 0))",
     }.get(sort, "q.chapter_id, q.ord, q.qid")
 
     page = max(1, page)
@@ -309,7 +311,8 @@ def list_quests(
         rows = con.execute(
             f"""
             SELECT q.qid, q.quest_name, q.quest_type, q.side,
-                   q.chapter_id, q.chapter_name, q.ord, q.total_lines
+                   q.chapter_id, q.chapter_name, q.ord, q.total_lines,
+                   q.translated_count
             FROM quests q
             {where_sql}
             ORDER BY q.side, {sort_sql}
@@ -633,6 +636,19 @@ def _normalize_patch(patch: dict) -> dict:
     return {_PATCH_NORMALIZE_MAP.get(k, k): v for k, v in patch.items()}
 
 
+def update_quest_translated_count(con: sqlite3.Connection, qid: int) -> None:
+    """Recalculate translated_count for the quest dynamically."""
+    cur = con.execute("""
+        SELECT COUNT(*) FROM dialogue_idx d
+        LEFT JOIN edits e ON e.qid = d.qid AND e.line_id = d.line_id
+        WHERE d.qid = ?
+          AND COALESCE(e.text_id, d.text_id) IS NOT NULL
+          AND COALESCE(e.text_id, d.text_id) != ''
+    """, (qid,))
+    count = cur.fetchone()[0]
+    con.execute("UPDATE quests SET translated_count = ? WHERE qid = ?", (count, qid))
+
+
 def approve_draft(draft_id: int, *, approver: str) -> None:
     con = connect()
     try:
@@ -652,6 +668,9 @@ def approve_draft(draft_id: int, *, approver: str) -> None:
             _materialize_reorder(con, qid, line_id, row["position_after"], approver)
         else:
             _materialize_field_edit(con, qid, line_id, patch, approver)
+
+        # Recalculate translated count dynamically
+        update_quest_translated_count(con, qid)
 
         con.execute(
             "UPDATE drafts SET status = 'applied', updated_at = ? WHERE id = ?",
@@ -698,7 +717,16 @@ def _materialize_field_edit(con, qid: int, line_id: int, patch: dict, approver: 
         for opt in patch["options"]:
             pk = opt.get("plot_line_key")
             if pk:
-                if not any(l.get("plot_line_key") == pk or l.get("text_key") == pk for l in lines):
+                found = False
+                for l in lines:
+                    if l.get("plot_line_key") == pk or l.get("text_key") == pk:
+                        found = True
+                        break
+                    for o in l.get("options", []):
+                        if o.get("plot_line_key") == pk or o.get("text_key") == pk:
+                            found = True
+                            break
+                if not found:
                     raise ValueError(f"branch target {pk!r} not in this quest")
     # Validate state_key change, if present
     if lines and patch.get("state_key") is not None:

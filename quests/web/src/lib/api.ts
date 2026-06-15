@@ -55,7 +55,7 @@ export const api = {
     spk?: string;
     has_options?: boolean;
     q?: string;
-    sort?: "id" | "name" | "lines" | "lines_asc";
+    sort?: "id" | "name" | "lines" | "lines_asc" | "translated" | "translated_asc";
     page?: number;
     page_size?: number;
   }) => {

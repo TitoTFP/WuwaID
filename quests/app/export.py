@@ -182,6 +182,8 @@ def export_indonesian_translations(repo_root: Path) -> None:
     id_db_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(en_db_dir / "lang_multi_text.db", id_db_dir / "lang_multi_text.db")
     shutil.copy2(en_db_dir / "lang_multi_text_1sthalf.db", id_db_dir / "lang_multi_text_1sthalf.db")
+    if (en_db_dir / "lang_multi_text_2ndhalf.db").is_file():
+        shutil.copy2(en_db_dir / "lang_multi_text_2ndhalf.db", id_db_dir / "lang_multi_text_2ndhalf.db")
     print("Copied English database templates to output_db/id/.")
 
     # 5. Determine RedirectDbIndex for target keys in the main database
@@ -192,7 +194,7 @@ def export_indonesian_translations(repo_root: Path) -> None:
 
     updates_main = []
     updates_1st = []
-    skipped_redirect_2 = 0
+    updates_2nd = []
     skipped_not_in_template = 0
 
     for key, val in translations.items():
@@ -203,13 +205,10 @@ def export_indonesian_translations(repo_root: Path) -> None:
             elif redirect == 1:
                 updates_1st.append((val, key))
             elif redirect == 2:
-                # RedirectDbIndex == 2: 2ndhalf.db is not in output_db/en, so it is skipped.
-                skipped_redirect_2 += 1
+                updates_2nd.append((val, key))
         else:
             skipped_not_in_template += 1
 
-    if skipped_redirect_2 > 0:
-        print(f"Skipped {skipped_redirect_2} keys because they redirect to 2ndhalf.db (not present in en/).")
     if skipped_not_in_template > 0:
         print(f"Skipped {skipped_not_in_template} keys because they do not exist in the English template.")
 
@@ -228,6 +227,23 @@ def export_indonesian_translations(repo_root: Path) -> None:
         cur_1st.executemany("UPDATE MultiText SET Content = ? WHERE Id = ?", updates_1st)
         conn_1st.commit()
         conn_1st.close()
+
+    if updates_2nd:
+        db_2nd_path = id_db_dir / "lang_multi_text_2ndhalf.db"
+        if db_2nd_path.is_file():
+            print(f"Updating {len(updates_2nd)} keys in lang_multi_text_2ndhalf.db...")
+            conn_2nd = sqlite3.connect(str(db_2nd_path))
+            cur_2nd = conn_2nd.cursor()
+            table_name = "MultiText"
+            cur_2nd.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('MultiText', 'MultiText_ID_2ndhalf')")
+            row = cur_2nd.fetchone()
+            if row:
+                table_name = row[0]
+            cur_2nd.executemany(f"UPDATE {table_name} SET Content = ? WHERE Id = ?", updates_2nd)
+            conn_2nd.commit()
+            conn_2nd.close()
+        else:
+            print(f"Warning: lang_multi_text_2ndhalf.db not found at {db_2nd_path}, skipped {len(updates_2nd)} updates.")
 
     print("Export completed successfully!")
 
@@ -312,6 +328,31 @@ def fetch_en_metadata(repo_root: Path, keys: list[str]) -> dict[str, tuple[str |
         finally:
             conn.close()
             
+    # Query lang_multi_text_2ndhalf.db
+    db_2nd = en_db_dir / "lang_multi_text_2ndhalf.db"
+    if db_2nd.is_file():
+        conn = sqlite3.connect(str(db_2nd))
+        try:
+            # Table name can be MultiText (WuwaDBExport) or MultiText_ID_2ndhalf (experiments)
+            table_name = "MultiText"
+            cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('MultiText', 'MultiText_ID_2ndhalf')")
+            row = cur.fetchone()
+            if row:
+                table_name = row[0]
+            for i in range(0, len(keys), 500):
+                chunk = keys[i:i+500]
+                placeholders = ",".join("?" for _ in chunk)
+                cur = conn.execute(
+                    f"SELECT Id, Content FROM {table_name} WHERE Id IN ({placeholders})",
+                    chunk
+                )
+                for row in cur.fetchall():
+                    metadata[row[0]] = (row[1], 2)
+        except Exception as e:
+            print(f"Error querying en lang_multi_text_2ndhalf.db: {e}")
+        finally:
+            conn.close()
+            
     return metadata
 
 
@@ -321,7 +362,7 @@ def create_selective_db(db_path: Path):
         db_path.unlink()
     conn = sqlite3.connect(str(db_path))
     try:
-        conn.execute("CREATE TABLE `MultiText` (`Id` TEXT UNIQUE PRIMARY KEY NOT NULL, `Content` TEXT, `RedirectDbIndex` INT)")
+        conn.execute("CREATE TABLE `MultiText` (`Id` TEXT UNIQUE PRIMARY KEY NOT NULL, `Name` TEXT, `Content` TEXT)")
         conn.commit()
     finally:
         conn.close()
@@ -374,6 +415,55 @@ def export_selective_translations(
                 quest_data = json.loads(p.read_text(encoding="utf-8"))
                 quest_name = quest_data.get("quest_name") or "Quest"
                 
+                # Fetch edits for speaker_id overlay
+                edits = {}
+                if (data_dir / "index.db").is_file():
+                    conn_idx = sqlite3.connect(str(data_dir / "index.db"))
+                    try:
+                        cur = conn_idx.execute("SELECT line_id, speaker_id FROM edits WHERE qid = ?", (qid,))
+                        for row in cur.fetchall():
+                            if row[0] is not None:
+                                edits[row[0]] = row[1]
+                    except Exception:
+                        pass
+                    finally:
+                        conn_idx.close()
+
+                # Fetch quest_id speaker_id overlay
+                id_lines_speaker = {}
+                id_path = data_dir / "quests_id" / f"{qid}.json"
+                if id_path.is_file():
+                    try:
+                        id_data = json.loads(id_path.read_text(encoding="utf-8"))
+                        for state in (id_data.get("states") or {}).values():
+                            if not isinstance(state, dict):
+                                continue
+                            for entry in (state.get("lines") or []):
+                                if not isinstance(entry, dict):
+                                    continue
+                                tk = entry.get("text_key")
+                                sid = entry.get("speaker_id")
+                                if tk and sid:
+                                    id_lines_speaker[tk] = sid
+                    except Exception:
+                        pass
+
+                # Build speaker name mapping for quest lines
+                key_to_speaker = {}
+                all_lines = quest_data.get("all_lines") or []
+                for line in all_lines:
+                    tk = line.get("text_key")
+                    if not tk:
+                        continue
+                    line_id = line.get("id")
+                    
+                    spk = edits.get(line_id)
+                    if not spk:
+                        spk = id_lines_speaker.get(tk)
+                    if not spk:
+                        spk = line.get("speaker_en") or ""
+                    key_to_speaker[tk] = spk
+                
                 keys = get_quest_keys(quest_data)
                 if not keys:
                     continue
@@ -399,13 +489,13 @@ def export_selective_translations(
                         if not is_translated:
                             content = en_metadata.get(key, (None, None))[0]
                     
-                    redirect_idx = en_metadata.get(key, (None, None))[1]
-                    rows.append((key, content, redirect_idx))
+                    speaker_name = key_to_speaker.get(key, "")
+                    rows.append((key, speaker_name, content))
                     
                 conn = sqlite3.connect(str(db_path))
                 try:
                     conn.executemany(
-                        "INSERT OR REPLACE INTO MultiText (Id, Content, RedirectDbIndex) VALUES (?, ?, ?)",
+                        "INSERT OR REPLACE INTO MultiText (Id, Name, Content) VALUES (?, ?, ?)",
                         rows
                     )
                     conn.commit()
@@ -445,13 +535,12 @@ def export_selective_translations(
                         if not is_translated:
                             content = en_metadata.get(key, (None, None))[0]
                         
-                    redirect_idx = en_metadata.get(key, (None, None))[1]
-                    rows.append((key, content, redirect_idx))
+                    rows.append((key, "", content))
                     
                 conn = sqlite3.connect(str(db_path))
                 try:
                     conn.executemany(
-                        "INSERT OR REPLACE INTO MultiText (Id, Content, RedirectDbIndex) VALUES (?, ?, ?)",
+                        "INSERT OR REPLACE INTO MultiText (Id, Name, Content) VALUES (?, ?, ?)",
                         rows
                     )
                     conn.commit()

@@ -84,7 +84,7 @@ def import_translations_from_db(repo_root: Path, db_path: Path) -> dict:
             conn_idx.close()
 
     # 3. Scan base quests to map quest keys
-    quest_keys = {} # text_key -> qid
+    quest_keys = {} # text_key -> list of qids
     quests_dir = repo_root / "data" / "quests"
     if quests_dir.is_dir():
         for p in quests_dir.glob("*.json"):
@@ -96,11 +96,11 @@ def import_translations_from_db(repo_root: Path, db_path: Path) -> dict:
                 for line in q_data.get("all_lines", []):
                     tk = line.get("text_key")
                     if tk:
-                        quest_keys[tk] = qid
+                        quest_keys.setdefault(tk, []).append(qid)
                     for opt in line.get("options", []):
                         opt_tk = opt.get("text_key")
                         if opt_tk:
-                            quest_keys[opt_tk] = qid
+                            quest_keys.setdefault(opt_tk, []).append(qid)
             except Exception as e:
                 print(f"Warning: failed to map quest {p.name}: {e}")
 
@@ -114,8 +114,8 @@ def import_translations_from_db(repo_root: Path, db_path: Path) -> dict:
             cat_name = cat_keys[key]
             cat_updates.setdefault(cat_name, {})[key] = val
         elif key in quest_keys:
-            qid = quest_keys[key]
-            quest_updates.setdefault(qid, {})[key] = val
+            for qid in quest_keys[key]:
+                quest_updates.setdefault(qid, {})[key] = val
         else:
             skipped_count += 1
 

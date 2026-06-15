@@ -56,7 +56,7 @@ def indexed_client(tmp_path: Path, sample_quest: dict) -> TestClient:
         CREATE TABLE quests (
             qid INTEGER PRIMARY KEY, quest_name TEXT, quest_type INTEGER,
             side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER,
-            total_lines INTEGER
+            total_lines INTEGER, translated_count INTEGER DEFAULT 0
         );
     """)
     con.execute(
@@ -65,8 +65,8 @@ def indexed_client(tmp_path: Path, sample_quest: dict) -> TestClient:
          "Rover", "Hello.", "你好。", "こんにちは。", "Halo dunia."),
     )
     con.execute(
-        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?)",
-        (106000002, "Test Quest", 1, 0, 1, "Jinzhou Rising", 1, 3),
+        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?,?)",
+        (106000002, "Test Quest", 1, 0, 1, "Jinzhou Rising", 1, 3, 0),
     )
     con.commit()
     con.close()

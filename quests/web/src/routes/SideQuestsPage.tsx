@@ -19,7 +19,7 @@ const TYPE_LABEL: Record<number, string> = {
 
 export default function SideQuestsPage() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<"id" | "name" | "lines" | "lines_asc">("id");
+  const [sort, setSort] = useState<"id" | "name" | "lines" | "lines_asc" | "translated" | "translated_asc">("id");
   const [questType, setQuestType] = useState<number | "">("");
   const [speaker, setSpeaker] = useState("");
   const [hasOptions, setHasOptions] = useState<"" | "yes" | "no">("");
@@ -96,6 +96,8 @@ export default function SideQuestsPage() {
           <option value="name">Sort: name</option>
           <option value="lines">Sort: most lines</option>
           <option value="lines_asc">Sort: fewest lines</option>
+          <option value="translated">Sort: most translated</option>
+          <option value="translated_asc">Sort: least translated</option>
         </select>
       </div>
 

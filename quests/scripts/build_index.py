@@ -289,7 +289,17 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             tokenize = 'unicode61 remove_diacritics 2'
         )
     """)
+    # Build a lookup of restored edits to compute translated_count accurately
+    restored_edits = defaultdict(dict)
+    for row in editor_snapshot.get("edits", []):
+        qid = int(row.get("qid", -1))
+        line_id = int(row.get("line_id", -1))
+        text_id = row.get("text_id")
+        if qid != -1 and line_id != -1:
+            restored_edits[qid][line_id] = text_id
+
     rows: list[tuple] = []
+    quest_translations = {}
     for q in quests:
         id_lookup: dict[int, str] = {}
         id_path = db_path.parent / "quests_id" / f"{q['quest_id']}.json"
@@ -308,6 +318,19 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                             id_lookup[int(lid)] = tid
             except (json.JSONDecodeError, OSError):
                 pass
+
+        # Calculate translated count in memory
+        quest_edits = restored_edits.get(q["quest_id"], {})
+        translated_count = 0
+        for line in q.get("all_lines", []):
+            lid = int(line.get("id", 0))
+            if lid in quest_edits:
+                val = quest_edits[lid]
+            else:
+                val = id_lookup.get(lid, "")
+            if val and val.strip():
+                translated_count += 1
+        quest_translations[q["quest_id"]] = translated_count
 
         for line in q.get("all_lines", []):
             lid = int(line.get("id", 0))
@@ -344,11 +367,12 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             chapter_id INTEGER,
             chapter_name TEXT,
             ord INTEGER,
-            total_lines INTEGER
+            total_lines INTEGER,
+            translated_count INTEGER DEFAULT 0
         )
     """)
     cur.executemany(
-        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?)",
+        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?,?)",
         [
             (
                 q["quest_id"],
@@ -359,6 +383,7 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
                 q.get("chapter_name", ""),
                 q.get("order", 0),
                 q.get("total_lines", 0),
+                quest_translations.get(q["quest_id"], 0),
             )
             for q in quests
         ],

@@ -55,8 +55,9 @@ def client(tmp_path, monkeypatch):
     con = sqlite3.connect(db_path)
     con.executescript("""
         CREATE TABLE quests (qid INTEGER PRIMARY KEY, quest_name TEXT, quest_type INTEGER,
-            side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER, total_lines INTEGER);
-        INSERT INTO quests VALUES (1, '测试文本', 100, 1, 0, 'Side Quests', 1, 1);
+            side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER, total_lines INTEGER,
+            translated_count INTEGER DEFAULT 0);
+        INSERT INTO quests VALUES (1, '测试文本', 100, 1, 0, 'Side Quests', 1, 1, 0);
         CREATE TABLE edits (qid INTEGER NOT NULL, line_id INTEGER NOT NULL,
             type TEXT, state_key TEXT, speaker_en TEXT, speaker_zh_hans TEXT, speaker_ja TEXT,
             text_en TEXT, text_zh_hans TEXT, text_ja TEXT, options_json TEXT,

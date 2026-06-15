@@ -60,14 +60,15 @@ def client(tmp_path, monkeypatch):
             created_at TEXT NOT NULL, expires_at TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'editor');
         CREATE TABLE quests (qid INTEGER PRIMARY KEY, quest_name TEXT, quest_type INTEGER,
-            side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER, total_lines INTEGER);
-        INSERT INTO quests VALUES (106000002, 'Test Quest', 1, 0, 1, 'Test Chapter', 1, 1);
+            side INTEGER, chapter_id INTEGER, chapter_name TEXT, ord INTEGER, total_lines INTEGER,
+            translated_count INTEGER DEFAULT 0);
+        INSERT INTO quests VALUES (106000002, 'Test Quest', 1, 0, 1, 'Test Chapter', 1, 1, 0);
         CREATE VIRTUAL TABLE dialogue_idx USING fts5(
             qid UNINDEXED, line_id UNINDEXED, quest_name UNINDEXED, chapter_name UNINDEXED,
             side UNINDEXED, speaker_en, line_type UNINDEXED, has_options UNINDEXED,
-            text_en, text_zh, text_ja);
+            text_en, text_zh, text_ja, text_id);
         INSERT INTO dialogue_idx VALUES (106000002, 1, 'Test Quest', 'Test Chapter', 0,
-            'Rover', 'Talk', 0, 'Original only.', '', '');
+            'Rover', 'Talk', 0, 'Original only.', '', '', '');
     """)
     con.commit()
     con.close()

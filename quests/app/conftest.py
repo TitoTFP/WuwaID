@@ -119,7 +119,41 @@ def tmp_db(tmp_path: Path, sample_quest: dict) -> Path:
             created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
             author_label TEXT, note TEXT
         );
+        CREATE TABLE quests (
+            qid INTEGER PRIMARY KEY,
+            quest_name TEXT,
+            quest_type INTEGER,
+            side INTEGER,
+            chapter_id INTEGER,
+            chapter_name TEXT,
+            ord INTEGER,
+            total_lines INTEGER,
+            translated_count INTEGER DEFAULT 0
+        );
+        CREATE VIRTUAL TABLE dialogue_idx USING fts5(
+            qid UNINDEXED, line_id UNINDEXED, side UNINDEXED,
+            chapter_id UNINDEXED, chapter_name, quest_name,
+            quest_type UNINDEXED, line_type UNINDEXED, has_options UNINDEXED,
+            speaker_en, text_en, text_zh, text_ja, text_id,
+            tokenize = 'unicode61 remove_diacritics 2'
+        );
     """)
+    con.execute(
+        "INSERT INTO quests VALUES (?,?,?,?,?,?,?,?,?)",
+        (106000002, "Test Quest", 1, 0, 1, "Jinzhou Rising", 1, 3, 0),
+    )
+    con.execute(
+        "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (106000002, 1, 0, 1, "Jinzhou Rising", "Test Quest", 1, "Talk", 0, "Rover", "Hello.", "你好。", "こんにちは。", ""),
+    )
+    con.execute(
+        "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (106000002, 2, 0, 1, "Jinzhou Rising", "Test Quest", 1, "Talk", 0, "Chixia", "Stay close.", "靠近点。", "近づいて。", ""),
+    )
+    con.execute(
+        "INSERT INTO dialogue_idx VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (106000002, 3, 0, 1, "Jinzhou Rising", "Test Quest", 1, "Option", 1, "", "Agree to help", "同意帮忙", "助けることに同意する", ""),
+    )
     con.commit()
     con.close()
     from app import db
