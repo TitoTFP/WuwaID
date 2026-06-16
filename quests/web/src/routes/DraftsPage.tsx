@@ -8,6 +8,7 @@ import type { Draft, DraftPatch, DraftStatus } from "../lib/types";
 import { diffWords } from "../lib/diff";
 import { useToast } from "../components/Toast";
 import ConfirmDialog from "../components/editor/ConfirmDialog";
+import ExportDialog from "../components/editor/ExportDialog";
 import Skeleton from "../components/editor/Skeleton";
 
 const STATUSES: DraftStatus[] = ["pending", "applied", "rejected", "withdrawn"];
@@ -230,16 +231,20 @@ function QueueView() {
   const [filters, setFilters] = useState<Filters>({ qid: "", author: "", status: "", dateFrom: "", dateTo: "" });
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
-  const [exporting, setExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const exportMutation = useMutation({
-    mutationFn: () => api.exportTranslations(),
-    onMutate: () => setExporting(true),
-    onSuccess: () => {
-      setExporting(false);
-      toast.success("Translations successfully exported to output_db/id!");
+    mutationFn: (onlyUntranslated: boolean) =>
+      api.exportTranslations({ only_untranslated: onlyUntranslated }),
+    onSuccess: (res) => {
+      setShowExportModal(false);
+      const files = res.files ?? [];
+      if (files.length > 0) {
+        toast.success(`Translations exported to output_db/id/ (${files.length} file(s))!`);
+      } else {
+        toast.success("Translations successfully exported to output_db/id!");
+      }
     },
     onError: (err: any) => {
-      setExporting(false);
       toast.error(`Export failed: ${err.message || err}`);
     }
   });
@@ -315,10 +320,10 @@ function QueueView() {
             <button
               type="button"
               className="btn btn-active"
-              disabled={exporting}
-              onClick={() => exportMutation.mutate()}
+              disabled={exportMutation.isPending}
+              onClick={() => setShowExportModal(true)}
             >
-              {exporting ? "Exporting..." : "Export to SQLite"}
+              {exportMutation.isPending ? "Exporting..." : "Export to SQLite"}
             </button>
           )}
           {role === "editor" ? (
@@ -455,6 +460,13 @@ function QueueView() {
           bulkRejectQ.mutate(Array.from(selectedDrafts.map((d) => d.id)));
           setConfirmAction(null);
         }}
+      />
+      <ExportDialog
+        open={showExportModal}
+        title="Export All to SQLite"
+        isPending={exportMutation.isPending}
+        onCancel={() => setShowExportModal(false)}
+        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
       />
     </div>
   );

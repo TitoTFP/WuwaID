@@ -37,6 +37,8 @@ def is_untranslated_fallback(translation: str, text_en: str) -> bool:
     if not translation:
         return True
     translation_clean = translation.strip()
+    if translation_clean and all(c == '*' for c in translation_clean):
+        return True
     text_en_clean = text_en.strip()
     if translation_clean == text_en_clean and len(text_en_clean.split()) > 2:
         return True

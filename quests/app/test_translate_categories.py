@@ -248,7 +248,17 @@ from pathlib import Path
 from scripts.translate_id.client import LlamaClient, LlamaError
 from scripts.translate_id.glossary import load_glossary
 from scripts.translate_id.memory import Memory
-from scripts.translate_id.categories_orchestrator import translate_category_file
+from scripts.translate_id.categories_orchestrator import (
+    should_preserve_quest_title,
+    translate_category_file,
+)
+
+
+def test_should_preserve_quest_title_only_for_quest_titles():
+    assert should_preserve_quest_title("Quest", "Quest_311000000_QuestName_0_1")
+    assert should_preserve_quest_title("Quest", "QuestChapter_1008_ChapterName")
+    assert not should_preserve_quest_title("Quest", "LevelPlay_915000001_ChildQuestTip_915_10")
+    assert not should_preserve_quest_title("Item", "Item_001_Name")
 
 
 @pytest.mark.asyncio
@@ -348,6 +358,50 @@ async def test_translate_category_file_happy_path(tmp_path: Path):
     assert out["Adv_001"]["id"] == "Tip satu"
     assert out["Adv_001"]["en"] == "Tip one"
     assert memory.size() == 5
+
+
+@pytest.mark.asyncio
+async def test_translate_category_file_preserves_quest_titles_in_english(tmp_path: Path):
+    """Quest title/category title rows are passthrough and not sent to the LLM."""
+    cat_in = tmp_path / "data" / "categories" / "Quest.json"
+    cat_in.parent.mkdir(parents=True, exist_ok=True)
+    cat_in.write_text(json.dumps({
+        "Quest_311000000_QuestName_0_1": {
+            "zh-Hans": "真彩",
+            "en": "True Colors",
+            "ja": "トゥルーカラー",
+        },
+        "QuestChapter_1008_ChapterName": {
+            "zh-Hans": "群星交错",
+            "en": "Forking Paths Among the Stars",
+            "ja": "星々の分岐路",
+        },
+    }, ensure_ascii=False), encoding="utf-8")
+
+    out_dir = tmp_path / "data" / "categories_id"
+    mem_path = tmp_path / "data" / "_translation_memory.json"
+    glossary = load_glossary(tmp_path / "glossary.json")
+
+    with respx.mock(assert_all_called=False) as respx_mock:
+        respx_mock.post("http://testserver/v1/chat/completions").mock(
+            return_value=httpx.Response(500)
+        )
+        async with LlamaClient(base_url="http://testserver") as client:
+            memory = Memory(mem_path)
+            stats = await translate_category_file(
+                category_path=cat_in,
+                output_dir=out_dir,
+                memory=memory,
+                glossary=glossary,
+                client=client,
+            )
+
+    assert stats["keys_preserved"] == 2
+    assert stats["chunks_done"] == 0
+    out = json.loads((out_dir / "Quest.json").read_text(encoding="utf-8"))
+    assert out["Quest_311000000_QuestName_0_1"]["id"] == "True Colors"
+    assert out["QuestChapter_1008_ChapterName"]["id"] == "Forking Paths Among the Stars"
+    assert memory.size() == 0
 
 
 @pytest.mark.asyncio

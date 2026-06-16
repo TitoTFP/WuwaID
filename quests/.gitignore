@@ -35,6 +35,7 @@ htmlcov/
 *.swp
 *.swo
 *~
+.claude/
 
 # logs / os
 *.log

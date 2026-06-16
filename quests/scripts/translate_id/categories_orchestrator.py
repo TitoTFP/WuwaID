@@ -42,6 +42,13 @@ from .state_iter import chunk_keys, group_category_keys_by_prefix
 log = logging.getLogger(__name__)
 
 
+def should_preserve_quest_title(category_name: str, key: str) -> bool:
+    """Return True for quest title keys that should stay in English."""
+    return category_name == "Quest" and (
+        "_QuestName" in key or "_ChapterName" in key
+    )
+
+
 async def translate_category_file(
     category_path: Path,
     output_dir: Path,
@@ -89,6 +96,12 @@ async def translate_category_file(
             "text_ja": v.get("ja", ""),
         })
 
+    passthrough_entries = {
+        e["key"]: e["text_en"]
+        for e in sorted_entries
+        if should_preserve_quest_title(category_name, e["key"]) and e["text_en"]
+    }
+
     # Skip-resume: load existing output, mark already-translated keys
     existing: dict[str, str] = {}
     if not force and output_path.exists():
@@ -100,16 +113,30 @@ async def translate_category_file(
                     existing[k] = v["id"]
         except (json.JSONDecodeError, OSError):
             pass
+    existing.update(passthrough_entries)
 
     # Filter out already-translated keys
     todo_entries = [e for e in sorted_entries if e["key"] not in existing]
+
+    # Build in-memory output: copy of input with `id` field added
+    output_data: dict[str, dict] = {}
+    for e in sorted_entries:
+        v = input_data[e["key"]]
+        if not isinstance(v, dict):
+            continue
+        out_v = dict(v)
+        out_v["id"] = existing.get(e["key"], "")
+        output_data[e["key"]] = out_v
+
     if not todo_entries:
         log.info("category %s: all %d keys already translated, skipping", category_name, len(sorted_entries))
+        atomic_write_json(output_path, output_data)
         return {
             "keys_translated": 0,
             "keys_from_memory": len(existing),
             "errors": 0,
             "chunks_done": 0,
+            "keys_preserved": len(passthrough_entries),
         }
 
     # Group by prefix, then chunk each group
@@ -121,16 +148,6 @@ async def translate_category_file(
 
     log.info("category %s: %d chunks (%d keys to translate, %d already done)",
              category_name, len(chunks), len(todo_entries), len(existing))
-
-    # Build in-memory output: copy of input with `id` field added
-    output_data: dict[str, dict] = {}
-    for e in sorted_entries:
-        v = input_data[e["key"]]
-        if not isinstance(v, dict):
-            continue
-        out_v = dict(v)
-        out_v["id"] = existing.get(e["key"], "")
-        output_data[e["key"]] = out_v
 
     # Load or init errors sidecar
     errors_data: dict[str, dict] = {}
@@ -147,6 +164,7 @@ async def translate_category_file(
         "errors": 0,
         "chunks_done": 0,
         "violations": 0,
+        "keys_preserved": len(passthrough_entries),
     }
 
     sem = asyncio.Semaphore(concurrency)

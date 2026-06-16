@@ -19,37 +19,26 @@ def load_translations_from_db(db_path: Path, table_name: str) -> dict[str, str]:
         conn.close()
     return trans
 
-def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None) -> dict[str, str]:
-    quest_trans = {}
-    db_path = data_dir / "index.db"
-    edits_by_qid_line = {}
-    
-    # 1. Connect to data/index.db to fetch edits
-    if db_path.is_file():
-        conn = sqlite3.connect(str(db_path))
-        try:
-            cur = conn.execute("SELECT qid, line_id, text_id, options_json FROM edits")
-            for row in cur.fetchall():
-                qid, line_id, text_id, options_json = row
-                edits_by_qid_line[(qid, line_id)] = {
-                    "text_id": text_id,
-                    "options_json": options_json
-                }
-        except Exception as e:
-            print(f"Error reading edits from index.db: {e}")
-        finally:
-            conn.close()
+def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None) -> tuple[dict[str, str], dict[str, str]]:
+    from .db import set_db_path, apply_edits
 
-    # 2. Iterate base quest files
+    quest_trans: dict[str, str] = {}
+    key_to_speaker: dict[str, str] = {}
+    db_path = data_dir / "index.db"
+
+    # Point the db module at the index database so apply_edits can query it
+    if db_path.is_file():
+        set_db_path(db_path)
+
     quests_dir = data_dir / "quests"
     quests_id_dir = data_dir / "quests_id"
-    
+
     if quest_ids is not None:
-        quest_files = []
-        for qid in quest_ids:
-            p = quests_dir / f"{qid}.json"
-            if p.is_file():
-                quest_files.append(p)
+        quest_files = [
+            quests_dir / f"{qid}.json"
+            for qid in quest_ids
+            if (quests_dir / f"{qid}.json").is_file()
+        ]
     else:
         quest_files = list(quests_dir.glob("*.json"))
 
@@ -59,11 +48,16 @@ def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None
             qid = quest_data.get("quest_id")
             if not qid:
                 continue
-            
-            # Load quests_id if it exists
+
+            # Overlay all approved SQLite edits (field edits, options, inserts)
+            if db_path.is_file():
+                apply_edits(qid, quest_data)
+
+            # Load quests_id fallback translations and speaker names
             id_path = quests_id_dir / f"{qid}.json"
-            id_lines = {}      # text_key -> text_id
-            id_options = {}    # text_key -> text_id
+            id_lines: dict[str, str] = {}      # text_key -> text_id
+            id_options: dict[str, str] = {}    # text_key -> text_id
+            id_lines_speaker: dict[str, str] = {} # text_key -> speaker_id
             if id_path.is_file():
                 try:
                     id_data = json.loads(id_path.read_text(encoding="utf-8"))
@@ -75,8 +69,11 @@ def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None
                                 continue
                             tk = entry.get("text_key")
                             tid = entry.get("text_id")
+                            sid = entry.get("speaker_id")
                             if tk and tid:
                                 id_lines[tk] = tid
+                            if tk and sid:
+                                id_lines_speaker[tk] = sid
                             for opt in (entry.get("options") or []):
                                 opt_tk = opt.get("text_key")
                                 opt_tid = opt.get("text_id")
@@ -85,52 +82,45 @@ def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None
                 except Exception as e:
                     print(f"Warning: failed to read quest ID file {id_path.name}: {e}")
 
-            # Iterate over all lines in base quest
+            # Iterate over merged lines (base + edits + inserts)
             all_lines = quest_data.get("all_lines") or []
             for line in all_lines:
-                line_id = line.get("id")
                 tk = line.get("text_key")
-                
-                # Check if we have an edit
-                edit = edits_by_qid_line.get((qid, line_id))
-                
-                # Dialogue line text
-                if edit and edit["text_id"] is not None:
-                    # Editor edit wins
-                    if tk:
-                         quest_trans[tk] = edit["text_id"]
-                elif tk and tk in id_lines:
-                    # Fallback to UI translation
-                    quest_trans[tk] = id_lines[tk]
+                if tk:
+                    # Dialogue line text – apply_edits already set text_id on the line
+                    tid = line.get("text_id")
+                    if tid:
+                        quest_trans[tk] = tid
+                    elif tk in id_lines:
+                        quest_trans[tk] = id_lines[tk]
 
-                # Options translations
-                options = line.get("options") or []
-                edit_options_lookup = {}
-                if edit and edit["options_json"]:
-                    try:
-                        edit_opts = json.loads(edit["options_json"])
-                        for eo in edit_opts:
-                            eo_tk = eo.get("text_key")
-                            eo_tid = eo.get("text_id")
-                            if eo_tk and eo_tid:
-                                edit_options_lookup[eo_tk] = eo_tid
-                    except Exception:
-                        pass
+                    # Resolve speaker name for dialogue line
+                    spk = line.get("speaker_id") or ""
+                    if not spk:
+                        spk = id_lines_speaker.get(tk, "")
+                    if not spk:
+                        spk = line.get("speaker_en") or ""
+                    key_to_speaker[tk] = spk
 
-                for opt in options:
+                # Options – apply_edits already merged options_json into line["options"]
+                for opt in (line.get("options") or []):
                     opt_tk = opt.get("text_key")
                     if not opt_tk:
                         continue
-                    if opt_tk in edit_options_lookup:
-                        quest_trans[opt_tk] = edit_options_lookup[opt_tk]
+                    opt_tid = opt.get("text_id")
+                    if opt_tid:
+                        quest_trans[opt_tk] = opt_tid
                     elif opt_tk in id_options:
                         quest_trans[opt_tk] = id_options[opt_tk]
+                    
+                    # Option lines don't have a speaker name in this column
+                    key_to_speaker[opt_tk] = ""
         except Exception as e:
             print(f"Error processing quest {p.name}: {e}")
-            
-    return quest_trans
 
-def export_indonesian_translations(repo_root: Path) -> None:
+    return quest_trans, key_to_speaker
+
+def export_indonesian_translations(repo_root: Path, only_untranslated: bool = False) -> None:
     en_db_dir = repo_root / "output_db" / "en"
     id_db_dir = repo_root / "output_db" / "id"
     experiments_dir = repo_root / "experiments"
@@ -165,7 +155,7 @@ def export_indonesian_translations(repo_root: Path) -> None:
 
     # 3. Load quest dialogue translations
     print("Loading quest translations...")
-    quest_trans = gather_quest_translations(data_dir)
+    quest_trans, key_to_speaker = gather_quest_translations(data_dir)
     print(f"Loaded {len(quest_trans)} quest line/option translations.")
 
     # Combine all translations (experiments <- categories <- quests)
@@ -174,9 +164,12 @@ def export_indonesian_translations(repo_root: Path) -> None:
     translations.update(category_trans)
     translations.update(quest_trans)
 
-    # Filter out empty translations
-    translations = {k: v for k, v in translations.items() if v and v.strip()}
-    print(f"Total active translations to write: {len(translations)}")
+    # Filter out empty translations and asterisk-only placeholders
+    translations = {
+        k: v for k, v in translations.items()
+        if v and v.strip() and not all(c == '*' for c in v.strip())
+    }
+    print(f"Total active translations: {len(translations)}")
 
     # 4. Copy English template databases to output_db/id/
     id_db_dir.mkdir(parents=True, exist_ok=True)
@@ -186,64 +179,128 @@ def export_indonesian_translations(repo_root: Path) -> None:
         shutil.copy2(en_db_dir / "lang_multi_text_2ndhalf.db", id_db_dir / "lang_multi_text_2ndhalf.db")
     print("Copied English database templates to output_db/id/.")
 
-    # 5. Determine RedirectDbIndex for target keys in the main database
-    conn_main = sqlite3.connect(str(id_db_dir / "lang_multi_text.db"))
-    cur = conn_main.cursor()
-    cur.execute("SELECT Id, RedirectDbIndex FROM MultiText")
-    db_keys = {row[0]: row[1] for row in cur.fetchall()}
-
-    updates_main = []
-    updates_1st = []
-    updates_2nd = []
-    skipped_not_in_template = 0
-
-    for key, val in translations.items():
-        if key in db_keys:
-            redirect = db_keys[key]
-            if redirect == 0:
-                updates_main.append((val, key))
-            elif redirect == 1:
-                updates_1st.append((val, key))
-            elif redirect == 2:
-                updates_2nd.append((val, key))
-        else:
-            skipped_not_in_template += 1
-
-    if skipped_not_in_template > 0:
-        print(f"Skipped {skipped_not_in_template} keys because they do not exist in the English template.")
-
-    # 6. Apply updates
-    if updates_main:
-        print(f"Updating {len(updates_main)} keys in lang_multi_text.db...")
-        cur.executemany("UPDATE MultiText SET Content = ? WHERE Id = ?", updates_main)
-    
-    conn_main.commit()
-    conn_main.close()
-
-    if updates_1st:
-        print(f"Updating {len(updates_1st)} keys in lang_multi_text_1sthalf.db...")
-        conn_1st = sqlite3.connect(str(id_db_dir / "lang_multi_text_1sthalf.db"))
-        cur_1st = conn_1st.cursor()
-        cur_1st.executemany("UPDATE MultiText SET Content = ? WHERE Id = ?", updates_1st)
-        conn_1st.commit()
-        conn_1st.close()
-
-    if updates_2nd:
+    if only_untranslated:
+        keys_to_delete = list(translations.keys())
+        print(f"Only-untranslated mode: deleting {len(keys_to_delete)} translated keys to keep only untranslated keys...")
+        
+        # 1. Main DB
+        conn_main = sqlite3.connect(str(id_db_dir / "lang_multi_text.db"))
+        try:
+            for i in range(0, len(keys_to_delete), 500):
+                chunk = keys_to_delete[i:i+500]
+                placeholders = ",".join("?" for _ in chunk)
+                conn_main.execute(f"DELETE FROM MultiText WHERE Id IN ({placeholders})", chunk)
+            
+            # Add Name column and populate it
+            conn_main.execute("ALTER TABLE MultiText ADD COLUMN Name TEXT")
+            updates = [(spk, key) for key, spk in key_to_speaker.items() if spk]
+            conn_main.executemany("UPDATE MultiText SET Name = ? WHERE Id = ?", updates)
+            conn_main.commit()
+        finally:
+            conn_main.close()
+            
+        # 2. 1sthalf DB
+        db_1st_path = id_db_dir / "lang_multi_text_1sthalf.db"
+        if db_1st_path.is_file():
+            conn_1st = sqlite3.connect(str(db_1st_path))
+            try:
+                for i in range(0, len(keys_to_delete), 500):
+                    chunk = keys_to_delete[i:i+500]
+                    placeholders = ",".join("?" for _ in chunk)
+                    conn_1st.execute(f"DELETE FROM MultiText WHERE Id IN ({placeholders})", chunk)
+                
+                # Add Name column and populate it
+                conn_1st.execute("ALTER TABLE MultiText ADD COLUMN Name TEXT")
+                updates = [(spk, key) for key, spk in key_to_speaker.items() if spk]
+                conn_1st.executemany("UPDATE MultiText SET Name = ? WHERE Id = ?", updates)
+                conn_1st.commit()
+            finally:
+                conn_1st.close()
+                
+        # 3. 2ndhalf DB
         db_2nd_path = id_db_dir / "lang_multi_text_2ndhalf.db"
         if db_2nd_path.is_file():
-            print(f"Updating {len(updates_2nd)} keys in lang_multi_text_2ndhalf.db...")
             conn_2nd = sqlite3.connect(str(db_2nd_path))
-            cur_2nd = conn_2nd.cursor()
-            table_name = "MultiText"
-            cur_2nd.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('MultiText', 'MultiText_ID_2ndhalf')")
-            row = cur_2nd.fetchone()
-            if row:
-                table_name = row[0]
-            cur_2nd.executemany(f"UPDATE {table_name} SET Content = ? WHERE Id = ?", updates_2nd)
-            conn_2nd.commit()
-            conn_2nd.close()
-        else:
-            print(f"Warning: lang_multi_text_2ndhalf.db not found at {db_2nd_path}, skipped {len(updates_2nd)} updates.")
+            try:
+                table_name = "MultiText"
+                cur_2nd = conn_2nd.cursor()
+                cur_2nd.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('MultiText', 'MultiText_ID_2ndhalf')")
+                row = cur_2nd.fetchone()
+                if row:
+                    table_name = row[0]
+                for i in range(0, len(keys_to_delete), 500):
+                    chunk = keys_to_delete[i:i+500]
+                    placeholders = ",".join("?" for _ in chunk)
+                    conn_2nd.execute(f"DELETE FROM {table_name} WHERE Id IN ({placeholders})", chunk)
+                
+                # Add Name column and populate it
+                conn_2nd.execute(f"ALTER TABLE {table_name} ADD COLUMN Name TEXT")
+                updates = [(spk, key) for key, spk in key_to_speaker.items() if spk]
+                conn_2nd.executemany(f"UPDATE {table_name} SET Name = ? WHERE Id = ?", updates)
+                conn_2nd.commit()
+            finally:
+                conn_2nd.close()
+                
+        print("Deleted translated keys and populated speaker Name column successfully.")
+    else:
+        # 5. Determine RedirectDbIndex for target keys in the main database
+        conn_main = sqlite3.connect(str(id_db_dir / "lang_multi_text.db"))
+        cur = conn_main.cursor()
+        cur.execute("SELECT Id, RedirectDbIndex FROM MultiText")
+        db_keys = {row[0]: row[1] for row in cur.fetchall()}
+
+        updates_main = []
+        updates_1st = []
+        updates_2nd = []
+        skipped_not_in_template = 0
+
+        for key, val in translations.items():
+            if key in db_keys:
+                redirect = db_keys[key]
+                if redirect == 0:
+                    updates_main.append((val, key))
+                elif redirect == 1:
+                    updates_1st.append((val, key))
+                elif redirect == 2:
+                    updates_2nd.append((val, key))
+            else:
+                skipped_not_in_template += 1
+
+        if skipped_not_in_template > 0:
+            print(f"Skipped {skipped_not_in_template} keys because they do not exist in the English template.")
+
+        # 6. Apply updates
+        if updates_main:
+            print(f"Updating {len(updates_main)} keys in lang_multi_text.db...")
+            cur.executemany("UPDATE MultiText SET Content = ? WHERE Id = ?", updates_main)
+        
+        conn_main.commit()
+        conn_main.close()
+
+        if updates_1st:
+            print(f"Updating {len(updates_1st)} keys in lang_multi_text_1sthalf.db...")
+            conn_1st = sqlite3.connect(str(id_db_dir / "lang_multi_text_1sthalf.db"))
+            cur_1st = conn_1st.cursor()
+            cur_1st.executemany("UPDATE MultiText SET Content = ? WHERE Id = ?", updates_1st)
+            conn_1st.commit()
+            conn_1st.close()
+
+        if updates_2nd:
+            db_2nd_path = id_db_dir / "lang_multi_text_2ndhalf.db"
+            if db_2nd_path.is_file():
+                print(f"Updating {len(updates_2nd)} keys in lang_multi_text_2ndhalf.db...")
+                conn_2nd = sqlite3.connect(str(db_2nd_path))
+                cur_2nd = conn_2nd.cursor()
+                table_name = "MultiText"
+                cur_2nd.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('MultiText', 'MultiText_ID_2ndhalf')")
+                row = cur_2nd.fetchone()
+                if row:
+                    table_name = row[0]
+                cur_2nd.executemany(f"UPDATE {table_name} SET Content = ? WHERE Id = ?", updates_2nd)
+                conn_2nd.commit()
+                conn_2nd.close()
+            else:
+                print(f"Warning: lang_multi_text_2ndhalf.db not found at {db_2nd_path}, skipped {len(updates_2nd)} updates.")
 
     print("Export completed successfully!")
 
@@ -380,8 +437,9 @@ def export_selective_translations(
     
     # 1. Load active translations
     quest_trans = {}
+    key_to_speaker = {}
     if quest_ids:
-        quest_trans = gather_quest_translations(data_dir, quest_ids)
+        quest_trans, key_to_speaker = gather_quest_translations(data_dir, quest_ids)
         
     category_trans = {}
     if category_names:
@@ -401,12 +459,23 @@ def export_selective_translations(
     translations = {}
     translations.update(category_trans)
     translations.update(quest_trans)
+    # Filter out empty translations and asterisk-only placeholders
+    translations = {
+        k: v for k, v in translations.items()
+        if v and v.strip() and not all(c == '*' for c in v.strip())
+    }
     
     exported_files = []
     
     # 2. Process Quests
     if quest_ids:
+        from .db import set_db_path, apply_edits
+
         quests_dir = data_dir / "quests"
+        db_path = data_dir / "index.db"
+        if db_path.is_file():
+            set_db_path(db_path)
+
         for qid in quest_ids:
             p = quests_dir / f"{qid}.json"
             if not p.is_file():
@@ -414,72 +483,27 @@ def export_selective_translations(
             try:
                 quest_data = json.loads(p.read_text(encoding="utf-8"))
                 quest_name = quest_data.get("quest_name") or "Quest"
-                
-                # Fetch edits for speaker_id overlay
-                edits = {}
-                if (data_dir / "index.db").is_file():
-                    conn_idx = sqlite3.connect(str(data_dir / "index.db"))
-                    try:
-                        cur = conn_idx.execute("SELECT line_id, speaker_id FROM edits WHERE qid = ?", (qid,))
-                        for row in cur.fetchall():
-                            if row[0] is not None:
-                                edits[row[0]] = row[1]
-                    except Exception:
-                        pass
-                    finally:
-                        conn_idx.close()
 
-                # Fetch quest_id speaker_id overlay
-                id_lines_speaker = {}
-                id_path = data_dir / "quests_id" / f"{qid}.json"
-                if id_path.is_file():
-                    try:
-                        id_data = json.loads(id_path.read_text(encoding="utf-8"))
-                        for state in (id_data.get("states") or {}).values():
-                            if not isinstance(state, dict):
-                                continue
-                            for entry in (state.get("lines") or []):
-                                if not isinstance(entry, dict):
-                                    continue
-                                tk = entry.get("text_key")
-                                sid = entry.get("speaker_id")
-                                if tk and sid:
-                                    id_lines_speaker[tk] = sid
-                    except Exception:
-                        pass
+                # Overlay all approved SQLite edits (field edits, options, inserts)
+                if db_path.is_file():
+                    apply_edits(qid, quest_data)
 
-                # Build speaker name mapping for quest lines
-                key_to_speaker = {}
-                all_lines = quest_data.get("all_lines") or []
-                for line in all_lines:
-                    tk = line.get("text_key")
-                    if not tk:
-                        continue
-                    line_id = line.get("id")
-                    
-                    spk = edits.get(line_id)
-                    if not spk:
-                        spk = id_lines_speaker.get(tk)
-                    if not spk:
-                        spk = line.get("speaker_en") or ""
-                    key_to_speaker[tk] = spk
-                
                 keys = get_quest_keys(quest_data)
                 if not keys:
                     continue
-                
+
                 en_metadata = fetch_en_metadata(repo_root, keys)
-                
+
                 sanitized_name = sanitize_filename(quest_name)
                 db_name = f"{sanitized_name}_{qid}.db"
-                db_path = output_dir / db_name
-                create_selective_db(db_path)
-                
+                db_out_path = output_dir / db_name
+                create_selective_db(db_out_path)
+
                 rows = []
                 for key in keys:
                     content = translations.get(key)
                     is_translated = bool(content and content.strip())
-                    
+
                     if only_untranslated:
                         if is_translated:
                             continue
@@ -488,11 +512,11 @@ def export_selective_translations(
                     else:
                         if not is_translated:
                             content = en_metadata.get(key, (None, None))[0]
-                    
+
                     speaker_name = key_to_speaker.get(key, "")
                     rows.append((key, speaker_name, content))
-                    
-                conn = sqlite3.connect(str(db_path))
+
+                conn = sqlite3.connect(str(db_out_path))
                 try:
                     conn.executemany(
                         "INSERT OR REPLACE INTO MultiText (Id, Name, Content) VALUES (?, ?, ?)",
@@ -501,7 +525,7 @@ def export_selective_translations(
                     conn.commit()
                 finally:
                     conn.close()
-                
+
                 exported_files.append(db_name)
                 print(f"Exported quest {qid} to {db_name} with {len(rows)} rows.")
             except Exception as e:

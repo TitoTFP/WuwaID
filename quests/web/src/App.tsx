@@ -6,6 +6,7 @@ import SideQuestsPage from "./routes/SideQuestsPage";
 import QuestPage from "./routes/QuestPage";
 import SearchPage from "./routes/SearchPage";
 import EditorPage from "./routes/EditorPage";
+import TranslatorPage from "./routes/TranslatorPage";
 import DraftsPage from "./routes/DraftsPage";
 import LoginPage from "./routes/LoginPage";
 import CategoriesPage from "./routes/CategoriesPage";
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/quests/:qid" element={<QuestPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/editor/:qid" element={<EditorPage />} />
+        <Route path="/translator/:qid" element={<TranslatorPage />} />
         <Route path="/drafts" element={<DraftsPage />} />
         <Route path="/drafts/:draftId" element={<DraftsPage />} />
         <Route path="/login" element={<LoginPage />} />

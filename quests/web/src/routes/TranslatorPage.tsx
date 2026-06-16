@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
-import type { DialogueLine, DialogueTreeNode, DraftPatch, LineSummary, TreeDropPosition } from "../lib/types";
+import type { DialogueLine, DialogueTreeNode, DraftPatch, LineSummary } from "../lib/types";
 import DialogueTreeView, { applyFilters, type TreeFilters } from "../components/editor/DialogueTreeView";
-import LineForm from "../components/editor/LineForm";
+import TranslatorForm from "../components/editor/TranslatorForm";
 import DraftBanner from "../components/editor/DraftBanner";
 import ShortcutsHelp from "../components/editor/ShortcutsHelp";
 import ResizeHandle from "../components/editor/ResizeHandle";
@@ -14,8 +14,6 @@ import Skeleton from "../components/editor/Skeleton";
 import { useGlobalHotkeys } from "../lib/keyboard";
 import { useToast } from "../components/Toast";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
-
-type ReorderPreview = { line_id: number; position_after: number | null };
 
 const STATE_KEY_RE = /^(.*)_(\d+)_(\d+)$/;
 
@@ -163,14 +161,12 @@ function collectLineIds(nodes: DialogueTreeNode[]): number[] {
   return out;
 }
 
-export default function EditorPage() {
+export default function TranslatorPage() {
   const { qid = "0" } = useParams();
   const qidN = Number(qid);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [searchQ, setSearchQ] = useState("");
   const [previewLines, setPreviewLines] = useState<DialogueLine[]>([]);
-  const [reorderPreview, setReorderPreview] = useState<ReorderPreview[]>([]);
   const [filters, setFilters] = useState<TreeFilters>({
     editedOnly: false,
     pendingOnly: false,
@@ -205,31 +201,11 @@ export default function EditorPage() {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drafts"] });
+      // Invalidate quest details so the progress tracker and tree lines refresh
+      queryClient.invalidateQueries({ queryKey: ["editor", "quest", qidN] });
       toast.success("Draft saved");
     },
     onError: () => toast.error("Failed to save draft"),
-  });
-
-  const saveReorderQ = useMutation({
-    mutationFn: async (drafts: ReorderPreview[]) => {
-      for (const draft of drafts) {
-        await api.createDraft(
-          {
-            qid: qidN,
-            line_id: draft.line_id,
-            patch: { _op: "reorder" },
-            position_after: draft.position_after,
-          },
-          authorLabel,
-        );
-      }
-    },
-    onSuccess: () => {
-      setReorderPreview([]);
-      queryClient.invalidateQueries({ queryKey: ["drafts"] });
-      toast.success("Reorder drafts saved");
-    },
-    onError: () => toast.error("Failed to save reorder drafts"),
   });
 
   const draftsQ = useQuery({
@@ -240,9 +216,7 @@ export default function EditorPage() {
 
   useEffect(() => {
     setPreviewLines(questQ.data?.all_lines ?? []);
-    setReorderPreview([]);
     setSelectedId(null);
-    setSelectedIds(new Set());
     setSearchQ("");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
@@ -259,6 +233,7 @@ export default function EditorPage() {
   }, [questQ.data]);
   const selectedLine = selectedId !== null ? (previewLineMap.get(selectedId) ?? null) : null;
   const originalSelectedLine = selectedId !== null ? (originalLineMap.get(selectedId) ?? null) : null;
+
   const plotModeByKey = useMemo(() => {
     const map = new Map<string, string>();
     for (const flow of questQ.data?.flows ?? []) {
@@ -266,6 +241,7 @@ export default function EditorPage() {
     }
     return map;
   }, [questQ.data]);
+
   const tree = useMemo(
     () => buildEditorTree(previewLines, lines, plotModeByKey),
     [previewLines, lines, plotModeByKey],
@@ -279,12 +255,12 @@ export default function EditorPage() {
     }
     return acc;
   }, [draftsQ.data, qidN]);
+
   const filteredTree = useMemo(
     () => applyFilters(searchedTree, filters, pendingCountsById),
     [searchedTree, filters, pendingCountsById],
   );
   const searchMatchCount = useMemo(() => countTreeLines(searchedTree), [searchedTree]);
-
   const allLineIds = useMemo(() => collectLineIds(tree), [tree]);
   const lineIdIndex = useMemo(() => {
     const map = new Map<number, number>();
@@ -298,38 +274,6 @@ export default function EditorPage() {
     return Array.from(set).sort();
   }, [previewLines]);
 
-  // For each line, list of options that point at it (for backlinks panel).
-  // Built once so the backlinks useMemo is O(1) instead of O(N×M).
-  const optIndex = useMemo(() => {
-    const idx = new Map<number, { fromId: number; fromType: string; snippet: string }[]>();
-    for (const line of previewLines) {
-      for (const opt of line.options ?? []) {
-        let targetId: number | undefined;
-        if (typeof opt.plot_line_id === "number") {
-          targetId = opt.plot_line_id;
-        } else if (opt.plot_line_key) {
-          targetId = previewLineMap.get(parseInt(opt.plot_line_key.split("_").pop() ?? "0", 10))?.id;
-          if (targetId == null) {
-            // Fall back: scan all_lines via text_key (rare case)
-            for (const l of previewLines) {
-              if (l.text_key === opt.plot_line_key) { targetId = l.id; break; }
-            }
-          }
-        }
-        if (targetId == null) continue;
-        if (!idx.has(targetId)) idx.set(targetId, []);
-        idx.get(targetId)!.push({
-          fromId: line.id,
-          fromType: line.type,
-          snippet: (opt.text_en || opt["text_zh-Hans"] || opt.text_ja || "").slice(0, 60),
-        });
-      }
-    }
-    return idx;
-  }, [previewLines, previewLineMap]);
-
-  // For jumpToLine: state_id.sub_id → first matching line. User-triggered but
-  // cheap to keep memoized.
   const stateKeyIndex = useMemo(() => {
     const m = new Map<string, DialogueLine>();
     for (const l of previewLines) {
@@ -342,70 +286,6 @@ export default function EditorPage() {
     return m;
   }, [previewLines]);
 
-  // For LineForm handleMoveState: state_key → lines in that state.
-  const linesByState = useMemo(() => {
-    const m = new Map<string, DialogueLine[]>();
-    for (const l of previewLines) {
-      const k = l.state_key || "";
-      if (!m.has(k)) m.set(k, []);
-      m.get(k)!.push(l);
-    }
-    return m;
-  }, [previewLines]);
-
-  // For LineForm handleMoveState: flowName → ordered state_keys (preserves
-  // encounter order). Replaces the O(N²) filter+includes inside LineForm.
-  const stateOrderByFlow = useMemo(() => {
-    const m = new Map<string, string[]>();
-    for (const l of previewLines) {
-      const parsed = parseStateKey(l.state_key ?? "");
-      const flow = parsed?.flowName || "Ungrouped";
-      const key = l.state_key || "";
-      if (!key) continue;
-      if (!m.has(flow)) m.set(flow, []);
-      const arr = m.get(flow)!;
-      if (!arr.includes(key)) arr.push(key);
-    }
-    return m;
-  }, [previewLines]);
-
-  const moveBlock = (
-    movedLineIds: number[],
-    targetLineIds: number[],
-    position: TreeDropPosition,
-  ) => {
-    if (!movedLineIds.length || !targetLineIds.length) return;
-    const moved = movedLineIds.filter((id) => previewLines.some((line) => line.id === id));
-    if (!moved.length) return;
-    const remaining = previewLines.map((line) => line.id).filter((id) => !moved.includes(id));
-    const targetAnchorId = position === "before" ? targetLineIds[0] : targetLineIds[targetLineIds.length - 1];
-    const targetIndex = remaining.findIndex((id) => id === targetAnchorId);
-    if (targetIndex < 0) return;
-    const insertAt = position === "after" || position === "inside" ? targetIndex + 1 : targetIndex;
-    const nextOrder = [...remaining.slice(0, insertAt), ...moved, ...remaining.slice(insertAt)];
-    const currentOrder = previewLines.map((line) => line.id).join(",");
-    if (nextOrder.join(",") === currentOrder) return;
-
-    const byId = new Map(previewLines.map((line) => [line.id, line]));
-    setPreviewLines(nextOrder.flatMap((id) => (byId.get(id) ? [byId.get(id)!] : [])));
-
-    const drafts: ReorderPreview[] = [];
-    let anchor: number | null = insertAt > 0 ? remaining[insertAt - 1] : null;
-    for (const lineId of moved) {
-      drafts.push({ line_id: lineId, position_after: anchor });
-      anchor = lineId;
-    }
-    setReorderPreview((current) => {
-      const next = current.filter((draft) => !moved.includes(draft.line_id));
-      return [...next, ...drafts];
-    });
-  };
-
-  const resetPreview = () => {
-    setPreviewLines(questQ.data?.all_lines ?? []);
-    setReorderPreview([]);
-  };
-
   const previewLineEdit = (line: DialogueLine) => {
     setPreviewLines((current) => current.map((item) => (item.id === line.id ? line : item)));
   };
@@ -413,7 +293,6 @@ export default function EditorPage() {
   const selectById = useCallback(
     (id: number) => {
       setSelectedId(id);
-      setSelectedIds(new Set());
     },
     [],
   );
@@ -437,7 +316,6 @@ export default function EditorPage() {
       const clean = raw.trim().replace(/^#/, "");
       if (!clean) return;
 
-      // Try matching state ID (e.g., 119000000.1)
       const stateMatch = clean.match(/^(\d+)\.(\d+)$/);
       if (stateMatch) {
         const k = `${stateMatch[1]}.${stateMatch[2]}`;
@@ -449,7 +327,6 @@ export default function EditorPage() {
         }
       }
 
-      // Try matching line ID
       const lineId = Number(clean);
       if (Number.isInteger(lineId) && allLineIds.includes(lineId)) {
         selectById(lineId);
@@ -461,36 +338,28 @@ export default function EditorPage() {
     [allLineIds, stateKeyIndex, selectById, toast],
   );
 
-  const onSelectMany = useCallback((ids: number[], replace: boolean) => {
-    setSelectedIds((current) => {
-      const next = replace ? new Set<number>() : new Set(current);
-      for (const id of ids) {
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
-      }
-      return next;
-    });
-  }, []);
+  // Indonesian Translation Stats
+  const stats = useMemo(() => {
+    if (!questQ.data?.all_lines) return { count: 0, percentage: 0 };
+    const all = questQ.data.all_lines;
+    const linesWithSource = all.filter((l) => l.text_en && l.text_en.trim() !== "");
+    if (linesWithSource.length === 0) return { count: 0, percentage: 100 };
+    
+    // We count a line as translated if text_id has non-empty content
+    const count = all.filter((l) => l.text_id && l.text_id.trim() !== "").length;
+    const percentage = Math.round((count / linesWithSource.length) * 100);
+    return { count, percentage, total: linesWithSource.length };
+  }, [questQ.data]);
 
-  const clearMultiSelect = useCallback(() => setSelectedIds(new Set()), []);
-
-  const dirty = submitQ.isPending || (reorderPreview.length > 0);
+  const dirty = submitQ.isPending;
   useUnsavedGuard(dirty);
 
   useGlobalHotkeys([
     { key: "j", handler: () => selectRelative(1) },
     { key: "k", handler: () => selectRelative(-1) },
-    { key: "s", handler: (event) => {
-        event.preventDefault();
-      }, options: { mod: true } },
     { key: "?", handler: () => setShowHelp((v) => !v), options: { shift: true } },
     { key: "Escape", handler: () => { setShowHelp(false); if (searchQ) setSearchQ(""); } },
   ]);
-
-  const backlinks = useMemo(() => {
-    if (!selectedLine) return [] as { fromId: number; fromType: string; snippet: string }[];
-    return optIndex.get(selectedLine.id) ?? [];
-  }, [selectedLine, optIndex]);
 
   const breadcrumb = useMemo(() => {
     if (!selectedLine) return null;
@@ -511,21 +380,22 @@ export default function EditorPage() {
             ← back to viewer
           </Link>
           <div className="flex gap-2">
-            <div className="btn text-xs btn-active">
-              Structure Editor Mode
-            </div>
             <Link
-              to={`/translator/${qidN}`}
-              className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
-              title="Translate dialogue to Indonesian"
+              to={`/editor/${qidN}`}
+              className="btn text-xs bg-bg-2 hover:bg-white/5"
+              title="Edit quest dialogue metadata and ordering flow"
             >
-              Indonesian Translation Mode
+              Structure Editor Mode
             </Link>
+            <div className="btn text-xs btn-active border-accent-gold/45 text-accent-gold">
+              Indonesian Translation Mode
+            </div>
           </div>
         </div>
-        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
+
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h1 className="font-serif text-2xl text-slate-100">
-            Editor · quest #{qidN}
+            Translator Workspace · quest #{qidN}
             <span className="ml-2 text-sm text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
           </h1>
           <button
@@ -538,6 +408,23 @@ export default function EditorPage() {
             ?
           </button>
         </div>
+
+        {/* Translation Progress bar */}
+        {questQ.data && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-bg-2/30 border border-white/5 rounded-md px-3 py-2 text-xs">
+            <div className="font-semibold text-slate-300 shrink-0">Indonesian Translation Progress:</div>
+            <div className="relative flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-accent-gold to-yellow-500 transition-all duration-500 rounded-full"
+                style={{ width: `${stats.percentage}%` }}
+              />
+            </div>
+            <div className="font-mono text-slate-400 shrink-0 select-none">
+              <span className="text-accent-gold font-bold">{stats.percentage}%</span> ({stats.count} / {stats.total} lines translated)
+            </div>
+          </div>
+        )}
+
         {breadcrumb && (
           <div className="mt-1 text-[11px] text-slate-500">
             <span>quest #{qidN}</span>
@@ -549,87 +436,12 @@ export default function EditorPage() {
             <span className="text-slate-300">line #{breadcrumb.line}</span>
           </div>
         )}
-        {reorderPreview.length > 0 && (
-          <div className="card mt-3 flex flex-col gap-3 border-accent-gold/20 bg-accent-gold/5 p-3 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-slate-200">
-                  Previewing {reorderPreview.length} unsaved reorder {reorderPreview.length === 1 ? "change" : "changes"}.
-                </div>
-                <div className="text-xs text-slate-500">
-                  Tree order updates immediately. Save to create review drafts.
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-active text-xs"
-                  disabled={saveReorderQ.isPending}
-                  onClick={() => saveReorderQ.mutate(reorderPreview)}
-                >
-                  {saveReorderQ.isPending ? "Saving..." : "Save reorder drafts"}
-                </button>
-                <button type="button" className="btn text-xs" onClick={resetPreview}>
-                  Reset preview
-                </button>
-              </div>
-            </div>
-            <ul className="space-y-1 text-xs text-slate-300">
-              {reorderPreview.map((change) => (
-                <li
-                  key={change.line_id}
-                  className="flex items-center justify-between gap-2 rounded border border-white/5 bg-bg-1/40 px-2 py-1"
-                >
-                  <span className="font-mono">
-                    #<span className="text-slate-400">{change.line_id}</span>{" "}
-                    <span className="text-slate-500">→</span>{" "}
-                    {change.position_after === null ? (
-                      <span className="text-slate-500">top</span>
-                    ) : (
-                      <span>after #{change.position_after}</span>
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-rose-300 hover:text-rose-200"
-                    onClick={() =>
-                      setReorderPreview((current) => current.filter((d) => d.line_id !== change.line_id))
-                    }
-                  >
-                    ↶
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+
         <DraftBanner qid={qidN} />
-        {selectedIds.size > 1 && (
-          <div className="card mt-3 flex flex-wrap items-center justify-between gap-2 border-accent-teal/30 bg-accent-teal/5 p-2 text-xs text-slate-200">
-            <span>
-              {selectedIds.size} lines selected
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="btn text-xs"
-                onClick={() => {
-                  const ids = Array.from(selectedIds);
-                  if (!ids.length) return;
-                  moveBlock(ids, [ids[ids.length - 1]], "after");
-                  toast.success(`Moved ${ids.length} lines`);
-                }}
-              >
-                Move to end
-              </button>
-              <button type="button" className="btn text-xs" onClick={clearMultiSelect}>
-                Clear
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
       <div className="flex flex-1 min-h-0 gap-4">
+        {/* Dialogue line tree sidebar */}
         <div className="flex w-[22rem] max-w-full shrink-0 relative">
           <aside className="card flex-1 flex flex-col overflow-hidden p-2">
             {linesQ.isLoading && questQ.isLoading && (
@@ -650,26 +462,22 @@ export default function EditorPage() {
                 filters={filters}
                 onFiltersChange={setFilters}
                 types={typesInQuest}
-                onMoveBlock={moveBlock}
                 onJumpToLine={jumpToLine}
-                activeLang="en"
-                selectedIds={selectedIds}
-                onSelectMany={onSelectMany}
-                storageKeyOpen={`editor:open:${qidN}`}
-                storageKeyReview={`editor:review:${qidN}`}
+                activeLang="id"
+                storageKeyOpen={`translator:open:${qidN}`}
+                storageKeyReview={`translator:review:${qidN}`}
               />
             )}
-            {saveReorderQ.error && (
-              <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
-            )}
           </aside>
-          <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
+          <ResizeHandle storageKey={`translator:tree-width:${qidN}`} min={240} max={960} />
         </div>
+
+        {/* Translation Workbench panel */}
         <section className="card flex-1 flex flex-col p-4 min-h-0 overflow-y-auto">
           {selectedId === null ? (
             <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
-              <p>Select a line on the left, or press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
-              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
+              <p>Select a dialogue line on the left to start translating.</p>
+              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to search dialogue, or <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
             </div>
           ) : questQ.isLoading ? (
             <Skeleton variant="form" />
@@ -677,10 +485,7 @@ export default function EditorPage() {
             <div className="text-sm text-rose-400">Failed to load quest.</div>
           ) : selectedLine ? (
             <div className="flex h-full flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] uppercase tracking-widest text-slate-500">Edit Dialogue Line Structure</div>
-              </div>
-              <LineForm
+              <TranslatorForm
                 line={selectedLine}
                 originalLine={originalSelectedLine ?? selectedLine}
                 qid={qidN}
@@ -691,36 +496,7 @@ export default function EditorPage() {
                   selectRelative(dir);
                 }}
                 allLines={previewLines}
-                linesByState={linesByState}
-                stateOrderByFlow={stateOrderByFlow}
-                onMoveBlock={moveBlock}
               />
-              {backlinks.length > 0 && (
-                <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
-                  <summary className="cursor-pointer text-slate-300">
-                    Backlinks · {backlinks.length} line(s) jump here
-                  </summary>
-                  <ul className="mt-2 space-y-1">
-                    {backlinks.map((link) => (
-                      <li
-                        key={link.fromId}
-                        className="flex items-center gap-2"
-                      >
-                        <button
-                          type="button"
-                          className="link text-xs"
-                          onClick={() => selectById(link.fromId)}
-                        >
-                          #{link.fromId} · {link.fromType}
-                        </button>
-                        {link.snippet && (
-                          <span className="truncate text-slate-500">— {link.snippet}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
             </div>
           ) : (
             <div className="text-sm text-slate-500">

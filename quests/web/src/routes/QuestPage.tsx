@@ -264,8 +264,19 @@ export default function QuestPage() {
             >
               Export to SQLite
             </button>
-            <Link to={`/editor/${quest.quest_id}`} className="btn text-xs">
-              Edit
+            <Link
+              to={`/editor/${quest.quest_id}`}
+              className="btn text-xs hover:border-slate-400"
+              title="Edit quest structure and settings"
+            >
+              Edit Flow
+            </Link>
+            <Link
+              to={`/translator/${quest.quest_id}`}
+              className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+              title="Translate dialogue to Indonesian"
+            >
+              Translate
             </Link>
           </div>
         </div>

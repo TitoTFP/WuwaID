@@ -12,6 +12,7 @@ export type TreeFilters = {
   editedOnly: boolean;
   pendingOnly: boolean;
   hasOptionsOnly: boolean;
+  untranslatedOnly: boolean;
   type: string | null;
 };
 
@@ -175,6 +176,11 @@ function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCou
   if (filters.editedOnly && !line.is_edited) return false;
   if (filters.pendingOnly && (pendingCounts[line.id] ?? 0) === 0) return false;
   if (filters.hasOptionsOnly && !(line.options && line.options.length > 0)) return false;
+  if (filters.untranslatedOnly) {
+    const needsTranslation = line.text_en && line.text_en.trim() !== "";
+    const hasTranslation = line.text_id && line.text_id.trim() !== "";
+    if (!needsTranslation || hasTranslation) return false;
+  }
   if (filters.type && line.type !== filters.type) return false;
   return true;
 }
@@ -469,6 +475,11 @@ export default function DialogueTreeView({
             label="pending"
             active={filters.pendingOnly}
             onClick={() => updateFilter("pendingOnly", !filters.pendingOnly)}
+          />
+          <FilterChip
+            label="untranslated"
+            active={filters.untranslatedOnly}
+            onClick={() => updateFilter("untranslatedOnly", !filters.untranslatedOnly)}
           />
           <FilterChip
             label="has options"

@@ -623,6 +623,8 @@ _PATCH_TO_COLUMN = {
     "text_en": "text_en",
     "text_zh_hans": "text_zh_hans",
     "text_ja": "text_ja",
+    "text_id": "text_id",
+    "speaker_id": "speaker_id",
 }
 
 _PATCH_NORMALIZE_MAP = {

@@ -38,6 +38,8 @@ def clean_translation(text_key, translation, text_en):
     if not translation:
         return None
     translation = translation.strip()
+    if translation and all(c == '*' for c in translation):
+        return None
     if not text_en:
         return translation
     text_en_clean = text_en.strip()

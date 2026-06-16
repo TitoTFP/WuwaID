@@ -7,10 +7,6 @@ const SHORTCUTS: Shortcut[] = [
   { keys: "j", description: "Select next line in tree" },
   { keys: "k", description: "Select previous line in tree" },
   { keys: "Ctrl/⌘ + S", description: "Save current draft" },
-  { keys: "1 / 2 / 3", description: "Switch to EN / ZH-Hans / JA tab" },
-  { keys: "4", description: "Switch to META tab" },
-  { keys: "[ / ]", description: "Previous / next tab" },
-  { keys: "e", description: "Focus selected line in tree" },
   { keys: "Esc", description: "Close dialog or clear search" },
   { keys: "?", description: "Toggle this help" },
 ];
