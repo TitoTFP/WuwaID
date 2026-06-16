@@ -130,7 +130,8 @@ export default function TranslatorForm({
     });
   }
 
-  const isOptionLine = line.type === "Option" || line.type === "SystemOption";
+  const hasParentText = !!(line.text_en || line["text_zh-Hans"] || line.text_ja || line.text_id);
+  const isOptionLine = (line.type === "Option" || line.type === "SystemOption") && !hasParentText;
   const hasOptions = (draft.options?.length ?? 0) > 0;
 
   function updateOptionText(index: number, value: string) {

@@ -103,7 +103,7 @@ function buildEditorTree(
 function lineMatchesSearch(line: DialogueLine & { is_edited?: boolean }, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return [
+  const mainMatch = [
     String(line.id),
     line.type,
     line.state_key,
@@ -117,6 +117,20 @@ function lineMatchesSearch(line: DialogueLine & { is_edited?: boolean }, query: 
     line.text_ja,
     line.text_id,
   ].some((value) => String(value ?? "").toLowerCase().includes(q));
+
+  if (mainMatch) return true;
+
+  if (line.options && line.options.length > 0) {
+    return line.options.some((opt) => [
+      opt.text_key,
+      opt.text_en,
+      opt["text_zh-Hans"],
+      opt.text_ja,
+      opt.text_id,
+    ].some((value) => String(value ?? "").toLowerCase().includes(q)));
+  }
+
+  return false;
 }
 
 function filterEditorTree(nodes: DialogueTreeNode[], query: string): DialogueTreeNode[] {
@@ -342,13 +356,33 @@ export default function TranslatorPage() {
   const stats = useMemo(() => {
     if (!questQ.data?.all_lines) return { count: 0, percentage: 0 };
     const all = questQ.data.all_lines;
-    const linesWithSource = all.filter((l) => l.text_en && l.text_en.trim() !== "");
-    if (linesWithSource.length === 0) return { count: 0, percentage: 100 };
     
-    // We count a line as translated if text_id has non-empty content
-    const count = all.filter((l) => l.text_id && l.text_id.trim() !== "").length;
-    const percentage = Math.round((count / linesWithSource.length) * 100);
-    return { count, percentage, total: linesWithSource.length };
+    let total = 0;
+    let count = 0;
+    
+    for (const l of all) {
+      const hasParentText = !!(l.text_en && l.text_en.trim() !== "");
+      const parentTranslated = !hasParentText || !!(l.text_id && l.text_id.trim() !== "");
+      
+      const hasOptionsText = !!(l.options && l.options.some(opt => opt.text_en && opt.text_en.trim() !== ""));
+      const optionsTranslated = !l.options || l.options.every(opt => 
+        !(opt.text_en && opt.text_en.trim() !== "") || !!(opt.text_id && opt.text_id.trim() !== "")
+      );
+      
+      const needsTranslation = hasParentText || hasOptionsText;
+      const isFullyTranslated = parentTranslated && optionsTranslated;
+      
+      if (needsTranslation) {
+        total += 1;
+        if (isFullyTranslated) {
+          count += 1;
+        }
+      }
+    }
+    
+    if (total === 0) return { count: 0, percentage: 100, total: 0 };
+    const percentage = Math.round((count / total) * 100);
+    return { count, percentage, total };
   }, [questQ.data]);
 
   const dirty = submitQ.isPending;

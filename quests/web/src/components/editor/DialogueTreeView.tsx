@@ -177,9 +177,18 @@ function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCou
   if (filters.pendingOnly && (pendingCounts[line.id] ?? 0) === 0) return false;
   if (filters.hasOptionsOnly && !(line.options && line.options.length > 0)) return false;
   if (filters.untranslatedOnly) {
-    const needsTranslation = line.text_en && line.text_en.trim() !== "";
-    const hasTranslation = line.text_id && line.text_id.trim() !== "";
-    if (!needsTranslation || hasTranslation) return false;
+    const hasParentText = !!(line.text_en && line.text_en.trim() !== "");
+    const parentTranslated = !hasParentText || !!(line.text_id && line.text_id.trim() !== "");
+    
+    const hasOptionsText = !!(line.options && line.options.some(opt => opt.text_en && opt.text_en.trim() !== ""));
+    const optionsTranslated = !line.options || line.options.every(opt => 
+      !(opt.text_en && opt.text_en.trim() !== "") || !!(opt.text_id && opt.text_id.trim() !== "")
+    );
+    
+    const needsTranslation = hasParentText || hasOptionsText;
+    const isFullyTranslated = parentTranslated && optionsTranslated;
+    
+    if (!needsTranslation || isFullyTranslated) return false;
   }
   if (filters.type && line.type !== filters.type) return false;
   return true;

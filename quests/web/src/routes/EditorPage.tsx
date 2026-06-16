@@ -105,7 +105,7 @@ function buildEditorTree(
 function lineMatchesSearch(line: DialogueLine & { is_edited?: boolean }, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return [
+  const mainMatch = [
     String(line.id),
     line.type,
     line.state_key,
@@ -119,6 +119,20 @@ function lineMatchesSearch(line: DialogueLine & { is_edited?: boolean }, query: 
     line.text_ja,
     line.text_id,
   ].some((value) => String(value ?? "").toLowerCase().includes(q));
+
+  if (mainMatch) return true;
+
+  if (line.options && line.options.length > 0) {
+    return line.options.some((opt) => [
+      opt.text_key,
+      opt.text_en,
+      opt["text_zh-Hans"],
+      opt.text_ja,
+      opt.text_id,
+    ].some((value) => String(value ?? "").toLowerCase().includes(q)));
+  }
+
+  return false;
 }
 
 function filterEditorTree(nodes: DialogueTreeNode[], query: string): DialogueTreeNode[] {

@@ -90,7 +90,7 @@ def _merge_id_translation(quest: dict, qid: int) -> bool:
             if not isinstance(entry, dict):
                 continue
             tk = entry.get("text_key")
-            lid = entry.get("line_id")
+            lid = entry.get("line_id") or entry.get("id")
             if tk:
                 by_text_key.setdefault(tk, entry)
             if lid is not None:
@@ -440,6 +440,7 @@ def api_editor_quest(qid: int):
     quest = _load_quest(qid)
     if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
+    _merge_id_translation(quest, qid)
     return _json(db.apply_edits(qid, quest))
 
 
@@ -448,6 +449,7 @@ def api_editor_quest_lines(qid: int):
     quest = _load_quest(qid)
     if quest is None:
         raise HTTPException(404, f"quest {qid} not found")
+    _merge_id_translation(quest, qid)
     db.apply_edits(qid, quest)
     con = db.connect()
     try:

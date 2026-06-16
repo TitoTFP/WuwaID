@@ -125,6 +125,36 @@ def test_merge_id_present_populates_lines(client: TestClient, tmp_path: Path) ->
     assert line3["options"][0]["text_id"] == "Ya"
 
 
+def test_merge_id_present_populates_lines_using_id_key(client: TestClient, tmp_path: Path) -> None:
+    """ID file present and using 'id' instead of 'line_id' for Option lines."""
+    _write_id_file(tmp_path, 106000002, {
+        "quest_id": 106000002,
+        "quest_name": "Test Quest",
+        "chapter_id": 1,
+        "chapter_name": "Jinzhou Rising",
+        "translated_at": "2026-06-07T00:00:00Z",
+        "model": "test",
+        "states": {
+            "Flow_1_3": {
+                "plot_mode": "Normal",
+                "lines": [
+                    {"id": 3, "type": "Option", "text_key": "",
+                     "speaker_id": "", "text_id": "Setuju membantu",
+                     "options": [
+                         {"text_key": "t3opt1", "text_id": "Ya"}
+                     ],
+                     "flags": []}
+                ]
+            },
+        },
+    })
+    r = client.get("/api/quests/106000002")
+    body = r.json()
+    line3 = next(l for l in body["all_lines"] if l["id"] == 3)
+    assert line3["text_id"] == "Setuju membantu"
+    assert line3["options"][0]["text_id"] == "Ya"
+
+
 def test_merge_id_corrupt_file_is_noop(client: TestClient, tmp_path: Path) -> None:
     """Corrupt ID file → treated as missing."""
     (tmp_path / "quests_id" / "106000002.json").write_text("not json {{{", encoding="utf-8")
