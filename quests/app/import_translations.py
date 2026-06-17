@@ -44,7 +44,7 @@ def is_untranslated_fallback(translation: str, text_en: str) -> bool:
         return True
     return False
 
-def import_translations_from_db(repo_root: Path, db_path: Path) -> dict:
+def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: bool = True) -> dict:
     # 1. Load translations from the imported database
     db_translations = {}
     if not db_path.is_file():
@@ -353,12 +353,13 @@ def import_translations_from_db(repo_root: Path, db_path: Path) -> dict:
             print(f"Error saving translation memory: {e}")
 
     # 8. Rebuild index database using subprocess
-    print("Rebuilding FTS search index...")
-    try:
-        subprocess.run([sys.executable, "scripts/build_index.py"], cwd=str(repo_root), check=True)
-        print("Search index rebuilt successfully.")
-    except Exception as e:
-        print(f"Error rebuilding search index: {e}")
+    if rebuild_index:
+        print("Rebuilding FTS search index...")
+        try:
+            subprocess.run([sys.executable, "scripts/build_index.py"], cwd=str(repo_root), check=True)
+            print("Search index rebuilt successfully.")
+        except Exception as e:
+            print(f"Error rebuilding search index: {e}")
 
     return {
         "success": True,

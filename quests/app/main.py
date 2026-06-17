@@ -570,10 +570,21 @@ def api_export_translations(payload: dict | None = None, role: str = Depends(get
         quest_ids = payload.get("quest_ids") if payload else None
         category_names = payload.get("category_names") if payload else None
         only_untranslated = payload.get("only_untranslated", False) if payload else False
+        prefix_filters = payload.get("prefix_filters") if payload else None
+        type_filters = payload.get("type_filters") if payload else None
+        search_filter = payload.get("search_filter") if payload else None
         
         if quest_ids or category_names:
             from .export import export_selective_translations
-            exported = export_selective_translations(REPO_ROOT, quest_ids, category_names, only_untranslated)
+            exported = export_selective_translations(
+                REPO_ROOT,
+                quest_ids=quest_ids,
+                category_names=category_names,
+                only_untranslated=only_untranslated,
+                prefix_filters=prefix_filters,
+                type_filters=type_filters,
+                search_filter=search_filter,
+            )
             return {"ok": True, "files": exported}
         else:
             from .export import export_indonesian_translations
@@ -593,14 +604,54 @@ def api_import_translations(payload: dict, role: str = Depends(get_role)):
     db_path_str = payload.get("db_path")
     if not db_path_str:
         raise HTTPException(422, "db_path parameter is required")
-    db_path = Path(db_path_str)
-    if not db_path.is_file():
-        raise HTTPException(404, f"Database file not found at: {db_path_str}")
+        
+    import glob
+    db_paths_raw = [p.strip() for p in db_path_str.split(",") if p.strip()]
+    resolved_paths = []
+    
+    for raw in db_paths_raw:
+        if "*" in raw or "?" in raw:
+            matches = glob.glob(raw)
+            for m in matches:
+                p = Path(m)
+                if p.is_file() and p.suffix == ".db":
+                    resolved_paths.append(p)
+        else:
+            p = Path(raw)
+            if p.is_dir():
+                resolved_paths.extend(sorted(p.glob("*.db")))
+            else:
+                resolved_paths.append(p)
+
+    if not resolved_paths:
+        raise HTTPException(404, f"No database files found matching: {db_path_str}")
         
     try:
         from .import_translations import import_translations_from_db
-        stats = import_translations_from_db(REPO_ROOT, db_path)
-        return {"ok": True, "stats": stats}
+        combined_stats = {
+            "categories_updated": 0,
+            "quests_updated": 0,
+            "total_keys_imported": 0,
+            "skipped_keys": 0,
+            "message": ""
+        }
+        
+        imported_files = []
+        for i, path in enumerate(resolved_paths):
+            if not path.is_file():
+                raise HTTPException(404, f"Database file not found: {path}")
+            
+            is_last = (i == len(resolved_paths) - 1)
+            stats = import_translations_from_db(REPO_ROOT, path, rebuild_index=is_last)
+            
+            combined_stats["categories_updated"] += stats.get("categories_updated", 0)
+            combined_stats["quests_updated"] += stats.get("quests_updated", 0)
+            combined_stats["total_keys_imported"] += stats.get("total_keys_imported", 0)
+            combined_stats["skipped_keys"] += stats.get("skipped_keys", 0)
+            imported_files.append(path.name)
+            
+        combined_stats["message"] = f"Imported: {', '.join(imported_files)}"
+        return {"ok": True, "stats": combined_stats}
     except Exception as e:
         raise HTTPException(500, f"Import failed: {str(e)}")
 

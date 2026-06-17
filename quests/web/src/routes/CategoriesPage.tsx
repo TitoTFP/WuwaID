@@ -1,40 +1,19 @@
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useToast } from "../components/Toast";
+import { Link, useParams } from "react-router-dom";
 import { CategoryTable, CategoryEntry } from "../components/CategoryTable";
 import { api } from "../lib/api";
 import type { CategorySummary } from "../lib/types";
-import ExportDialog from "../components/editor/ExportDialog";
 
 export function CategoriesPage() {
+  const { categoryName } = useParams<{ categoryName?: string }>();
+  const selected = categoryName || null;
+
   const [categories, setCategories] = useState<CategorySummary[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
   const [entries, setEntries] = useState<CategoryEntry[]>([]);
   const [showIdColumn, setShowIdColumn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const toast = useToast();
-  const [showExportModal, setShowExportModal] = useState(false);
 
-  const exportMutation = useMutation({
-    mutationKey: ["export-category", selected],
-    mutationFn: (onlyUntranslated: boolean) => {
-      if (!selected) return Promise.resolve({ ok: false, files: [] });
-      return api.exportTranslations({ category_names: [selected], only_untranslated: onlyUntranslated });
-    },
-    onSuccess: (res) => {
-      setShowExportModal(false);
-      const file = res.files?.[0];
-      if (file) {
-        toast.success(`Category successfully exported to output_db/id/${file}!`);
-      } else {
-        toast.success("Category successfully exported to output_db/id!");
-      }
-    },
-    onError: (err: any) => {
-      toast.error(`Export failed: ${err.message || err}`);
-    }
-  });
 
   // Set page title and load categories list on mount
   useEffect(() => {
@@ -106,11 +85,11 @@ export function CategoriesPage() {
               c.key_count > 0 ? (c.translated_count / c.key_count) * 100 : 0;
             const isFullyTranslated = pct >= 100;
             return (
-              <button
+              <Link
                 key={c.name}
                 id={`category-btn-${c.name.toLowerCase()}`}
-                onClick={() => setSelected(c.name)}
-                className="card p-4 text-left transition duration-200 hover:bg-bg-2 hover:border-accent-gold/40 hover:scale-[1.01] focus:ring-1 focus:ring-accent-gold/40 group"
+                to={`/categories/${c.name}`}
+                className="card p-4 text-left transition duration-200 hover:bg-bg-2 hover:border-accent-gold/40 hover:scale-[1.01] focus:ring-1 focus:ring-accent-gold/40 group block"
               >
                 <div className="font-serif text-lg text-slate-100 group-hover:text-accent-gold transition-colors">
                   {c.name}
@@ -126,7 +105,7 @@ export function CategoriesPage() {
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -137,33 +116,19 @@ export function CategoriesPage() {
   return (
     <div className="container-narrow space-y-4">
       <div className="flex items-center justify-between">
-        <button
+        <Link
           id="back-to-categories-btn"
-          onClick={() => setSelected(null)}
+          to="/categories"
           className="btn inline-flex items-center gap-1.5"
         >
           <span aria-hidden="true">&larr;</span> Back to categories
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowExportModal(true)}
-          className="btn text-xs btn-active"
-        >
-          Export Category to SQLite
-        </button>
+        </Link>
       </div>
       
       <CategoryTable
         category={selected}
         entries={entries}
         showIdColumn={showIdColumn}
-      />
-      <ExportDialog
-        open={showExportModal}
-        title="Export Category to SQLite"
-        isPending={exportMutation.isPending}
-        onCancel={() => setShowExportModal(false)}
-        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
       />
     </div>
   );

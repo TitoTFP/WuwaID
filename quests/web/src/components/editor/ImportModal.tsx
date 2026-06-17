@@ -91,6 +91,12 @@ export default function ImportModal({ onClose }: ImportModalProps) {
               </div>
             </div>
 
+            {stats.message && (
+              <div className="text-xs text-slate-400 bg-bg-2/30 border border-white/5 rounded p-2 text-center max-h-24 overflow-y-auto font-mono select-all">
+                {stats.message}
+              </div>
+            )}
+
             <button
               onClick={handleSuccessClose}
               className="btn w-full justify-center border-accent-gold/60 bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20"
@@ -105,10 +111,10 @@ export default function ImportModal({ onClose }: ImportModalProps) {
                 <svg className="h-5 w-5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                Import from SQLite DB
+                Import from SQLite DB(s)
               </h2>
               <p className="mt-1 text-xs text-slate-400">
-                Provide the path to a SQLite database file containing a <code className="font-mono text-slate-300">MultiText</code> table.
+                Provide the path to SQLite database files. You can enter a directory path, a glob pattern (e.g. <code className="font-mono text-slate-300">/path/to/*.db</code>), or a comma-separated list of paths.
               </p>
             </div>
 
@@ -120,11 +126,11 @@ export default function ImportModal({ onClose }: ImportModalProps) {
 
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-                Database File Path
+                Database Path(s) / Glob Pattern / Directory
               </label>
               <input
                 type="text"
-                placeholder="e.g., /home/nozomi/Downloads/34NPCTHST.db"
+                placeholder="e.g., /home/nozomi/Downloads/*.db or /path/file1.db, /path/file2.db"
                 value={dbPath}
                 onChange={(e) => setDbPath(e.target.value)}
                 className="input"

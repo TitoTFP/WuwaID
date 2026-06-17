@@ -430,6 +430,9 @@ def export_selective_translations(
     quest_ids: list[int] | None = None,
     category_names: list[str] | None = None,
     only_untranslated: bool = False,
+    prefix_filters: list[str] | None = None,
+    type_filters: list[str] | None = None,
+    search_filter: str | None = None,
 ) -> list[str]:
     data_dir = repo_root / "data"
     output_dir = repo_root / "output_db" / "id"
@@ -533,20 +536,73 @@ def export_selective_translations(
                 
     # 3. Process Categories
     if category_names:
+        import re
+        def get_key_type(k: str) -> str:
+            match = re.search(r'(?:^|_)(Name|Desc|Title|Text|Content|Memo|Header|Tips|Active|Effect|Unlock|Hint|Desc[1-4]?)(?:_|$|\d)', k, re.IGNORECASE)
+            if match:
+                val = match.group(1).lower()
+                if val.startswith("desc"):
+                    return "Desc"
+                return val.capitalize()
+            return ""
+
         for cat_name in category_names:
             try:
                 keys = get_category_keys(data_dir, cat_name)
                 if not keys:
                     continue
                 
-                en_metadata = fetch_en_metadata(repo_root, keys)
+                cat_path = data_dir / "categories" / f"{cat_name}.json"
+                cat_data = {}
+                if cat_path.is_file():
+                    try:
+                        cat_data = json.loads(cat_path.read_text(encoding="utf-8"))
+                    except Exception as e:
+                        print(f"Error reading category base file {cat_path.name}: {e}")
+
+                filtered_keys = []
+                for key in keys:
+                    # Filter by prefix
+                    prefix = key.split("_", 1)[0]
+                    if prefix_filters and prefix not in prefix_filters:
+                        continue
+                    
+                    # Filter by type
+                    key_type = get_key_type(key)
+                    if type_filters and key_type not in type_filters:
+                        continue
+                    
+                    # Filter by search term
+                    if search_filter:
+                        q = search_filter.lower()
+                        entry = cat_data.get(key) or {}
+                        zh = entry.get("zh-Hans") or ""
+                        en = entry.get("en") or ""
+                        ja = entry.get("ja") or ""
+                        id_val = translations.get(key) or ""
+                        
+                        if not (
+                            q in key.lower() or
+                            q in en.lower() or
+                            q in zh.lower() or
+                            q in ja.lower() or
+                            q in id_val.lower()
+                        ):
+                            continue
+                    
+                    filtered_keys.append(key)
+
+                if not filtered_keys:
+                    continue
+
+                en_metadata = fetch_en_metadata(repo_root, filtered_keys)
                 
                 db_name = f"{cat_name}.db"
                 db_path = output_dir / db_name
                 create_selective_db(db_path)
                 
                 rows = []
-                for key in keys:
+                for key in filtered_keys:
                     content = translations.get(key)
                     is_translated = bool(content and content.strip())
                     

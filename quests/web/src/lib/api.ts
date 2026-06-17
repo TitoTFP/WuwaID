@@ -114,7 +114,14 @@ export const api = {
     send<{ role: "editor" }>("POST", "/login", { password }),
   logout: () => send<{ role: "anon" }>("POST", "/logout"),
   me: () => get<MeResponse>(`/me`),
-  exportTranslations: (payload?: { quest_ids?: number[]; category_names?: string[]; only_untranslated?: boolean }) =>
+  exportTranslations: (payload?: {
+    quest_ids?: number[];
+    category_names?: string[];
+    only_untranslated?: boolean;
+    prefix_filters?: string[];
+    type_filters?: string[];
+    search_filter?: string;
+  }) =>
     send<{ ok: boolean; files?: string[] }>("POST", "/editor/export", payload),
   importTranslations: (db_path: string) =>
     send<{ ok: boolean; stats: any }>("POST", "/editor/import", { db_path }),

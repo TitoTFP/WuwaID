@@ -19,6 +19,7 @@ export default function App() {
         <Route path="/chapters/:chapterId" element={<ChapterPage />} />
         <Route path="/side-quests" element={<SideQuestsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories/:categoryName" element={<CategoriesPage />} />
         <Route path="/quests/:qid" element={<QuestPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/editor/:qid" element={<EditorPage />} />
