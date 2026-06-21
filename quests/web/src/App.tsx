@@ -7,6 +7,7 @@ import QuestPage from "./routes/QuestPage";
 import SearchPage from "./routes/SearchPage";
 import EditorPage from "./routes/EditorPage";
 import TranslatorPage from "./routes/TranslatorPage";
+import CategoryTranslatorPage from "./routes/CategoryTranslatorPage";
 import DraftsPage from "./routes/DraftsPage";
 import LoginPage from "./routes/LoginPage";
 import CategoriesPage from "./routes/CategoriesPage";
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/side-quests" element={<SideQuestsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:categoryName" element={<CategoriesPage />} />
+        <Route path="/translator/category/:categoryName" element={<CategoryTranslatorPage />} />
         <Route path="/quests/:qid" element={<QuestPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/editor/:qid" element={<EditorPage />} />

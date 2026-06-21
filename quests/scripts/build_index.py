@@ -34,7 +34,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 QUESTS_DIR = DATA_DIR / "quests"
 DB_PATH = DATA_DIR / "index.db"
-EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session")
+EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session", "category_edits", "category_drafts")
 
 DEFAULT_CANDIDATES = [
     REPO_ROOT.parent / "WuwaID" / "export_text_grouped" / "export_quest_ordered",
@@ -211,7 +211,7 @@ def _anchor_valid(anchor: int | None, line_ids: set[int]) -> bool:
 
 
 def _valid_editor_row(table: str, row: dict, line_ids_by_qid: dict[int, set[int]]) -> bool:
-    if table == "editor_session":
+    if table in ("editor_session", "category_edits", "category_drafts"):
         return True
     qid = int(row.get("qid", -1))
     line_ids = line_ids_by_qid.get(qid)
@@ -457,6 +457,33 @@ def build_fts(db_path: Path, quests: list[dict]) -> int:
             role TEXT NOT NULL DEFAULT 'editor'
         )
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS category_edits (
+            category TEXT NOT NULL,
+            key TEXT NOT NULL,
+            text_id TEXT,
+            approved_by TEXT NOT NULL,
+            approved_at TEXT NOT NULL,
+            PRIMARY KEY (category, key)
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS category_drafts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            key TEXT NOT NULL,
+            patch_json TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            author_label TEXT,
+            note TEXT
+        )
+    """)
+    try:
+        cur.execute("INSERT OR IGNORE INTO sqlite_sequence (name, seq) VALUES ('category_drafts', 1000000)")
+    except sqlite3.OperationalError:
+        pass
     restore_stats = restore_editor_tables(con, editor_snapshot, quests)
     con.commit()
     con.close()
@@ -534,6 +561,15 @@ def build_category_fts(db_path: Path, data_dir: Path) -> int:
             except (json.JSONDecodeError, OSError):
                 pass
 
+        # Load approved edits from DB
+        db_edits = {}
+        has_category_edits = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+        if has_category_edits:
+            db_edits = {
+                row[0]: row[1]
+                for row in con.execute("SELECT key, text_id FROM category_edits WHERE category = ?", (cat_name,)).fetchall()
+            }
+
         translated_count = 0
         for key, value in cat_data.items():
             if not isinstance(value, dict):
@@ -542,7 +578,9 @@ def build_category_fts(db_path: Path, data_dir: Path) -> int:
             text_en = value.get("en", "")
             text_zh = value.get("zh-Hans", "")
             text_ja = value.get("ja", "")
-            text_id = id_map.get(key, "")
+            text_id = db_edits.get(key)
+            if text_id is None or text_id == "":
+                text_id = id_map.get(key, "")
             if text_id:
                 translated_count += 1
             rows.append((

@@ -65,7 +65,7 @@ export default function Layout() {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search dialogue…"
+                placeholder="Search quests & categories…"
                 className="input pl-9"
               />
               <svg

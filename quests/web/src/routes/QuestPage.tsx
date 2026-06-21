@@ -1,8 +1,10 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../components/Toast";
 import ExportDialog from "../components/editor/ExportDialog";
+import ConfirmDialog from "../components/editor/ConfirmDialog";
+import { useMe } from "../lib/auth";
 import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
 import DialogueLine, { type LineIndex } from "../components/DialogueLine";
@@ -116,6 +118,22 @@ export default function QuestPage() {
 
   const toast = useToast();
   const [showExportModal, setShowExportModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const meQ = useMe();
+  const role = meQ.data?.role ?? "anon";
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.deleteQuestTranslation(qidN),
+    onSuccess: () => {
+      setConfirmDelete(false);
+      toast.success("Quest Indonesian translations deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["quest", qidN] });
+    },
+    onError: (err: any) => {
+      toast.error(`Delete failed: ${err.message || err}`);
+    }
+  });
 
   const exportMutation = useMutation({
     mutationFn: (onlyUntranslated: boolean) =>
@@ -271,6 +289,16 @@ export default function QuestPage() {
             >
               Edit Flow
             </Link>
+            {role === "editor" && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="btn text-xs border-rose-400/40 text-rose-300 hover:bg-rose-500/10"
+                title="Delete Indonesian translation locally"
+              >
+                Delete ID
+              </button>
+            )}
             <Link
               to={`/translator/${quest.quest_id}`}
               className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
@@ -318,6 +346,15 @@ export default function QuestPage() {
         isPending={exportMutation.isPending}
         onCancel={() => setShowExportModal(false)}
         onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Indonesian Translation?"
+        message="This will permanently delete all Indonesian translation data (including edits, drafts, and cache) for this quest. This action cannot be undone."
+        confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => deleteMutation.mutate()}
       />
     </div>
   );

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "./Toast";
 import { api } from "../lib/api";
 import ExportDialog from "./editor/ExportDialog";
+import ConfirmDialog from "./editor/ConfirmDialog";
+import { useMe } from "../lib/auth";
 
 export interface CategoryEntry {
   key: string;
@@ -22,13 +25,30 @@ export interface CategoryTableProps {
 const PAGE_SIZE = 200;
 
 export function CategoryTable({ category, entries, showIdColumn }: CategoryTableProps) {
+  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(0);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(searchParams.get("q") ?? "");
   const [selectedPrefixes, setSelectedPrefixes] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   const toast = useToast();
   const [showExportModal, setShowExportModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  
+  const meQ = useMe();
+  const role = meQ.data?.role ?? "anon";
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.deleteCategoryTranslation(category),
+    onSuccess: () => {
+      setConfirmDelete(false);
+      toast.success("Category Indonesian translations deleted successfully!");
+      window.location.reload();
+    },
+    onError: (err: any) => {
+      toast.error(`Delete failed: ${err.message || err}`);
+    }
+  });
 
   const exportMutation = useMutation({
     mutationKey: ["export-category", category],
@@ -59,10 +79,10 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
   // Reset page and filters when active category changes
   useEffect(() => {
     setPage(0);
-    setFilter("");
+    setFilter(searchParams.get("q") ?? "");
     setSelectedPrefixes([]);
     setSelectedTypes([]);
-  }, [category]);
+  }, [category, searchParams]);
 
   // Clear selectedTypes when prefix selection changes
   useEffect(() => {
@@ -144,13 +164,32 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           <h2 className="font-serif text-xl text-accent-gold" id="category-table-title">{category}</h2>
           <span className="text-xs text-slate-500">{progressText}</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowExportModal(true)}
-          className="btn text-xs btn-active"
-        >
-          Export Category to SQLite
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowExportModal(true)}
+            className="btn text-xs btn-active"
+          >
+            Export Category to SQLite
+          </button>
+          {role === "editor" && (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="btn text-xs border-rose-400/40 text-rose-300 hover:bg-rose-500/10"
+              title="Delete Indonesian translation locally"
+            >
+              Delete ID
+            </button>
+          )}
+          <Link
+            to={`/translator/category/${category}`}
+            className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+            title="Translate category entries to Indonesian"
+          >
+            Translate
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -326,6 +365,15 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         isPending={exportMutation.isPending}
         onCancel={() => setShowExportModal(false)}
         onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Indonesian Translation?"
+        message="This will permanently delete all Indonesian translation data (including edits, drafts, and cache) for this category. This action cannot be undone."
+        confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => deleteMutation.mutate()}
       />
     </div>
   );

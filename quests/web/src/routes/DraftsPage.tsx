@@ -232,6 +232,21 @@ function QueueView() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [confirmPurge, setConfirmPurge] = useState(false);
+
+  const purgeMutation = useMutation({
+    mutationFn: () => api.clearTranslations(),
+    onSuccess: () => {
+      setConfirmPurge(false);
+      toast.success("All Indonesian translations purged successfully!");
+      queryClient.invalidateQueries({ queryKey: ["drafts"] });
+      window.location.reload();
+    },
+    onError: (err: any) => {
+      toast.error(`Purge failed: ${err.message || err}`);
+    }
+  });
+
   const exportMutation = useMutation({
     mutationFn: (onlyUntranslated: boolean) =>
       api.exportTranslations({ only_untranslated: onlyUntranslated }),
@@ -251,7 +266,10 @@ function QueueView() {
 
   const all = draftsQ.data ?? [];
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters]);
-  const qids = useMemo(() => Array.from(new Set(all.map((d) => d.qid))).sort((a, b) => a - b), [all]);
+  const qids = useMemo(() => {
+    const list = all.map((d) => d.qid).filter((qid): qid is number => typeof qid === "number" && qid > 0);
+    return Array.from(new Set(list)).sort((a, b) => a - b);
+  }, [all]);
   const authors = useMemo(() => Array.from(new Set(all.map((d) => d.author_label ?? "anon"))).sort(), [all]);
   const selectedDrafts = useMemo(() => filtered.filter((d) => selected.has(d.id) && d.status === "pending"), [filtered, selected]);
 
@@ -317,14 +335,23 @@ function QueueView() {
         </div>
         <div className="flex gap-2">
           {role === "editor" && (
-            <button
-              type="button"
-              className="btn btn-active"
-              disabled={exportMutation.isPending}
-              onClick={() => setShowExportModal(true)}
-            >
-              {exportMutation.isPending ? "Exporting..." : "Export to SQLite"}
-            </button>
+            <>
+              <button
+                type="button"
+                className="btn border-rose-400/40 text-rose-300 hover:bg-rose-500/10"
+                onClick={() => setConfirmPurge(true)}
+              >
+                Purge Translations
+              </button>
+              <button
+                type="button"
+                className="btn btn-active"
+                disabled={exportMutation.isPending}
+                onClick={() => setShowExportModal(true)}
+              >
+                {exportMutation.isPending ? "Exporting..." : "Export to SQLite"}
+              </button>
+            </>
           )}
           {role === "editor" ? (
             <button type="button" className="btn" onClick={() => void logout()}>
@@ -412,8 +439,17 @@ function QueueView() {
               <Link to={`/drafts/${draft.id}`} className="block flex-1">
                 <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                   <span className="font-mono text-slate-300">#{draft.id}</span>
-                  <span>quest {draft.qid}</span>
-                  <span>line {draft.line_id}</span>
+                  {draft.category ? (
+                    <>
+                      <span>category {draft.category}</span>
+                      <span>key {draft.key}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>quest {draft.qid}</span>
+                      <span>line {draft.line_id}</span>
+                    </>
+                  )}
                   <span>{draft.author_label ?? getAuthorLabel()}</span>
                   <span>{new Date(draft.created_at).toLocaleString()}</span>
                   <span
@@ -468,6 +504,15 @@ function QueueView() {
         onCancel={() => setShowExportModal(false)}
         onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
       />
+      <ConfirmDialog
+        open={confirmPurge}
+        title="Purge All Indonesian Translations?"
+        message="WARNING: This will permanently and irreversibly delete ALL Indonesian translation files, custom edits, drafts, and caches. The search index will be reset. This cannot be undone."
+        confirmLabel={purgeMutation.isPending ? "Purging..." : "Purge Everything"}
+        destructive
+        onCancel={() => setConfirmPurge(false)}
+        onConfirm={() => purgeMutation.mutate()}
+      />
     </div>
   );
 }
@@ -491,7 +536,8 @@ function DetailView({ draftId }: { draftId: number }) {
         queryClient.invalidateQueries({ queryKey: ["drafts"] }),
         queryClient.invalidateQueries({ queryKey: ["draft", draftId] }),
         queryClient.invalidateQueries({ queryKey: ["editor"] }),
-        draftQ.data ? queryClient.invalidateQueries({ queryKey: ["quest", draftQ.data.qid] }) : Promise.resolve(),
+        draftQ.data?.qid ? queryClient.invalidateQueries({ queryKey: ["quest", draftQ.data.qid] }) : Promise.resolve(),
+        draftQ.data?.category ? queryClient.invalidateQueries({ queryKey: ["editor", "category", draftQ.data.category, "entries"] }) : Promise.resolve(),
       ]);
       toast.success("Draft approved");
     },
@@ -529,7 +575,11 @@ function DetailView({ draftId }: { draftId: number }) {
       <div>
         <Link to="/drafts" className="link text-xs">← back to drafts</Link>
         <h1 className="mt-1 font-serif text-2xl text-slate-100">
-          Draft #{draft.id} · quest {draft.qid} · line {draft.line_id || "new"}
+          {draft.category ? (
+            <>Draft #{draft.id} · category {draft.category} · key {draft.key}</>
+          ) : (
+            <>Draft #{draft.id} · quest {draft.qid} · line {draft.line_id || "new"}</>
+          )}
         </h1>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
           <span>{draft.author_label ?? getAuthorLabel()}</span>

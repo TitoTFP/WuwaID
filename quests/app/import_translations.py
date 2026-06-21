@@ -3,6 +3,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 def load_glossary(repo_root: Path) -> dict:
@@ -44,35 +45,16 @@ def is_untranslated_fallback(translation: str, text_en: str) -> bool:
         return True
     return False
 
-def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: bool = True) -> dict:
-    # 1. Load translations from the imported database
-    db_translations = {}
-    if not db_path.is_file():
-        raise FileNotFoundError(f"Database file not found at {db_path}")
-    
-    conn = sqlite3.connect(str(db_path))
-    try:
-        cur = conn.execute("SELECT `Id`, `Content` FROM `MultiText`")
-        for row in cur.fetchall():
-            if row[0] and row[1] is not None:
-                db_translations[row[0]] = row[1]
-    except Exception as e:
-        raise ValueError(f"Failed to read from MultiText table: {e}")
-    finally:
-        conn.close()
 
-    if not db_translations:
-        return {
-            "success": True,
-            "categories_updated": 0,
-            "quests_updated": 0,
-            "total_keys_imported": 0,
-            "skipped_keys": 0,
-            "message": "No translations found in the database."
-        }
+@dataclass(frozen=True)
+class ImportContext:
+    cat_keys: dict[str, str]
+    quest_keys: dict[str, list[int]]
+    glossary: dict
 
-    # 2. Query category keys from index.db
-    cat_keys = {} # key -> category_name
+
+def build_import_context(repo_root: Path) -> ImportContext:
+    cat_keys = {}
     index_db_path = repo_root / "data" / "index.db"
     if index_db_path.is_file():
         conn_idx = sqlite3.connect(str(index_db_path))
@@ -85,8 +67,7 @@ def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: b
         finally:
             conn_idx.close()
 
-    # 3. Scan base quests to map quest keys
-    quest_keys = {} # text_key -> list of qids
+    quest_keys = {}
     quests_dir = repo_root / "data" / "quests"
     if quests_dir.is_dir():
         for p in quests_dir.glob("*.json"):
@@ -106,6 +87,51 @@ def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: b
             except Exception as e:
                 print(f"Warning: failed to map quest {p.name}: {e}")
 
+    return ImportContext(cat_keys=cat_keys, quest_keys=quest_keys, glossary=load_glossary(repo_root))
+
+
+def load_translations_from_db(db_path: Path) -> dict[str, str]:
+    db_translations = {}
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Database file not found at {db_path}")
+    
+    conn = sqlite3.connect(str(db_path))
+    try:
+        cur = conn.execute("SELECT `Id`, `Content` FROM `MultiText`")
+        for row in cur.fetchall():
+            if row[0] and row[1] is not None:
+                db_translations[row[0]] = row[1]
+    except Exception as e:
+        raise ValueError(f"Failed to read from MultiText table: {e}")
+    finally:
+        conn.close()
+    return db_translations
+
+
+def import_translation_map(
+    repo_root: Path,
+    db_translations: dict[str, str],
+    rebuild_index: bool = True,
+    context: ImportContext | None = None,
+) -> dict:
+    # 1. Load translations from the imported database
+
+    if not db_translations:
+        return {
+            "success": True,
+            "categories_updated": 0,
+            "quests_updated": 0,
+            "total_keys_imported": 0,
+            "skipped_keys": 0,
+            "message": "No translations found in the database."
+        }
+
+    if context is None:
+        context = build_import_context(repo_root)
+    cat_keys = context.cat_keys
+    quest_keys = context.quest_keys
+    quests_dir = repo_root / "data" / "quests"
+
     # 4. Group updates
     cat_updates = {} # category_name -> {key: content}
     quest_updates = {} # qid -> {key: content}
@@ -121,7 +147,7 @@ def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: b
         else:
             skipped_count += 1
 
-    glossary = load_glossary(repo_root)
+    glossary = context.glossary
     new_memories = [] # list of (text_key, text_id, source_text_en, source_speaker_en, from_quest)
 
     # 5. Process category updates
@@ -368,3 +394,13 @@ def import_translations_from_db(repo_root: Path, db_path: Path, rebuild_index: b
         "total_keys_imported": cat_keys_imported_count + quest_keys_imported_count,
         "skipped_keys": skipped_count
     }
+
+
+def import_translations_from_db(
+    repo_root: Path,
+    db_path: Path,
+    rebuild_index: bool = True,
+    context: ImportContext | None = None,
+) -> dict:
+    db_translations = load_translations_from_db(db_path)
+    return import_translation_map(repo_root, db_translations, rebuild_index=rebuild_index, context=context)

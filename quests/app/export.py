@@ -151,6 +151,20 @@ def export_indonesian_translations(repo_root: Path, only_untranslated: bool = Fa
                         category_trans[k] = v["id"]
             except Exception as e:
                 print(f"Error reading category {p.name}: {e}")
+
+    # Merge approved edits from category_edits table in index.db
+    db_path = data_dir / "index.db"
+    if db_path.is_file():
+        conn = sqlite3.connect(str(db_path))
+        try:
+            has_table = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+            if has_table:
+                for row in conn.execute("SELECT key, text_id FROM category_edits WHERE text_id IS NOT NULL AND text_id != ''").fetchall():
+                    category_trans[row[0]] = row[1]
+        except Exception as e:
+            print(f"Warning: failed to load category edits from index.db: {e}")
+        finally:
+            conn.close()
     print(f"Loaded {len(category_trans)} category translations.")
 
     # 3. Load quest dialogue translations
@@ -458,6 +472,21 @@ def export_selective_translations(
                                 category_trans[k] = v["id"]
                     except Exception as e:
                         print(f"Error reading category {p.name}: {e}")
+                        
+        # Merge approved edits from category_edits table in index.db
+        db_path = data_dir / "index.db"
+        if db_path.is_file():
+            conn = sqlite3.connect(str(db_path))
+            try:
+                has_table = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+                if has_table:
+                    for cat_name in category_names:
+                        for row in conn.execute("SELECT key, text_id FROM category_edits WHERE category = ? AND text_id IS NOT NULL AND text_id != ''", (cat_name,)).fetchall():
+                            category_trans[row[0]] = row[1]
+            except Exception as e:
+                print(f"Warning: failed to load category edits in export: {e}")
+            finally:
+                conn.close()
                         
     translations = {}
     translations.update(category_trans)

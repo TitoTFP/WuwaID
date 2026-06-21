@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
@@ -44,6 +45,13 @@ def _json(payload: object) -> Response:
         content=json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8"),
         media_type="application/json",
     )
+
+
+def _prepare_category_fts_query(q: str, lang: str) -> str:
+    if lang in ("zh", "ja"):
+        return db._prepare_fts_query(q, lang)  # type: ignore[attr-defined]
+    tokens = re.findall(r"\w+", q, flags=re.UNICODE)
+    return " ".join(f'"{token}"*' for token in tokens)
 
 
 @lru_cache(maxsize=64)
@@ -312,16 +320,32 @@ def api_category_single(name: str):
         except (json.JSONDecodeError, OSError):
             pass
 
+    # Merge approved edits from category_edits
+    con = db.connect()
+    try:
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+        edits = {}
+        if has_table:
+            edits = {
+                row["key"]: row["text_id"]
+                for row in con.execute("SELECT key, text_id FROM category_edits WHERE category = ?", (name,)).fetchall()
+            }
+    finally:
+        con.close()
+
     entries = []
     for key, value in cat_data.items():
         if not isinstance(value, dict):
             continue
+        text_id = edits.get(key)
+        if text_id is None or text_id == "":
+            text_id = id_map.get(key)
         entries.append({
             "key": key,
             "zh-Hans": value.get("zh-Hans", ""),
             "en": value.get("en", ""),
             "ja": value.get("ja", ""),
-            "id": id_map.get(key),
+            "id": text_id,
         })
 
     return _json({
@@ -351,14 +375,49 @@ def api_search(
         table = "category_text_idx"
         text_col = f"text_{lang}"
         try:
-            cur = con.execute(
-                f"SELECT category, key, text_en, text_id FROM {table} WHERE {text_col} MATCH ? LIMIT ?",
-                (q, limit),
-            )
-            results = [
-                {"category": row["category"], "key": row["key"], "text": row["text_id"] or row["text_en"]}
-                for row in cur.fetchall()
-            ]
+            fts_query = _prepare_category_fts_query(q, lang)
+            fts_part = f"SELECT category, key, text_en, text_id, 0 AS is_key_match FROM {table} WHERE {text_col} MATCH ?"
+            key_part = f"SELECT category, key, text_en, text_id, 1 AS is_key_match FROM {table} WHERE key LIKE ?"
+            sql = f"""
+                SELECT category, key, text_en, text_id, is_key_match
+                FROM (
+                    {fts_part}
+                    UNION ALL
+                    {key_part}
+                )
+                ORDER BY is_key_match DESC
+            """
+            try:
+                if fts_query:
+                    cur = con.execute(sql, (fts_query, f"%{q}%"))
+                    rows = cur.fetchall()
+                else:
+                    cur = con.execute(
+                        f"SELECT category, key, text_en, text_id, 1 AS is_key_match FROM {table} WHERE key LIKE ?",
+                        (f"%{q}%",),
+                    )
+                    rows = cur.fetchall()
+            except _sqlite3.OperationalError:
+                cur = con.execute(
+                    f"SELECT category, key, text_en, text_id, 1 AS is_key_match FROM {table} WHERE key LIKE ?",
+                    (f"%{q}%",),
+                )
+                rows = cur.fetchall()
+            
+            seen = set()
+            results = []
+            for row in rows:
+                item_key = (row["category"], row["key"])
+                if item_key in seen:
+                    continue
+                seen.add(item_key)
+                results.append({
+                    "category": row["category"],
+                    "key": row["key"],
+                    "text": row["text_id"] or row["text_en"]
+                })
+                if len(results) >= limit:
+                    break
         finally:
             con.close()
         return _json({"results": results, "total": len(results)})
@@ -471,6 +530,73 @@ def api_editor_quest_lines(qid: int):
         for l in quest["all_lines"]
     ]
     return _json(items)
+
+
+@app.get("/api/editor/category/{name}/entries")
+def api_editor_category_entries(name: str):
+    cat_path = DATA_DIR / "categories" / f"{name}.json"
+    if not cat_path.is_file():
+        raise HTTPException(404, f"Category {name} not found")
+    with cat_path.open(encoding="utf-8") as f:
+        cat_data = json.load(f)
+    id_map: dict[str, str] = {}
+    id_path = DATA_DIR / "categories_id" / f"{name}.json"
+    if id_path.is_file():
+        try:
+            id_data = json.loads(id_path.read_text(encoding="utf-8"))
+            for k, v in id_data.items():
+                if isinstance(v, dict) and v.get("id"):
+                    id_map[k] = v["id"]
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Merge approved edits from category_edits
+    con = db.connect()
+    try:
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+        edits = {}
+        if has_table:
+            edits = {
+                row["key"]: row["text_id"]
+                for row in con.execute("SELECT key, text_id FROM category_edits WHERE category = ?", (name,)).fetchall()
+            }
+    finally:
+        con.close()
+
+    entries = []
+    for key, value in cat_data.items():
+        if not isinstance(value, dict):
+            continue
+        text_id = edits.get(key)
+        if text_id is None or text_id == "":
+            text_id = id_map.get(key)
+        entries.append({
+            "key": key,
+            "prefix": key.split("_", 1)[0] if "_" in key else "NoPrefix",
+            "zh-Hans": value.get("zh-Hans", ""),
+            "en": value.get("en", ""),
+            "ja": value.get("ja", ""),
+            "id": text_id,
+            "is_edited": key in edits,
+        })
+    return _json(entries)
+
+
+@app.post("/api/editor/category/drafts")
+def api_create_category_draft(payload: dict, request: Request):
+    category = payload["category"]
+    key = payload["key"]
+    patch = payload.get("patch", {})
+    if not isinstance(patch, dict):
+        raise HTTPException(422, "patch must be an object")
+    did = db.create_category_draft(
+        category=category,
+        key=key,
+        patch=patch,
+        author_label=_author_label(request),
+        note=payload.get("note"),
+    )
+    return {"id": did}
 
 
 def _author_label(request: Request) -> str | None:
@@ -597,6 +723,124 @@ def api_export_translations(payload: dict | None = None, role: str = Depends(get
         raise HTTPException(500, f"Export failed: {e}")
 
 
+@app.post("/api/editor/clear-translations")
+def api_clear_translations(role: str = Depends(require_editor)):
+    import shutil
+    try:
+        # 1. Clear machine translations JSON folders
+        quests_id_dir = DATA_DIR / "quests_id"
+        if quests_id_dir.is_dir():
+            shutil.rmtree(quests_id_dir)
+        quests_id_dir.mkdir(parents=True, exist_ok=True)
+            
+        categories_id_dir = DATA_DIR / "categories_id"
+        if categories_id_dir.is_dir():
+            shutil.rmtree(categories_id_dir)
+        categories_id_dir.mkdir(parents=True, exist_ok=True)
+            
+        # 2. Clear translation memory cache
+        tm_path = DATA_DIR / "_translation_memory.json"
+        if tm_path.is_file():
+            tm_path.unlink()
+            
+        # 3. Clear database edits & drafts
+        con = db.connect()
+        try:
+            con.execute("UPDATE edits SET text_id = NULL, speaker_id = NULL")
+            # Clean options_json in edits (remove text_id keys)
+            for row in con.execute("SELECT qid, line_id, options_json FROM edits WHERE options_json IS NOT NULL").fetchall():
+                try:
+                    opts = json.loads(row["options_json"])
+                    if isinstance(opts, list):
+                        cleaned = []
+                        for opt in opts:
+                            if isinstance(opt, dict):
+                                cleaned_opt = dict(opt)
+                                cleaned_opt.pop("text_id", None)
+                                cleaned.append(cleaned_opt)
+                            else:
+                                cleaned.append(opt)
+                        con.execute(
+                            "UPDATE edits SET options_json = ? WHERE qid = ? AND line_id = ?",
+                            (json.dumps(cleaned), row["qid"], row["line_id"])
+                        )
+                except Exception:
+                    pass
+            
+            # Clear category edits
+            has_cat_edits = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+            if has_cat_edits:
+                con.execute("DELETE FROM category_edits")
+                
+            # Clear drafts
+            con.execute("DELETE FROM drafts WHERE status = 'applied'")
+            has_cat_drafts = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+            if has_cat_drafts:
+                con.execute("DELETE FROM category_drafts")
+                
+            # Update quests translated count to 0
+            con.execute("UPDATE quests SET translated_count = 0")
+            con.commit()
+        finally:
+            con.close()
+            
+        # 4. Rebuild search indexes
+        from scripts.build_index import build_fts, build_category_fts, collect_quests, resolve_source
+        source = resolve_source(None)
+        quests = collect_quests(source)
+        quests.sort(key=lambda q: (q.get("side", 0), q.get("chapter_id", 0), q.get("order", 0), q.get("quest_id", 0)))
+        
+        build_fts(DATA_DIR / "index.db", quests)
+        build_category_fts(DATA_DIR / "index.db", DATA_DIR)
+        
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to clear translations: {e}")
+
+
+@app.delete("/api/editor/quest/{qid}/translation")
+def api_delete_quest_translation(qid: int, role: str = Depends(require_editor)):
+    try:
+        # 1. Delete MT file
+        id_path = DATA_DIR / "quests_id" / f"{qid}.json"
+        if id_path.is_file():
+            id_path.unlink()
+            
+        # 2. Clear quest edits & drafts from DB
+        db.clear_quest_translation_db(qid)
+        
+        # 3. Rebuild search indexes to reflect deletion
+        from scripts.build_index import build_fts, collect_quests, resolve_source
+        source = resolve_source(None)
+        quests = collect_quests(source)
+        quests.sort(key=lambda q: (q.get("side", 0), q.get("chapter_id", 0), q.get("order", 0), q.get("quest_id", 0)))
+        build_fts(DATA_DIR / "index.db", quests)
+        
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to delete quest translation: {e}")
+
+
+@app.delete("/api/editor/category/{name}/translation")
+def api_delete_category_translation(name: str, role: str = Depends(require_editor)):
+    try:
+        # 1. Delete MT file
+        id_path = DATA_DIR / "categories_id" / f"{name}.json"
+        if id_path.is_file():
+            id_path.unlink()
+            
+        # 2. Clear category edits & drafts from DB
+        db.clear_category_translation_db(name)
+        
+        # 3. Rebuild category search index to reflect deletion
+        from scripts.build_index import build_category_fts
+        build_category_fts(DATA_DIR / "index.db", DATA_DIR)
+        
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to delete category translation: {e}")
+
+
 @app.post("/api/editor/import")
 def api_import_translations(payload: dict, role: str = Depends(get_role)):
     if role != "editor":
@@ -627,30 +871,43 @@ def api_import_translations(payload: dict, role: str = Depends(get_role)):
         raise HTTPException(404, f"No database files found matching: {db_path_str}")
         
     try:
-        from .import_translations import import_translations_from_db
+        from .import_translations import build_import_context, import_translation_map, load_translations_from_db
         combined_stats = {
             "categories_updated": 0,
             "quests_updated": 0,
             "total_keys_imported": 0,
             "skipped_keys": 0,
+            "files_imported": 0,
+            "duplicate_keys_merged": 0,
             "message": ""
         }
+        context = build_import_context(REPO_ROOT)
         
         imported_files = []
-        for i, path in enumerate(resolved_paths):
+        merged_translations = {}
+        duplicate_keys_merged = 0
+        for path in resolved_paths:
             if not path.is_file():
                 raise HTTPException(404, f"Database file not found: {path}")
-            
-            is_last = (i == len(resolved_paths) - 1)
-            stats = import_translations_from_db(REPO_ROOT, path, rebuild_index=is_last)
-            
-            combined_stats["categories_updated"] += stats.get("categories_updated", 0)
-            combined_stats["quests_updated"] += stats.get("quests_updated", 0)
-            combined_stats["total_keys_imported"] += stats.get("total_keys_imported", 0)
-            combined_stats["skipped_keys"] += stats.get("skipped_keys", 0)
+            translations = load_translations_from_db(path)
+            duplicate_keys_merged += sum(1 for key in translations if key in merged_translations)
+            merged_translations.update(translations)
+            combined_stats["files_imported"] += 1
             imported_files.append(path.name)
+
+        stats = import_translation_map(REPO_ROOT, merged_translations, rebuild_index=True, context=context)
+        combined_stats["categories_updated"] = stats.get("categories_updated", 0)
+        combined_stats["quests_updated"] = stats.get("quests_updated", 0)
+        combined_stats["total_keys_imported"] = stats.get("total_keys_imported", 0)
+        combined_stats["skipped_keys"] = stats.get("skipped_keys", 0)
+        combined_stats["duplicate_keys_merged"] = duplicate_keys_merged
             
-        combined_stats["message"] = f"Imported: {', '.join(imported_files)}"
+        if len(imported_files) <= 10:
+            combined_stats["message"] = f"Imported: {', '.join(imported_files)}"
+        else:
+            preview = ", ".join(imported_files[:10])
+            remaining = len(imported_files) - 10
+            combined_stats["message"] = f"Imported {len(imported_files)} files: {preview}, and {remaining} more."
         return {"ok": True, "stats": combined_stats}
     except Exception as e:
         raise HTTPException(500, f"Import failed: {str(e)}")

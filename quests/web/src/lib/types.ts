@@ -166,9 +166,11 @@ export type DraftPatch = Partial<{
 
 export interface Draft {
   id: number;
-  qid: number;
-  line_id: number;
-  position_after: number | null;
+  qid?: number;
+  line_id?: number;
+  category?: string;
+  key?: string;
+  position_after?: number | null;
   patch_json: string;
   status: DraftStatus;
   created_at: string;
@@ -176,7 +178,13 @@ export interface Draft {
   author_label: string | null;
   note: string | null;
   patch?: DraftPatch;
-  original_json?: DialogueLine | null;
+  original_json?: (DialogueLine | {
+    key: string;
+    "zh-Hans": string;
+    en: string;
+    ja: string;
+    text_id: string;
+  }) | null;
 }
 
 export interface LineSummary {
@@ -246,4 +254,14 @@ export interface CategorySingleResponse {
   name: string;
   languages: string[];
   entries: CategorySingleEntry[];
+}
+
+export interface CategoryEditorEntry {
+  key: string;
+  prefix: string;
+  "zh-Hans": string;
+  en: string;
+  ja: string;
+  id: string | null;
+  is_edited: boolean;
 }

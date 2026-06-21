@@ -57,6 +57,51 @@ def test_selective_export_succeeds_for_editor(client):
         assert r.json() == {"ok": True, "files": ["test_quest.db"]}
         mock_export.assert_called_once()
 
+
+def test_import_directory_merges_files_once_and_summarizes(client, tmp_path):
+    _login(client)
+    import_dir = tmp_path / "imports"
+    import_dir.mkdir()
+    for idx in range(12):
+        (import_dir / f"batch_{idx:02d}.db").write_bytes(b"placeholder")
+
+    context = object()
+
+    with (
+        patch("app.import_translations.build_import_context", return_value=context) as mock_context,
+        patch("app.import_translations.load_translations_from_db") as mock_load,
+        patch("app.import_translations.import_translation_map") as mock_import,
+    ):
+        mock_load.side_effect = [
+            {f"key_{idx:02d}": f"value_{idx:02d}", "shared": f"value_{idx:02d}"}
+            for idx in range(12)
+        ]
+        mock_import.return_value = {
+            "categories_updated": 0,
+            "quests_updated": 1,
+            "total_keys_imported": 2,
+            "skipped_keys": 3,
+        }
+        r = client.post("/api/editor/import", json={"db_path": str(import_dir)})
+
+    assert r.status_code == 200
+    stats = r.json()["stats"]
+    assert stats["files_imported"] == 12
+    assert stats["duplicate_keys_merged"] == 11
+    assert stats["quests_updated"] == 1
+    assert stats["total_keys_imported"] == 2
+    assert stats["skipped_keys"] == 3
+    assert stats["message"].startswith("Imported 12 files:")
+    assert "and 2 more" in stats["message"]
+    mock_context.assert_called_once()
+    assert mock_load.call_count == 12
+    mock_import.assert_called_once()
+    merged = mock_import.call_args.args[1]
+    assert len(merged) == 13
+    assert merged["shared"] == "value_11"
+    assert mock_import.call_args.kwargs["context"] is context
+    assert mock_import.call_args.kwargs["rebuild_index"] is True
+
 def test_export_selective_translations_schema(tmp_path):
     import json
     import sqlite3
@@ -288,6 +333,4 @@ def test_selective_export_filters_asterisk_placeholders(tmp_path):
     assert rows[0] == ("key1", "Teks Indonesia 1")
     # key2 had asterisks in translation JSON, so it must fall back to the English template value
     assert rows[1] == ("key2", "English Text 2")
-
-
 

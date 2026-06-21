@@ -264,7 +264,7 @@ export default function TranslatorPage() {
   const pendingCountsById = useMemo(() => {
     const acc: Record<number, number> = {};
     for (const draft of draftsQ.data ?? []) {
-      if (draft.qid !== qidN || draft.status !== "pending") continue;
+      if (draft.qid !== qidN || draft.status !== "pending" || draft.line_id === undefined) continue;
       acc[draft.line_id] = (acc[draft.line_id] ?? 0) + 1;
     }
     return acc;

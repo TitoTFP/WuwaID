@@ -96,3 +96,27 @@ def test_search_id_does_not_match_other_columns(indexed_client: TestClient) -> N
 def test_search_id_empty_query_returns_empty(indexed_client: TestClient) -> None:
     r = indexed_client.get("/api/search", params={"q": "x", "lang": "id"})
     assert r.json() == []
+
+
+def test_search_by_numeric_line_id(indexed_client: TestClient) -> None:
+    r = indexed_client.get("/api/search", params={"q": "1", "lang": "id"})
+    assert r.status_code == 200
+    hits = r.json()
+    assert len(hits) == 1
+    assert hits[0]["line_id"] == 1
+
+
+def test_search_by_hash_line_id(indexed_client: TestClient) -> None:
+    r = indexed_client.get("/api/search", params={"q": "#1", "lang": "id"})
+    assert r.status_code == 200
+    hits = r.json()
+    assert len(hits) == 1
+    assert hits[0]["line_id"] == 1
+
+
+def test_search_by_qid(indexed_client: TestClient) -> None:
+    r = indexed_client.get("/api/search", params={"q": "106000002", "lang": "id"})
+    assert r.status_code == 200
+    hits = r.json()
+    assert len(hits) == 1
+    assert hits[0]["qid"] == 106000002

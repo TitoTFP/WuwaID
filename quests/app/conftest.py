@@ -178,10 +178,12 @@ def client_with_categories(tmp_path, monkeypatch):
     (cats / "Item.json").write_text(json.dumps({
         "Item_Sword_001_Name": {"zh-Hans": "铁剑", "en": "Iron Sword", "ja": "鉄剣"},
         "Item_Sword_001_Desc": {"zh-Hans": "desc", "en": "A basic sword.", "ja": "desc"},
+        "ItemCdTime_Day": {"zh-Hans": "{0}day", "en": "{0}d", "ja": "{0}日"},
     }, ensure_ascii=False), encoding="utf-8")
 
     (translations / "Item.json").write_text(json.dumps({
         "Item_Sword_001_Name": {"zh-Hans": "铁剑", "en": "Iron Sword", "ja": "鉄剣", "id": "Pedang Besi"},
+        "ItemCdTime_Day": {"zh-Hans": "{0}day", "en": "{0}d", "ja": "{0}日", "id": "{0} Hari"},
         # Item_Sword_001_Desc intentionally not translated
     }, ensure_ascii=False), encoding="utf-8")
 

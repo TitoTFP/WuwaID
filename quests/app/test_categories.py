@@ -66,7 +66,7 @@ def test_list_categories_endpoint(client_with_categories, tmp_path):
     payload = res.json()
     assert any(c["name"] == "Item" for c in payload)
     item = next(c for c in payload if c["name"] == "Item")
-    assert item["key_count"] == 2
+    assert item["key_count"] == 3
 
 
 def test_get_category_endpoint_merges_id(client_with_categories, tmp_path):
@@ -94,3 +94,12 @@ def test_search_endpoint_with_category_scope(client_with_categories):
     assert res.status_code == 200
     payload = res.json()
     assert isinstance(payload, (list, dict))
+
+
+def test_search_category_escapes_placeholder_query(client_with_categories):
+    client, _ = client_with_categories
+    res = client.get("/api/search", params={"q": "{0} Hari", "lang": "id", "scope": "category"})
+    assert res.status_code == 200
+    payload = res.json()
+    results = payload["results"] if isinstance(payload, dict) else payload
+    assert any(item["key"] == "ItemCdTime_Day" for item in results)

@@ -50,6 +50,41 @@ def ensure_editor_schema() -> None:
                 con.execute("ALTER TABLE edits ADD COLUMN text_id TEXT")
             if "speaker_id" not in edits_cols:
                 con.execute("ALTER TABLE edits ADD COLUMN speaker_id TEXT")
+
+        # Create category tables if they don't exist
+        con.execute(
+            """
+            CREATE TABLE IF NOT EXISTS category_edits (
+                category TEXT NOT NULL,
+                key TEXT NOT NULL,
+                text_id TEXT,
+                approved_by TEXT NOT NULL,
+                approved_at TEXT NOT NULL,
+                PRIMARY KEY (category, key)
+            )
+            """
+        )
+        con.execute(
+            """
+            CREATE TABLE IF NOT EXISTS category_drafts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL,
+                key TEXT NOT NULL,
+                patch_json TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                author_label TEXT,
+                note TEXT
+            )
+            """
+        )
+        # Seed autoincrement for category_drafts if it's new
+        try:
+            con.execute("INSERT OR IGNORE INTO sqlite_sequence (name, seq) VALUES ('category_drafts', 1000000)")
+        except sqlite3.OperationalError:
+            pass
+
         con.commit()
     finally:
         con.close()
@@ -130,40 +165,111 @@ def search(
     side: 0 = main story, 1 = side quest, None = both
     quest_type: filter by questdata.Type
     """
+    clean_q = q.strip().lstrip('#')
+    is_numeric_id = clean_q.isdigit()
+
     fts_q = _prepare_fts_query(q, lang)
-    if not fts_q:
+    if not fts_q and not is_numeric_id:
         return []
+
     col = {"en": "text_en", "zh": "text_zh", "ja": "text_ja", "id": "text_id"}[lang]
     col_idx = {"en": 10, "zh": 11, "ja": 12, "id": 13}[lang]
 
-    # Restrict the FTS5 MATCH to the target column so a query that only
-    # matches e.g. text_en does not leak into lang=id results.
-    where = ["dialogue_idx MATCH ?"]
-    params: list = [f"{col} : ({fts_q})"]
+    # Shared filters
+    where_shared = []
+    where_params = []
     if side is not None:
-        where.append("side = ?")
-        params.append(side)
+        where_shared.append("side = ?")
+        where_params.append(side)
     if quest_type is not None:
-        where.append("qid IN (SELECT qid FROM quests WHERE quest_type = ?)")
-        params.append(quest_type)
+        where_shared.append("qid IN (SELECT qid FROM quests WHERE quest_type = ?)")
+        where_params.append(quest_type)
 
-    where_sql = " AND ".join(where)
-    sql = f"""
-        SELECT qid, line_id, quest_name, chapter_name, side,
-               speaker_en, {col} AS text, line_type, has_options,
-               snippet(dialogue_idx, {col_idx}, '[', ']', '...', 12) AS snippet
-        FROM dialogue_idx
-        WHERE {where_sql}
-        ORDER BY rank
-        LIMIT ?
-    """
-    params.append(limit)
+    where_shared_sql = (" AND " + " AND ".join(where_shared)) if where_shared else ""
+
+    # Build FTS part if query matches
+    if fts_q:
+        fts_part = f"""
+            SELECT qid, line_id, quest_name, chapter_name, side,
+                   speaker_en, {col} AS text, line_type, has_options,
+                   snippet(dialogue_idx, {col_idx}, '[', ']', '...', 12) AS snippet,
+                   0 AS is_id_match, rank
+            FROM dialogue_idx
+            WHERE dialogue_idx MATCH ? {where_shared_sql}
+        """
+        fts_params = [f"{col} : ({fts_q})"] + where_params
+    else:
+        fts_part = None
+        fts_params = []
+
+    # Build ID part if numeric query
+    if is_numeric_id:
+        val_int = int(clean_q)
+        id_part = f"""
+            SELECT qid, line_id, quest_name, chapter_name, side,
+                   speaker_en, {col} AS text, line_type, has_options,
+                   {col} AS snippet,
+                   1 AS is_id_match, 0 AS rank
+            FROM dialogue_idx
+            WHERE (line_id = ? OR qid = ?) {where_shared_sql}
+        """
+        id_params = [val_int, val_int] + where_params
+    else:
+        id_part = None
+        id_params = []
+
     con = connect()
     try:
-        rows = con.execute(sql, params).fetchall()
+        if fts_part and id_part:
+            sql = f"""
+                SELECT qid, line_id, quest_name, chapter_name, side,
+                       speaker_en, text, line_type, has_options, snippet,
+                       is_id_match, rank
+                FROM (
+                    {fts_part}
+                    UNION ALL
+                    {id_part}
+                )
+                ORDER BY is_id_match DESC, rank
+            """
+            rows = con.execute(sql, fts_params + id_params).fetchall()
+        elif fts_part:
+            sql = f"""
+                {fts_part}
+                ORDER BY rank
+                LIMIT ?
+            """
+            rows = con.execute(sql, fts_params + [limit]).fetchall()
+            return [dict(r) for r in rows]
+        elif id_part:
+            val_int = int(clean_q)
+            sql = f"""
+                {id_part}
+                ORDER BY (line_id = ? OR qid = ?) DESC
+                LIMIT ?
+            """
+            rows = con.execute(sql, id_params + [val_int, val_int, limit]).fetchall()
+            return [dict(r) for r in rows]
+        else:
+            return []
+
+        # De-duplicate results in Python if both FTS and ID match queries ran
+        seen = set()
+        results = []
+        for r in rows:
+            key = (r["qid"], r["line_id"])
+            if key in seen:
+                continue
+            seen.add(key)
+            d = dict(r)
+            d.pop("is_id_match", None)
+            d.pop("rank", None)
+            results.append(d)
+            if len(results) >= limit:
+                break
+        return results
     finally:
         con.close()
-    return [dict(r) for r in rows]
 
 
 def search_overlays(
@@ -177,6 +283,11 @@ def search_overlays(
     needle = q.strip().lower()
     if not needle:
         return []
+    
+    clean_q = needle.lstrip('#')
+    is_numeric_id = clean_q.isdigit()
+    val_int = int(clean_q) if is_numeric_id else None
+
     edit_col = {"en": "text_en", "zh": "text_zh_hans", "ja": "text_ja", "id": "text_id"}[lang]
     json_key = {"en": "text_en", "zh": "text_zh-Hans", "ja": "text_ja", "id": "text_id"}[lang]
     results: list[dict] = []
@@ -206,7 +317,8 @@ def search_overlays(
         ).fetchall():
             if len(results) >= limit:
                 break
-            if row["qid"] not in quests or needle not in row["text"].lower():
+            is_match = (row["qid"] in quests) and (needle in row["text"].lower() or (is_numeric_id and (row["line_id"] == val_int or row["qid"] == val_int)))
+            if not is_match:
                 continue
             line = next((l for l in _load_quest_lines(con, row["qid"]) if l.get("id") == row["line_id"]), {})
             quest = quests[row["qid"]]
@@ -232,7 +344,8 @@ def search_overlays(
                 continue
             line = json.loads(row["line_json"])
             text = line.get(json_key, "")
-            if needle not in text.lower():
+            is_match = needle in text.lower() or (is_numeric_id and (row["line_id"] == val_int or row["qid"] == val_int))
+            if not is_match:
                 continue
             quest = quests[row["qid"]]
             results.append({
@@ -517,13 +630,44 @@ def create_draft(
         con.close()
 
 
+def create_category_draft(
+    category: str,
+    key: str,
+    patch: dict,
+    *,
+    author_label: str | None = None,
+    note: str | None = None,
+) -> int:
+    con = connect()
+    try:
+        now = _now()
+        cur = con.execute(
+            """INSERT INTO category_drafts
+               (category, key, patch_json, status,
+                created_at, updated_at, author_label, note)
+               VALUES (?, ?, ?, 'pending', ?, ?, ?, ?)""",
+            (category, key, json.dumps(patch), now, now,
+             author_label, note),
+        )
+        con.commit()
+        return int(cur.lastrowid)
+    finally:
+        con.close()
+
+
 def get_draft(draft_id: int) -> dict | None:
     con = connect()
     try:
+        # Check category_drafts first
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+        if has_table:
+            row = con.execute("SELECT * FROM category_drafts WHERE id = ?", (draft_id,)).fetchone()
+            if row:
+                return dict(row)
         row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        return dict(row) if row else None
     finally:
         con.close()
-    return dict(row) if row else None
 
 
 def get_draft_with_diff(draft_id: int) -> dict | None:
@@ -536,10 +680,32 @@ def get_draft_with_diff(draft_id: int) -> dict | None:
         patch = {}
     con = connect()
     try:
-        original = next(
-            (l for l in _load_quest_lines(con, d["qid"]) if l.get("id") == d["line_id"]),
-            None,
-        )
+        if "category" in d:
+            # Category draft
+            cat_name = d["category"]
+            key = d["key"]
+            data_dir = Path(DB_PATH).parent if DB_PATH else Path("data")
+            cat_path = data_dir / "categories" / f"{cat_name}.json"
+            original = None
+            if cat_path.is_file():
+                try:
+                    cat_data = json.loads(cat_path.read_text(encoding="utf-8"))
+                    entry = cat_data.get(key)
+                    if entry:
+                        original = {
+                            "key": key,
+                            "zh-Hans": entry.get("zh-Hans", ""),
+                            "en": entry.get("en", ""),
+                            "ja": entry.get("ja", ""),
+                            "text_id": "",
+                        }
+                except Exception:
+                    pass
+        else:
+            original = next(
+                (l for l in _load_quest_lines(con, d["qid"]) if l.get("id") == d["line_id"]),
+                None,
+            )
     finally:
         con.close()
     return {**d, "patch": patch if isinstance(patch, dict) else {}, "original_json": original}
@@ -553,7 +719,17 @@ def update_draft(
 ) -> None:
     con = connect()
     try:
-        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        # check category_drafts first
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+        row = None
+        is_category = False
+        if has_table:
+            row = con.execute("SELECT * FROM category_drafts WHERE id = ?", (draft_id,)).fetchone()
+            if row:
+                is_category = True
+        if row is None:
+            row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+
         if row is None:
             raise ValueError("draft not found")
         if row["status"] != "pending":
@@ -561,10 +737,17 @@ def update_draft(
         is_editor = author_label is None
         if not is_editor and row["author_label"] != author_label:
             raise PermissionError("not your draft")
-        con.execute(
-            "UPDATE drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
-            (json.dumps(patch), _now(), draft_id),
-        )
+
+        if is_category:
+            con.execute(
+                "UPDATE category_drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
+                (json.dumps(patch), _now(), draft_id),
+            )
+        else:
+            con.execute(
+                "UPDATE drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
+                (json.dumps(patch), _now(), draft_id),
+            )
         con.commit()
     finally:
         con.close()
@@ -573,7 +756,17 @@ def update_draft(
 def delete_draft(draft_id: int, *, author_label: str | None) -> None:
     con = connect()
     try:
-        row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        # check category_drafts first
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+        row = None
+        is_category = False
+        if has_table:
+            row = con.execute("SELECT * FROM category_drafts WHERE id = ?", (draft_id,)).fetchone()
+            if row:
+                is_category = True
+        if row is None:
+            row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+
         if row is None:
             return
         is_editor = author_label is None
@@ -581,7 +774,11 @@ def delete_draft(draft_id: int, *, author_label: str | None) -> None:
             raise PermissionError("not your draft")
         if row["status"] != "pending":
             raise ValueError(f"draft already {row['status']}")
-        con.execute("DELETE FROM drafts WHERE id = ?", (draft_id,))
+
+        if is_category:
+            con.execute("DELETE FROM category_drafts WHERE id = ?", (draft_id,))
+        else:
+            con.execute("DELETE FROM drafts WHERE id = ?", (draft_id,))
         con.commit()
     finally:
         con.close()
@@ -602,9 +799,30 @@ def list_drafts(*, scope: str, author_label: str | None) -> list[dict]:
                 "SELECT * FROM drafts WHERE status = 'pending' "
                 "ORDER BY created_at DESC"
             ).fetchall()
+        quest_drafts = [dict(r) for r in rows]
+
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+        if has_table:
+            if scope == "mine":
+                cat_rows = con.execute(
+                    "SELECT * FROM category_drafts WHERE author_label = ? "
+                    "AND status = 'pending' ORDER BY created_at DESC",
+                    (author_label,),
+                ).fetchall()
+            else:
+                cat_rows = con.execute(
+                    "SELECT * FROM category_drafts WHERE status = 'pending' "
+                    "ORDER BY created_at DESC"
+                ).fetchall()
+            cat_drafts = [dict(r) for r in cat_rows]
+        else:
+            cat_drafts = []
     finally:
         con.close()
-    return [dict(r) for r in rows]
+
+    all_drafts = quest_drafts + cat_drafts
+    all_drafts.sort(key=lambda d: d["created_at"], reverse=True)
+    return all_drafts
 
 
 # ---------------------------------------------------------------------------
@@ -655,30 +873,63 @@ def approve_draft(draft_id: int, *, approver: str) -> None:
     con = connect()
     try:
         row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        is_category = False
+        if row:
+            is_category = False
+        else:
+            has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+            if has_table:
+                row = con.execute("SELECT * FROM category_drafts WHERE id = ?", (draft_id,)).fetchone()
+                if row:
+                    is_category = True
+
         if row is None:
             raise ValueError("draft not found")
         if row["status"] != "pending":
             raise ValueError(f"draft already processed ({row['status']})")
 
-        patch = _normalize_patch(json.loads(row["patch_json"]))
-        qid = row["qid"]
-        line_id = row["line_id"]
+        if is_category:
+            patch = json.loads(row["patch_json"])
+            cat_name = row["category"]
+            key = row["key"]
+            text_id = patch.get("text_id", "")
 
-        if line_id == 0:
-            _materialize_insert(con, qid, row["position_after"], patch, approver)
-        elif patch.get("_op") == "reorder":
-            _materialize_reorder(con, qid, line_id, row["position_after"], approver)
+            con.execute(
+                """INSERT OR REPLACE INTO category_edits
+                   (category, key, text_id, approved_by, approved_at)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (cat_name, key, text_id, approver, _now())
+            )
+            con.execute(
+                "UPDATE category_drafts SET status = 'applied', updated_at = ? WHERE id = ?",
+                (_now(), draft_id)
+            )
+            con.commit()
+
+            # Rebuild category FTS table
+            from scripts.build_index import build_category_fts
+            if DB_PATH:
+                build_category_fts(Path(DB_PATH), Path(DB_PATH).parent)
         else:
-            _materialize_field_edit(con, qid, line_id, patch, approver)
+            patch = _normalize_patch(json.loads(row["patch_json"]))
+            qid = row["qid"]
+            line_id = row["line_id"]
 
-        # Recalculate translated count dynamically
-        update_quest_translated_count(con, qid)
+            if line_id == 0:
+                _materialize_insert(con, qid, row["position_after"], patch, approver)
+            elif patch.get("_op") == "reorder":
+                _materialize_reorder(con, qid, line_id, row["position_after"], approver)
+            else:
+                _materialize_field_edit(con, qid, line_id, patch, approver)
 
-        con.execute(
-            "UPDATE drafts SET status = 'applied', updated_at = ? WHERE id = ?",
-            (_now(), draft_id),
-        )
-        con.commit()
+            # Recalculate translated count dynamically
+            update_quest_translated_count(con, qid)
+
+            con.execute(
+                "UPDATE drafts SET status = 'applied', updated_at = ? WHERE id = ?",
+                (_now(), draft_id),
+            )
+            con.commit()
     finally:
         con.close()
 
@@ -687,14 +938,29 @@ def reject_draft(draft_id: int, *, approver: str) -> None:
     con = connect()
     try:
         row = con.execute("SELECT * FROM drafts WHERE id = ?", (draft_id,)).fetchone()
+        is_category = False
+        if row is None:
+            has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+            if has_table:
+                row = con.execute("SELECT * FROM category_drafts WHERE id = ?", (draft_id,)).fetchone()
+                if row:
+                    is_category = True
+
         if row is None:
             raise ValueError("draft not found")
         if row["status"] != "pending":
             raise ValueError(f"draft already processed ({row['status']})")
-        con.execute(
-            "UPDATE drafts SET status = 'rejected', updated_at = ? WHERE id = ?",
-            (_now(), draft_id),
-        )
+
+        if is_category:
+            con.execute(
+                "UPDATE category_drafts SET status = 'rejected', updated_at = ? WHERE id = ?",
+                (_now(), draft_id),
+            )
+        else:
+            con.execute(
+                "UPDATE drafts SET status = 'rejected', updated_at = ? WHERE id = ?",
+                (_now(), draft_id),
+            )
         con.commit()
     finally:
         con.close()
@@ -789,3 +1055,49 @@ def _materialize_reorder(con, qid: int, line_id: int, position_after: int | None
         (qid, line_id, position_after, approver, _now(),
          position_after, approver, _now()),
     )
+
+
+def clear_quest_translation_db(qid: int) -> None:
+    con = connect()
+    try:
+        con.execute("UPDATE edits SET text_id = NULL, speaker_id = NULL WHERE qid = ?", (qid,))
+        # Clean options_json in edits for this quest
+        for row in con.execute("SELECT line_id, options_json FROM edits WHERE qid = ? AND options_json IS NOT NULL", (qid,)).fetchall():
+            try:
+                opts = json.loads(row["options_json"])
+                if isinstance(opts, list):
+                    cleaned = []
+                    for opt in opts:
+                        if isinstance(opt, dict):
+                            cleaned_opt = dict(opt)
+                            cleaned_opt.pop("text_id", None)
+                            cleaned.append(cleaned_opt)
+                        else:
+                            cleaned.append(opt)
+                    con.execute(
+                        "UPDATE edits SET options_json = ? WHERE qid = ? AND line_id = ?",
+                        (json.dumps(cleaned), qid, row["line_id"])
+                    )
+            except Exception:
+                pass
+        # Clear drafts for this quest
+        con.execute("DELETE FROM drafts WHERE qid = ?", (qid,))
+        # Reset translated_count to 0
+        con.execute("UPDATE quests SET translated_count = 0 WHERE qid = ?", (qid,))
+        con.commit()
+    finally:
+        con.close()
+
+
+def clear_category_translation_db(category: str) -> None:
+    con = connect()
+    try:
+        has_table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_edits'").fetchone()
+        if has_table:
+            con.execute("DELETE FROM category_edits WHERE category = ?", (category,))
+        has_drafts = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='category_drafts'").fetchone()
+        if has_drafts:
+            con.execute("DELETE FROM category_drafts WHERE category = ?", (category,))
+        con.commit()
+    finally:
+        con.close()

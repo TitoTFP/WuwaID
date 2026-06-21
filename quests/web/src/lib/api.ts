@@ -6,11 +6,11 @@ import type {
   MeResponse,
   Quest,
   QuestListResponse,
-  SearchHit,
   Speaker,
   CategoryResponse,
   CategorySummary,
   CategorySingleResponse,
+  CategoryEditorEntry,
 } from "./types";
 
 const BASE = "/api";
@@ -71,6 +71,7 @@ export const api = {
     lang?: "en" | "zh" | "ja" | "id";
     side?: 0 | 1;
     quest_type?: number;
+    scope?: "quest" | "category";
     limit?: number;
   }) => {
     const u = new URLSearchParams();
@@ -78,8 +79,9 @@ export const api = {
     if (params.lang) u.set("lang", params.lang);
     if (params.side !== undefined) u.set("side", String(params.side));
     if (params.quest_type !== undefined) u.set("quest_type", String(params.quest_type));
+    if (params.scope) u.set("scope", params.scope);
     if (params.limit) u.set("limit", String(params.limit));
-    return get<SearchHit[]>(`/search?${u.toString()}`);
+    return get<any>(`/search?${u.toString()}`);
   },
 
   editorQuest: (qid: number) => get<Quest>(`/editor/quest/${qid}`),
@@ -134,4 +136,19 @@ export const api = {
     return get<CategoryResponse>(`/categories/${name}?${u.toString()}`);
   },
   categorySingle: (name: string) => get<CategorySingleResponse>(`/category/${name}`),
+  editorCategoryEntries: (categoryName: string) =>
+    get<CategoryEditorEntry[]>(`/editor/category/${categoryName}/entries`),
+  createCategoryDraft: (
+    params: { category: string; key: string; patch: { text_id: string }; note?: string },
+    authorLabel: string | null,
+  ) =>
+    send<{ id: number }>("POST", "/editor/category/drafts", params, {
+      "X-Author-Label": authorLabel ?? "",
+    }),
+  clearTranslations: () =>
+    send<{ ok: boolean }>("POST", "/editor/clear-translations"),
+  deleteQuestTranslation: (qid: number) =>
+    send<{ ok: boolean }>("DELETE", `/editor/quest/${qid}/translation`),
+  deleteCategoryTranslation: (categoryName: string) =>
+    send<{ ok: boolean }>("DELETE", `/editor/category/${categoryName}/translation`),
 };
