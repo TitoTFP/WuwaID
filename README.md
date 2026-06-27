@@ -1,6 +1,7 @@
 # Referensi terjemahan en -> id dari repo ini: [TitoTFP/wuwa-bahasa-indonesia](https://github.com/TitoTFP/wuwa-bahasa-indonesia)
 
 # WuWa Bahasa Indonesia
+
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=plastic&logo=discord&logoColor=white)](https://discord.gg/rhUKsb7V8r)
 
 Patch terjemahan Bahasa Indonesia untuk **Wuthering Waves**.
@@ -9,7 +10,7 @@ Patch terjemahan Bahasa Indonesia untuk **Wuthering Waves**.
 
 ## Panduan Instalasi
 
-### Metode 1: Instalasi Otomatis melalui Launcher *(Direkomendasikan)*
+### Metode 1: Instalasi Otomatis melalui Launcher _(Direkomendasikan)_
 
 Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasang patch terjemahan ke folder yang sesuai:
 
@@ -27,10 +28,10 @@ Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasa
 
 Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 
-| File | Deskripsi |
-|------|-----------|
-| `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia |
-| `winhttp.dll` | Loader untuk me-mount patch terjemahan secara otomatis |
+| File              | Deskripsi                                              |
+| ----------------- | ------------------------------------------------------ |
+| `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia                 |
+| `winhttp.dll`     | Loader untuk me-mount patch terjemahan secara otomatis |
 
 <!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaID_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
 
@@ -78,22 +79,27 @@ Hapus file `winhttp.dll` dan folder `wuwaIndonesia`.
 Repositori ini menyediakan skrip Python untuk mengekstrak teks lokalisasi dari database game Wuthering Waves (`ConfigDB` atau `WuwaDBExport`).
 
 ### Persiapan
+
 Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai (misal: sejajar dengan skrip ini) atau tentukan path secara manual saat menjalankan skrip.
 
 ### 1. Ekspor Dialog Quest Terurut
+
 Skrip `export_quest_ordered.py` mengekstrak dialog quest yang diorganisasikan berdasarkan chapter cerita utama dan side quest.
 
 ```sh
 python export_quest_ordered.py [path_ke_ConfigDB]
 ```
+
 Output akan disimpan di folder `export_quest_ordered/`.
 
 ### 2. Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
+
 Skrip `export_text_grouped.py` mengekstrak dan mengelompokkan semua teks lokalisasi (item, skill, dialog quest, UI, dll.) berdasarkan kategori ke dalam file JSON. Skrip ini menghasilkan format data yang dibutuhkan oleh aplikasi web [wuwaid-quests](../wuwaid-quests).
 
 ```sh
 python export_text_grouped.py [path_ke_ConfigDB]
 ```
+
 Output akan disimpan di folder `export_text_grouped/`.
 
 ## Credits
