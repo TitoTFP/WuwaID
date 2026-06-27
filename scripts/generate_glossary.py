@@ -22,13 +22,13 @@ OUTPUT_PATH = REPO_ROOT / "glossary_draft.json"
 glossary = {}
 
 
-def add_entry(en: str, zh: str, category: str) -> None:
+def add_entry(en: str, zh: str, category: str, max_len: int = 50) -> None:
     en = en.strip()
     zh = zh.strip()
     if not en or en == "*" or len(en) < 2:
         return
     # Skip full sentences or long descriptions
-    if len(en) > 50 or "\n" in en:
+    if len(en) > max_len or "\n" in en:
         return
     if en not in glossary:
         glossary[en] = {
@@ -75,7 +75,57 @@ def main() -> int:
     else:
         print(f"Warning: Quest directory not found at {QUESTS_DIR}. Skipping speakers.")
 
-    # 2. Define target files and their key patterns
+    # 2. Process Quest Names / Quest Chapter Names
+    # These are proper titles and should stay in English for Indonesian output.
+    quest_title_count = 0
+    quest_category_path = CATEGORIES_DIR / "Quest.json"
+    if quest_category_path.is_file():
+        print(f"Scanning quest titles from {quest_category_path}...")
+        try:
+            with quest_category_path.open(encoding="utf-8") as f:
+                data = json.load(f)
+            for key, value in data.items():
+                if not isinstance(value, dict):
+                    continue
+                if "_QuestName" in key:
+                    en = value.get("en", "")
+                    zh = value.get("zh-Hans", "")
+                    before = len(glossary)
+                    add_entry(en, zh, "Quest Name", max_len=100)
+                    if len(glossary) > before:
+                        quest_title_count += 1
+                elif "_ChapterName" in key:
+                    en = value.get("en", "")
+                    zh = value.get("zh-Hans", "")
+                    before = len(glossary)
+                    add_entry(en, zh, "Quest Chapter", max_len=100)
+                    if len(glossary) > before:
+                        quest_title_count += 1
+        except Exception as e:
+            print(f"Warning: Could not extract quest titles from Quest.json: {e}")
+
+    if QUESTS_DIR.is_dir():
+        print(f"Scanning quest titles from {QUESTS_DIR}...")
+        try:
+            for dirpath, _, files in os.walk(QUESTS_DIR):
+                if "dialogue.json" not in files:
+                    continue
+                try:
+                    with open(Path(dirpath) / "dialogue.json", encoding="utf-8") as f:
+                        quest_data = json.load(f)
+                    quest_name = quest_data.get("quest_name", "")
+                    chapter_name = quest_data.get("chapter_name", "")
+                    before = len(glossary)
+                    add_entry(quest_name, "", "Quest Name", max_len=100)
+                    add_entry(chapter_name, "", "Quest Chapter", max_len=100)
+                    quest_title_count += len(glossary) - before
+                except Exception as e:
+                    print(f"Warning: Could not parse dialogue file in {dirpath}: {e}")
+        except Exception as e:
+            print(f"Warning: Could not extract quest titles from dialogue exports: {e}")
+    print(f"Added {quest_title_count} quest title terms.")
+
+    # 3. Define target files and their key patterns
     targets = [
         {
             "file": "Guide.json",

@@ -13889,6 +13889,4231 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "？？？& {PlayerName}"
   },
+  "Silent Glacier": {
+    "zh": "沉默冰原",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Silent Glacier"
+  },
+  "Loaded and Chambered": {
+    "zh": "子弹重新上膛",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Loaded and Chambered"
+  },
+  "Until No One Listens": {
+    "zh": "直到无人聆听",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Until No One Listens"
+  },
+  "Daybreak at Last": {
+    "zh": "长夜将明",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Daybreak at Last"
+  },
+  "Small Wooly, Big Adventures": {
+    "zh": "小小羊咩大冒险",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Small Wooly, Big Adventures"
+  },
+  "Solitary Path": {
+    "zh": "此际我独行",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Solitary Path"
+  },
+  "Wild Heart's Return": {
+    "zh": "啸野归城",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Wild Heart's Return"
+  },
+  "Forking Paths Among the Stars": {
+    "zh": "小径分岔的星海",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Forking Paths Among the Stars"
+  },
+  "Immortal Blaze": {
+    "zh": "离火弈长生",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Immortal Blaze"
+  },
+  "True Colors": {
+    "zh": "自问丹青",
+    "category": "Quest Chapter",
+    "indonesian_translation": "True Colors"
+  },
+  "If On a Rainy Night a Family": {
+    "zh": "如果在雨夜，一个家族",
+    "category": "Quest Chapter",
+    "indonesian_translation": "If On a Rainy Night a Family"
+  },
+  "Starry is the Night": {
+    "zh": "今夜星光灿烂",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Starry is the Night"
+  },
+  "Sail Day, Captain!": {
+    "zh": "启航日，船长！",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Sail Day, Captain!"
+  },
+  "A Fleeting Night's Dream": {
+    "zh": "幽夜幻梦",
+    "category": "Quest Chapter",
+    "indonesian_translation": "A Fleeting Night's Dream"
+  },
+  "A Blaze in the Dark": {
+    "zh": "夜行的焰光",
+    "category": "Quest Chapter",
+    "indonesian_translation": "A Blaze in the Dark"
+  },
+  "Jinzhou Rising": {
+    "zh": "但觉今州胜旧州",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Jinzhou Rising"
+  },
+  "Even When Divinity Remains Silent": {
+    "zh": "即使神明缄默不言",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Even When Divinity Remains Silent"
+  },
+  "Utterance of Marvels": {
+    "zh": "万象新声",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Utterance of Marvels"
+  },
+  "We Promise, We Deliver": {
+    "zh": "使命必达",
+    "category": "Quest Chapter",
+    "indonesian_translation": "We Promise, We Deliver"
+  },
+  "Stygian Lacrimosa": {
+    "zh": "彼岸的哀歌",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Stygian Lacrimosa"
+  },
+  "Hidden Dangers in Peaceful Life": {
+    "zh": "平静日常下的隐患",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Hidden Dangers in Peaceful Life"
+  },
+  "When the Forest is No Longer Dim": {
+    "zh": "当森林不再阴霾",
+    "category": "Quest Chapter",
+    "indonesian_translation": "When the Forest is No Longer Dim"
+  },
+  "Glorious Loong's Pearl": {
+    "zh": "照龙映珠",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Glorious Loong's Pearl"
+  },
+  "Operation: Frontier Renewal": {
+    "zh": "开辟测界之路",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Operation: Frontier Renewal"
+  },
+  "Into the Land of Paradox": {
+    "zh": "勘探悖论之域",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Into the Land of Paradox"
+  },
+  "Dawn Breaks on Dark Tides": {
+    "zh": "暗潮将映的黎明",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Dawn Breaks on Dark Tides"
+  },
+  "A Stranger in a Strange Land": {
+    "zh": "独在异乡为异客",
+    "category": "Quest Chapter",
+    "indonesian_translation": "A Stranger in a Strange Land"
+  },
+  "Stagnant Dawn on Wastelands": {
+    "zh": "曙光停摆于荒地之上",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Stagnant Dawn on Wastelands"
+  },
+  "Flowing Starlight in the Iris": {
+    "zh": "星光流转于眼眸之间",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Flowing Starlight in the Iris"
+  },
+  "To the Stars Yet to Shine": {
+    "zh": "驶向尚未点亮之星",
+    "category": "Quest Chapter",
+    "indonesian_translation": "To the Stars Yet to Shine"
+  },
+  "Tale of Moontree Lodge": {
+    "zh": "祈愿月树屋",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Tale of Moontree Lodge"
+  },
+  "Moments": {
+    "zh": "经营轶事",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Moments"
+  },
+  "Until the Long Night Ends": {
+    "zh": "直至永夜终结",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Until the Long Night Ends"
+  },
+  "Riccioli Voyage Log": {
+    "zh": "黎乔利航海日志",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Riccioli Voyage Log"
+  },
+  "Silent as a Falling Leaf": {
+    "zh": "叶落无声",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Silent as a Falling Leaf"
+  },
+  "Lahai-Roi: Voices Along the Way": {
+    "zh": "拉海洛·行旅旁声",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Lahai-Roi: Voices Along the Way"
+  },
+  "Lahai-Roi: Exploring the Extreme Edge": {
+    "zh": "拉海洛·极域踏勘",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Lahai-Roi: Exploring the Extreme Edge"
+  },
+  "Your Summer Will Never Wither": {
+    "zh": "唯你的长夏永不凋落",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Your Summer Will Never Wither"
+  },
+  "Startorch Academy Anecdotes": {
+    "zh": "星炬学院逸话",
+    "category": "Quest Chapter",
+    "indonesian_translation": "Startorch Academy Anecdotes"
+  },
+  "An error occurred. Please contact our Customer Service for assistance": {
+    "zh": "存在异常，如有疑问请联系官方客服",
+    "category": "Quest Chapter",
+    "indonesian_translation": "An error occurred. Please contact our Customer Service for assistance"
+  },
+  "Grand Warstorm": {
+    "zh": "千里卷戎旌",
+    "category": "Quest Name",
+    "indonesian_translation": "Grand Warstorm"
+  },
+  "When Moonlight Shines in the Forest": {
+    "zh": "当月光照进森林",
+    "category": "Quest Name",
+    "indonesian_translation": "When Moonlight Shines in the Forest"
+  },
+  "Treasure Map": {
+    "zh": "藏宝图",
+    "category": "Quest Name",
+    "indonesian_translation": "Treasure Map"
+  },
+  "Ragunna Holiday": {
+    "zh": "拉古那假日",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Holiday"
+  },
+  "Tales of the Past and Present: Port City of Guixu": {
+    "zh": "古今多少故事·归墟港市",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Port City of Guixu"
+  },
+  "Tales of the Past and Present: Norfall Barrens": {
+    "zh": "古今多少故事·北落野",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Norfall Barrens"
+  },
+  "Tales of the Past and Present: Gorges of Spirits": {
+    "zh": "古今多少故事·云陵谷",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Gorges of Spirits"
+  },
+  "Tales of the Past and Present: Central Plains": {
+    "zh": "古今多少故事·中曲台地",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Central Plains"
+  },
+  "Tales of the Past and Present: Whining Aix's Mire": {
+    "zh": "古今多少故事·怨鸟泽",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Whining Aix's Mire"
+  },
+  "Tales of the Past and Present: Desorock Highland": {
+    "zh": "古今多少故事·荒石高地",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Desorock Highland"
+  },
+  "Tales of the Past and Present: Tiger's Maw": {
+    "zh": "古今多少故事·虎口山脉",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Tiger's Maw"
+  },
+  "Tales of the Past and Present: Dim Forest": {
+    "zh": "古今多少故事·无光之森",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Dim Forest"
+  },
+  "Hymn of the Sea of Clouds: Rainbow": {
+    "zh": "氤柔云海之歌·虹彩之章",
+    "category": "Quest Name",
+    "indonesian_translation": "Hymn of the Sea of Clouds: Rainbow"
+  },
+  "Hymn of the Sea of Clouds: Storm": {
+    "zh": "氤柔云海之歌·骤雨之章",
+    "category": "Quest Name",
+    "indonesian_translation": "Hymn of the Sea of Clouds: Storm"
+  },
+  "Tales of the Past and Present: Averardo Vault": {
+    "zh": "古今多少故事·埃弗拉德金库",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Averardo Vault"
+  },
+  "Tales of the Past and Present: Whisperwind Haven": {
+    "zh": "古今多少故事·拂风水畔",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Whisperwind Haven"
+  },
+  "Tales of the Past and Present: Penitent's End": {
+    "zh": "古今多少故事·悲叹墓岛",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Penitent's End"
+  },
+  "Tales of the Past and Present: Thessaleo Fells": {
+    "zh": "古今多少故事·狄萨莱海脊",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Thessaleo Fells"
+  },
+  "Tales of the Past and Present: Hallowed Reach": {
+    "zh": "古今多少故事·赞悼圣迹",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Hallowed Reach"
+  },
+  "Tales of the Past and Present: Fagaceae Peninsula": {
+    "zh": "古今多少故事·槲生半岛",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Fagaceae Peninsula"
+  },
+  "Tales of the Past and Present: Nimbus Sanctum": {
+    "zh": "古今多少故事·氤柔水境",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Nimbus Sanctum"
+  },
+  "Tales of the Past and Present: Ragunna City": {
+    "zh": "古今多少故事·拉古那城",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Ragunna City"
+  },
+  "The Song of Ice and Steel": {
+    "zh": "冰与铁之歌",
+    "category": "Quest Name",
+    "indonesian_translation": "The Song of Ice and Steel"
+  },
+  "Unfrozen Hope": {
+    "zh": "凛冬的希望",
+    "category": "Quest Name",
+    "indonesian_translation": "Unfrozen Hope"
+  },
+  "The Past is the Future: Introduction": {
+    "zh": "过去即是明天·前",
+    "category": "Quest Name",
+    "indonesian_translation": "The Past is the Future: Introduction"
+  },
+  "The Past is the Future: Continued": {
+    "zh": "过去即是明天·后",
+    "category": "Quest Name",
+    "indonesian_translation": "The Past is the Future: Continued"
+  },
+  "The Past is the Future: Epilogue": {
+    "zh": "过去即是明天·后日谈",
+    "category": "Quest Name",
+    "indonesian_translation": "The Past is the Future: Epilogue"
+  },
+  "Travel in Jinzhou: Gulpuffs": {
+    "zh": "今州游学·咕咕河豚",
+    "category": "Quest Name",
+    "indonesian_translation": "Travel in Jinzhou: Gulpuffs"
+  },
+  "A Free Meal?": {
+    "zh": "天上掉馅饼？",
+    "category": "Quest Name",
+    "indonesian_translation": "A Free Meal?"
+  },
+  "Hero of the Leap": {
+    "zh": "清刃奇侠",
+    "category": "Quest Name",
+    "indonesian_translation": "Hero of the Leap"
+  },
+  "Plushie Squad's Clean Return": {
+    "zh": "布偶小队堂堂复活",
+    "category": "Quest Name",
+    "indonesian_translation": "Plushie Squad's Clean Return"
+  },
+  "Plushie Expedition Squad": {
+    "zh": "布偶远征队",
+    "category": "Quest Name",
+    "indonesian_translation": "Plushie Expedition Squad"
+  },
+  "Walk the Path of the Dragon": {
+    "zh": "踏上古龙之道",
+    "category": "Quest Name",
+    "indonesian_translation": "Walk the Path of the Dragon"
+  },
+  "Lost Ranger": {
+    "zh": "失踪的孤鸿",
+    "category": "Quest Name",
+    "indonesian_translation": "Lost Ranger"
+  },
+  "Time to Study": {
+    "zh": "少年尚知读书时",
+    "category": "Quest Name",
+    "indonesian_translation": "Time to Study"
+  },
+  "Where Wind Returns to Celestial Realms": {
+    "zh": "风归高天之所",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Wind Returns to Celestial Realms"
+  },
+  "Photos of Jinzhou": {
+    "zh": "拍忆今州",
+    "category": "Quest Name",
+    "indonesian_translation": "Photos of Jinzhou"
+  },
+  "Rewinding Raindrops": {
+    "zh": "欲知天将雨",
+    "category": "Quest Name",
+    "indonesian_translation": "Rewinding Raindrops"
+  },
+  "Through the Sea Thou Break": {
+    "zh": "如一叶小舟穿行于茫茫海洋",
+    "category": "Quest Name",
+    "indonesian_translation": "Through the Sea Thou Break"
+  },
+  "The Sacred Breeze So Often Breathes": {
+    "zh": "那神圣微风时常吹入",
+    "category": "Quest Name",
+    "indonesian_translation": "The Sacred Breeze So Often Breathes"
+  },
+  "Veils Off in Sun or Shadow": {
+    "zh": "夜与昼，均请摘下面纱",
+    "category": "Quest Name",
+    "indonesian_translation": "Veils Off in Sun or Shadow"
+  },
+  "What Yesterday Wept, Today Doth Sing": {
+    "zh": "昔我悲伤，今却歌唱",
+    "category": "Quest Name",
+    "indonesian_translation": "What Yesterday Wept, Today Doth Sing"
+  },
+  "The Star That Voyages Far": {
+    "zh": "远航星",
+    "category": "Quest Name",
+    "indonesian_translation": "The Star That Voyages Far"
+  },
+  "Fracture the Frozen Mirror": {
+    "zh": "冲破寒冰之镜",
+    "category": "Quest Name",
+    "indonesian_translation": "Fracture the Frozen Mirror"
+  },
+  "Smartprint Cube Reboot - Frostlands Surface": {
+    "zh": "重启智造立方·冰原地表",
+    "category": "Quest Name",
+    "indonesian_translation": "Smartprint Cube Reboot - Frostlands Surface"
+  },
+  "Alloy Smelt": {
+    "zh": "试冶合金",
+    "category": "Quest Name",
+    "indonesian_translation": "Alloy Smelt"
+  },
+  "Beneath a Melting Night Sky": {
+    "zh": "在熔解的夜空下",
+    "category": "Quest Name",
+    "indonesian_translation": "Beneath a Melting Night Sky"
+  },
+  "Mountain Hunter I": {
+    "zh": "山野猎人·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Mountain Hunter I"
+  },
+  "Mountain Hunter II": {
+    "zh": "山野猎人·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Mountain Hunter II"
+  },
+  "Mountain Hunter III": {
+    "zh": "山野猎人·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Mountain Hunter III"
+  },
+  "Mountain Hunter IV": {
+    "zh": "山野猎人·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Mountain Hunter IV"
+  },
+  "Eradicating Evil I": {
+    "zh": "除恶务尽·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Eradicating Evil I"
+  },
+  "Eradicating Evil II": {
+    "zh": "除恶务尽·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Eradicating Evil II"
+  },
+  "Ace Salesman: I": {
+    "zh": "金牌推销员·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Ace Salesman: I"
+  },
+  "Ace Salesman: II": {
+    "zh": "金牌推销员·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Ace Salesman: II"
+  },
+  "Ace Salesman: III": {
+    "zh": "金牌推销员·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Ace Salesman: III"
+  },
+  "Ace Salesman: IV": {
+    "zh": "金牌推销员·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Ace Salesman: IV"
+  },
+  "Herb Expeditioner: I": {
+    "zh": "百味归经·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Herb Expeditioner: I"
+  },
+  "Herb Expeditioner: II": {
+    "zh": "百味归经·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Herb Expeditioner: II"
+  },
+  "Herb Expeditioner: III": {
+    "zh": "百味归经·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Herb Expeditioner: III"
+  },
+  "Herb Expeditioner: IV": {
+    "zh": "百味归经·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Herb Expeditioner: IV"
+  },
+  "Lores Beyond the Ranges": {
+    "zh": "重嶂轶闻",
+    "category": "Quest Name",
+    "indonesian_translation": "Lores Beyond the Ranges"
+  },
+  "Scale of Past": {
+    "zh": "长路鳞迹",
+    "category": "Quest Name",
+    "indonesian_translation": "Scale of Past"
+  },
+  "Mummer's Wish": {
+    "zh": "奏者的愿望",
+    "category": "Quest Name",
+    "indonesian_translation": "Mummer's Wish"
+  },
+  "Sunny Season": {
+    "zh": "阳光季节",
+    "category": "Quest Name",
+    "indonesian_translation": "Sunny Season"
+  },
+  "Capturing Starlight": {
+    "zh": "星原定格",
+    "category": "Quest Name",
+    "indonesian_translation": "Capturing Starlight"
+  },
+  "Into the Battle Simulation!": {
+    "zh": "进入虚拟作战领域！",
+    "category": "Quest Name",
+    "indonesian_translation": "Into the Battle Simulation!"
+  },
+  "Possessions of the past.": {
+    "zh": "那些属于过去的事物。",
+    "category": "Quest Name",
+    "indonesian_translation": "Possessions of the past."
+  },
+  "Hidden Quest": {
+    "zh": "隐藏任务",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest"
+  },
+  "Hidden quest": {
+    "zh": "test/隐藏任务",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden quest"
+  },
+  "Under the Moonlit Banyan": {
+    "zh": "于古榕的月光下",
+    "category": "Quest Name",
+    "indonesian_translation": "Under the Moonlit Banyan"
+  },
+  "Tacet Discord Hunter": {
+    "zh": "猎取残象之人",
+    "category": "Quest Name",
+    "indonesian_translation": "Tacet Discord Hunter"
+  },
+  "Flames of Heart": {
+    "zh": "燃烧的心",
+    "category": "Quest Name",
+    "indonesian_translation": "Flames of Heart"
+  },
+  "Starlights from Yesterdays": {
+    "zh": "昨夜群星",
+    "category": "Quest Name",
+    "indonesian_translation": "Starlights from Yesterdays"
+  },
+  "The Garden's disappearance": {
+    "zh": "花田的消失",
+    "category": "Quest Name",
+    "indonesian_translation": "The Garden's disappearance"
+  },
+  "Wishes in the Bell: Epilogue": {
+    "zh": "愿系铃中·续",
+    "category": "Quest Name",
+    "indonesian_translation": "Wishes in the Bell: Epilogue"
+  },
+  "A Zephyr-Kissed Journey to You": {
+    "zh": "春风祝颂你的旅途",
+    "category": "Quest Name",
+    "indonesian_translation": "A Zephyr-Kissed Journey to You"
+  },
+  "So as the Melting Snow Desires": {
+    "zh": "如那融雪所愿般",
+    "category": "Quest Name",
+    "indonesian_translation": "So as the Melting Snow Desires"
+  },
+  "Luuk Herssen's \"secret workspace\"": {
+    "zh": "陆·赫斯的「秘密小屋」",
+    "category": "Quest Name",
+    "indonesian_translation": "Luuk Herssen's \"secret workspace\""
+  },
+  "Hidden Chair sidequest": {
+    "zh": "dnt/隐藏椅子支线",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Chair sidequest"
+  },
+  "Hidden Exostrider": {
+    "zh": "dnt/隐藏隧者",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Exostrider"
+  },
+  "Restart the radar": {
+    "zh": "重启雷达",
+    "category": "Quest Name",
+    "indonesian_translation": "Restart the radar"
+  },
+  "Riverside Games": {
+    "zh": "川流竞渡",
+    "category": "Quest Name",
+    "indonesian_translation": "Riverside Games"
+  },
+  "Replica of Past Days": {
+    "zh": "往日蜃景",
+    "category": "Quest Name",
+    "indonesian_translation": "Replica of Past Days"
+  },
+  "Pastures Like Old Times": {
+    "zh": "春草如故",
+    "category": "Quest Name",
+    "indonesian_translation": "Pastures Like Old Times"
+  },
+  "First Encounter with Yihu": {
+    "zh": "初识一壶",
+    "category": "Quest Name",
+    "indonesian_translation": "First Encounter with Yihu"
+  },
+  "Crosstalk": {
+    "zh": "相声搭词",
+    "category": "Quest Name",
+    "indonesian_translation": "Crosstalk"
+  },
+  "Tacit Partnership": {
+    "zh": "默契搭档",
+    "category": "Quest Name",
+    "indonesian_translation": "Tacit Partnership"
+  },
+  "Later in the Story": {
+    "zh": "故事后续",
+    "category": "Quest Name",
+    "indonesian_translation": "Later in the Story"
+  },
+  "Stand-up Show": {
+    "zh": "试试逗哏",
+    "category": "Quest Name",
+    "indonesian_translation": "Stand-up Show"
+  },
+  "Undercover Actor": {
+    "zh": "卧底演员",
+    "category": "Quest Name",
+    "indonesian_translation": "Undercover Actor"
+  },
+  "Undercover Message": {
+    "zh": "卧底传信",
+    "category": "Quest Name",
+    "indonesian_translation": "Undercover Message"
+  },
+  "Langsheng's Request": {
+    "zh": "琅生的委托",
+    "category": "Quest Name",
+    "indonesian_translation": "Langsheng's Request"
+  },
+  "Save the World? Save the Cat!": {
+    "zh": "拯救世界？拯救猫咪！",
+    "category": "Quest Name",
+    "indonesian_translation": "Save the World? Save the Cat!"
+  },
+  "Defeat the Exiles": {
+    "zh": "击退流放者",
+    "category": "Quest Name",
+    "indonesian_translation": "Defeat the Exiles"
+  },
+  "Defeat the TDs": {
+    "zh": "消灭残象",
+    "category": "Quest Name",
+    "indonesian_translation": "Defeat the TDs"
+  },
+  "Monuments of Condolence": {
+    "zh": "吊唁碑林",
+    "category": "Quest Name",
+    "indonesian_translation": "Monuments of Condolence"
+  },
+  "Third-rate Painter": {
+    "zh": "三流画家",
+    "category": "Quest Name",
+    "indonesian_translation": "Third-rate Painter"
+  },
+  "Dreamweaver's Ascent": {
+    "zh": "梦境遗尘",
+    "category": "Quest Name",
+    "indonesian_translation": "Dreamweaver's Ascent"
+  },
+  "To Mt. Firmament": {
+    "zh": "远赴乘霄",
+    "category": "Quest Name",
+    "indonesian_translation": "To Mt. Firmament"
+  },
+  "Road of Pilgrimage": {
+    "zh": "朝觐之路",
+    "category": "Quest Name",
+    "indonesian_translation": "Road of Pilgrimage"
+  },
+  "The Commander of Time": {
+    "zh": "时序之主",
+    "category": "Quest Name",
+    "indonesian_translation": "The Commander of Time"
+  },
+  "When the Snow Clears": {
+    "zh": "风消雪霁",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Snow Clears"
+  },
+  "Shadow of Glory": {
+    "zh": "荣耀暗面",
+    "category": "Quest Name",
+    "indonesian_translation": "Shadow of Glory"
+  },
+  "Three Wishes": {
+    "zh": "三个愿望",
+    "category": "Quest Name",
+    "indonesian_translation": "Three Wishes"
+  },
+  "Companionship": {
+    "zh": "我的搭档",
+    "category": "Quest Name",
+    "indonesian_translation": "Companionship"
+  },
+  "We Choose the Sky": {
+    "zh": "我们选择天空",
+    "category": "Quest Name",
+    "indonesian_translation": "We Choose the Sky"
+  },
+  "Agon of Champions: The Last Call": {
+    "zh": "冠军赛落幕",
+    "category": "Quest Name",
+    "indonesian_translation": "Agon of Champions: The Last Call"
+  },
+  "Thaw of Eons": {
+    "zh": "往岁乘霄醒惊蛰",
+    "category": "Quest Name",
+    "indonesian_translation": "Thaw of Eons"
+  },
+  "Journal of Jinzhou: Vo.1": {
+    "zh": "今州刊物·创刊号",
+    "category": "Quest Name",
+    "indonesian_translation": "Journal of Jinzhou: Vo.1"
+  },
+  "Listen to Animals' Words: Translation of Cat's Language": {
+    "zh": "倾听动物之声·猫语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Cat's Language"
+  },
+  "Journal of Jinzhou: Vol.2": {
+    "zh": "今州刊物·第二期",
+    "category": "Quest Name",
+    "indonesian_translation": "Journal of Jinzhou: Vol.2"
+  },
+  "Listen to Animals' Words: Translation of Bird's Language": {
+    "zh": "倾听动物之声·鸟语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Bird's Language"
+  },
+  "Listen to Animals' Words: Translation of Rabbit's Language": {
+    "zh": "倾听动物之声·兔语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Rabbit's Language"
+  },
+  "Listen to Animals' Words: Translation of Lizard's Language": {
+    "zh": "倾听动物之声·蜥语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Lizard's Language"
+  },
+  "Listen to Animals' Words: Translation of Dog's Language": {
+    "zh": "倾听动物之声·犬语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Dog's Language"
+  },
+  "Listen to Animals' Words: Translation of Fish's Language": {
+    "zh": "倾听动物之声·鱼语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Fish's Language"
+  },
+  "Listen to Animals' Words: Translation of Frog's Language": {
+    "zh": "倾听动物之声·蛙语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Frog's Language"
+  },
+  "Listen to Animals' Words: Translation of Bird's Language - Sequel": {
+    "zh": "倾听动物之声·续·鸟语翻译",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to Animals' Words: Translation of Bird's Language - Sequel"
+  },
+  "Explosive Spear Tip Testing Challenge": {
+    "zh": "枪头测试进阶挑战",
+    "category": "Quest Name",
+    "indonesian_translation": "Explosive Spear Tip Testing Challenge"
+  },
+  "Voidspawn Emergence": {
+    "zh": "虚诞潜迹",
+    "category": "Quest Name",
+    "indonesian_translation": "Voidspawn Emergence"
+  },
+  "Misfortune on a Workday": {
+    "zh": "出工日的厄运",
+    "category": "Quest Name",
+    "indonesian_translation": "Misfortune on a Workday"
+  },
+  "De-Hoochief": {
+    "zh": "逐猿委托",
+    "category": "Quest Name",
+    "indonesian_translation": "De-Hoochief"
+  },
+  "A Quest of Wits - I": {
+    "zh": "曲问趣答-一",
+    "category": "Quest Name",
+    "indonesian_translation": "A Quest of Wits - I"
+  },
+  "A Quest of Wits - II": {
+    "zh": "曲问趣答·二",
+    "category": "Quest Name",
+    "indonesian_translation": "A Quest of Wits - II"
+  },
+  "A Quest of Wits - III": {
+    "zh": "曲问趣答·三",
+    "category": "Quest Name",
+    "indonesian_translation": "A Quest of Wits - III"
+  },
+  "Secret Investigation": {
+    "zh": "暗探潜踪",
+    "category": "Quest Name",
+    "indonesian_translation": "Secret Investigation"
+  },
+  "Truthseeker's Pass": {
+    "zh": "叩天关",
+    "category": "Quest Name",
+    "indonesian_translation": "Truthseeker's Pass"
+  },
+  "Boundary of Deduction": {
+    "zh": "推演的边界",
+    "category": "Quest Name",
+    "indonesian_translation": "Boundary of Deduction"
+  },
+  "Banners Never Fall": {
+    "zh": "旌旗不落",
+    "category": "Quest Name",
+    "indonesian_translation": "Banners Never Fall"
+  },
+  "A crying girl": {
+    "zh": "哭泣的小女孩",
+    "category": "Quest Name",
+    "indonesian_translation": "A crying girl"
+  },
+  "The Bizarre Brothers: Fratellone": {
+    "zh": "奇怪的三兄弟-沃德戈",
+    "category": "Quest Name",
+    "indonesian_translation": "The Bizarre Brothers: Fratellone"
+  },
+  "The Bizarre Brothers: Fratello": {
+    "zh": "奇怪的三兄弟-沃德尔戈",
+    "category": "Quest Name",
+    "indonesian_translation": "The Bizarre Brothers: Fratello"
+  },
+  "The Bizarre Brothers: Fratellino": {
+    "zh": "奇怪的三兄弟-沃德蒂",
+    "category": "Quest Name",
+    "indonesian_translation": "The Bizarre Brothers: Fratellino"
+  },
+  "The Bizarre Brothers": {
+    "zh": "奇怪的三兄弟",
+    "category": "Quest Name",
+    "indonesian_translation": "The Bizarre Brothers"
+  },
+  "Restore Plushie Village I": {
+    "zh": "重建布偶村·一期",
+    "category": "Quest Name",
+    "indonesian_translation": "Restore Plushie Village I"
+  },
+  "Restore Plushie Village II": {
+    "zh": "重建布偶村·二期",
+    "category": "Quest Name",
+    "indonesian_translation": "Restore Plushie Village II"
+  },
+  "Restore Plushie Village III": {
+    "zh": "重建布偶村·三期",
+    "category": "Quest Name",
+    "indonesian_translation": "Restore Plushie Village III"
+  },
+  "Restore Plushie Village IV": {
+    "zh": "重建布偶村·四期",
+    "category": "Quest Name",
+    "indonesian_translation": "Restore Plushie Village IV"
+  },
+  "The Fabled Magnetic Cube Mechanics - I": {
+    "zh": "传说中的密方机关术·一",
+    "category": "Quest Name",
+    "indonesian_translation": "The Fabled Magnetic Cube Mechanics - I"
+  },
+  "The Fabled Magnetic Cube Mechanics - II": {
+    "zh": "传说中的密方机关术·二",
+    "category": "Quest Name",
+    "indonesian_translation": "The Fabled Magnetic Cube Mechanics - II"
+  },
+  "The Fabled Magnetic Cube Mechanics - III": {
+    "zh": "传说中的密方机关术·三",
+    "category": "Quest Name",
+    "indonesian_translation": "The Fabled Magnetic Cube Mechanics - III"
+  },
+  "Shadows of the Past": {
+    "zh": "旧日之影",
+    "category": "Quest Name",
+    "indonesian_translation": "Shadows of the Past"
+  },
+  "The Hidden Treasure of the Black Shores": {
+    "zh": "黑海岸的秘密宝物",
+    "category": "Quest Name",
+    "indonesian_translation": "The Hidden Treasure of the Black Shores"
+  },
+  "Yhoran's Tactical Trial": {
+    "zh": "约兰的战术测试",
+    "category": "Quest Name",
+    "indonesian_translation": "Yhoran's Tactical Trial"
+  },
+  "The Fabled Magnetic Cube Mechanics - Prelude": {
+    "zh": "传说中的密方机关术·零",
+    "category": "Quest Name",
+    "indonesian_translation": "The Fabled Magnetic Cube Mechanics - Prelude"
+  },
+  "Wait for Godo": {
+    "zh": "等待戈铎",
+    "category": "Quest Name",
+    "indonesian_translation": "Wait for Godo"
+  },
+  "Investigate the Theft of Camp Supplies": {
+    "zh": "调查营地配给失窃一事",
+    "category": "Quest Name",
+    "indonesian_translation": "Investigate the Theft of Camp Supplies"
+  },
+  "A True Arena Champion": {
+    "zh": "角斗本色",
+    "category": "Quest Name",
+    "indonesian_translation": "A True Arena Champion"
+  },
+  "Repair the Lighthouse at the Wuming Bay": {
+    "zh": "修复位于无明湾灯塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Repair the Lighthouse at the Wuming Bay"
+  },
+  "Repair the lighthouse in Desorock Highland": {
+    "zh": "修复荒石高地灯塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Repair the lighthouse in Desorock Highland"
+  },
+  "Lost History": {
+    "zh": "沉没的历史",
+    "category": "Quest Name",
+    "indonesian_translation": "Lost History"
+  },
+  "More Than Decoration": {
+    "zh": "不只是装饰而已",
+    "category": "Quest Name",
+    "indonesian_translation": "More Than Decoration"
+  },
+  "Off Means On": {
+    "zh": "关闭开关是打开开关",
+    "category": "Quest Name",
+    "indonesian_translation": "Off Means On"
+  },
+  "Camp Raid": {
+    "zh": "营地突袭",
+    "category": "Quest Name",
+    "indonesian_translation": "Camp Raid"
+  },
+  "The Eternal Concert": {
+    "zh": "永不消逝的琴声",
+    "category": "Quest Name",
+    "indonesian_translation": "The Eternal Concert"
+  },
+  "Get Ready! Let's Overdash!": {
+    "zh": "预备！飞檐走壁",
+    "category": "Quest Name",
+    "indonesian_translation": "Get Ready! Let's Overdash!"
+  },
+  "Farewell! Let's Overdash!": {
+    "zh": "再会，飞檐走壁",
+    "category": "Quest Name",
+    "indonesian_translation": "Farewell! Let's Overdash!"
+  },
+  "Silver-haired Echo Trainer - I": {
+    "zh": "银发声骸训练师·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Silver-haired Echo Trainer - I"
+  },
+  "Silver-haired Echo Trainer - II": {
+    "zh": "银发声骸训练师·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Silver-haired Echo Trainer - II"
+  },
+  "Silver-haired Echo Trainer - III": {
+    "zh": "银发声骸训练师·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Silver-haired Echo Trainer - III"
+  },
+  "Utterance of Marvels: I": {
+    "zh": "万象新声·上",
+    "category": "Quest Name",
+    "indonesian_translation": "Utterance of Marvels: I"
+  },
+  "Utterance of Marvels: II": {
+    "zh": "万象新声·下",
+    "category": "Quest Name",
+    "indonesian_translation": "Utterance of Marvels: II"
+  },
+  "First Resonance": {
+    "zh": "嘤鸣初相召",
+    "category": "Quest Name",
+    "indonesian_translation": "First Resonance"
+  },
+  "Echoing Marche": {
+    "zh": "撞金止行阵",
+    "category": "Quest Name",
+    "indonesian_translation": "Echoing Marche"
+  },
+  "Ominous Star": {
+    "zh": "奔策候残星",
+    "category": "Quest Name",
+    "indonesian_translation": "Ominous Star"
+  },
+  "Clashing Blades": {
+    "zh": "庭际刀刃鸣",
+    "category": "Quest Name",
+    "indonesian_translation": "Clashing Blades"
+  },
+  "When the Night Knocks": {
+    "zh": "暗夜叩响白昼之门",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Night Knocks"
+  },
+  "The Supreme Gunslinger!": {
+    "zh": "终极枪客大挑战！",
+    "category": "Quest Name",
+    "indonesian_translation": "The Supreme Gunslinger!"
+  },
+  "Encore's Steaming Adventure!": {
+    "zh": "安可的火热大冒险！",
+    "category": "Quest Name",
+    "indonesian_translation": "Encore's Steaming Adventure!"
+  },
+  "Puzzle of Puzzles": {
+    "zh": "难解谜题",
+    "category": "Quest Name",
+    "indonesian_translation": "Puzzle of Puzzles"
+  },
+  "Riddle and Reunion": {
+    "zh": "待得团圆时",
+    "category": "Quest Name",
+    "indonesian_translation": "Riddle and Reunion"
+  },
+  "Do Echoids Dream of Electric Sheep?": {
+    "zh": "仿声骸会梦到电子羊么",
+    "category": "Quest Name",
+    "indonesian_translation": "Do Echoids Dream of Electric Sheep?"
+  },
+  "Do Echoids Dream of Electric Sheep?: Epilogue": {
+    "zh": "仿声骸会梦到电子羊么·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Do Echoids Dream of Electric Sheep?: Epilogue"
+  },
+  "Carnival in Slumberland": {
+    "zh": "共赴梦宴",
+    "category": "Quest Name",
+    "indonesian_translation": "Carnival in Slumberland"
+  },
+  "When the Dawn Breaks": {
+    "zh": "若你半步踏入白昼",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Dawn Breaks"
+  },
+  "When the Dawn Breaks: Epilogue": {
+    "zh": "若你半步踏入白昼·续",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Dawn Breaks: Epilogue"
+  },
+  "Pincer Maneuver Warriors": {
+    "zh": "钳形激战无双版",
+    "category": "Quest Name",
+    "indonesian_translation": "Pincer Maneuver Warriors"
+  },
+  "Dark Flames in Silence": {
+    "zh": "暂熄的黑炎",
+    "category": "Quest Name",
+    "indonesian_translation": "Dark Flames in Silence"
+  },
+  "Honorary Chef: Taste of Memories": {
+    "zh": "荣誉大厨·回忆的味道",
+    "category": "Quest Name",
+    "indonesian_translation": "Honorary Chef: Taste of Memories"
+  },
+  "Communication Mission Test": {
+    "zh": "通讯任务测试",
+    "category": "Quest Name",
+    "indonesian_translation": "Communication Mission Test"
+  },
+  "Self-moving Suitcase": {
+    "zh": "自走行李箱",
+    "category": "Quest Name",
+    "indonesian_translation": "Self-moving Suitcase"
+  },
+  "Shooting Party": {
+    "zh": "射击派对",
+    "category": "Quest Name",
+    "indonesian_translation": "Shooting Party"
+  },
+  "No Response Tonight": {
+    "zh": "今夜无人应答",
+    "category": "Quest Name",
+    "indonesian_translation": "No Response Tonight"
+  },
+  "Danger! Explosive!": {
+    "zh": "一触即炸",
+    "category": "Quest Name",
+    "indonesian_translation": "Danger! Explosive!"
+  },
+  "Trials of Old": {
+    "zh": "旧日的试炼",
+    "category": "Quest Name",
+    "indonesian_translation": "Trials of Old"
+  },
+  "Shadow of the Towers: Command Rise": {
+    "zh": "高塔的幽影·统驭冠塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Shadow of the Towers: Command Rise"
+  },
+  "Skyward Voyage": {
+    "zh": "天际奇旅",
+    "category": "Quest Name",
+    "indonesian_translation": "Skyward Voyage"
+  },
+  "Shadow of the Towers: Twilight Rise": {
+    "zh": "高塔的幽影·暮光冠塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Shadow of the Towers: Twilight Rise"
+  },
+  "Shadow of the Towers: Resounding Rise": {
+    "zh": "高塔的幽影·回声冠塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Shadow of the Towers: Resounding Rise"
+  },
+  "Skyward Voyage: Epilogue": {
+    "zh": "天际奇旅·续",
+    "category": "Quest Name",
+    "indonesian_translation": "Skyward Voyage: Epilogue"
+  },
+  "Vigil of Endless Night": {
+    "zh": "守望永恒",
+    "category": "Quest Name",
+    "indonesian_translation": "Vigil of Endless Night"
+  },
+  "Mountain Melodies": {
+    "zh": "山间琴音",
+    "category": "Quest Name",
+    "indonesian_translation": "Mountain Melodies"
+  },
+  "From the Echoes of Destruction": {
+    "zh": "来自毁灭的回声",
+    "category": "Quest Name",
+    "indonesian_translation": "From the Echoes of Destruction"
+  },
+  "The Maiden, The Defier, The Death Crier": {
+    "zh": "圣者，忤逆者，告死者",
+    "category": "Quest Name",
+    "indonesian_translation": "The Maiden, The Defier, The Death Crier"
+  },
+  "Mianloong Chamber": {
+    "zh": "眠龙庭",
+    "category": "Quest Name",
+    "indonesian_translation": "Mianloong Chamber"
+  },
+  "Urban Legend: The Anonymous Inviter": {
+    "zh": "不思议怪谈·匿名的邀约者",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: The Anonymous Inviter"
+  },
+  "Urban Legend: Train to Who-Knows-Where": {
+    "zh": "不思议怪谈·驶向何处的列车",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: Train to Who-Knows-Where"
+  },
+  "Urban Legend: Lost in the Fog Tunnel": {
+    "zh": "不思议怪谈·迷失在雾中隧道",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: Lost in the Fog Tunnel"
+  },
+  "Urban Legend: The Rogue Constructor": {
+    "zh": "不思议怪谈·造路悬仪暴乱中",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: The Rogue Constructor"
+  },
+  "Find Me the TARD-Es": {
+    "zh": "寻“宝”行动",
+    "category": "Quest Name",
+    "indonesian_translation": "Find Me the TARD-Es"
+  },
+  "Ultimate Masterpiece": {
+    "zh": "最终杰作",
+    "category": "Quest Name",
+    "indonesian_translation": "Ultimate Masterpiece"
+  },
+  "Dance Dance Chelonian!": {
+    "zh": "跃动吧，龟舞团！",
+    "category": "Quest Name",
+    "indonesian_translation": "Dance Dance Chelonian!"
+  },
+  "Boundary of Yellow and White": {
+    "zh": "黄白交界之处",
+    "category": "Quest Name",
+    "indonesian_translation": "Boundary of Yellow and White"
+  },
+  "Where the Waterfalls Meet": {
+    "zh": "瀑布汇流之地",
+    "category": "Quest Name",
+    "indonesian_translation": "Where the Waterfalls Meet"
+  },
+  "Among the Shoals and Islands": {
+    "zh": "浅滩群岛之间",
+    "category": "Quest Name",
+    "indonesian_translation": "Among the Shoals and Islands"
+  },
+  "Peak of the Arch-Shaped Rock": {
+    "zh": "拱形山石之巅",
+    "category": "Quest Name",
+    "indonesian_translation": "Peak of the Arch-Shaped Rock"
+  },
+  "Glorious Loong's Pearl: The Last Rite": {
+    "zh": "照龙映珠·最后的仪式",
+    "category": "Quest Name",
+    "indonesian_translation": "Glorious Loong's Pearl: The Last Rite"
+  },
+  "The Last Knight": {
+    "zh": "骑士末歌",
+    "category": "Quest Name",
+    "indonesian_translation": "The Last Knight"
+  },
+  "Dreamcatchers in the Secret Gardens": {
+    "zh": "捕梦于神秘园中",
+    "category": "Quest Name",
+    "indonesian_translation": "Dreamcatchers in the Secret Gardens"
+  },
+  "Bread and Holy Rituals": {
+    "zh": "面包与圣事",
+    "category": "Quest Name",
+    "indonesian_translation": "Bread and Holy Rituals"
+  },
+  "The Best Audience": {
+    "zh": "最佳观众",
+    "category": "Quest Name",
+    "indonesian_translation": "The Best Audience"
+  },
+  "Treasures in the Painting": {
+    "zh": "画中奇藏",
+    "category": "Quest Name",
+    "indonesian_translation": "Treasures in the Painting"
+  },
+  "When Colors Fade": {
+    "zh": "当色彩消逝",
+    "category": "Quest Name",
+    "indonesian_translation": "When Colors Fade"
+  },
+  "Cerulean Echoes Adrift in the Winds: Part I": {
+    "zh": "海风中失落的湛蓝回声·上",
+    "category": "Quest Name",
+    "indonesian_translation": "Cerulean Echoes Adrift in the Winds: Part I"
+  },
+  "Cerulean Echoes Adrift in the Winds: Part II": {
+    "zh": "海风中失落的湛蓝回声·下",
+    "category": "Quest Name",
+    "indonesian_translation": "Cerulean Echoes Adrift in the Winds: Part II"
+  },
+  "Flames in the Deep": {
+    "zh": "渊底之火",
+    "category": "Quest Name",
+    "indonesian_translation": "Flames in the Deep"
+  },
+  "Vehicle Driving Tutorial": {
+    "zh": "载具驾驶教学",
+    "category": "Quest Name",
+    "indonesian_translation": "Vehicle Driving Tutorial"
+  },
+  "Data Overdash": {
+    "zh": "数据飞檐",
+    "category": "Quest Name",
+    "indonesian_translation": "Data Overdash"
+  },
+  "Cerulean Echoes Adrift in the Winds: Epilogue": {
+    "zh": "海风中失落的湛蓝回声·后日谈",
+    "category": "Quest Name",
+    "indonesian_translation": "Cerulean Echoes Adrift in the Winds: Epilogue"
+  },
+  "Solaris Weather Forecast": {
+    "zh": "索拉里斯气象前沿",
+    "category": "Quest Name",
+    "indonesian_translation": "Solaris Weather Forecast"
+  },
+  "Lollo Campaign Rerun: Navigation": {
+    "zh": "呜呜导航企划·再行",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign Rerun: Navigation"
+  },
+  "Lollo Campaign: Navigation V": {
+    "zh": "呜呜导航企划·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation V"
+  },
+  "Lollo Campaign: Navigation II": {
+    "zh": "呜呜导航企划·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation II"
+  },
+  "Amidst the Stars": {
+    "zh": "星海拾影",
+    "category": "Quest Name",
+    "indonesian_translation": "Amidst the Stars"
+  },
+  "Lollo Campaign: Navigation III": {
+    "zh": "呜呜导航企划·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation III"
+  },
+  "Lollo Campaign: Navigation IV": {
+    "zh": "呜呜导航企划·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation IV"
+  },
+  "Lollo Campaign: Navigation VI": {
+    "zh": "呜呜导航企划·六",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation VI"
+  },
+  "Lollo Campaign: Navigation VII": {
+    "zh": "呜呜导航企划·七",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation VII"
+  },
+  "Retro Game Collector": {
+    "zh": "卡带收藏家",
+    "category": "Quest Name",
+    "indonesian_translation": "Retro Game Collector"
+  },
+  "Lollo Campaign: Navigation I": {
+    "zh": "呜呜导航企划·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Navigation I"
+  },
+  "Infinite Battle Simulation": {
+    "zh": "海算模演",
+    "category": "Quest Name",
+    "indonesian_translation": "Infinite Battle Simulation"
+  },
+  "Solaris Weather Forecast: Epilogue": {
+    "zh": "索拉里斯气象前沿·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Solaris Weather Forecast: Epilogue"
+  },
+  "Return to Light": {
+    "zh": "回归于光",
+    "category": "Quest Name",
+    "indonesian_translation": "Return to Light"
+  },
+  "Sixteen Centimillion Bits": {
+    "zh": "十六亿比特",
+    "category": "Quest Name",
+    "indonesian_translation": "Sixteen Centimillion Bits"
+  },
+  "Ode to the Second Sunrise": {
+    "zh": "致第二次日出",
+    "category": "Quest Name",
+    "indonesian_translation": "Ode to the Second Sunrise"
+  },
+  "Wishes in the Bell": {
+    "zh": "愿系铃中",
+    "category": "Quest Name",
+    "indonesian_translation": "Wishes in the Bell"
+  },
+  "Where Wisdom Lights the Way": {
+    "zh": "寻迹于智慧之光",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Wisdom Lights the Way"
+  },
+  "Dreams of Cindertide": {
+    "zh": "烬潮之梦",
+    "category": "Quest Name",
+    "indonesian_translation": "Dreams of Cindertide"
+  },
+  "Dream Contagion": {
+    "zh": "染秽之梦",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream Contagion"
+  },
+  "Dream Patrol I": {
+    "zh": "巡礼之梦·其一",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream Patrol I"
+  },
+  "Dream Patrol II": {
+    "zh": "巡礼之梦·其二",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream Patrol II"
+  },
+  "Dream Patrol: Finale": {
+    "zh": "巡礼之梦·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream Patrol: Finale"
+  },
+  "When the Known Thrums!": {
+    "zh": "已知的既感！",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Known Thrums!"
+  },
+  "If You Catch Up to It...": {
+    "zh": "如果你追到……",
+    "category": "Quest Name",
+    "indonesian_translation": "If You Catch Up to It..."
+  },
+  "I'll Show You the Mech": {
+    "zh": "就给你看机器人",
+    "category": "Quest Name",
+    "indonesian_translation": "I'll Show You the Mech"
+  },
+  "Where the Iridescent Rain Falls": {
+    "zh": "新雨的去处",
+    "category": "Quest Name",
+    "indonesian_translation": "Where the Iridescent Rain Falls"
+  },
+  "3.0 part 2 prologue, Mornye": {
+    "zh": "test/3.0下半主线后日谈_莫宁",
+    "category": "Quest Name",
+    "indonesian_translation": "3.0 part 2 prologue, Mornye"
+  },
+  "Beyond the Waves": {
+    "zh": "踏潮探历",
+    "category": "Quest Name",
+    "indonesian_translation": "Beyond the Waves"
+  },
+  "Tactical Simulacra: Rerun": {
+    "zh": "仿声战略·续",
+    "category": "Quest Name",
+    "indonesian_translation": "Tactical Simulacra: Rerun"
+  },
+  "Margherita's Daily Special I": {
+    "zh": "玛格烈特今日套餐·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special I"
+  },
+  "Margherita's Daily Special II": {
+    "zh": "玛格烈特今日套餐·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special II"
+  },
+  "Margherita's Daily Special III": {
+    "zh": "玛格烈特今日套餐·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special III"
+  },
+  "Margherita's Daily Special IV": {
+    "zh": "玛格烈特今日套餐·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special IV"
+  },
+  "Margherita's Daily Special V": {
+    "zh": "玛格烈特今日套餐·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special V"
+  },
+  "Margherita's Daily Special VI": {
+    "zh": "玛格烈特今日套餐·六",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special VI"
+  },
+  "Margherita's Daily Special VIII": {
+    "zh": "玛格烈特今日套餐·八",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special VIII"
+  },
+  "At Dream's Edge": {
+    "zh": "边缘幻梦",
+    "category": "Quest Name",
+    "indonesian_translation": "At Dream's Edge"
+  },
+  "Ragunna Sales Blitz!": {
+    "zh": "拉古那急卖！",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz!"
+  },
+  "Ragunna Sales Blitz II": {
+    "zh": "拉古那急卖·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz II"
+  },
+  "Ragunna Sales Blitz III": {
+    "zh": "拉古那急卖·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz III"
+  },
+  "Ragunna Sales Blitz IV": {
+    "zh": "拉古那急卖·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz IV"
+  },
+  "Ragunna Sales Blitz V": {
+    "zh": "拉古那急卖·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz V"
+  },
+  "Ragunna Sales Blitz VI": {
+    "zh": "拉古那急卖·六",
+    "category": "Quest Name",
+    "indonesian_translation": "Ragunna Sales Blitz VI"
+  },
+  "In the Name of Chivalry I": {
+    "zh": "谨以骑士之名·一",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry I"
+  },
+  "In the Name of Chivalry II": {
+    "zh": "谨以骑士之名·二",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry II"
+  },
+  "In the Name of Chivalry III": {
+    "zh": "谨以骑士之名·三",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry III"
+  },
+  "In the Name of Chivalry IV": {
+    "zh": "谨以骑士之名·四",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry IV"
+  },
+  "In the Name of Chivalry V": {
+    "zh": "谨以骑士之名·五",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry V"
+  },
+  "In the Name of Chivalry VI": {
+    "zh": "谨以骑士之名·六",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry VI"
+  },
+  "In the Name of Chivalry VII": {
+    "zh": "谨以骑士之名·七",
+    "category": "Quest Name",
+    "indonesian_translation": "In the Name of Chivalry VII"
+  },
+  "La La Echo": {
+    "zh": "爱乐之骸",
+    "category": "Quest Name",
+    "indonesian_translation": "La La Echo"
+  },
+  "The Plushie Village": {
+    "zh": "邂逅布偶村",
+    "category": "Quest Name",
+    "indonesian_translation": "The Plushie Village"
+  },
+  "John Wicktorio: No Debts for Old Men": {
+    "zh": "疾速追债V：老无所倚",
+    "category": "Quest Name",
+    "indonesian_translation": "John Wicktorio: No Debts for Old Men"
+  },
+  "John Wicktorio: No Debts for Old Men—Epilogue": {
+    "zh": "疾速追债V：老无所倚·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "John Wicktorio: No Debts for Old Men—Epilogue"
+  },
+  "Traces of Tides": {
+    "zh": "潮心循迹",
+    "category": "Quest Name",
+    "indonesian_translation": "Traces of Tides"
+  },
+  "The Adventures of Plushie Squad": {
+    "zh": "布偶小队历险记",
+    "category": "Quest Name",
+    "indonesian_translation": "The Adventures of Plushie Squad"
+  },
+  "Should the Shooting Stars Blaze": {
+    "zh": "若流星盛放",
+    "category": "Quest Name",
+    "indonesian_translation": "Should the Shooting Stars Blaze"
+  },
+  "Where Sky is Clear and Glory Shines: Guardian Tower": {
+    "zh": "荣耀尽头的天空·守望之塔",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Sky is Clear and Glory Shines: Guardian Tower"
+  },
+  "When the Sky Watches Us Meet": {
+    "zh": "天穹之下的相会",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Sky Watches Us Meet"
+  },
+  "Message from Lollo Logistics": {
+    "zh": "呜呜来讯",
+    "category": "Quest Name",
+    "indonesian_translation": "Message from Lollo Logistics"
+  },
+  "Ocean Is a Soul's Rest": {
+    "zh": "灵魂归还汪洋",
+    "category": "Quest Name",
+    "indonesian_translation": "Ocean Is a Soul's Rest"
+  },
+  "Fantasies of the Thousand Gateways": {
+    "zh": "千道门扉的异想",
+    "category": "Quest Name",
+    "indonesian_translation": "Fantasies of the Thousand Gateways"
+  },
+  "Purify the Tapes of Last Words": {
+    "zh": "净化终声残卷",
+    "category": "Quest Name",
+    "indonesian_translation": "Purify the Tapes of Last Words"
+  },
+  "Falling Stars": {
+    "zh": "吹星如雨",
+    "category": "Quest Name",
+    "indonesian_translation": "Falling Stars"
+  },
+  "The Answer Is Where a River of Stars Falls": {
+    "zh": "答案在银河倾落之地",
+    "category": "Quest Name",
+    "indonesian_translation": "The Answer Is Where a River of Stars Falls"
+  },
+  "Forever Fest and Lollo Party": {
+    "zh": "无尽盛宴与呜呜派对",
+    "category": "Quest Name",
+    "indonesian_translation": "Forever Fest and Lollo Party"
+  },
+  "You Outshine the Fireworks": {
+    "zh": "你比烟花灿烂",
+    "category": "Quest Name",
+    "indonesian_translation": "You Outshine the Fireworks"
+  },
+  "From the Snow White": {
+    "zh": "来自雪白深处",
+    "category": "Quest Name",
+    "indonesian_translation": "From the Snow White"
+  },
+  "Where to Watch the Fireworks Show?": {
+    "zh": "升起的烟花，该从哪边看？",
+    "category": "Quest Name",
+    "indonesian_translation": "Where to Watch the Fireworks Show?"
+  },
+  "Rust, Sword and the Sun": {
+    "zh": "铁锈，剑与烈阳",
+    "category": "Quest Name",
+    "indonesian_translation": "Rust, Sword and the Sun"
+  },
+  "The Sailor's Treasure": {
+    "zh": "水手的遗藏",
+    "category": "Quest Name",
+    "indonesian_translation": "The Sailor's Treasure"
+  },
+  "Woman in Mask": {
+    "zh": "岛上的面具人",
+    "category": "Quest Name",
+    "indonesian_translation": "Woman in Mask"
+  },
+  "Namipon Search - The Last Bow": {
+    "zh": "寻波启示·最后致意",
+    "category": "Quest Name",
+    "indonesian_translation": "Namipon Search - The Last Bow"
+  },
+  "Rabbit Reflected in Shades": {
+    "zh": "影面颠倒的兔影",
+    "category": "Quest Name",
+    "indonesian_translation": "Rabbit Reflected in Shades"
+  },
+  "The Flaming Red from Tomorrow": {
+    "zh": "明日摇曳的绯影",
+    "category": "Quest Name",
+    "indonesian_translation": "The Flaming Red from Tomorrow"
+  },
+  "Energy Supplement Trial Report": {
+    "zh": "营养剂体验报告",
+    "category": "Quest Name",
+    "indonesian_translation": "Energy Supplement Trial Report"
+  },
+  "Environmental Variable Adjustment": {
+    "zh": "场景变量调整",
+    "category": "Quest Name",
+    "indonesian_translation": "Environmental Variable Adjustment"
+  },
+  "Abnormal Dopamine Secretion": {
+    "zh": "多巴胺分泌异常",
+    "category": "Quest Name",
+    "indonesian_translation": "Abnormal Dopamine Secretion"
+  },
+  "Standardized Happiness": {
+    "zh": "幸福标准化",
+    "category": "Quest Name",
+    "indonesian_translation": "Standardized Happiness"
+  },
+  "Sylph at Twilight": {
+    "zh": "黄昏的西尔芙",
+    "category": "Quest Name",
+    "indonesian_translation": "Sylph at Twilight"
+  },
+  "\"Festivals Don't Encore\"": {
+    "zh": "《庆典不再重来》",
+    "category": "Quest Name",
+    "indonesian_translation": "\"Festivals Don't Encore\""
+  },
+  "\"Department of Engineering Repair Scene\"": {
+    "zh": "《工学部修理场景》",
+    "category": "Quest Name",
+    "indonesian_translation": "\"Department of Engineering Repair Scene\""
+  },
+  "\"Life of a Resonator\"": {
+    "zh": "《共鸣者的奇幻漂流》",
+    "category": "Quest Name",
+    "indonesian_translation": "\"Life of a Resonator\""
+  },
+  "\"4½\"": {
+    "zh": "《四部半》",
+    "category": "Quest Name",
+    "indonesian_translation": "\"4½\""
+  },
+  "\"Life is Beautiful\"": {
+    "zh": "《美丽人生》",
+    "category": "Quest Name",
+    "indonesian_translation": "\"Life is Beautiful\""
+  },
+  "Creases on Paper": {
+    "zh": "纸上折线",
+    "category": "Quest Name",
+    "indonesian_translation": "Creases on Paper"
+  },
+  "Ground Engravings": {
+    "zh": "地面刻印",
+    "category": "Quest Name",
+    "indonesian_translation": "Ground Engravings"
+  },
+  "Imprints of Wings": {
+    "zh": "空羽留痕",
+    "category": "Quest Name",
+    "indonesian_translation": "Imprints of Wings"
+  },
+  "Essence of Tranquility": {
+    "zh": "宁静的语义",
+    "category": "Quest Name",
+    "indonesian_translation": "Essence of Tranquility"
+  },
+  "The Happiness Spell": {
+    "zh": "幸福的咒语",
+    "category": "Quest Name",
+    "indonesian_translation": "The Happiness Spell"
+  },
+  "Waffle Therapy": {
+    "zh": "华夫饼疗愈法",
+    "category": "Quest Name",
+    "indonesian_translation": "Waffle Therapy"
+  },
+  "Snack Deficit Syndrome": {
+    "zh": "茶点缺失症",
+    "category": "Quest Name",
+    "indonesian_translation": "Snack Deficit Syndrome"
+  },
+  "Immunodeficiency of Snacks": {
+    "zh": "甜品免疫低下",
+    "category": "Quest Name",
+    "indonesian_translation": "Immunodeficiency of Snacks"
+  },
+  "A Fluffy Prescription": {
+    "zh": "毛茸处方",
+    "category": "Quest Name",
+    "indonesian_translation": "A Fluffy Prescription"
+  },
+  "The Heartbeat of Life": {
+    "zh": "生活的心跳",
+    "category": "Quest Name",
+    "indonesian_translation": "The Heartbeat of Life"
+  },
+  "The Moored Boat": {
+    "zh": "停泊的舟",
+    "category": "Quest Name",
+    "indonesian_translation": "The Moored Boat"
+  },
+  "Whispers of the Waves": {
+    "zh": "浪沫余音",
+    "category": "Quest Name",
+    "indonesian_translation": "Whispers of the Waves"
+  },
+  "Tales of the Past and Present: Avinoleum": {
+    "zh": "古今多少故事·阿维纽林",
+    "category": "Quest Name",
+    "indonesian_translation": "Tales of the Past and Present: Avinoleum"
+  },
+  "Margherita's Daily Special VII": {
+    "zh": "玛格烈特今日套餐·七",
+    "category": "Quest Name",
+    "indonesian_translation": "Margherita's Daily Special VII"
+  },
+  "Lollo Campaign: Comeback": {
+    "zh": "呜呜企划·出山",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Comeback"
+  },
+  "Although Colors Have No Form": {
+    "zh": "虽然色彩无形",
+    "category": "Quest Name",
+    "indonesian_translation": "Although Colors Have No Form"
+  },
+  "Although Colors Have No Form: Epilogue": {
+    "zh": "虽然色彩无形·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Although Colors Have No Form: Epilogue"
+  },
+  "The Bygone Shall Always Return": {
+    "zh": "已逝的必将归来",
+    "category": "Quest Name",
+    "indonesian_translation": "The Bygone Shall Always Return"
+  },
+  "A Free Lunch?": {
+    "zh": "免费的午餐？",
+    "category": "Quest Name",
+    "indonesian_translation": "A Free Lunch?"
+  },
+  "Lucilla overworld first meeting": {
+    "zh": "dnt/洛瑟菈角色生态初见",
+    "category": "Quest Name",
+    "indonesian_translation": "Lucilla overworld first meeting"
+  },
+  "Sigrika easter egg": {
+    "zh": "dnt/西格莉卡彩蛋",
+    "category": "Quest Name",
+    "indonesian_translation": "Sigrika easter egg"
+  },
+  "Egla Town Statue Visibility Test": {
+    "zh": "埃格拉小镇雕像显隐检测",
+    "category": "Quest Name",
+    "indonesian_translation": "Egla Town Statue Visibility Test"
+  },
+  "Gold Suspended in Shadows": {
+    "zh": "影下不落的黄金",
+    "category": "Quest Name",
+    "indonesian_translation": "Gold Suspended in Shadows"
+  },
+  "Pulses of the Plains": {
+    "zh": "平原的脉络",
+    "category": "Quest Name",
+    "indonesian_translation": "Pulses of the Plains"
+  },
+  "Observatory-Academy Highway": {
+    "zh": "深星公路",
+    "category": "Quest Name",
+    "indonesian_translation": "Observatory-Academy Highway"
+  },
+  "Orbit Valley Pass - North": {
+    "zh": "眶折谷公路北段",
+    "category": "Quest Name",
+    "indonesian_translation": "Orbit Valley Pass - North"
+  },
+  "Orbit Valley Pass - South": {
+    "zh": "眶折谷公路南段",
+    "category": "Quest Name",
+    "indonesian_translation": "Orbit Valley Pass - South"
+  },
+  "Sandreach Passage": {
+    "zh": "沙原通路",
+    "category": "Quest Name",
+    "indonesian_translation": "Sandreach Passage"
+  },
+  "Farer's Road": {
+    "zh": "远行公路",
+    "category": "Quest Name",
+    "indonesian_translation": "Farer's Road"
+  },
+  "Sol's Embrace": {
+    "zh": "朔尔之挽",
+    "category": "Quest Name",
+    "indonesian_translation": "Sol's Embrace"
+  },
+  "Spacetrek–Bjartr Bridge": {
+    "zh": "深光大桥",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek–Bjartr Bridge"
+  },
+  "Howling Tunnel": {
+    "zh": "呼啸隧道",
+    "category": "Quest Name",
+    "indonesian_translation": "Howling Tunnel"
+  },
+  "Starleap Ascent": {
+    "zh": "星跃公路",
+    "category": "Quest Name",
+    "indonesian_translation": "Starleap Ascent"
+  },
+  "Submerged Tunnel": {
+    "zh": "溺森涡道",
+    "category": "Quest Name",
+    "indonesian_translation": "Submerged Tunnel"
+  },
+  "Bucket List": {
+    "zh": "遗愿清单",
+    "category": "Quest Name",
+    "indonesian_translation": "Bucket List"
+  },
+  "Serendipity": {
+    "zh": "一段善缘",
+    "category": "Quest Name",
+    "indonesian_translation": "Serendipity"
+  },
+  "Changing Weather": {
+    "zh": "天色将变",
+    "category": "Quest Name",
+    "indonesian_translation": "Changing Weather"
+  },
+  "Epilogue: The Lost Beyond": {
+    "zh": "后日谈-失亡彼岸",
+    "category": "Quest Name",
+    "indonesian_translation": "Epilogue: The Lost Beyond"
+  },
+  "The Present and the Future": {
+    "zh": "现状与未来",
+    "category": "Quest Name",
+    "indonesian_translation": "The Present and the Future"
+  },
+  "Overhear Fenrico’s whereabouts from the Acolytes": {
+    "zh": "dnt/主线结束后听到教会的人谈论主教的下落",
+    "category": "Quest Name",
+    "indonesian_translation": "Overhear Fenrico’s whereabouts from the Acolytes"
+  },
+  "Phrolova side quest": {
+    "zh": "dnt/弗洛洛生态任务",
+    "category": "Quest Name",
+    "indonesian_translation": "Phrolova side quest"
+  },
+  "Return to the Lost Beyond after completing Main Mission": {
+    "zh": "dnt/主线结束后再次进入失亡彼岸",
+    "category": "Quest Name",
+    "indonesian_translation": "Return to the Lost Beyond after completing Main Mission"
+  },
+  "Dialogue with Triss in the Lost Beyond": {
+    "zh": "dnt/失亡彼岸特莉丝生态对话",
+    "category": "Quest Name",
+    "indonesian_translation": "Dialogue with Triss in the Lost Beyond"
+  },
+  "Listen to music in Phrolova’s room": {
+    "zh": "dnt/弗洛洛房间听歌",
+    "category": "Quest Name",
+    "indonesian_translation": "Listen to music in Phrolova’s room"
+  },
+  "Book Seller": {
+    "zh": "dnt/卖书人",
+    "category": "Quest Name",
+    "indonesian_translation": "Book Seller"
+  },
+  "Virtual Crisis": {
+    "zh": "虚域危局",
+    "category": "Quest Name",
+    "indonesian_translation": "Virtual Crisis"
+  },
+  "If You Gaze Into the Abyss of Dreams": {
+    "zh": "当你凝视梦渊时",
+    "category": "Quest Name",
+    "indonesian_translation": "If You Gaze Into the Abyss of Dreams"
+  },
+  "If You Gaze Into the Abyss of Dreams: Epilogue": {
+    "zh": "当你凝视梦渊时·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "If You Gaze Into the Abyss of Dreams: Epilogue"
+  },
+  "(Do not display) Co-op Challenge show display": {
+    "zh": "dnt/（不显示）联机道馆开启显示",
+    "category": "Quest Name",
+    "indonesian_translation": "(Do not display) Co-op Challenge show display"
+  },
+  "(Do not display) Connecting to the challenge to hide display": {
+    "zh": "dnt/（不显示）联系道馆隐藏显示",
+    "category": "Quest Name",
+    "indonesian_translation": "(Do not display) Connecting to the challenge to hide display"
+  },
+  "Rewards": {
+    "zh": "dnt/挑战奖励",
+    "category": "Quest Name",
+    "indonesian_translation": "Rewards"
+  },
+  "Avinoleum Footsteps": {
+    "zh": "追迹阿维纽林",
+    "category": "Quest Name",
+    "indonesian_translation": "Avinoleum Footsteps"
+  },
+  "The One that Impresses": {
+    "zh": "一个非常非常厉害的东西",
+    "category": "Quest Name",
+    "indonesian_translation": "The One that Impresses"
+  },
+  "Lollo Campaign, Set Sail!": {
+    "zh": "呜呜企划，启动！",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign, Set Sail!"
+  },
+  "Lollo Campaign III": {
+    "zh": "呜呜企划 · 三",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign III"
+  },
+  "Lollo Campaign IV": {
+    "zh": "呜呜企划 · 四",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign IV"
+  },
+  "Lollo Campaign II": {
+    "zh": "呜呜企划 · 二",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign II"
+  },
+  "Lollo Campaign V": {
+    "zh": "呜呜企划 · 五",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign V"
+  },
+  "Lollo Campaign VI": {
+    "zh": "呜呜企划 · 六",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign VI"
+  },
+  "Lollo Campaign VII": {
+    "zh": "呜呜企划 · 七",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign VII"
+  },
+  "Lollo Campaign I": {
+    "zh": "呜呜企划 · 一",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign I"
+  },
+  "Fire It Up! Route Constructor!": {
+    "zh": "启动吧！造路悬仪！",
+    "category": "Quest Name",
+    "indonesian_translation": "Fire It Up! Route Constructor!"
+  },
+  "Spacetrek Observatory: Foundation Phase": {
+    "zh": "深空测界台：拓原工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek Observatory: Foundation Phase"
+  },
+  "Spacetrek Observatory: Platform Phase": {
+    "zh": "深空测界台：悬台工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek Observatory: Platform Phase"
+  },
+  "Spacetrek Observatory: Overwatch Phase": {
+    "zh": "深空测界台：望域工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek Observatory: Overwatch Phase"
+  },
+  "Advance the Foundation Phase of the Spacetrek Observatory": {
+    "zh": "推进深空测界台·拓原工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Advance the Foundation Phase of the Spacetrek Observatory"
+  },
+  "Advance the Platform Phase of the Spacetrek Observatory": {
+    "zh": "推进深空测界台·悬台工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Advance the Platform Phase of the Spacetrek Observatory"
+  },
+  "Advance the Overwatch Phase of the Spacetrek Observatory": {
+    "zh": "推进深空测界台·望域工程",
+    "category": "Quest Name",
+    "indonesian_translation": "Advance the Overwatch Phase of the Spacetrek Observatory"
+  },
+  "May Applause Greet You": {
+    "zh": "以呼嚎致意",
+    "category": "Quest Name",
+    "indonesian_translation": "May Applause Greet You"
+  },
+  "Dream of A Rusted Sword: Part II": {
+    "zh": "朽剑之梦·下",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream of A Rusted Sword: Part II"
+  },
+  "Dream of A Rusted Sword: Finale": {
+    "zh": "朽剑之梦·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream of A Rusted Sword: Finale"
+  },
+  "Memory Travelogue": {
+    "zh": "同行忆旅",
+    "category": "Quest Name",
+    "indonesian_translation": "Memory Travelogue"
+  },
+  "Dreaming Deep: Solaris Film Festival": {
+    "zh": "浸梦海床·索拉电影节",
+    "category": "Quest Name",
+    "indonesian_translation": "Dreaming Deep: Solaris Film Festival"
+  },
+  "A Snowbound Order from Cobalt Blue": {
+    "zh": "钴蓝雪线的订单",
+    "category": "Quest Name",
+    "indonesian_translation": "A Snowbound Order from Cobalt Blue"
+  },
+  "Overflowing Picture Book": {
+    "zh": "溢彩画册",
+    "category": "Quest Name",
+    "indonesian_translation": "Overflowing Picture Book"
+  },
+  "Lollo Genie Campaign: Day 1": {
+    "zh": "呜呜精灵企划·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 1"
+  },
+  "Lollo Genie Campaign: Day 2": {
+    "zh": "呜呜精灵企划·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 2"
+  },
+  "Lollo Genie Campaign: Day 3": {
+    "zh": "呜呜精灵企划·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 3"
+  },
+  "Lollo Genie Campaign: Day 4": {
+    "zh": "呜呜精灵企划·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 4"
+  },
+  "Lollo Genie Campaign: Day 5": {
+    "zh": "呜呜精灵企划·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 5"
+  },
+  "Lollo Genie Campaign: Day 6": {
+    "zh": "呜呜精灵企划·六",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 6"
+  },
+  "Lollo Genie Campaign: Day 7": {
+    "zh": "呜呜精灵企划·七",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Day 7"
+  },
+  "Lollo Genie Campaign: Start": {
+    "zh": "呜呜精灵计划·更始",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Genie Campaign: Start"
+  },
+  "Catch the Winds": {
+    "zh": "捕影捉风",
+    "category": "Quest Name",
+    "indonesian_translation": "Catch the Winds"
+  },
+  "Welcome to the Fan Club": {
+    "zh": "欢迎来到同好会",
+    "category": "Quest Name",
+    "indonesian_translation": "Welcome to the Fan Club"
+  },
+  "A Night of Shimmering Stars": {
+    "zh": "星星闪烁的夜晚",
+    "category": "Quest Name",
+    "indonesian_translation": "A Night of Shimmering Stars"
+  },
+  "Ultimate Challenge": {
+    "zh": "终极难题",
+    "category": "Quest Name",
+    "indonesian_translation": "Ultimate Challenge"
+  },
+  "Urban Legend: No-Escape Classroom": {
+    "zh": "不思议怪谈·无法离开的教室",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: No-Escape Classroom"
+  },
+  "Medical Supplies": {
+    "zh": "药品补给",
+    "category": "Quest Name",
+    "indonesian_translation": "Medical Supplies"
+  },
+  "Dream of A Rusted Sword: Part I": {
+    "zh": "朽剑之梦·上",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream of A Rusted Sword: Part I"
+  },
+  "Fight for the funds!": {
+    "zh": "为了经费而战！",
+    "category": "Quest Name",
+    "indonesian_translation": "Fight for the funds!"
+  },
+  "Expedition Motorbike in the Ice Gorge": {
+    "zh": "冰沟中的科考摩托",
+    "category": "Quest Name",
+    "indonesian_translation": "Expedition Motorbike in the Ice Gorge"
+  },
+  "Once Upon a Time in the Frostlands": {
+    "zh": "冰原往事",
+    "category": "Quest Name",
+    "indonesian_translation": "Once Upon a Time in the Frostlands"
+  },
+  "Thank you, and farewell, my other self": {
+    "zh": "谢谢，再见，世界上的另一个我",
+    "category": "Quest Name",
+    "indonesian_translation": "Thank you, and farewell, my other self"
+  },
+  "Daily Lahai-Roi Castaway I": {
+    "zh": "每日的拉海洛漂流物·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway I"
+  },
+  "Daily Lahai-Roi Castaway II": {
+    "zh": "每日的拉海洛漂流物·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway II"
+  },
+  "Daily Lahai-Roi Castaway III": {
+    "zh": "每日的拉海洛漂流物·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway III"
+  },
+  "Daily Lahai-Roi Castaway IV": {
+    "zh": "每日的拉海洛漂流物·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway IV"
+  },
+  "Daily Lahai-Roi Castaway V": {
+    "zh": "每日的拉海洛漂流物·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway V"
+  },
+  "Daily Lahai-Roi Castaway VI": {
+    "zh": "每日的拉海洛漂流物·六",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway VI"
+  },
+  "Daily Lahai-Roi Castaway VII": {
+    "zh": "每日的拉海洛漂流物·七",
+    "category": "Quest Name",
+    "indonesian_translation": "Daily Lahai-Roi Castaway VII"
+  },
+  "A Perfect Day for Flying": {
+    "zh": "完美飞行日",
+    "category": "Quest Name",
+    "indonesian_translation": "A Perfect Day for Flying"
+  },
+  "Where Sky is Clear and Glory Shines: Trial Grounds": {
+    "zh": "荣耀尽头的天空·试炼之地",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Sky is Clear and Glory Shines: Trial Grounds"
+  },
+  "Survey: Solisia Landing!": {
+    "zh": "勘探！落日堤屿！",
+    "category": "Quest Name",
+    "indonesian_translation": "Survey: Solisia Landing!"
+  },
+  "Survey: Sealed Fissure!": {
+    "zh": "勘探！封存地！",
+    "category": "Quest Name",
+    "indonesian_translation": "Survey: Sealed Fissure!"
+  },
+  "Survey: Silent Crag!": {
+    "zh": "勘探！寂静断崖！",
+    "category": "Quest Name",
+    "indonesian_translation": "Survey: Silent Crag!"
+  },
+  "Survey: Dimmr Deep!": {
+    "zh": "勘探！恒黯之原！",
+    "category": "Quest Name",
+    "indonesian_translation": "Survey: Dimmr Deep!"
+  },
+  "Restoration: Solisia Landing!": {
+    "zh": "还原培育！落日堤屿！",
+    "category": "Quest Name",
+    "indonesian_translation": "Restoration: Solisia Landing!"
+  },
+  "Restoration: Sealed Fissure!": {
+    "zh": "还原培育！封存地！",
+    "category": "Quest Name",
+    "indonesian_translation": "Restoration: Sealed Fissure!"
+  },
+  "Restoration: Silent Crag!": {
+    "zh": "还原培育！寂静断崖！",
+    "category": "Quest Name",
+    "indonesian_translation": "Restoration: Silent Crag!"
+  },
+  "Restoration: Dimmr Deep!": {
+    "zh": "还原培育！恒黯之原！",
+    "category": "Quest Name",
+    "indonesian_translation": "Restoration: Dimmr Deep!"
+  },
+  "Deep Sea Survey": {
+    "zh": "暗海勘查",
+    "category": "Quest Name",
+    "indonesian_translation": "Deep Sea Survey"
+  },
+  "Marks of the Wild": {
+    "zh": "兽痕解析",
+    "category": "Quest Name",
+    "indonesian_translation": "Marks of the Wild"
+  },
+  "Love of Wisdom": {
+    "zh": "智慧之爱",
+    "category": "Quest Name",
+    "indonesian_translation": "Love of Wisdom"
+  },
+  "All That Sunlight Touches": {
+    "zh": "日光落处",
+    "category": "Quest Name",
+    "indonesian_translation": "All That Sunlight Touches"
+  },
+  "The Comfort of Home": {
+    "zh": "故乡温情",
+    "category": "Quest Name",
+    "indonesian_translation": "The Comfort of Home"
+  },
+  "The Whisper of Memories": {
+    "zh": "思念之声",
+    "category": "Quest Name",
+    "indonesian_translation": "The Whisper of Memories"
+  },
+  "A Secret": {
+    "zh": "秘密",
+    "category": "Quest Name",
+    "indonesian_translation": "A Secret"
+  },
+  "Realization": {
+    "zh": "醒悟",
+    "category": "Quest Name",
+    "indonesian_translation": "Realization"
+  },
+  "Receive the WavesLine message about the Outcast attacks": {
+    "zh": "接收流民袭击相关飞讯",
+    "category": "Quest Name",
+    "indonesian_translation": "Receive the WavesLine message about the Outcast attacks"
+  },
+  "Dark Duel Legends: Part I": {
+    "zh": "暗黑决斗传说·上",
+    "category": "Quest Name",
+    "indonesian_translation": "Dark Duel Legends: Part I"
+  },
+  "Where Starry Seas Endure II": {
+    "zh": "星海如故（二）",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Starry Seas Endure II"
+  },
+  "Hidden Childhood": {
+    "zh": "藏起来的童年",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Childhood"
+  },
+  "Dark Duel Legends: Part III": {
+    "zh": "暗黑决斗传说·下",
+    "category": "Quest Name",
+    "indonesian_translation": "Dark Duel Legends: Part III"
+  },
+  "Dark Duel Legends: Part II": {
+    "zh": "暗黑决斗传说·中",
+    "category": "Quest Name",
+    "indonesian_translation": "Dark Duel Legends: Part II"
+  },
+  "Final Reverberation I": {
+    "zh": "最后的回声（一）",
+    "category": "Quest Name",
+    "indonesian_translation": "Final Reverberation I"
+  },
+  "Final Reverberation II": {
+    "zh": "最后的回声（二）",
+    "category": "Quest Name",
+    "indonesian_translation": "Final Reverberation II"
+  },
+  "Moments Captured in Light": {
+    "zh": "被光影定格的瞬间",
+    "category": "Quest Name",
+    "indonesian_translation": "Moments Captured in Light"
+  },
+  "Where Starry Seas Endure I": {
+    "zh": "星海如故（一）",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Starry Seas Endure I"
+  },
+  "Urban Legend: The Tale Teller": {
+    "zh": "不思议怪谈·讲述怪谈之人",
+    "category": "Quest Name",
+    "indonesian_translation": "Urban Legend: The Tale Teller"
+  },
+  "Windrider Project": {
+    "zh": "循风流形",
+    "category": "Quest Name",
+    "indonesian_translation": "Windrider Project"
+  },
+  "Morning Star I": {
+    "zh": "黎明之星（一）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star I"
+  },
+  "Morning Star II": {
+    "zh": "黎明之星（二）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star II"
+  },
+  "Morning Star III": {
+    "zh": "黎明之星（三）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star III"
+  },
+  "Morning Star IV": {
+    "zh": "黎明之星（四）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star IV"
+  },
+  "Morning Star Epilogue": {
+    "zh": "黎明之星（尾声）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star Epilogue"
+  },
+  "Morning Star: Those Who Remain in the Night Part I": {
+    "zh": "黎明之星·留在黑夜中的人（上）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star: Those Who Remain in the Night Part I"
+  },
+  "Morning Star: Those Who Remain in the Night Part II": {
+    "zh": "黎明之星·留在黑夜中的人（下）",
+    "category": "Quest Name",
+    "indonesian_translation": "Morning Star: Those Who Remain in the Night Part II"
+  },
+  "Peaks of Prestige: Rekindled Duel": {
+    "zh": "荣耀之丘：激斗重燃",
+    "category": "Quest Name",
+    "indonesian_translation": "Peaks of Prestige: Rekindled Duel"
+  },
+  "Rekindled Duel: Lahai-Roi Regional Tournament": {
+    "zh": "激斗重燃：拉海洛地区赛",
+    "category": "Quest Name",
+    "indonesian_translation": "Rekindled Duel: Lahai-Roi Regional Tournament"
+  },
+  "Science Gone Mad I": {
+    "zh": "科学也疯狂·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Science Gone Mad I"
+  },
+  "Science Gone Mad II": {
+    "zh": "科学也疯狂·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Science Gone Mad II"
+  },
+  "Science Gone Mad III": {
+    "zh": "科学也疯狂·三",
+    "category": "Quest Name",
+    "indonesian_translation": "Science Gone Mad III"
+  },
+  "Science Gone Mad IV": {
+    "zh": "科学也疯狂·四",
+    "category": "Quest Name",
+    "indonesian_translation": "Science Gone Mad IV"
+  },
+  "Science Gone Mad V": {
+    "zh": "科学也疯狂·五",
+    "category": "Quest Name",
+    "indonesian_translation": "Science Gone Mad V"
+  },
+  "Eliminate the TDs": {
+    "zh": "消灭残象",
+    "category": "Quest Name",
+    "indonesian_translation": "Eliminate the TDs"
+  },
+  "Lollo Campaign: Ice Savior": {
+    "zh": "呜呜企划·融冰",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Ice Savior"
+  },
+  "Soar to the Beat": {
+    "zh": "沿着节拍启航",
+    "category": "Quest Name",
+    "indonesian_translation": "Soar to the Beat"
+  },
+  "Knights of the Wild": {
+    "zh": "原野骑士",
+    "category": "Quest Name",
+    "indonesian_translation": "Knights of the Wild"
+  },
+  "Star Bouncing": {
+    "zh": "星弹奇游",
+    "category": "Quest Name",
+    "indonesian_translation": "Star Bouncing"
+  },
+  "Roaming Till the End": {
+    "zh": "漫游至终点",
+    "category": "Quest Name",
+    "indonesian_translation": "Roaming Till the End"
+  },
+  "Message Stranded in Shimmer: Epilogue": {
+    "zh": "拂光搁浅的旧讯·后日谈",
+    "category": "Quest Name",
+    "indonesian_translation": "Message Stranded in Shimmer: Epilogue"
+  },
+  "The Sea Just Within Reach": {
+    "zh": "世界上最近的海",
+    "category": "Quest Name",
+    "indonesian_translation": "The Sea Just Within Reach"
+  },
+  "The One Who Chooses to Linger": {
+    "zh": "那人短暂驻留",
+    "category": "Quest Name",
+    "indonesian_translation": "The One Who Chooses to Linger"
+  },
+  "Lucilla serect quest title": {
+    "zh": "dnt/洛瑟菈线彩蛋任务名",
+    "category": "Quest Name",
+    "indonesian_translation": "Lucilla serect quest title"
+  },
+  "Route Network Crisis Part I": {
+    "zh": "路网危情·上",
+    "category": "Quest Name",
+    "indonesian_translation": "Route Network Crisis Part I"
+  },
+  "Route Network Crisis Part II": {
+    "zh": "路网危情·下",
+    "category": "Quest Name",
+    "indonesian_translation": "Route Network Crisis Part II"
+  },
+  "WavesLine Insider": {
+    "zh": "飞讯内线",
+    "category": "Quest Name",
+    "indonesian_translation": "WavesLine Insider"
+  },
+  "Blade Hunter: Wilderness": {
+    "zh": "银翼猎手：荒野",
+    "category": "Quest Name",
+    "indonesian_translation": "Blade Hunter: Wilderness"
+  },
+  "Full Throttle! Bolt & Blitz!": {
+    "zh": "奔驰！箭速与激情！",
+    "category": "Quest Name",
+    "indonesian_translation": "Full Throttle! Bolt & Blitz!"
+  },
+  "Ashinohara's Legendary Miko": {
+    "zh": "苇原的“巫女大人”",
+    "category": "Quest Name",
+    "indonesian_translation": "Ashinohara's Legendary Miko"
+  },
+  "Special Response Force": {
+    "zh": "特别对策组",
+    "category": "Quest Name",
+    "indonesian_translation": "Special Response Force"
+  },
+  "The Rescued Researcher": {
+    "zh": "被救助的研究员",
+    "category": "Quest Name",
+    "indonesian_translation": "The Rescued Researcher"
+  },
+  "The Film-Loving Ghost Miko": {
+    "zh": "爱看电影的幽灵巫女",
+    "category": "Quest Name",
+    "indonesian_translation": "The Film-Loving Ghost Miko"
+  },
+  "A Soliskin and Its Mysterious Friend": {
+    "zh": "日灵与神秘的朋友",
+    "category": "Quest Name",
+    "indonesian_translation": "A Soliskin and Its Mysterious Friend"
+  },
+  "A Miko's Preferences": {
+    "zh": "巫女的喜好",
+    "category": "Quest Name",
+    "indonesian_translation": "A Miko's Preferences"
+  },
+  "Platya's Gift": {
+    "zh": "桔梗的心意",
+    "category": "Quest Name",
+    "indonesian_translation": "Platya's Gift"
+  },
+  "Cat-Finding Master": {
+    "zh": "寻猫大师",
+    "category": "Quest Name",
+    "indonesian_translation": "Cat-Finding Master"
+  },
+  "Aced! Combat Mastery Test!": {
+    "zh": "冲击！战斗学位考试！",
+    "category": "Quest Name",
+    "indonesian_translation": "Aced! Combat Mastery Test!"
+  },
+  "Knock on Gate Fissure": {
+    "zh": "叩响扉渊",
+    "category": "Quest Name",
+    "indonesian_translation": "Knock on Gate Fissure"
+  },
+  "Fest Guest: Cantarella": {
+    "zh": "夜宴来客·坎特蕾拉",
+    "category": "Quest Name",
+    "indonesian_translation": "Fest Guest: Cantarella"
+  },
+  "Fest Guest: Jiyan": {
+    "zh": "夜宴来客·忌炎",
+    "category": "Quest Name",
+    "indonesian_translation": "Fest Guest: Jiyan"
+  },
+  "Fest Guest: Yinlin": {
+    "zh": "夜宴来客·吟霖",
+    "category": "Quest Name",
+    "indonesian_translation": "Fest Guest: Yinlin"
+  },
+  "Fest Guest: Lynae": {
+    "zh": "夜宴来客·琳奈",
+    "category": "Quest Name",
+    "indonesian_translation": "Fest Guest: Lynae"
+  },
+  "Footprints on Frostlands": {
+    "zh": "冰川存忆",
+    "category": "Quest Name",
+    "indonesian_translation": "Footprints on Frostlands"
+  },
+  "Into the Land of Paradox!": {
+    "zh": "勘探！悖论之域！",
+    "category": "Quest Name",
+    "indonesian_translation": "Into the Land of Paradox!"
+  },
+  "Tomorrow Is As Far As the Shimmer": {
+    "zh": "向拂光远去的明天",
+    "category": "Quest Name",
+    "indonesian_translation": "Tomorrow Is As Far As the Shimmer"
+  },
+  "Spacetrek Incubation Program": {
+    "zh": "深空孵化计划",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek Incubation Program"
+  },
+  "Sound of Voidmatter": {
+    "zh": "虚质之声",
+    "category": "Quest Name",
+    "indonesian_translation": "Sound of Voidmatter"
+  },
+  "Sol et Arbor": {
+    "zh": "树与灵",
+    "category": "Quest Name",
+    "indonesian_translation": "Sol et Arbor"
+  },
+  "Dimmr Sightlines": {
+    "zh": "恒黯的视线",
+    "category": "Quest Name",
+    "indonesian_translation": "Dimmr Sightlines"
+  },
+  "Message Stranded in Shimmer": {
+    "zh": "拂光搁浅的旧讯",
+    "category": "Quest Name",
+    "indonesian_translation": "Message Stranded in Shimmer"
+  },
+  "Soliskin's Memento Photos": {
+    "zh": "日灵们的留影",
+    "category": "Quest Name",
+    "indonesian_translation": "Soliskin's Memento Photos"
+  },
+  "Three Soliskin": {
+    "zh": "三只日灵",
+    "category": "Quest Name",
+    "indonesian_translation": "Three Soliskin"
+  },
+  "Soliskin & \"Noxkin\"": {
+    "zh": "日灵与“夜灵”",
+    "category": "Quest Name",
+    "indonesian_translation": "Soliskin & \"Noxkin\""
+  },
+  "Follow up on the Division of Light Array Engineering's Research": {
+    "zh": "跟进光能矩阵学科群的研究",
+    "category": "Quest Name",
+    "indonesian_translation": "Follow up on the Division of Light Array Engineering's Research"
+  },
+  "Follow up on the Division of Ecology Conservation's Research": {
+    "zh": "跟进生态维持学科群的研究",
+    "category": "Quest Name",
+    "indonesian_translation": "Follow up on the Division of Ecology Conservation's Research"
+  },
+  "Follow up on the Department of Voidmatters' Research": {
+    "zh": "跟进虚质科学部的研究",
+    "category": "Quest Name",
+    "indonesian_translation": "Follow up on the Department of Voidmatters' Research"
+  },
+  "Follow up on the Roya Student's Research": {
+    "zh": "跟进罗伊族学生的研究情况",
+    "category": "Quest Name",
+    "indonesian_translation": "Follow up on the Roya Student's Research"
+  },
+  "Spacetrek Incubation Aide": {
+    "zh": "深空孵化员",
+    "category": "Quest Name",
+    "indonesian_translation": "Spacetrek Incubation Aide"
+  },
+  "Rebuild the Observatory-Academy Highway": {
+    "zh": "进行深星公路的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Observatory-Academy Highway"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 1": {
+    "zh": "隐藏任务_拉海洛_铺路机1",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 1"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 2": {
+    "zh": "隐藏任务_拉海洛_铺路机2",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 2"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 3": {
+    "zh": "隐藏任务_拉海洛_铺路机3",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 3"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 4": {
+    "zh": "隐藏任务_拉海洛_铺路机4",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 4"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 5": {
+    "zh": "隐藏任务_拉海洛_铺路机5",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 5"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 6": {
+    "zh": "隐藏任务_拉海洛_铺路机6",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 6"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 7": {
+    "zh": "隐藏任务_拉海洛_铺路机7",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 7"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 8": {
+    "zh": "隐藏任务_拉海洛_铺路机8",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 8"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 9": {
+    "zh": "隐藏任务_拉海洛_铺路机9",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 9"
+  },
+  "Hidden Quest_Lahai-Roi_Route Constructor 10": {
+    "zh": "隐藏任务_拉海洛_铺路机10",
+    "category": "Quest Name",
+    "indonesian_translation": "Hidden Quest_Lahai-Roi_Route Constructor 10"
+  },
+  "Fairy Tale's Finale": {
+    "zh": "童梦的终结",
+    "category": "Quest Name",
+    "indonesian_translation": "Fairy Tale's Finale"
+  },
+  "Fairy Tale's Finale: Epilogue": {
+    "zh": "童梦的终结.尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Fairy Tale's Finale: Epilogue"
+  },
+  "Co-op BOSS challenge reward": {
+    "zh": "联机BOSS挑战奖励",
+    "category": "Quest Name",
+    "indonesian_translation": "Co-op BOSS challenge reward"
+  },
+  "Abbowser Quest": {
+    "zh": "勇者斗大王",
+    "category": "Quest Name",
+    "indonesian_translation": "Abbowser Quest"
+  },
+  "Our story has only just begun!": {
+    "zh": "我们的故事才刚刚开始！",
+    "category": "Quest Name",
+    "indonesian_translation": "Our story has only just begun!"
+  },
+  "Adventures in the Water City-Hadrian's Gladiator": {
+    "zh": "水城上的奇遇-哈德良角斗士的肖像",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Hadrian's Gladiator"
+  },
+  "Adventures in the Water City-Bakie": {
+    "zh": "水城上的奇遇-焙焙",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Bakie"
+  },
+  "Adventures in the Water City-Aria Mummer": {
+    "zh": "水城上的奇遇-留声奏者",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Aria Mummer"
+  },
+  "Adventures in the Water City-Mercurio": {
+    "zh": "水城上的奇遇-墨丘利机",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Mercurio"
+  },
+  "Adventures in the Water City-Lario": {
+    "zh": "水城上的奇遇-拉里奥",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Lario"
+  },
+  "Adventures in the Water City-C-MOSS": {
+    "zh": "水城上的奇遇-西莫斯",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-C-MOSS"
+  },
+  "Adventures in the Water City-Farceur's Faces": {
+    "zh": "水城上的奇遇-孪面",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Farceur's Faces"
+  },
+  "Adventures in the Water City-Gondola": {
+    "zh": "水城上的奇遇-贡多拉",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Gondola"
+  },
+  "Adventures in the Water City-Signor Octopus": {
+    "zh": "水城上的奇遇-章鱼先生",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Signor Octopus"
+  },
+  "Adventures in the Water City-Tubpup": {
+    "zh": "水城上的奇遇-浴缸犬",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Tubpup"
+  },
+  "Adventures in the Water City-Lucerna": {
+    "zh": "水城上的奇遇-流明灯使",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Lucerna"
+  },
+  "Adventures in the Water City-Plushie Squad": {
+    "zh": "水城上的奇遇-布偶小队",
+    "category": "Quest Name",
+    "indonesian_translation": "Adventures in the Water City-Plushie Squad"
+  },
+  "Rev It Up! Startorch Race!": {
+    "zh": "星炬竞速赛，开跑！",
+    "category": "Quest Name",
+    "indonesian_translation": "Rev It Up! Startorch Race!"
+  },
+  "After the Race": {
+    "zh": "疾驰之后",
+    "category": "Quest Name",
+    "indonesian_translation": "After the Race"
+  },
+  "Startorch Racing, Rerun!": {
+    "zh": "星炬竞速赛，再开！",
+    "category": "Quest Name",
+    "indonesian_translation": "Startorch Racing, Rerun!"
+  },
+  "Speed up! F.U.E.L. Instrumentality Project!": {
+    "zh": "超高效！餐能中心补完计划！",
+    "category": "Quest Name",
+    "indonesian_translation": "Speed up! F.U.E.L. Instrumentality Project!"
+  },
+  "Fest Guest: Zani": {
+    "zh": "夜宴来客·赞妮",
+    "category": "Quest Name",
+    "indonesian_translation": "Fest Guest: Zani"
+  },
+  "Graduation Trip": {
+    "zh": "毕业旅行",
+    "category": "Quest Name",
+    "indonesian_translation": "Graduation Trip"
+  },
+  "Void Storm Reinforcement": {
+    "zh": "虚质磁暴协助作战",
+    "category": "Quest Name",
+    "indonesian_translation": "Void Storm Reinforcement"
+  },
+  "Void Storm Alert": {
+    "zh": "虚质磁暴预警通知",
+    "category": "Quest Name",
+    "indonesian_translation": "Void Storm Alert"
+  },
+  "occupation declaration": {
+    "zh": "占用声明",
+    "category": "Quest Name",
+    "indonesian_translation": "occupation declaration"
+  },
+  "simpleNPC change configuration": {
+    "zh": "simpleNPC改变配置",
+    "category": "Quest Name",
+    "indonesian_translation": "simpleNPC change configuration"
+  },
+  "communication optimization test": {
+    "zh": "通讯优化测试",
+    "category": "Quest Name",
+    "indonesian_translation": "communication optimization test"
+  },
+  "test Sundial UI gameplay": {
+    "zh": "测试日晷UI玩法",
+    "category": "Quest Name",
+    "indonesian_translation": "test Sundial UI gameplay"
+  },
+  "test guide condition activation configuration": {
+    "zh": "测试激活引导条件配置",
+    "category": "Quest Name",
+    "indonesian_translation": "test guide condition activation configuration"
+  },
+  "test signal sending gameply": {
+    "zh": "测试发送信号玩法",
+    "category": "Quest Name",
+    "indonesian_translation": "test signal sending gameply"
+  },
+  "Overdash Guide Quest": {
+    "zh": "飞檐引导任务",
+    "category": "Quest Name",
+    "indonesian_translation": "Overdash Guide Quest"
+  },
+  "Linren combat test": {
+    "zh": "麟人战斗测试",
+    "category": "Quest Name",
+    "indonesian_translation": "Linren combat test"
+  },
+  "Remnants of the Past Days": {
+    "zh": "旧日的余音",
+    "category": "Quest Name",
+    "indonesian_translation": "Remnants of the Past Days"
+  },
+  "Alone in the Abyss": {
+    "zh": "独行深渊",
+    "category": "Quest Name",
+    "indonesian_translation": "Alone in the Abyss"
+  },
+  "Somnoire: Illusive Realms": {
+    "zh": "心之集域·异想奇境",
+    "category": "Quest Name",
+    "indonesian_translation": "Somnoire: Illusive Realms"
+  },
+  "First Trial": {
+    "zh": "初试先行者",
+    "category": "Quest Name",
+    "indonesian_translation": "First Trial"
+  },
+  "Pedestal Device": {
+    "zh": "圆台命题",
+    "category": "Quest Name",
+    "indonesian_translation": "Pedestal Device"
+  },
+  "By Sun's Burning Hand": {
+    "zh": "灼我以烈阳",
+    "category": "Quest Name",
+    "indonesian_translation": "By Sun's Burning Hand"
+  },
+  "Depths of Illusive Realm: Chromatic Fantasy": {
+    "zh": "深坠异想奇境·异构绮梦",
+    "category": "Quest Name",
+    "indonesian_translation": "Depths of Illusive Realm: Chromatic Fantasy"
+  },
+  "Rebuild the Farer's Road": {
+    "zh": "进行远行公路的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Farer's Road"
+  },
+  "Rebuild the Sol's Embrace": {
+    "zh": "进行朔尔之挽的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Sol's Embrace"
+  },
+  "Rebuild the Spacetrek–Bjartr Bridge": {
+    "zh": "进行深光大桥的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Spacetrek–Bjartr Bridge"
+  },
+  "Rebuild the Howling Tunnel": {
+    "zh": "进行呼啸隧道的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Howling Tunnel"
+  },
+  "Rebuild the Starleap Ascent": {
+    "zh": "进行星跃公路的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Starleap Ascent"
+  },
+  "Rebuild the Submerged Tunnel": {
+    "zh": "进行溺森涡道的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Submerged Tunnel"
+  },
+  "Rebuild the Orbit Valley Pass - North": {
+    "zh": "进行眶折谷公路北段的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Orbit Valley Pass - North"
+  },
+  "Rebuild the Orbit Valley Pass - South": {
+    "zh": "进行眶折谷公路南段的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Orbit Valley Pass - South"
+  },
+  "Rebuild the Sandreach Passage": {
+    "zh": "进行沙原通路的重建",
+    "category": "Quest Name",
+    "indonesian_translation": "Rebuild the Sandreach Passage"
+  },
+  "Prints of Plateaus": {
+    "zh": "狩原逐影",
+    "category": "Quest Name",
+    "indonesian_translation": "Prints of Plateaus"
+  },
+  "Second Coming of Solaris (Ultra)": {
+    "zh": "第二索拉“终极版”",
+    "category": "Quest Name",
+    "indonesian_translation": "Second Coming of Solaris (Ultra)"
+  },
+  "Stranger Things in Honami": {
+    "zh": "穗波怪异物语",
+    "category": "Quest Name",
+    "indonesian_translation": "Stranger Things in Honami"
+  },
+  "Keep exploring Honami City": {
+    "zh": "继续探索穗波市",
+    "category": "Quest Name",
+    "indonesian_translation": "Keep exploring Honami City"
+  },
+  "Squeezy not Smiley": {
+    "zh": "“嘻嘻”不嘻嘻",
+    "category": "Quest Name",
+    "indonesian_translation": "Squeezy not Smiley"
+  },
+  "Tidal Defense Simulator": {
+    "zh": "潮蚀模拟",
+    "category": "Quest Name",
+    "indonesian_translation": "Tidal Defense Simulator"
+  },
+  "Freeze Frame: Action Highlights": {
+    "zh": "定格·光影瞬息",
+    "category": "Quest Name",
+    "indonesian_translation": "Freeze Frame: Action Highlights"
+  },
+  "Lament Recon: Solaris Soldier": {
+    "zh": "悲鸣行动·索拉战士",
+    "category": "Quest Name",
+    "indonesian_translation": "Lament Recon: Solaris Soldier"
+  },
+  "Help Cherry hand out the tonic": {
+    "zh": "帮切里送药",
+    "category": "Quest Name",
+    "indonesian_translation": "Help Cherry hand out the tonic"
+  },
+  "placeholder": {
+    "zh": "test/（不显示）卡住约兰",
+    "category": "Quest Name",
+    "indonesian_translation": "placeholder"
+  },
+  "Endstate Matrix": {
+    "zh": "终焉矩阵",
+    "category": "Quest Name",
+    "indonesian_translation": "Endstate Matrix"
+  },
+  "Lahai-Roi Blocks": {
+    "zh": "拉海洛方块",
+    "category": "Quest Name",
+    "indonesian_translation": "Lahai-Roi Blocks"
+  },
+  "The Lost Melody": {
+    "zh": "失落的乐声",
+    "category": "Quest Name",
+    "indonesian_translation": "The Lost Melody"
+  },
+  "No. 1 Biker": {
+    "zh": "车手一号",
+    "category": "Quest Name",
+    "indonesian_translation": "No. 1 Biker"
+  },
+  "Broken Dimmr Heart": {
+    "zh": "破碎黯原之心",
+    "category": "Quest Name",
+    "indonesian_translation": "Broken Dimmr Heart"
+  },
+  "Etched in the Heart": {
+    "zh": "刻于心间",
+    "category": "Quest Name",
+    "indonesian_translation": "Etched in the Heart"
+  },
+  "Broken Dimmr Heart: Finale": {
+    "zh": "破碎黯原之心·尾声",
+    "category": "Quest Name",
+    "indonesian_translation": "Broken Dimmr Heart: Finale"
+  },
+  "The Memory of Your Eyes": {
+    "zh": "没能忘记你的眼睛",
+    "category": "Quest Name",
+    "indonesian_translation": "The Memory of Your Eyes"
+  },
+  "SOL3 Phase Ascension: Phase I": {
+    "zh": "索拉等阶突破·一级",
+    "category": "Quest Name",
+    "indonesian_translation": "SOL3 Phase Ascension: Phase I"
+  },
+  "SOL3 Phase Ascension: Phase II": {
+    "zh": "索拉等阶突破·二级",
+    "category": "Quest Name",
+    "indonesian_translation": "SOL3 Phase Ascension: Phase II"
+  },
+  "SOL3 Phase Ascension: Phase III": {
+    "zh": "索拉等阶突破·三级",
+    "category": "Quest Name",
+    "indonesian_translation": "SOL3 Phase Ascension: Phase III"
+  },
+  "Specialty Drinks": {
+    "zh": "特色饮品",
+    "category": "Quest Name",
+    "indonesian_translation": "Specialty Drinks"
+  },
+  "Sea of Flowers in the Valley": {
+    "zh": "谷地的花海",
+    "category": "Quest Name",
+    "indonesian_translation": "Sea of Flowers in the Valley"
+  },
+  "Golden Insect": {
+    "zh": "金黄的昆虫",
+    "category": "Quest Name",
+    "indonesian_translation": "Golden Insect"
+  },
+  "Crownless?": {
+    "zh": "无冠者？！",
+    "category": "Quest Name",
+    "indonesian_translation": "Crownless?"
+  },
+  "Unforgettable Dishes": {
+    "zh": "难忘的菜肴",
+    "category": "Quest Name",
+    "indonesian_translation": "Unforgettable Dishes"
+  },
+  "Mithril": {
+    "zh": "秘银",
+    "category": "Quest Name",
+    "indonesian_translation": "Mithril"
+  },
+  "Burning Jade": {
+    "zh": "燃烧的光玉",
+    "category": "Quest Name",
+    "indonesian_translation": "Burning Jade"
+  },
+  "A Taste of Everything": {
+    "zh": "百味荟萃",
+    "category": "Quest Name",
+    "indonesian_translation": "A Taste of Everything"
+  },
+  "Under the Same Moonlit Sky": {
+    "zh": "同望当空月",
+    "category": "Quest Name",
+    "indonesian_translation": "Under the Same Moonlit Sky"
+  },
+  "A New Companion": {
+    "zh": "行路遇新知",
+    "category": "Quest Name",
+    "indonesian_translation": "A New Companion"
+  },
+  "Moonlit Reunion": {
+    "zh": "月从今夜满",
+    "category": "Quest Name",
+    "indonesian_translation": "Moonlit Reunion"
+  },
+  "Decode corrupted wishes: I": {
+    "zh": "解析被异常代码污染的心愿（一）",
+    "category": "Quest Name",
+    "indonesian_translation": "Decode corrupted wishes: I"
+  },
+  "Moon Shall Be My Guest": {
+    "zh": "我邀朗月",
+    "category": "Quest Name",
+    "indonesian_translation": "Moon Shall Be My Guest"
+  },
+  "Chasing the Moon's Glory": {
+    "zh": "愿逐月华",
+    "category": "Quest Name",
+    "indonesian_translation": "Chasing the Moon's Glory"
+  },
+  "Festival Preparations II": {
+    "zh": "月下祈愿其二·筹备",
+    "category": "Quest Name",
+    "indonesian_translation": "Festival Preparations II"
+  },
+  "Festival Preparations III": {
+    "zh": "月下祈愿其三·筹备",
+    "category": "Quest Name",
+    "indonesian_translation": "Festival Preparations III"
+  },
+  "Professional Inheritance": {
+    "zh": "秘传占术",
+    "category": "Quest Name",
+    "indonesian_translation": "Professional Inheritance"
+  },
+  "A Brief Respite": {
+    "zh": "片刻闲暇",
+    "category": "Quest Name",
+    "indonesian_translation": "A Brief Respite"
+  },
+  "Cause to Fight for": {
+    "zh": "因何而战",
+    "category": "Quest Name",
+    "indonesian_translation": "Cause to Fight for"
+  },
+  "Festival Preparations IV": {
+    "zh": "月下祈愿其四·筹备",
+    "category": "Quest Name",
+    "indonesian_translation": "Festival Preparations IV"
+  },
+  "Set Sail! Pro Angler!": {
+    "zh": "出发！成为捕鱼达人！",
+    "category": "Quest Name",
+    "indonesian_translation": "Set Sail! Pro Angler!"
+  },
+  "Dream Syndrome": {
+    "zh": "梦境症候群",
+    "category": "Quest Name",
+    "indonesian_translation": "Dream Syndrome"
+  },
+  "Love in the Time of Fishing": {
+    "zh": "出海捕鱼时期的爱情",
+    "category": "Quest Name",
+    "indonesian_translation": "Love in the Time of Fishing"
+  },
+  "Where All Fish Converge": {
+    "zh": "万鱼归一",
+    "category": "Quest Name",
+    "indonesian_translation": "Where All Fish Converge"
+  },
+  "Old Man and the Whale": {
+    "zh": "老人鱼海",
+    "category": "Quest Name",
+    "indonesian_translation": "Old Man and the Whale"
+  },
+  "I Alone Survived": {
+    "zh": "只有我一人逃脱",
+    "category": "Quest Name",
+    "indonesian_translation": "I Alone Survived"
+  },
+  "Message in a Bottle": {
+    "zh": "世界漂流瓶",
+    "category": "Quest Name",
+    "indonesian_translation": "Message in a Bottle"
+  },
+  "Go Get Some Fish": {
+    "zh": "整点鱼条",
+    "category": "Quest Name",
+    "indonesian_translation": "Go Get Some Fish"
+  },
+  "Every Flavor Bell-less Crab Challenge": {
+    "zh": "当当蟹怪味挑战",
+    "category": "Quest Name",
+    "indonesian_translation": "Every Flavor Bell-less Crab Challenge"
+  },
+  "Hooked on Trouble": {
+    "zh": "钓鱼风波",
+    "category": "Quest Name",
+    "indonesian_translation": "Hooked on Trouble"
+  },
+  "Moon-Chasing Festival venue": {
+    "zh": "追月节会场",
+    "category": "Quest Name",
+    "indonesian_translation": "Moon-Chasing Festival venue"
+  },
+  "Operation: Lunar Duo": {
+    "zh": "行动代号：月下双雄",
+    "category": "Quest Name",
+    "indonesian_translation": "Operation: Lunar Duo"
+  },
+  "Wish You Were Here": {
+    "zh": "愿此景永留你心",
+    "category": "Quest Name",
+    "indonesian_translation": "Wish You Were Here"
+  },
+  "Blessed Be the Moon": {
+    "zh": "难忘今时月",
+    "category": "Quest Name",
+    "indonesian_translation": "Blessed Be the Moon"
+  },
+  "Chasing the Moon, Here and Now": {
+    "zh": "追月进行时",
+    "category": "Quest Name",
+    "indonesian_translation": "Chasing the Moon, Here and Now"
+  },
+  "Date with Zhezhi: Epilogue 1": {
+    "zh": "折枝邀约任务后日谈·一",
+    "category": "Quest Name",
+    "indonesian_translation": "Date with Zhezhi: Epilogue 1"
+  },
+  "Date with Zhezhi: Epilogue 2": {
+    "zh": "折枝邀约任务后日谈·二",
+    "category": "Quest Name",
+    "indonesian_translation": "Date with Zhezhi: Epilogue 2"
+  },
+  "Carnevale Finale": {
+    "zh": "狂欢节·落幕",
+    "category": "Quest Name",
+    "indonesian_translation": "Carnevale Finale"
+  },
+  "Ahab's Diary": {
+    "zh": "亚哈的日记",
+    "category": "Quest Name",
+    "indonesian_translation": "Ahab's Diary"
+  },
+  "Second Coming of Solaris": {
+    "zh": "第二索拉",
+    "category": "Quest Name",
+    "indonesian_translation": "Second Coming of Solaris"
+  },
+  "Lollo Campaign, Start!": {
+    "zh": "呜呜企划，启动！",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign, Start!"
+  },
+  "Lollo Campaign Finale": {
+    "zh": "呜呜企划·终",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign Finale"
+  },
+  "Tactical Simulacra": {
+    "zh": "仿声战略",
+    "category": "Quest Name",
+    "indonesian_translation": "Tactical Simulacra"
+  },
+  "By Moon's Fated Light": {
+    "zh": "今夜，注定属于月亮",
+    "category": "Quest Name",
+    "indonesian_translation": "By Moon's Fated Light"
+  },
+  "Kaleidoscope of Hongzhen": {
+    "zh": "虹镇百景图",
+    "category": "Quest Name",
+    "indonesian_translation": "Kaleidoscope of Hongzhen"
+  },
+  "Spring Adventures": {
+    "zh": "温泉大冒险",
+    "category": "Quest Name",
+    "indonesian_translation": "Spring Adventures"
+  },
+  "Quest of Faith": {
+    "zh": "失落之影",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest of Faith"
+  },
+  "All Out! Towards the Peaks of Prestige": {
+    "zh": "激斗！向着荣耀之丘",
+    "category": "Quest Name",
+    "indonesian_translation": "All Out! Towards the Peaks of Prestige"
+  },
+  "What Burns Beneath Frostlands": {
+    "zh": "冰原下的星炬",
+    "category": "Quest Name",
+    "indonesian_translation": "What Burns Beneath Frostlands"
+  },
+  "When the Unknown Thrums": {
+    "zh": "未知的既感",
+    "category": "Quest Name",
+    "indonesian_translation": "When the Unknown Thrums"
+  },
+  "Tune break buff": {
+    "zh": "test/监听1.0序幕进度开关弱点机制buff",
+    "category": "Quest Name",
+    "indonesian_translation": "Tune break buff"
+  },
+  "Unparalleled Mechascout": {
+    "zh": "最了不起的机兵",
+    "category": "Quest Name",
+    "indonesian_translation": "Unparalleled Mechascout"
+  },
+  "Lollo Campaign: Verification": {
+    "zh": "呜呜企划·重验",
+    "category": "Quest Name",
+    "indonesian_translation": "Lollo Campaign: Verification"
+  },
+  "Uncovering Past Heroes": {
+    "zh": "战陵追痕",
+    "category": "Quest Name",
+    "indonesian_translation": "Uncovering Past Heroes"
+  },
+  "Virtual Crisis: Frontier Trials": {
+    "zh": "虚域危局·维度超验",
+    "category": "Quest Name",
+    "indonesian_translation": "Virtual Crisis: Frontier Trials"
+  },
+  "Where Light Takes Shape": {
+    "zh": "光的来处",
+    "category": "Quest Name",
+    "indonesian_translation": "Where Light Takes Shape"
+  },
+  "Radiance's Return": {
+    "zh": "青实归林",
+    "category": "Quest Name",
+    "indonesian_translation": "Radiance's Return"
+  },
+  "Duel of Destiny": {
+    "zh": "命运的决斗",
+    "category": "Quest Name",
+    "indonesian_translation": "Duel of Destiny"
+  },
+  "Samousas's Treasure": {
+    "zh": "萨姆沙斯的宝物",
+    "category": "Quest Name",
+    "indonesian_translation": "Samousas's Treasure"
+  },
+  "Fantastic Ta-das and Where to Find Them": {
+    "zh": "神奇啪嗒在哪里",
+    "category": "Quest Name",
+    "indonesian_translation": "Fantastic Ta-das and Where to Find Them"
+  },
+  "测试文本": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "测试文本"
+  },
+  "Quest_2700000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_2700000"
+  },
+  "Quest_2900000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_2900000"
+  },
+  "Quest_2900001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_2900001"
+  },
+  "Quest_11800002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_11800002"
+  },
+  "Quest_13700000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_13700000"
+  },
+  "Quest_30800000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30800000"
+  },
+  "Quest_30800001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30800001"
+  },
+  "Quest_30900003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30900003"
+  },
+  "Quest_30900004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30900004"
+  },
+  "Quest_30900005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30900005"
+  },
+  "Quest_30900009": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_30900009"
+  },
+  "Quest_31000001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_31000001"
+  },
+  "Quest_31700000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_31700000"
+  },
+  "Quest_34000004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34000004"
+  },
+  "Quest_34800000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800000"
+  },
+  "Quest_34800001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800001"
+  },
+  "Quest_34800002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800002"
+  },
+  "Quest_34800003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800003"
+  },
+  "Quest_34800004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800004"
+  },
+  "Quest_34800005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800005"
+  },
+  "Quest_34800006": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800006"
+  },
+  "Quest_34800007": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34800007"
+  },
+  "Quest_34900011": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900011"
+  },
+  "Quest_34900012": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900012"
+  },
+  "Quest_34900013": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900013"
+  },
+  "Quest_34900014": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900014"
+  },
+  "Quest_34900016": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900016"
+  },
+  "Quest_34900017": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900017"
+  },
+  "Quest_34900018": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900018"
+  },
+  "Quest_34900019": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_34900019"
+  },
+  "Quest_122000007": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_122000007"
+  },
+  "Quest_135000010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_135000010"
+  },
+  "Quest_140000009": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_140000009"
+  },
+  "Quest_147700002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_147700002"
+  },
+  "Quest_151700007": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_151700007"
+  },
+  "Quest_151850001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_151850001"
+  },
+  "Quest_152750019": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152750019"
+  },
+  "Quest_152850000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850000"
+  },
+  "Quest_152850001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850001"
+  },
+  "Quest_152850002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850002"
+  },
+  "Quest_152850003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850003"
+  },
+  "Quest_152850004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850004"
+  },
+  "Quest_152850005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152850005"
+  },
+  "Quest_152900000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152900000"
+  },
+  "Quest_152900001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152900001"
+  },
+  "Quest_152900002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152900002"
+  },
+  "Quest_152900003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152900003"
+  },
+  "Quest_152900004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_152900004"
+  },
+  "Quest_157700002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_157700002"
+  },
+  "Quest_157700003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_157700003"
+  },
+  "Quest_157700004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_157700004"
+  },
+  "Quest_157900003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_157900003"
+  },
+  "Quest_157900004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_157900004"
+  },
+  "Quest_158700004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158700004"
+  },
+  "Quest_158750000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158750000"
+  },
+  "Quest_158750002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158750002"
+  },
+  "Quest_158800010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800010"
+  },
+  "Quest_158800027": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800027"
+  },
+  "Quest_158800030": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800030"
+  },
+  "Quest_158800033": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800033"
+  },
+  "Quest_158800034": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800034"
+  },
+  "Quest_158800037": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800037"
+  },
+  "Quest_158800040": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158800040"
+  },
+  "Quest_158850004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158850004"
+  },
+  "Quest_158900026": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_158900026"
+  },
+  "dnt/联动后日谈": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/联动后日谈"
+  },
+  "Quest_161850002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_161850002"
+  },
+  "Quest_162700008": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162700008"
+  },
+  "Quest_162700009": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162700009"
+  },
+  "Quest_162750005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162750005"
+  },
+  "Quest_162750006": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162750006"
+  },
+  "Quest_162750014": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162750014"
+  },
+  "Quest_162750015": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162750015"
+  },
+  "Quest_162800001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162800001"
+  },
+  "Quest_162850000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162850000"
+  },
+  "Quest_162850001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162850001"
+  },
+  "Quest_162850002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_162850002"
+  },
+  "dnt/重复的告白": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/重复的告白"
+  },
+  "dnt/公交车怪谈": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/公交车怪谈"
+  },
+  "dnt/等待家人的女孩": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/等待家人的女孩"
+  },
+  "dnt/愿望巫女": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/愿望巫女"
+  },
+  "dnt/管家和大小姐": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/管家和大小姐"
+  },
+  "dnt/沉思的少年": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/沉思的少年"
+  },
+  "Quest_165900000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_165900000"
+  },
+  "Quest_165900001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_165900001"
+  },
+  "Quest_168750000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_168750000"
+  },
+  "Quest_168800000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_168800000"
+  },
+  "Quest_168800002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_168800002"
+  },
+  "Quest_168850000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_168850000"
+  },
+  "dnt/绯雪角色生态初见": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/绯雪角色生态初见"
+  },
+  "Quest_176750006": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176750006"
+  },
+  "Quest_176800012": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800012"
+  },
+  "Quest_176800013": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800013"
+  },
+  "Quest_176800014": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800014"
+  },
+  "Quest_176800015": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800015"
+  },
+  "Quest_176800016": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800016"
+  },
+  "Quest_176800017": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800017"
+  },
+  "Quest_176800018": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800018"
+  },
+  "Quest_176800019": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800019"
+  },
+  "Quest_176800020": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800020"
+  },
+  "Quest_176800021": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800021"
+  },
+  "Quest_176800022": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800022"
+  },
+  "Quest_176800025": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176800025"
+  },
+  "Quest_176850003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176850003"
+  },
+  "Quest_176850004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176850004"
+  },
+  "Quest_176850005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_176850005"
+  },
+  "Quest_181700014": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181700014"
+  },
+  "Quest_181750001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181750001"
+  },
+  "Quest_181750002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181750002"
+  },
+  "Quest_181750004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181750004"
+  },
+  "Quest_181750005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181750005"
+  },
+  "Quest_181750018": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181750018"
+  },
+  "Quest_181850008": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181850008"
+  },
+  "Quest_181850009": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181850009"
+  },
+  "Quest_181850010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_181850010"
+  },
+  "dnt/车站3丢失的货物": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/车站3丢失的货物"
+  },
+  "dnt/流民营地人员名单": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/流民营地人员名单"
+  },
+  "dnt/流民营地发现货物": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/流民营地发现货物"
+  },
+  "dnt/": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/"
+  },
+  "Quest_189700020": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_189700020"
+  },
+  "Quest_189700021": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_189700021"
+  },
+  "Quest_189700023": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_189700023"
+  },
+  "Quest_194700008": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194700008"
+  },
+  "Quest_194700009": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194700009"
+  },
+  "Quest_194700010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194700010"
+  },
+  "Quest_194700015": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194700015"
+  },
+  "Quest_194750002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194750002"
+  },
+  "Quest_194750004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194750004"
+  },
+  "Quest_194750005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194750005"
+  },
+  "Quest_194750006": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194750006"
+  },
+  "Quest_194750010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_194750010"
+  },
+  "Quest_197700000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_197700000"
+  },
+  "Quest_197800010": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_197800010"
+  },
+  "Quest_197800011": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_197800011"
+  },
+  "Quest_200900000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_200900000"
+  },
+  "Quest_207700002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_207700002"
+  },
+  "Quest_211850020": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_211850020"
+  },
+  "Quest_211850021": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_211850021"
+  },
+  "Quest_225700002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_225700002"
+  },
+  "Quest_230750004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_230750004"
+  },
+  "Quest_310000016": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000016"
+  },
+  "Quest_310000017": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000017"
+  },
+  "Quest_310000018": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000018"
+  },
+  "Quest_310000019": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000019"
+  },
+  "Quest_310000020": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000020"
+  },
+  "Quest_310000022": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000022"
+  },
+  "Quest_310000023": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000023"
+  },
+  "Quest_310000024": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000024"
+  },
+  "Quest_310000025": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000025"
+  },
+  "Quest_310000027": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000027"
+  },
+  "Quest_310000028": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000028"
+  },
+  "Quest_310000029": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000029"
+  },
+  "Quest_310000030": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_310000030"
+  },
+  "dnt/经典肉鸽复刻后日谈": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/经典肉鸽复刻后日谈"
+  },
+  "Quest_316700000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_316700000"
+  },
+  "Quest_316800000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_316800000"
+  },
+  "Quest_320700001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700001"
+  },
+  "Quest_320700002": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700002"
+  },
+  "Quest_320700003": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700003"
+  },
+  "Quest_320700004": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700004"
+  },
+  "Quest_320700005": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700005"
+  },
+  "Quest_320700006": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700006"
+  },
+  "Quest_320700007": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320700007"
+  },
+  "dnt/寻宝小孩": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "dnt/寻宝小孩"
+  },
+  "Quest_320800016": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_320800016"
+  },
+  "Quest_692700001": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_692700001"
+  },
+  "Quest_915850000": {
+    "zh": "",
+    "category": "Quest Name",
+    "indonesian_translation": "Quest_915850000"
+  },
   "Echo": {
     "zh": "声骸",
     "category": "Core Gameplay Term",
@@ -14419,11 +18644,6 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Immersion Mode"
   },
-  "Fantasies of the Thousand Gateways": {
-    "zh": "千道门扉的异想",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Fantasies of the Thousand Gateways"
-  },
   "Fishing Spots": {
     "zh": "捕鱼点",
     "category": "Core Gameplay Term",
@@ -14518,11 +18738,6 @@
     "zh": "穗波怪异物语·波仔",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Stranger Things in Honami: Namipon"
-  },
-  "Stranger Things in Honami": {
-    "zh": "穗波怪异物语",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Stranger Things in Honami"
   },
   "Stranger Things in Honami: Contaminated Loot": {
     "zh": "穗波怪异物语·污染战利品",
@@ -14623,11 +18838,6 @@
     "zh": "全新拓展模块",
     "category": "Core Gameplay Term",
     "indonesian_translation": "New Expansion Module"
-  },
-  "Endstate Matrix": {
-    "zh": "终焉矩阵",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Endstate Matrix"
   },
   "Endstate Matrix: Singularity Expansion": {
     "zh": "终焉矩阵·奇点扩张",
@@ -15393,11 +19603,6 @@
     "zh": "临场点",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Battle Engagement Points"
-  },
-  "Dream Contagion": {
-    "zh": "染秽之梦",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Dream Contagion"
   },
   "Dream Contagion: Kerasaur": {
     "zh": "染秽之梦·角鳄",
@@ -16204,11 +20409,6 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Dream of Connection Guide"
   },
-  "Tidal Defense Simulator": {
-    "zh": "潮蚀模拟",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Tidal Defense Simulator"
-  },
   "Tidal Defense Simulator - Deathtrap Mode": {
     "zh": "潮蚀模拟·孤绝险地",
     "category": "Core Gameplay Term",
@@ -16273,11 +20473,6 @@
     "zh": "「深层记忆区」说明",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Sub-Memory Zone"
-  },
-  "Lament Recon: Solaris Soldier": {
-    "zh": "「悲鸣行动：索拉战士」",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Lament Recon: Solaris Soldier"
   },
   "Lament Recon: Solaris Soldier - Weapons": {
     "zh": "「悲鸣行动：索拉战士」·武装",
@@ -16548,11 +20743,6 @@
     "zh": "小团快跑·规则和应援",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Cubie Derby: Rules & Support"
-  },
-  "Depths of Illusive Realm: Chromatic Fantasy": {
-    "zh": "深坠异想奇境·异构绮梦",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Depths of Illusive Realm: Chromatic Fantasy"
   },
   "Depths of Illusive Realm: Memetic Tuning": {
     "zh": "深坠异想奇境·调梦模因",
@@ -27059,20 +31249,10 @@
     "category": "Location/Map",
     "indonesian_translation": "Fourth Solistree - 2nd Layer"
   },
-  "Orbit Valley Pass - North": {
-    "zh": "眶折谷·北段",
-    "category": "Location/Map",
-    "indonesian_translation": "Orbit Valley Pass - North"
-  },
   "Orbit Valley Pass - Main": {
     "zh": "眶折谷·本段",
     "category": "Location/Map",
     "indonesian_translation": "Orbit Valley Pass - Main"
-  },
-  "Orbit Valley Pass - South": {
-    "zh": "眶折谷·南段",
-    "category": "Location/Map",
-    "indonesian_translation": "Orbit Valley Pass - South"
   },
   "Riseway-Sundermere Corridor - Underground": {
     "zh": "联坠长廊·地下段",
@@ -27088,11 +31268,6 @@
     "zh": "深浮长廊",
     "category": "Location/Map",
     "indonesian_translation": "Spacetrek-Bjartr Corridor"
-  },
-  "Submerged Tunnel": {
-    "zh": "溺森涡道",
-    "category": "Location/Map",
-    "indonesian_translation": "Submerged Tunnel"
   },
   "Spacetrek Archive - Recreational Zone": {
     "zh": "文献中心·休憩区",
@@ -27604,11 +31779,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Alptop Champion"
   },
-  "Yhoran's Tactical Trial": {
-    "zh": "约兰的战术测试",
-    "category": "Location/Map",
-    "indonesian_translation": "Yhoran's Tactical Trial"
-  },
   "Entrance to the Base": {
     "zh": "基地入口",
     "category": "Location/Map",
@@ -27929,11 +32099,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Moments Scattered to the Wind"
   },
-  "Overflowing Picture Book": {
-    "zh": "溢彩画册",
-    "category": "Location/Map",
-    "indonesian_translation": "Overflowing Picture Book"
-  },
   "Preparation Area": {
     "zh": "作战准备",
     "category": "Location/Map",
@@ -28058,11 +32223,6 @@
     "zh": "传说中的鱼王",
     "category": "Location/Map",
     "indonesian_translation": "Legendary Fish King"
-  },
-  "Marks of the Wild": {
-    "zh": "兽痕解析",
-    "category": "Location/Map",
-    "indonesian_translation": "Marks of the Wild"
   },
   "Dreamscape Node: Land of Dragons": {
     "zh": "梦境节点·觅龙之地",
@@ -28309,11 +32469,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Hot Spring Stargazing"
   },
-  "Voidspawn Emergence": {
-    "zh": "虚诞潜迹",
-    "category": "Location/Map",
-    "indonesian_translation": "Voidspawn Emergence"
-  },
   "Smartprint Cube Reboot - Frostland Surface": {
     "zh": "重启智造立方·冰原地表",
     "category": "Location/Map",
@@ -28378,21 +32533,6 @@
     "zh": "造路悬仪挑战赛道12",
     "category": "Location/Map",
     "indonesian_translation": "Route Constructor Racing Challenge XII"
-  },
-  "Where Light Takes Shape": {
-    "zh": "光的来处",
-    "category": "Location/Map",
-    "indonesian_translation": "Where Light Takes Shape"
-  },
-  "No. 1 Biker": {
-    "zh": "车手一号",
-    "category": "Location/Map",
-    "indonesian_translation": "No. 1 Biker"
-  },
-  "The Lost Melody": {
-    "zh": "失落的乐声",
-    "category": "Location/Map",
-    "indonesian_translation": "The Lost Melody"
   },
   "The First Solistree": {
     "zh": "第一日树",
@@ -28484,16 +32624,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Ginnungamere: Byway"
   },
-  "Unfrozen Hope": {
-    "zh": "凛冬的希望",
-    "category": "Location/Map",
-    "indonesian_translation": "Unfrozen Hope"
-  },
-  "The Song of Ice and Steel": {
-    "zh": "冰与铁之歌",
-    "category": "Location/Map",
-    "indonesian_translation": "The Song of Ice and Steel"
-  },
   "Triptych Chests": {
     "zh": "圣箱集物",
     "category": "Location/Map",
@@ -28538,36 +32668,6 @@
     "zh": "dnt/",
     "category": "Location/Map",
     "indonesian_translation": "Rabelle College Entrance"
-  },
-  "Special Response Force": {
-    "zh": "特别对策组",
-    "category": "Location/Map",
-    "indonesian_translation": "Special Response Force"
-  },
-  "The Rescued Researcher": {
-    "zh": "被救助的研究员",
-    "category": "Location/Map",
-    "indonesian_translation": "The Rescued Researcher"
-  },
-  "The Film-Loving Ghost Miko": {
-    "zh": "爱看电影的幽灵巫女",
-    "category": "Location/Map",
-    "indonesian_translation": "The Film-Loving Ghost Miko"
-  },
-  "A Soliskin and Its Mysterious Friend": {
-    "zh": "日灵与神秘的朋友",
-    "category": "Location/Map",
-    "indonesian_translation": "A Soliskin and Its Mysterious Friend"
-  },
-  "A Miko's Preferences": {
-    "zh": "巫女的喜好",
-    "category": "Location/Map",
-    "indonesian_translation": "A Miko's Preferences"
-  },
-  "Platya's Gift": {
-    "zh": "桔梗的心意",
-    "category": "Location/Map",
-    "indonesian_translation": "Platya's Gift"
   },
   "Knights of the Wild Treasure": {
     "zh": "原野骑士的奇藏",
@@ -28653,16 +32753,6 @@
     "zh": "摩托-飞行赛道5",
     "category": "Location/Map",
     "indonesian_translation": "Motorbike - Flight Track 5"
-  },
-  "A Perfect Day for Flying": {
-    "zh": "完美飞行日",
-    "category": "Location/Map",
-    "indonesian_translation": "A Perfect Day for Flying"
-  },
-  "Broken Dimmr Heart": {
-    "zh": "破碎黯原之心",
-    "category": "Location/Map",
-    "indonesian_translation": "Broken Dimmr Heart"
   },
   "Motorbike - Fixed Track 1": {
     "zh": "摩托-固定赛道1",
@@ -28858,11 +32948,6 @@
     "zh": "深空测界台文档",
     "category": "Location/Map",
     "indonesian_translation": "Spacetrek Observatory Files"
-  },
-  "Solaris Weather Forecast": {
-    "zh": "索拉里斯气象前沿",
-    "category": "Location/Map",
-    "indonesian_translation": "Solaris Weather Forecast"
   },
   "Ragunna Weather Forecast": {
     "zh": "拉古那气象前沿",
@@ -29174,11 +33259,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Construct: Protective Scales"
   },
-  "Dance Dance Chelonian!": {
-    "zh": "跃动吧，龟舞团！",
-    "category": "Location/Map",
-    "indonesian_translation": "Dance Dance Chelonian!"
-  },
   "Traces of Mt. Firmament I": {
     "zh": "停影霄山·Ⅰ",
     "category": "Location/Map",
@@ -29379,11 +33459,6 @@
     "category": "Location/Map",
     "indonesian_translation": "Memory Travelogue XII"
   },
-  "Should the Shooting Stars Blaze": {
-    "zh": "若流星盛放",
-    "category": "Location/Map",
-    "indonesian_translation": "Should the Shooting Stars Blaze"
-  },
   "Thermes Baths": {
     "zh": "瑟姆斯浴场",
     "category": "Location/Map",
@@ -29404,20 +33479,10 @@
     "category": "Location/Map",
     "indonesian_translation": "Underground Flight Challenge"
   },
-  "Flames in the Deep": {
-    "zh": "渊底之火",
-    "category": "Location/Map",
-    "indonesian_translation": "Flames in the Deep"
-  },
   "Trophy Chest Area": {
     "zh": "战利箱埋藏地",
     "category": "Location/Map",
     "indonesian_translation": "Trophy Chest Area"
-  },
-  "May Applause Greet You": {
-    "zh": "以呼嚎致意",
-    "category": "Location/Map",
-    "indonesian_translation": "May Applause Greet You"
   },
   "Dream of A Rusted Sword": {
     "zh": "朽剑之梦",
@@ -29513,11 +33578,6 @@
     "zh": "奇藏测探仪",
     "category": "Location/Map",
     "indonesian_translation": "Lootmapper"
-  },
-  "Knights of the Wild": {
-    "zh": "原野骑士",
-    "category": "Location/Map",
-    "indonesian_translation": "Knights of the Wild"
   },
   "Capturing Starlight I": {
     "zh": "星原定格·Ⅰ",
@@ -29679,11 +33739,6 @@
     "category": "General Term",
     "indonesian_translation": "Student of the Department of Light Energy Sciences"
   },
-  "Observatory-Academy Highway": {
-    "zh": "深星公路",
-    "category": "General Term",
-    "indonesian_translation": "Observatory-Academy Highway"
-  },
   "Student of the Department of Voidmatters Science": {
     "zh": "虚质科学部的学生",
     "category": "General Term",
@@ -29694,50 +33749,20 @@
     "category": "General Term",
     "indonesian_translation": "Student of Rabelle College"
   },
-  "Sandreach Passage": {
-    "zh": "沙原通路",
-    "category": "General Term",
-    "indonesian_translation": "Sandreach Passage"
-  },
   "Teacher of the Startorch Academy": {
     "zh": "星炬学院的老师",
     "category": "General Term",
     "indonesian_translation": "Teacher of the Startorch Academy"
-  },
-  "Farer's Road": {
-    "zh": "远行公路",
-    "category": "General Term",
-    "indonesian_translation": "Farer's Road"
   },
   "Researcher of the Spacetrek Collective": {
     "zh": "深空联合的研究员",
     "category": "General Term",
     "indonesian_translation": "Researcher of the Spacetrek Collective"
   },
-  "Sol's Embrace": {
-    "zh": "朔尔之挽",
-    "category": "General Term",
-    "indonesian_translation": "Sol's Embrace"
-  },
   "Roya from Solisylum": {
     "zh": "来自引日殿的罗伊人",
     "category": "General Term",
     "indonesian_translation": "Roya from Solisylum"
-  },
-  "Starleap Ascent": {
-    "zh": "星跃公路",
-    "category": "General Term",
-    "indonesian_translation": "Starleap Ascent"
-  },
-  "Howling Tunnel": {
-    "zh": "呼啸隧道",
-    "category": "General Term",
-    "indonesian_translation": "Howling Tunnel"
-  },
-  "Spacetrek–Bjartr Bridge": {
-    "zh": "深光大桥",
-    "category": "General Term",
-    "indonesian_translation": "Spacetrek–Bjartr Bridge"
   },
   "Assistant Chef": {
     "zh": "烹调助理",
@@ -31033,31 +35058,6 @@
     "zh": "连击！！",
     "category": "General Term",
     "indonesian_translation": "Combo!!"
-  },
-  "Tale of Moontree Lodge": {
-    "zh": "祈愿月树屋",
-    "category": "General Term",
-    "indonesian_translation": "Tale of Moontree Lodge"
-  },
-  "Moments": {
-    "zh": "经营轶事",
-    "category": "General Term",
-    "indonesian_translation": "Moments"
-  },
-  "Until the Long Night Ends": {
-    "zh": "直至永夜终结",
-    "category": "General Term",
-    "indonesian_translation": "Until the Long Night Ends"
-  },
-  "Your Summer Will Never Wither": {
-    "zh": "唯你的长夏永不凋落",
-    "category": "General Term",
-    "indonesian_translation": "Your Summer Will Never Wither"
-  },
-  "Startorch Academy Anecdotes": {
-    "zh": "星炬学院逸话",
-    "category": "General Term",
-    "indonesian_translation": "Startorch Academy Anecdotes"
   },
   "Health": {
     "zh": "体力",

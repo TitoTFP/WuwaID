@@ -454,11 +454,6 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Agune"
   },
-  "Ahab's Diary": {
-    "zh": "亚哈的日记本",
-    "category": "General Term",
-    "indonesian_translation": "Ahab's Diary"
-  },
   "Aircraft Accident Report": {
     "zh": "《失事小型运输机调查报告》",
     "category": "General Term",
@@ -488,11 +483,6 @@
     "zh": "阿莉切",
     "category": "Speaker/NPC",
     "indonesian_translation": "Alice"
-  },
-  "Alloy Smelt": {
-    "zh": "合金试冶",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Alloy Smelt"
   },
   "Aluna": {
     "zh": "艾露娜",
@@ -1003,11 +993,6 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Betty"
-  },
-  "Beyond the Waves": {
-    "zh": "踏潮探历",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Beyond the Waves"
   },
   "Big Bad Demon": {
     "zh": "超级大坏魔王",
@@ -2103,6 +2088,11 @@
     "zh": "「辩方证人·其二」",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Defendant's Witness II"
+  },
+  "Denia's Waveband": {
+    "zh": "达妮娅的回音频段",
+    "category": "General Term",
+    "indonesian_translation": "Denia's Waveband"
   },
   "Denia/Boss": {
     "zh": "",
@@ -3929,11 +3919,6 @@
     "category": "Monster",
     "indonesian_translation": "Inferno Rider/Echo"
   },
-  "Infinite Battle Simulation": {
-    "zh": "海算模演",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Infinite Battle Simulation"
-  },
   "Innocent Dreams": {
     "zh": "“纯真梦幻”",
     "category": "General Term",
@@ -4038,6 +4023,11 @@
     "zh": "静铃",
     "category": "Speaker/NPC",
     "indonesian_translation": "Jingling"
+  },
+  "Jingran": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Jingran"
   },
   "Jingyue": {
     "zh": "璟岳",
@@ -4724,6 +4714,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Lucio"
   },
+  "Lucy's Waveband": {
+    "zh": "露西的回音频段",
+    "category": "General Term",
+    "indonesian_translation": "Lucy's Waveband"
+  },
   "Ludvika": {
     "zh": "卢德维卡",
     "category": "Speaker/NPC",
@@ -5128,11 +5123,6 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Mi'zhi"
-  },
-  "Mianloong Chamber": {
-    "zh": "推荐：眠龙庭附近采集",
-    "category": "Location/Map",
-    "indonesian_translation": "Mianloong Chamber"
   },
   "Michele": {
     "zh": "米凯莱",
@@ -5619,6 +5609,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Nightmare Echo"
   },
+  "Nightmare Flashdrive": {
+    "zh": "梦魇烬枢",
+    "category": "General Term",
+    "indonesian_translation": "Nightmare Flashdrive"
+  },
   "Nightmare Medal": {
     "zh": "梦魇之勋",
     "category": "General Term",
@@ -5989,6 +5984,11 @@
     "category": "General Term",
     "indonesian_translation": "Passion Tablets"
   },
+  "Past Reveries": {
+    "zh": "往昔幻梦",
+    "category": "General Term",
+    "indonesian_translation": "Past Reveries"
+  },
   "Past the Endstate: Doomsday Cycle": {
     "zh": "超越终焉·无尽危局",
     "category": "General Term",
@@ -6108,11 +6108,6 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Pilgrim's Shell/Echo"
-  },
-  "Pincer Maneuver Warriors": {
-    "zh": "钳形激战",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Pincer Maneuver Warriors"
   },
   "Pine Cone": {
     "zh": "松塔",
@@ -6499,6 +6494,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Qingri"
   },
+  "Qingxiao": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Qingxiao"
+  },
   "Qiuyan": {
     "zh": "秋艳",
     "category": "Speaker/NPC",
@@ -6634,6 +6634,11 @@
     "category": "Monster",
     "indonesian_translation": "Reactor Husk/Echo"
   },
+  "Rebecca's Waveband": {
+    "zh": "丽贝卡的回音频段",
+    "category": "General Term",
+    "indonesian_translation": "Rebecca's Waveband"
+  },
   "Record Fragment": {
     "zh": "唱片残片",
     "category": "General Term",
@@ -6673,6 +6678,11 @@
     "zh": "精馏晶化燃素",
     "category": "General Term",
     "indonesian_translation": "Refined Phlogiston"
+  },
+  "Refreshing Morning": {
+    "zh": "热烈清晨",
+    "category": "General Term",
+    "indonesian_translation": "Refreshing Morning"
   },
   "Refreshment Tea": {
     "zh": "每日清茶",
@@ -6844,6 +6854,11 @@
     "category": "General Term",
     "indonesian_translation": "Reyes Treasure Map Fragment"
   },
+  "Rhein": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Rhein"
+  },
   "Rhythmic Echoes": {
     "zh": "律音回响",
     "category": "General Term",
@@ -6898,11 +6913,6 @@
     "zh": "龙抬头",
     "category": "General Term",
     "indonesian_translation": "Rising Loong"
-  },
-  "Riverside Games": {
-    "zh": "川流竞渡",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Riverside Games"
   },
   "Roaring Rock Fist": {
     "zh": "呼啸岩拳",
@@ -7474,6 +7484,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Somnoire"
   },
+  "Somnoire: Night City": {
+    "zh": "心之集域·夜之城",
+    "category": "Location/Map",
+    "indonesian_translation": "Somnoire: Night City"
+  },
   "Sonance Casket: Septimont": {
     "zh": "声匣·七丘",
     "category": "General Term",
@@ -7769,6 +7784,11 @@
     "category": "General Term",
     "indonesian_translation": "Sugar Pearl"
   },
+  "Suisui": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Suisui"
+  },
   "Summer Flower": {
     "zh": "长夏花",
     "category": "General Term",
@@ -7793,6 +7813,11 @@
     "zh": "向太阳奔跑",
     "category": "General Term",
     "indonesian_translation": "Sunlit Pursuit"
+  },
+  "Suoming": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Suoming"
   },
   "Super Doubleshot Shaved Ice Milkshake Deluxe": {
     "zh": "超级加倍特浓奶昔刨冰",
@@ -7943,11 +7968,6 @@
     "zh": "",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Tacetite"
-  },
-  "Tactical Simulacra": {
-    "zh": "仿声战略测试",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Tactical Simulacra"
   },
   "Tailored Ring": {
     "zh": "特制镣环",
@@ -8543,11 +8563,6 @@
     "zh": "箴言与谎言",
     "category": "General Term",
     "indonesian_translation": "Truth in Lies"
-  },
-  "Truthseeker's Pass": {
-    "zh": "叩天关",
-    "category": "Location/Map",
-    "indonesian_translation": "Truthseeker's Pass"
   },
   "Tuanjin": {
     "zh": "团锦",
@@ -9303,6 +9318,11 @@
     "zh": "秧秧的回音频段",
     "category": "General Term",
     "indonesian_translation": "Yangyang's Waveband"
+  },
+  "Yangyang: Xuanling": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Yangyang: Xuanling"
   },
   "Yellowed Sketch": {
     "zh": "一张泛黄的简笔画",
