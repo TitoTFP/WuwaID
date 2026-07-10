@@ -695,7 +695,12 @@ def api_export_translations(payload: dict | None = None, role: str = Depends(get
     try:
         quest_ids = payload.get("quest_ids") if payload else None
         category_names = payload.get("category_names") if payload else None
-        only_untranslated = payload.get("only_untranslated", False) if payload else False
+        export_mode = payload.get("export_mode") if payload else None
+        only_untranslated = (
+            export_mode == "untranslated"
+            or (not export_mode and (payload.get("only_untranslated", False) if payload else False))
+        )
+        english_full = export_mode == "english_full"
         prefix_filters = payload.get("prefix_filters") if payload else None
         type_filters = payload.get("type_filters") if payload else None
         search_filter = payload.get("search_filter") if payload else None
@@ -707,17 +712,22 @@ def api_export_translations(payload: dict | None = None, role: str = Depends(get
                 quest_ids=quest_ids,
                 category_names=category_names,
                 only_untranslated=only_untranslated,
+                english_full=english_full,
                 prefix_filters=prefix_filters,
                 type_filters=type_filters,
                 search_filter=search_filter,
             )
             return {"ok": True, "files": exported}
         else:
-            from .export import export_indonesian_translations
-            export_indonesian_translations(REPO_ROOT, only_untranslated=only_untranslated)
-            files = ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]
-            if (REPO_ROOT / "output_db" / "id" / "lang_multi_text_2ndhalf.db").is_file():
-                files.append("lang_multi_text_2ndhalf.db")
+            if english_full:
+                from .export import export_english_translations
+                files = export_english_translations(REPO_ROOT)
+            else:
+                from .export import export_indonesian_translations
+                export_indonesian_translations(REPO_ROOT, only_untranslated=only_untranslated)
+                files = ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]
+                if (REPO_ROOT / "output_db" / "id" / "lang_multi_text_2ndhalf.db").is_file():
+                    files.append("lang_multi_text_2ndhalf.db")
             return {"ok": True, "files": files}
     except Exception as e:
         raise HTTPException(500, f"Export failed: {e}")

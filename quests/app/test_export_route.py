@@ -48,6 +48,16 @@ def test_export_succeeds_for_editor(client):
         assert "files" in r.json()
         mock_export.assert_called_once()
 
+
+def test_full_english_export_succeeds_for_editor(client):
+    _login(client)
+    with patch("app.export.export_english_translations") as mock_export:
+        mock_export.return_value = ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]
+        r = client.post("/api/editor/export", json={"export_mode": "english_full"})
+        assert r.status_code == 200
+        assert r.json() == {"ok": True, "files": ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]}
+        mock_export.assert_called_once()
+
 def test_selective_export_succeeds_for_editor(client):
     _login(client)
     with patch("app.export.export_selective_translations") as mock_export:
@@ -334,3 +344,75 @@ def test_selective_export_filters_asterisk_placeholders(tmp_path):
     # key2 had asterisks in translation JSON, so it must fall back to the English template value
     assert rows[1] == ("key2", "English Text 2")
 
+
+def test_selective_full_english_export_uses_english_template(tmp_path):
+    import json
+    import sqlite3
+    from app.export import export_selective_translations
+
+    data_dir = tmp_path / "data"
+    quests_dir = data_dir / "quests"
+    quests_id_dir = data_dir / "quests_id"
+    quests_dir.mkdir(parents=True)
+    quests_id_dir.mkdir()
+
+    quest_data = {
+        "quest_id": 8888,
+        "quest_name": "Full Export Test",
+        "all_lines": [
+            {
+                "id": 1,
+                "text_key": "key_translated",
+                "speaker_en": "Speaker A",
+                "text_en": "English translated source",
+            },
+            {
+                "id": 2,
+                "text_key": "key_untranslated",
+                "speaker_en": "Speaker B",
+                "text_en": "English untranslated source",
+            },
+        ],
+    }
+    (quests_dir / "8888.json").write_text(json.dumps(quest_data))
+
+    id_data = {
+        "quest_id": 8888,
+        "states": {
+            "state1": {
+                "lines": [
+                    {
+                        "id": 1,
+                        "text_key": "key_translated",
+                        "text_id": "Sumber Indonesia",
+                    },
+                ]
+            }
+        },
+    }
+    (quests_id_dir / "8888.json").write_text(json.dumps(id_data))
+
+    en_db_dir = tmp_path / "output_db" / "en"
+    en_db_dir.mkdir(parents=True)
+    conn = sqlite3.connect(en_db_dir / "lang_multi_text.db")
+    conn.execute("CREATE TABLE MultiText (Id TEXT PRIMARY KEY, Content TEXT, RedirectDbIndex INT)")
+    conn.execute("INSERT INTO MultiText VALUES ('key_translated', 'English translated source', 0)")
+    conn.execute("INSERT INTO MultiText VALUES ('key_untranslated', 'English untranslated source', 0)")
+    conn.commit()
+    conn.close()
+
+    export_selective_translations(
+        tmp_path,
+        quest_ids=[8888],
+        english_full=True,
+    )
+
+    db_file = tmp_path / "output_db" / "id" / "Full_Export_Test_8888.db"
+    conn = sqlite3.connect(db_file)
+    cur = conn.cursor()
+    cur.execute("SELECT Id, Content FROM MultiText ORDER BY Id")
+    rows = dict(cur.fetchall())
+    conn.close()
+
+    assert rows["key_translated"] == "English translated source"
+    assert rows["key_untranslated"] == "English untranslated source"

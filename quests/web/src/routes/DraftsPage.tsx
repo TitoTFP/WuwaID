@@ -8,7 +8,7 @@ import type { Draft, DraftPatch, DraftStatus } from "../lib/types";
 import { diffWords } from "../lib/diff";
 import { useToast } from "../components/Toast";
 import ConfirmDialog from "../components/editor/ConfirmDialog";
-import ExportDialog from "../components/editor/ExportDialog";
+import ExportDialog, { type ExportMode } from "../components/editor/ExportDialog";
 import Skeleton from "../components/editor/Skeleton";
 
 const STATUSES: DraftStatus[] = ["pending", "applied", "rejected", "withdrawn"];
@@ -248,8 +248,11 @@ function QueueView() {
   });
 
   const exportMutation = useMutation({
-    mutationFn: (onlyUntranslated: boolean) =>
-      api.exportTranslations({ only_untranslated: onlyUntranslated }),
+    mutationFn: (mode: ExportMode) =>
+      api.exportTranslations({
+        export_mode: mode,
+        only_untranslated: mode === "untranslated",
+      }),
     onSuccess: (res) => {
       setShowExportModal(false);
       const files = res.files ?? [];
@@ -502,7 +505,7 @@ function QueueView() {
         title="Export All to SQLite"
         isPending={exportMutation.isPending}
         onCancel={() => setShowExportModal(false)}
-        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+        onConfirm={(mode) => exportMutation.mutate(mode)}
       />
       <ConfirmDialog
         open={confirmPurge}

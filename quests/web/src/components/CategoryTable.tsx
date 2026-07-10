@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "./Toast";
 import { api } from "../lib/api";
-import ExportDialog from "./editor/ExportDialog";
+import ExportDialog, { type ExportMode } from "./editor/ExportDialog";
 import ConfirmDialog from "./editor/ConfirmDialog";
 import { useMe } from "../lib/auth";
 
@@ -52,11 +52,12 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
 
   const exportMutation = useMutation({
     mutationKey: ["export-category", category],
-    mutationFn: (onlyUntranslated: boolean) => {
+    mutationFn: (mode: ExportMode) => {
       if (!category) return Promise.resolve({ ok: false, files: [] });
       return api.exportTranslations({
         category_names: [category],
-        only_untranslated: onlyUntranslated,
+        export_mode: mode,
+        only_untranslated: mode === "untranslated",
         prefix_filters: selectedPrefixes.length > 0 ? selectedPrefixes : undefined,
         type_filters: selectedTypes.length > 0 ? selectedTypes : undefined,
         search_filter: filter.trim() || undefined,
@@ -364,7 +365,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         title="Export Category to SQLite"
         isPending={exportMutation.isPending}
         onCancel={() => setShowExportModal(false)}
-        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+        onConfirm={(mode) => exportMutation.mutate(mode)}
       />
       <ConfirmDialog
         open={confirmDelete}

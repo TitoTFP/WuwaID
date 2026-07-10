@@ -119,6 +119,7 @@ export const api = {
   exportTranslations: (payload?: {
     quest_ids?: number[];
     category_names?: string[];
+    export_mode?: "full" | "untranslated" | "english_full";
     only_untranslated?: boolean;
     prefix_filters?: string[];
     type_filters?: string[];

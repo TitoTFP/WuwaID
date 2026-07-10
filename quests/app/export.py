@@ -19,6 +19,30 @@ def load_translations_from_db(db_path: Path, table_name: str) -> dict[str, str]:
         conn.close()
     return trans
 
+
+def copy_english_template_databases(repo_root: Path) -> list[str]:
+    en_db_dir = repo_root / "output_db" / "en"
+    id_db_dir = repo_root / "output_db" / "id"
+
+    if not en_db_dir.is_dir():
+        raise FileNotFoundError(f"English template database directory not found at {en_db_dir}")
+
+    id_db_dir.mkdir(parents=True, exist_ok=True)
+    files = ["lang_multi_text.db", "lang_multi_text_1sthalf.db"]
+    for db_name in files:
+        shutil.copy2(en_db_dir / db_name, id_db_dir / db_name)
+    if (en_db_dir / "lang_multi_text_2ndhalf.db").is_file():
+        shutil.copy2(en_db_dir / "lang_multi_text_2ndhalf.db", id_db_dir / "lang_multi_text_2ndhalf.db")
+        files.append("lang_multi_text_2ndhalf.db")
+    return files
+
+
+def export_english_translations(repo_root: Path) -> list[str]:
+    files = copy_english_template_databases(repo_root)
+    print("Copied full English database templates to output_db/id/.")
+    return files
+
+
 def gather_quest_translations(data_dir: Path, quest_ids: list[int] | None = None) -> tuple[dict[str, str], dict[str, str]]:
     from .db import set_db_path, apply_edits
 
@@ -186,11 +210,7 @@ def export_indonesian_translations(repo_root: Path, only_untranslated: bool = Fa
     print(f"Total active translations: {len(translations)}")
 
     # 4. Copy English template databases to output_db/id/
-    id_db_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(en_db_dir / "lang_multi_text.db", id_db_dir / "lang_multi_text.db")
-    shutil.copy2(en_db_dir / "lang_multi_text_1sthalf.db", id_db_dir / "lang_multi_text_1sthalf.db")
-    if (en_db_dir / "lang_multi_text_2ndhalf.db").is_file():
-        shutil.copy2(en_db_dir / "lang_multi_text_2ndhalf.db", id_db_dir / "lang_multi_text_2ndhalf.db")
+    copy_english_template_databases(repo_root)
     print("Copied English database templates to output_db/id/.")
 
     if only_untranslated:
@@ -444,6 +464,7 @@ def export_selective_translations(
     quest_ids: list[int] | None = None,
     category_names: list[str] | None = None,
     only_untranslated: bool = False,
+    english_full: bool = False,
     prefix_filters: list[str] | None = None,
     type_filters: list[str] | None = None,
     search_filter: str | None = None,
@@ -536,7 +557,9 @@ def export_selective_translations(
                     content = translations.get(key)
                     is_translated = bool(content and content.strip())
 
-                    if only_untranslated:
+                    if english_full:
+                        content = en_metadata.get(key, (None, None))[0]
+                    elif only_untranslated:
                         if is_translated:
                             continue
                         else:
@@ -635,7 +658,9 @@ def export_selective_translations(
                     content = translations.get(key)
                     is_translated = bool(content and content.strip())
                     
-                    if only_untranslated:
+                    if english_full:
+                        content = en_metadata.get(key, (None, None))[0]
+                    elif only_untranslated:
                         if is_translated:
                             continue
                         else:

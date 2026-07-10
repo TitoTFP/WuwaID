@@ -2,7 +2,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../components/Toast";
-import ExportDialog from "../components/editor/ExportDialog";
+import ExportDialog, { type ExportMode } from "../components/editor/ExportDialog";
 import ConfirmDialog from "../components/editor/ConfirmDialog";
 import { useMe } from "../lib/auth";
 import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
@@ -136,8 +136,12 @@ export default function QuestPage() {
   });
 
   const exportMutation = useMutation({
-    mutationFn: (onlyUntranslated: boolean) =>
-      api.exportTranslations({ quest_ids: [qidN], only_untranslated: onlyUntranslated }),
+    mutationFn: (mode: ExportMode) =>
+      api.exportTranslations({
+        quest_ids: [qidN],
+        export_mode: mode,
+        only_untranslated: mode === "untranslated",
+      }),
     onSuccess: (res) => {
       setShowExportModal(false);
       const file = res.files?.[0];
@@ -345,7 +349,7 @@ export default function QuestPage() {
         title="Export Quest to SQLite"
         isPending={exportMutation.isPending}
         onCancel={() => setShowExportModal(false)}
-        onConfirm={(onlyUntranslated) => exportMutation.mutate(onlyUntranslated)}
+        onConfirm={(mode) => exportMutation.mutate(mode)}
       />
       <ConfirmDialog
         open={confirmDelete}
