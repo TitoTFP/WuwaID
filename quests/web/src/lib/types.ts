@@ -221,6 +221,59 @@ export interface MeResponse {
   role: "anon" | "editor";
 }
 
+export interface TextVersion {
+  id: number;
+  tag: string;
+  note: string | null;
+  created_at: string;
+  dataset_hash: string;
+  row_count: number;
+  category_row_count: number;
+  quest_row_count: number;
+}
+
+export type TextDiffStatus = "added" | "removed" | "changed";
+
+export interface TextDiffItem {
+  status: TextDiffStatus;
+  text_id: string;
+  old_content: string | null;
+  new_content: string | null;
+  source_kind: "category" | "quest";
+  source_ref: string;
+}
+
+export interface TextDiffResponse {
+  base: string;
+  target: string;
+  language: "en" | "zh-Hans" | "ja";
+  summary: Record<TextDiffStatus, number>;
+  total: number;
+  page: number;
+  page_size: number;
+  items: TextDiffItem[];
+}
+
+export interface TextDiffGroup {
+  group_id: string;
+  source_kind: "category" | "quest";
+  source_ref: string;
+  db_path: string;
+  is_new_group: boolean;
+  added: number;
+  changed: number;
+  total: number;
+}
+
+export interface TextDiffGroupsResponse {
+  base: string;
+  target: string;
+  language: "en" | "zh-Hans" | "ja";
+  summary: Record<TextDiffStatus, number>;
+  exportable_rows: number;
+  groups: TextDiffGroup[];
+}
+
 export interface CategoryItem {
   key: string;
   "zh-Hans"?: string;

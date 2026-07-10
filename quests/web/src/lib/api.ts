@@ -11,6 +11,10 @@ import type {
   CategorySummary,
   CategorySingleResponse,
   CategoryEditorEntry,
+  TextDiffResponse,
+  TextDiffGroupsResponse,
+  TextDiffStatus,
+  TextVersion,
 } from "./types";
 
 const BASE = "/api";
@@ -44,6 +48,23 @@ async function send<T>(
     throw new Error(`${r.status} ${path} ${text}`);
   }
   return (await r.json()) as T;
+}
+
+async function downloadPost(path: string, body: unknown): Promise<{ blob: Blob; filename: string }> {
+  const r = await fetch(BASE + path, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`${r.status} ${path} ${await r.text()}`);
+  const disposition = r.headers.get("Content-Disposition") ?? "";
+  const encoded = disposition.match(/filename\*=utf-8''([^;]+)/i)?.[1];
+  const plain = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+  return {
+    blob: await r.blob(),
+    filename: encoded ? decodeURIComponent(encoded) : plain || "structured-diff.zip",
+  };
 }
 
 export const api = {
@@ -152,4 +173,49 @@ export const api = {
     send<{ ok: boolean }>("DELETE", `/editor/quest/${qid}/translation`),
   deleteCategoryTranslation: (categoryName: string) =>
     send<{ ok: boolean }>("DELETE", `/editor/category/${categoryName}/translation`),
+  textVersions: () => get<TextVersion[]>(`/editor/versions`),
+  createTextVersion: (tag: string, note?: string) =>
+    send<TextVersion>("POST", `/editor/versions`, { tag, note: note || null }),
+  textVersionDiff: (params: {
+    base: string;
+    target: string;
+    lang: "en" | "zh-Hans" | "ja";
+    status?: TextDiffStatus;
+    q?: string;
+    page?: number;
+    page_size?: number;
+  }) => {
+    const u = new URLSearchParams();
+    u.set("base", params.base);
+    u.set("target", params.target);
+    u.set("lang", params.lang);
+    if (params.status) u.set("status", params.status);
+    if (params.q) u.set("q", params.q);
+    if (params.page) u.set("page", String(params.page));
+    if (params.page_size) u.set("page_size", String(params.page_size));
+    return get<TextDiffResponse>(`/editor/versions/diff?${u.toString()}`);
+  },
+  textVersionExportUrl: (params: {
+    base: string;
+    target: string;
+    lang: "en" | "zh-Hans" | "ja";
+    format: "sqlite" | "csv";
+  }) => {
+    const u = new URLSearchParams(params);
+    return `${BASE}/editor/versions/diff/export?${u.toString()}`;
+  },
+  textVersionGroups: (params: {
+    base: string;
+    target: string;
+    lang: "en" | "zh-Hans" | "ja";
+  }) => {
+    const u = new URLSearchParams(params);
+    return get<TextDiffGroupsResponse>(`/editor/versions/diff/groups?${u.toString()}`);
+  },
+  downloadStructuredTextDiff: (params: {
+    base: string;
+    target: string;
+    lang: "en" | "zh-Hans" | "ja";
+    groups: string[];
+  }) => downloadPost(`/editor/versions/diff/export-structured`, params),
 };

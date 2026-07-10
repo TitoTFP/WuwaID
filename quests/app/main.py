@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
@@ -12,6 +13,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from functools import lru_cache
+from starlette.background import BackgroundTask
 
 from . import db
 from .auth import (
@@ -487,6 +489,156 @@ def api_logout(request: Request, response: Response):
 @app.get("/api/me")
 def api_me(role: str = Depends(get_role)):
     return {"role": role}
+
+
+# ---------------------------------------------------------------------------
+# Official-text version history (editor only)
+# ---------------------------------------------------------------------------
+
+def _version_history_path() -> Path:
+    return DATA_DIR / "version_history.db"
+
+
+def _default_version_pair(base: str | None, target: str | None) -> tuple[str, str]:
+    if base and target:
+        return base, target
+    from .text_versions import list_versions
+    versions = list_versions(_version_history_path())
+    if len(versions) < 2:
+        raise HTTPException(409, "at least two saved versions are required")
+    return base or versions[1]["tag"], target or versions[0]["tag"]
+
+
+@app.get("/api/editor/versions")
+def api_versions(role: str = Depends(require_editor)):
+    from .text_versions import list_versions
+    return _json(list_versions(_version_history_path()))
+
+
+@app.post("/api/editor/versions")
+def api_create_version(payload: dict, role: str = Depends(require_editor)):
+    from .text_versions import create_snapshot
+    tag = str(payload.get("tag") or "").strip()
+    note = payload.get("note")
+    if note is not None and not isinstance(note, str):
+        raise HTTPException(422, "note must be a string")
+    try:
+        return _json(create_snapshot(_version_history_path(), DATA_DIR, tag, note))
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/editor/versions/diff")
+def api_version_diff(
+    base: str | None = Query(None),
+    target: str | None = Query(None),
+    lang: str = Query("en"),
+    status: str = Query("added,removed,changed"),
+    q: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1, le=500),
+    role: str = Depends(require_editor),
+):
+    from .text_versions import diff_page
+    base, target = _default_version_pair(base, target)
+    try:
+        result = diff_page(
+            _version_history_path(), DATA_DIR, base, target, lang,  # type: ignore[arg-type]
+            [part for part in status.split(",") if part], q, page, page_size,
+        )
+        return _json(result)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/editor/versions/diff/groups")
+def api_version_diff_groups(
+    base: str | None = Query(None),
+    target: str | None = Query(None),
+    lang: str = Query("en"),
+    role: str = Depends(require_editor),
+):
+    from .text_versions import diff_groups
+    base, target = _default_version_pair(base, target)
+    try:
+        return _json(diff_groups(
+            _version_history_path(), DATA_DIR, base, target, lang  # type: ignore[arg-type]
+        ))
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/api/editor/versions/diff/export-structured")
+def api_export_structured_version_diff(
+    payload: dict,
+    role: str = Depends(require_editor),
+):
+    from .text_versions import export_structured_zip
+    base, target = _default_version_pair(payload.get("base"), payload.get("target"))
+    lang = str(payload.get("lang") or "en")
+    groups = payload.get("groups")
+    if not isinstance(groups, list) or not all(isinstance(group, str) for group in groups):
+        raise HTTPException(422, "groups must be a list of group ids")
+    fd, raw_path = tempfile.mkstemp(prefix="wuwaid-structured-diff-", suffix=".zip")
+    os.close(fd)
+    output = Path(raw_path)
+    try:
+        export_structured_zip(
+            output, _version_history_path(), DATA_DIR, base, target,
+            lang, groups,  # type: ignore[arg-type]
+        )
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        output.unlink(missing_ok=True)
+        raise HTTPException(400, str(exc)) from exc
+    except Exception:
+        output.unlink(missing_ok=True)
+        raise
+    safe_base = re.sub(r"[^A-Za-z0-9._-]+", "-", base)
+    safe_target = re.sub(r"[^A-Za-z0-9._-]+", "-", target)
+    filename = f"{safe_base}_to_{safe_target}_{lang}_structured.zip"
+    return FileResponse(
+        output,
+        filename=filename,
+        media_type="application/zip",
+        background=BackgroundTask(output.unlink, missing_ok=True),
+    )
+
+
+@app.get("/api/editor/versions/diff/export")
+def api_export_version_diff(
+    format: str = Query(..., pattern="^(sqlite|csv)$"),
+    base: str | None = Query(None),
+    target: str | None = Query(None),
+    lang: str = Query("en"),
+    role: str = Depends(require_editor),
+):
+    from .text_versions import diff_rows, export_csv, export_sqlite
+    base, target = _default_version_pair(base, target)
+    try:
+        rows, _summary = diff_rows(
+            _version_history_path(), DATA_DIR, base, target, lang  # type: ignore[arg-type]
+        )
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+    suffix = ".db" if format == "sqlite" else ".csv"
+    fd, raw_path = tempfile.mkstemp(prefix="wuwaid-version-diff-", suffix=suffix)
+    os.close(fd)
+    output = Path(raw_path)
+    try:
+        (export_sqlite if format == "sqlite" else export_csv)(output, rows)
+    except Exception:
+        output.unlink(missing_ok=True)
+        raise
+    safe_base = re.sub(r"[^A-Za-z0-9._-]+", "-", base)
+    safe_target = re.sub(r"[^A-Za-z0-9._-]+", "-", target)
+    filename = f"{safe_base}_to_{safe_target}_{lang}{suffix}"
+    media_type = "application/vnd.sqlite3" if format == "sqlite" else "text/csv; charset=utf-8"
+    return FileResponse(
+        output,
+        filename=filename,
+        media_type=media_type,
+        background=BackgroundTask(output.unlink, missing_ok=True),
+    )
 
 
 # ---------------------------------------------------------------------------

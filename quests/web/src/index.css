@@ -131,3 +131,10 @@ main > .container-narrow.overflow-hidden,
 main > .container-wide.overflow-hidden {
   overflow: hidden !important;
 }
+
+/* Versions has several vertically stacked data panels. Prevent flexbox from
+   collapsing the lower panels to zero height; the page container should
+   scroll instead when they do not fit in the viewport. */
+.versions-page > * {
+  flex-shrink: 0;
+}

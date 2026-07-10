@@ -91,6 +91,40 @@ Rows targeting quests or line ids that no longer exist in the updated game data
 are skipped as stale. The command prints how many editor rows were restored or
 skipped.
 
+## Official text version history
+
+Editor users can open `/versions` to create immutable tags and compare official
+EN / ZH-Hans / JA `MultiText` rows. History is stored separately in
+`data/version_history.db`, so rebuilding `data/index.db` does not remove tags.
+
+The snapshot source must contain `categories/` plus either `quests/` (WebUI
+data) or `export_quest_ordered/` (a WuwaID grouped export):
+
+```sh
+# Save the currently indexed WebUI source.
+uv run python scripts/version_texts.py snapshot --tag v3.4 --source data
+
+# Save a new WuwaID export before reindexing the WebUI.
+uv run python scripts/version_texts.py snapshot \
+  --tag v3.5 --source ../WuwaID/export_text_grouped
+
+# Compare or export added/changed source text for translation.
+uv run python scripts/version_texts.py diff --base v3.4 --target v3.5 --lang en
+uv run python scripts/version_texts.py export \
+  --base v3.4 --target v3.5 --lang en --format sqlite \
+  --output output_db/version-diffs/v3.4_to_v3.5_en.db
+
+# Export one SQLite DB per changed category/quest in a WuwaID-style ZIP.
+uv run python scripts/version_texts.py export \
+  --base v3.4 --target v3.5 --lang en --format structured \
+  --output output_db/version-diffs/v3.4_to_v3.5_en_structured.zip
+```
+
+Use `working` as either comparison endpoint to compare a saved tag with the
+current `data/` tree. The Versions page can show added/changed counts per
+category and quest, select priority groups, and download the selected hierarchy
+as SQLite files in a ZIP. Tags cannot be overwritten or deleted.
+
 ## Translating to Indonesian (machine translation)
 
 The tool under `scripts/translate_id.py` translates `data/quests/*.json` to

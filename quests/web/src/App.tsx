@@ -11,6 +11,7 @@ import CategoryTranslatorPage from "./routes/CategoryTranslatorPage";
 import DraftsPage from "./routes/DraftsPage";
 import LoginPage from "./routes/LoginPage";
 import CategoriesPage from "./routes/CategoriesPage";
+import VersionsPage from "./routes/VersionsPage";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/translator/:qid" element={<TranslatorPage />} />
         <Route path="/drafts" element={<DraftsPage />} />
         <Route path="/drafts/:draftId" element={<DraftsPage />} />
+        <Route path="/versions" element={<VersionsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
