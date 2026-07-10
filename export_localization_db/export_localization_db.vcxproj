@@ -169,7 +169,7 @@
     <ClCompile Include="$(SolutionDir)SDK\KuroUtility_functions.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)SDK\KuroHotPatch_functions.cpp">
+    <ClCompile Include="KuroHotPatch_export_stubs.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="sqlite3.c">
