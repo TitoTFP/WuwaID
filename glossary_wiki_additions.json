@@ -9,6 +9,11 @@
     "category": "General Term",
     "indonesian_translation": "\"Afterlife\""
   },
+  "\"All Eyes On You\"": {
+    "zh": "「All Eyes On You」",
+    "category": "General Term",
+    "indonesian_translation": "\"All Eyes On You\""
+  },
   "\"Blazing Claw\"": {
     "zh": "“焰光之爪”",
     "category": "General Term",
@@ -63,6 +68,11 @@
     "zh": "“赤腹鹰”",
     "category": "Speaker/NPC",
     "indonesian_translation": "\"Red Eagle\""
+  },
+  "\"Script\"": {
+    "zh": "「剧本」",
+    "category": "General Term",
+    "indonesian_translation": "\"Script\""
   },
   "\"Siren\"": {
     "zh": "",
@@ -204,6 +214,16 @@
     "category": "General Term",
     "indonesian_translation": "A Strange Book"
   },
+  "A Study of Royan History (Excerpt I)": {
+    "zh": "《罗伊历史考》节选一",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "A Study of Royan History (Excerpt I)"
+  },
+  "A Study of Royan History (Excerpt II)": {
+    "zh": "《罗伊历史考》节选二",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "A Study of Royan History (Excerpt II)"
+  },
   "A Three-act Play for the Sea Breeze": {
     "zh": "献给海风的三幕剧",
     "category": "General Term",
@@ -223,6 +243,11 @@
     "zh": "鲸歌",
     "category": "General Term",
     "indonesian_translation": "A Whale's Song"
+  },
+  "ATK": {
+    "zh": "攻击力",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "ATK"
   },
   "Aalto's Waveband": {
     "zh": "秋水的回音频段",
@@ -295,7 +320,7 @@
     "indonesian_translation": "Abyssal Solvent"
   },
   "Academy Dormitory": {
-    "zh": "学院公寓",
+    "zh": "学生公寓",
     "category": "Location/Map",
     "indonesian_translation": "Academy Dormitory"
   },
@@ -380,7 +405,7 @@
     "indonesian_translation": "Advanced Tuner"
   },
   "Adventure Log": {
-    "zh": "海上冒险",
+    "zh": "探历札记",
     "category": "General Term",
     "indonesian_translation": "Adventure Log"
   },
@@ -433,6 +458,11 @@
     "zh": "气动防护喷雾",
     "category": "General Term",
     "indonesian_translation": "Aero Resistance Spray"
+  },
+  "Afterglow Coral": {
+    "zh": "余波珊瑚",
+    "category": "General Term",
+    "indonesian_translation": "Afterglow Coral"
   },
   "Aftertune Combustor": {
     "zh": "余音聚燃体",
@@ -499,6 +529,16 @@
     "category": "General Term",
     "indonesian_translation": "Among the Clouds"
   },
+  "An Introduction to Lahai-Roi Historical Geography - Excerpt I": {
+    "zh": "《拉海洛历史地理学导论》其一",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "An Introduction to Lahai-Roi Historical Geography - Excerpt I"
+  },
+  "An Introduction to Lahai-Roi Historical Geography - Excerpt II": {
+    "zh": "《拉海洛历史地理学导论》其二",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "An Introduction to Lahai-Roi Historical Geography - Excerpt II"
+  },
   "An Unfaded Recording I": {
     "zh": "「一段尚未消逝的录音·其一」",
     "category": "Core Gameplay Term",
@@ -550,7 +590,7 @@
     "indonesian_translation": "Animal Fat"
   },
   "Animals": {
-    "zh": "动物掉落获得",
+    "zh": "兽类",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Animals"
   },
@@ -689,6 +729,11 @@
     "category": "General Term",
     "indonesian_translation": "Astrite"
   },
+  "Attribute": {
+    "zh": "共鸣属性",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Attribute"
+  },
   "Aubrey": {
     "zh": "奥布里",
     "category": "Speaker/NPC",
@@ -698,6 +743,21 @@
     "zh": "奥库斯图斯",
     "category": "Speaker/NPC",
     "indonesian_translation": "Aucustus"
+  },
+  "Audio Lab Phonograph": {
+    "zh": "",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Audio Lab Phonograph"
+  },
+  "Audio Transcript: Polar Collective Restructuring Council (Unreleased)": {
+    "zh": "音频转录·极地联合改组审议会（未公开部分）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Audio Transcript: Polar Collective Restructuring Council (Unreleased)"
+  },
+  "Auditorium": {
+    "zh": "",
+    "category": "Location/Map",
+    "indonesian_translation": "Auditorium"
   },
   "Augusta's Waveband": {
     "zh": "奥古斯塔的回音频段",
@@ -718,6 +778,11 @@
     "zh": "奥勒留",
     "category": "Speaker/NPC",
     "indonesian_translation": "Aurelius"
+  },
+  "Auspicious Bell": {
+    "zh": "吉祥铃铛",
+    "category": "General Term",
+    "indonesian_translation": "Auspicious Bell"
   },
   "Autopuppet Scout-01": {
     "zh": "",
@@ -765,7 +830,7 @@
     "indonesian_translation": "Averardo Vault Employee Manual II"
   },
   "Avinoleum": {
-    "zh": "「阿维纽林」",
+    "zh": "阿维纽林",
     "category": "Location/Map",
     "indonesian_translation": "Avinoleum"
   },
@@ -803,6 +868,11 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Baby Viridblaze Saurian/Echo"
+  },
+  "Backpack": {
+    "zh": "背包",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Backpack"
   },
   "Baglionia": {
     "zh": "巴廖尼",
@@ -1025,7 +1095,7 @@
     "indonesian_translation": "Black Fruit"
   },
   "Black Shores": {
-    "zh": "推荐：黑海岸采集",
+    "zh": "黑海岸",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Black Shores"
   },
@@ -1078,6 +1148,11 @@
     "zh": "分瓣面包",
     "category": "General Term",
     "indonesian_translation": "Blooming Bread"
+  },
+  "Blue Feather Butterfly": {
+    "zh": "蓝羽蝶",
+    "category": "General Term",
+    "indonesian_translation": "Blue Feather Butterfly"
   },
   "Blue-Spotted Giant Fish": {
     "zh": "蓝斑巨鱼",
@@ -1354,6 +1429,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Cavino"
   },
+  "Censorate": {
+    "zh": "兰台",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Censorate"
+  },
   "Ceres": {
     "zh": "克瑞斯",
     "category": "Speaker/NPC",
@@ -1399,10 +1479,20 @@
     "category": "Monster",
     "indonesian_translation": "Chasm Guardian/Echo"
   },
+  "Chasm Rider": {
+    "zh": "冥渊铁骑",
+    "category": "Monster",
+    "indonesian_translation": "Chasm Rider"
+  },
   "Chat": {
     "zh": "闲聊",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Chat"
+  },
+  "Chat History of Shashou Cafe Official (Excerpt)": {
+    "zh": "列车长咖啡厅官方交流群聊天记录（节选）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Chat History of Shashou Cafe Official (Excerpt)"
   },
   "Chat Log found in a Terminal": {
     "zh": "终端聊天记录",
@@ -1479,6 +1569,11 @@
     "category": "General Term",
     "indonesian_translation": "Chongzhou Spicy Tofu"
   },
+  "Chop Chop Doubles": {
+    "zh": "浮灵巨偶",
+    "category": "Monster",
+    "indonesian_translation": "Chop Chop Doubles"
+  },
   "Chop Chop Headless": {
     "zh": "",
     "category": "Monster",
@@ -1528,6 +1623,11 @@
     "zh": "时隙废都",
     "category": "Location/Map",
     "indonesian_translation": "Chronorift Metropolis"
+  },
+  "Chrysopa": {
+    "zh": "叶翅蛉",
+    "category": "General Term",
+    "indonesian_translation": "Chrysopa"
   },
   "Ciaccona's Waveband": {
     "zh": "夏空的回音频段",
@@ -1599,6 +1699,16 @@
     "category": "General Term",
     "indonesian_translation": "Codex of the Deep: Preface (137th Edition)"
   },
+  "Coercitor: The Proclamation": {
+    "zh": "妄罪节使·宣告",
+    "category": "Monster",
+    "indonesian_translation": "Coercitor: The Proclamation"
+  },
+  "Coercitor: The Verdict": {
+    "zh": "妄罪节使·裁决",
+    "category": "Monster",
+    "indonesian_translation": "Coercitor: The Verdict"
+  },
   "Collaboration Events": {
     "zh": "",
     "category": "Core Gameplay Term",
@@ -1613,6 +1723,11 @@
     "zh": "柯特",
     "category": "Speaker/NPC",
     "indonesian_translation": "Colt"
+  },
+  "Combat": {
+    "zh": "战斗",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Combat"
   },
   "Combat Roles": {
     "zh": "当前共鸣者战斗风格",
@@ -1674,8 +1789,13 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Convene"
   },
+  "Conversation Record with A Solsword (Excerpt)": {
+    "zh": "",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Conversation Record with A Solsword (Excerpt)"
+  },
   "Cooking": {
-    "zh": "烹饪获得",
+    "zh": "烹饪",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Cooking"
   },
@@ -1728,6 +1848,11 @@
     "zh": "柯内莉亚",
     "category": "Speaker/NPC",
     "indonesian_translation": "Cornelia"
+  },
+  "Corner of the Star Sea": {
+    "zh": "星海的一角",
+    "category": "General Term",
+    "indonesian_translation": "Corner of the Star Sea"
   },
   "Corrado": {
     "zh": "科拉多",
@@ -1809,10 +1934,25 @@
     "category": "General Term",
     "indonesian_translation": "Crispy Squab"
   },
+  "Crit. DMG": {
+    "zh": "暴击伤害",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Crit. DMG"
+  },
+  "Crit. Rate": {
+    "zh": "暴击率",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Crit. Rate"
+  },
   "Cross-Realm Ties (Sigil)": {
     "zh": "",
     "category": "General Term",
     "indonesian_translation": "Cross-Realm Ties (Sigil)"
+  },
+  "Crown of Undying Flame": {
+    "zh": "",
+    "category": "Monster",
+    "indonesian_translation": "Crown of Undying Flame"
   },
   "Crownless/Echo": {
     "zh": "",
@@ -1880,7 +2020,7 @@
     "indonesian_translation": "D"
   },
   "DEF": {
-    "zh": "防御",
+    "zh": "防御力",
     "category": "Core Gameplay Term",
     "indonesian_translation": "DEF"
   },
@@ -1969,6 +2109,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "DMG RES/Spectro"
   },
+  "DMG Reduction": {
+    "zh": "伤害减免",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "DMG Reduction"
+  },
   "Da": {
     "zh": "阿达",
     "category": "Speaker/NPC",
@@ -2008,6 +2153,11 @@
     "zh": "达米安",
     "category": "Speaker/NPC",
     "indonesian_translation": "Damian"
+  },
+  "Dancing Through Fantasies": {
+    "zh": "悠忽舞于梦中",
+    "category": "General Term",
+    "indonesian_translation": "Dancing Through Fantasies"
   },
   "Danjin's Waveband": {
     "zh": "丹瑾的回音频段",
@@ -2059,6 +2209,11 @@
     "category": "General Term",
     "indonesian_translation": "Data Set"
   },
+  "David Martinez": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "David Martinez"
+  },
   "Dawn Within Amber": {
     "zh": "琥珀中的曙光",
     "category": "General Term",
@@ -2089,6 +2244,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Defendant's Witness II"
   },
+  "Denia's Doll": {
+    "zh": "达妮娅玩偶",
+    "category": "General Term",
+    "indonesian_translation": "Denia's Doll"
+  },
   "Denia's Waveband": {
     "zh": "达妮娅的回音频段",
     "category": "General Term",
@@ -2100,7 +2260,7 @@
     "indonesian_translation": "Denia/Boss"
   },
   "Desorock Highland": {
-    "zh": "推荐：荒石高地采集",
+    "zh": "荒石高地",
     "category": "Location/Map",
     "indonesian_translation": "Desorock Highland"
   },
@@ -2199,6 +2359,16 @@
     "category": "Monster",
     "indonesian_translation": "Diurnus Knight/Echo"
   },
+  "Documentary of Civilizations: Lahai-Roi - Excerpt I": {
+    "zh": "《文明纪实·拉海洛》节选一",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Documentary of Civilizations: Lahai-Roi - Excerpt I"
+  },
+  "Documentary of Civilizations: Lahai-Roi - Excerpt II": {
+    "zh": "《文明纪实·拉海洛》（节选二）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Documentary of Civilizations: Lahai-Roi - Excerpt II"
+  },
   "Dodge Recovery": {
     "zh": "闪避回复",
     "category": "Core Gameplay Term",
@@ -2219,10 +2389,30 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Dominick"
   },
+  "Doom Abjudicator": {
+    "zh": "没世裁断",
+    "category": "Monster",
+    "indonesian_translation": "Doom Abjudicator"
+  },
+  "Dr. Scott Rabelle's Address on the Founding of Startorch Academy": {
+    "zh": "《拉贝尔博士关于成立「星炬学院」的讲稿》",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Dr. Scott Rabelle's Address on the Founding of Startorch Academy"
+  },
   "Dragon of Dirge/Echo": {
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Dragon of Dirge/Echo"
+  },
+  "Drakes of Welkin": {
+    "zh": "高天翼龙",
+    "category": "Monster",
+    "indonesian_translation": "Drakes of Welkin"
+  },
+  "Dream Shard": {
+    "zh": "【拼凑的梦】说明",
+    "category": "General Term",
+    "indonesian_translation": "Dream Shard"
   },
   "Dream of Chaos": {
     "zh": "混沌纷争的梦",
@@ -2278,6 +2468,11 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Dwarf Cassowary/Echo"
+  },
+  "EXILES": {
+    "zh": "流放者",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "EXILES"
   },
   "Echo Aspect": {
     "zh": "声骸换影说明",
@@ -2434,6 +2629,11 @@
     "category": "General Term",
     "indonesian_translation": "Encore's Waveband"
   },
+  "End of Wandering": {
+    "zh": "漂泊的终点",
+    "category": "Location/Map",
+    "indonesian_translation": "End of Wandering"
+  },
   "Enemy": {
     "zh": "敌人",
     "category": "Core Gameplay Term",
@@ -2455,7 +2655,7 @@
     "indonesian_translation": "Energy Hub (Rinascita)"
   },
   "Energy Regen": {
-    "zh": "能量效率",
+    "zh": "共鸣效率",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Energy Regen"
   },
@@ -2495,7 +2695,7 @@
     "indonesian_translation": "Etheric Sea"
   },
   "Event": {
-    "zh": "活动获得",
+    "zh": "事件",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Event"
   },
@@ -2528,11 +2728,6 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Exile (Enemy)"
-  },
-  "Exiles": {
-    "zh": "流放者掉落",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Exiles"
   },
   "Exiles' Communication Records": {
     "zh": "流放者的通讯记录",
@@ -2578,6 +2773,11 @@
     "zh": "粗萃晶化燃素",
     "category": "General Term",
     "indonesian_translation": "Extracted Phlogiston"
+  },
+  "Eye of Asteria": {
+    "zh": "",
+    "category": "Location/Map",
+    "indonesian_translation": "Eye of Asteria"
   },
   "FF Carved Crystal": {
     "zh": "全频切削晶块",
@@ -2639,13 +2839,18 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Fabrizio"
   },
+  "Fae Blaze": {
+    "zh": "业炎幽翎",
+    "category": "Monster",
+    "indonesian_translation": "Fae Blaze"
+  },
   "Fae Ignis/Echo": {
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Fae Ignis/Echo"
   },
   "Fagaceae Peninsula": {
-    "zh": "推荐：槲生半岛采集",
+    "zh": "槲生半岛",
     "category": "Location/Map",
     "indonesian_translation": "Fagaceae Peninsula"
   },
@@ -2698,11 +2903,6 @@
     "zh": "獠牙",
     "category": "General Term",
     "indonesian_translation": "Fangs"
-  },
-  "Fangzhou": {
-    "zh": "",
-    "category": "Location/Map",
-    "indonesian_translation": "Fangzhou"
   },
   "Farid": {
     "zh": "法里德",
@@ -2823,6 +3023,16 @@
     "zh": "心火羽挂饰",
     "category": "General Term",
     "indonesian_translation": "Flame Feather Pendant"
+  },
+  "Flameblade of the Rift": {
+    "zh": "斩切的炙炎",
+    "category": "Monster",
+    "indonesian_translation": "Flameblade of the Rift"
+  },
+  "Flamecrest & Frostcrest": {
+    "zh": "炽凛角斗家",
+    "category": "Monster",
+    "indonesian_translation": "Flamecrest & Frostcrest"
   },
   "Flaming Intellect": {
     "zh": "灼热思维",
@@ -2945,7 +3155,7 @@
     "indonesian_translation": "Forgery Basic Supply - Lahai-Roi"
   },
   "Forgery Challenge": {
-    "zh": "凝素领域获得",
+    "zh": "凝素领域",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Forgery Challenge"
   },
@@ -3018,6 +3228,11 @@
     "zh": "残星会掉落",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Fractsidus"
+  },
+  "Fractsidus Follower": {
+    "zh": "残星门徒",
+    "category": "Monster",
+    "indonesian_translation": "Fractsidus Follower"
   },
   "Fractured Exoswarm Pendant": {
     "zh": "破损隧体绳链",
@@ -3163,6 +3378,11 @@
     "zh": "伽利雷",
     "category": "Speaker/NPC",
     "indonesian_translation": "Galilei"
+  },
+  "Gallery": {
+    "zh": "图鉴",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Gallery"
   },
   "Galloway": {
     "zh": "加洛韦",
@@ -3369,6 +3589,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Golden Scales of Outer Huanglong II"
   },
+  "Golden-ringed Dragonfly": {
+    "zh": "金环蜓",
+    "category": "General Term",
+    "indonesian_translation": "Golden-ringed Dragonfly"
+  },
   "Goldenback Frog": {
     "zh": "金背蛙",
     "category": "General Term",
@@ -3393,6 +3618,11 @@
     "zh": "花婆婆",
     "category": "Speaker/NPC",
     "indonesian_translation": "Grandma Hua"
+  },
+  "Grapple": {
+    "zh": "钩索",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Grapple"
   },
   "Great Agon": {
     "zh": "大角斗赛",
@@ -3428,6 +3658,11 @@
     "zh": "群孽异核",
     "category": "General Term",
     "indonesian_translation": "Group Abomination Tacet Core"
+  },
+  "Guidebook": {
+    "zh": "dnt/索拉指南入口说明",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Guidebook"
   },
   "Guidebook/Activity": {
     "zh": "",
@@ -3634,6 +3869,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Heavy Attack Damage"
   },
+  "Heavyhands": {
+    "zh": "重拳手",
+    "category": "Monster",
+    "indonesian_translation": "Heavyhands"
+  },
   "Hebenon Fisalia": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -3814,6 +4054,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Huaxu Academy Academic Lecture Schedule"
   },
+  "Hubert": {
+    "zh": "胡伯",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Hubert"
+  },
   "Huiliu": {
     "zh": "惠琉",
     "category": "Speaker/NPC",
@@ -3828,6 +4073,11 @@
     "zh": "霍雯",
     "category": "Speaker/NPC",
     "indonesian_translation": "Huo'wen"
+  },
+  "Hurriclaw Alpha": {
+    "zh": "飓力熊王",
+    "category": "Monster",
+    "indonesian_translation": "Hurriclaw Alpha"
   },
   "Hurriclaw/Echo": {
     "zh": "",
@@ -3854,10 +4104,20 @@
     "category": "General Term",
     "indonesian_translation": "Iced Perilla"
   },
+  "Icefield Beast": {
+    "zh": "",
+    "category": "Monster",
+    "indonesian_translation": "Icefield Beast"
+  },
   "Iceglint Dancer/Echo": {
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Iceglint Dancer/Echo"
+  },
+  "Icey Clang Bang": {
+    "zh": "",
+    "category": "Monster",
+    "indonesian_translation": "Icey Clang Bang"
   },
   "Illuminator Theater": {
     "zh": "灯偶剧场",
@@ -3953,6 +4213,11 @@
     "zh": "好感",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Intimacy"
+  },
+  "Invitation with a Fragrance": {
+    "zh": "带有浅浅香气的邀请函",
+    "category": "General Term",
+    "indonesian_translation": "Invitation with a Fragrance"
   },
   "Iris": {
     "zh": "鸢尾花",
@@ -4189,6 +4454,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "KU-Mamar"
   },
+  "KU-Money's Personal Collection": {
+    "zh": "库默尼特选私人收藏",
+    "category": "General Term",
+    "indonesian_translation": "KU-Money's Personal Collection"
+  },
   "KU-Ponder": {
     "zh": "库思之",
     "category": "Speaker/NPC",
@@ -4224,11 +4494,6 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Kangjian"
   },
-  "Kangjiu": {
-    "zh": "康玖",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Kangjiu"
-  },
   "Kerasaur/Echo": {
     "zh": "",
     "category": "Monster",
@@ -4239,10 +4504,20 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Kisaragi"
   },
+  "Knight of Sorrowful Aria": {
+    "zh": "晓月骑士",
+    "category": "Monster",
+    "indonesian_translation": "Knight of Sorrowful Aria"
+  },
   "Knight-Errant's Essentials": {
     "zh": "流浪骑士之作",
     "category": "General Term",
     "indonesian_translation": "Knight-Errant's Essentials"
+  },
+  "Knights of Twilight": {
+    "zh": "双生影骑",
+    "category": "Monster",
+    "indonesian_translation": "Knights of Twilight"
   },
   "Kossimus": {
     "zh": "科斯马斯",
@@ -4348,6 +4623,11 @@
     "zh": "拉海洛特产纯植物奶",
     "category": "General Term",
     "indonesian_translation": "Lahai-Roi Special Plant Milk"
+  },
+  "Lahai-Roi Tape of Last Words Collector": {
+    "zh": "拉海洛终声残卷回收",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Lahai-Roi Tape of Last Words Collector"
   },
   "Laliah": {
     "zh": "菈莉娅",
@@ -4498,6 +4778,11 @@
     "zh": "甘霖之勋",
     "category": "General Term",
     "indonesian_translation": "Lifespring Medal"
+  },
+  "Lightcrest & Abysscrest": {
+    "zh": "耀冥角斗家",
+    "category": "Monster",
+    "indonesian_translation": "Lightcrest & Abysscrest"
   },
   "Lightcrusher/Echo": {
     "zh": "",
@@ -4743,6 +5028,11 @@
     "zh": "月相",
     "category": "General Term",
     "indonesian_translation": "Lunite"
+  },
+  "Lunite Subscription": {
+    "zh": "月相观测卡说明",
+    "category": "General Term",
+    "indonesian_translation": "Lunite Subscription"
   },
   "Lupa's Waveband": {
     "zh": "露帕的回音频段",
@@ -5205,7 +5495,7 @@
     "indonesian_translation": "Miriam"
   },
   "Mirrors of Clarity": {
-    "zh": "玄鉴",
+    "zh": "云纹离邪镜",
     "category": "General Term",
     "indonesian_translation": "Mirrors of Clarity"
   },
@@ -5223,6 +5513,11 @@
     "zh": "调试经验",
     "category": "General Term",
     "indonesian_translation": "Modding EXP"
+  },
+  "Model HL-1": {
+    "zh": "编号HL-1",
+    "category": "General Term",
+    "indonesian_translation": "Model HL-1"
   },
   "Modifier": {
     "zh": "调频仪",
@@ -5340,7 +5635,7 @@
     "indonesian_translation": "Morphable Echo - Chromatic Foam"
   },
   "Morphable Echo - Empyrean Anthem": {
-    "zh": "未完型的高天共奏之曲.展示.金",
+    "zh": "未完型的高天共奏之曲",
     "category": "Monster",
     "indonesian_translation": "Morphable Echo - Empyrean Anthem"
   },
@@ -5380,7 +5675,7 @@
     "indonesian_translation": "Morphable Echo - Lingering Tunes"
   },
   "Morphable Echo - Midnight Veil": {
-    "zh": "未完型的幽夜隐匿之帷.展示.金",
+    "zh": "未完型的幽夜隐匿之帷",
     "category": "Monster",
     "indonesian_translation": "Morphable Echo - Midnight Veil"
   },
@@ -5494,6 +5789,16 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Mr. Chase's Published Eulogy"
   },
+  "Mr. Chase's Speech Following the Stridergate Incident (Excerpt One)": {
+    "zh": "查特先生在隧门事件后的演讲（节选一）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Mr. Chase's Speech Following the Stridergate Incident (Excerpt One)"
+  },
+  "Mr. Chase's Speech Following the Stridergate Incident (Excerpt Two)": {
+    "zh": "查特先生在隧门事件后的演讲（节选二）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Mr. Chase's Speech Following the Stridergate Incident (Excerpt Two)"
+  },
   "Mr. Kuchiba": {
     "zh": "",
     "category": "Speaker/NPC",
@@ -5505,7 +5810,7 @@
     "indonesian_translation": "Mrs. Kuchiba"
   },
   "Mt. Firmament": {
-    "zh": "推荐：乘霄山采集",
+    "zh": "乘霄山",
     "category": "Location/Map",
     "indonesian_translation": "Mt. Firmament"
   },
@@ -5754,6 +6059,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Nikolas"
   },
+  "Nimbus Singers": {
+    "zh": "云海之歌",
+    "category": "Monster",
+    "indonesian_translation": "Nimbus Singers"
+  },
   "Nimbus Wraith/Echo": {
     "zh": "",
     "category": "Monster",
@@ -5775,7 +6085,7 @@
     "indonesian_translation": "Nocturnus Knight/Echo"
   },
   "Norfall Barrens": {
-    "zh": "推荐：北落野采集",
+    "zh": "北落野",
     "category": "Location/Map",
     "indonesian_translation": "Norfall Barrens"
   },
@@ -5839,6 +6149,11 @@
     "category": "General Term",
     "indonesian_translation": "Old Sketch"
   },
+  "Omens of Dark Tide": {
+    "zh": "黑潮引兆",
+    "category": "Monster",
+    "indonesian_translation": "Omens of Dark Tide"
+  },
   "Once Together": {
     "zh": "当我们在一起",
     "category": "General Term",
@@ -5879,6 +6194,11 @@
     "category": "General Term",
     "indonesian_translation": "Originite Weapon Supply Chest"
   },
+  "Oscillated Coral": {
+    "zh": "残振珊瑚",
+    "category": "General Term",
+    "indonesian_translation": "Oscillated Coral"
+  },
   "Ostina": {
     "zh": "",
     "category": "Location/Map",
@@ -5894,6 +6214,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Outfit"
   },
+  "Outfit Accessory": {
+    "zh": "饰品",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Outfit Accessory"
+  },
   "Outfit Showcases": {
     "zh": "",
     "category": "Core Gameplay Term",
@@ -5908,6 +6233,11 @@
     "zh": "「踏白小队对北落峡谷的调查记录·其二」",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Outrider Squad's Norfall Valley Investigation Logs II"
+  },
+  "Outstanding Commander": {
+    "zh": "号令群辉",
+    "category": "General Term",
+    "indonesian_translation": "Outstanding Commander"
   },
   "Ovathrax": {
     "zh": "",
@@ -5928,6 +6258,11 @@
     "zh": "怒涛级",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Overlord Class"
+  },
+  "Overview on the Exploration Project of Frostlands Space Station (Excerpt)": {
+    "zh": "冰原空间站探索计划总览（节选）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Overview on the Exploration Project of Frostlands Space Station (Excerpt)"
   },
   "Overwatcher of Tides": {
     "zh": "听潮之人",
@@ -5963,6 +6298,11 @@
     "zh": "月彩宫灯",
     "category": "General Term",
     "indonesian_translation": "Palace Lantern"
+  },
+  "Panhua's Restaurant": {
+    "zh": "攀花饭馆",
+    "category": "Location/Map",
+    "indonesian_translation": "Panhua's Restaurant"
   },
   "Paper Strip": {
     "zh": "树枝上的纸条",
@@ -6035,7 +6375,7 @@
     "indonesian_translation": "Pela"
   },
   "Penitent's End": {
-    "zh": "推荐：悲叹墓岛采集",
+    "zh": "悲叹墓岛",
     "category": "Location/Map",
     "indonesian_translation": "Penitent's End"
   },
@@ -6070,7 +6410,7 @@
     "indonesian_translation": "Permanent Events"
   },
   "Peso's Challenge Note": {
-    "zh": "皮索的挑战书",
+    "zh": "《皮索的挑战书》",
     "category": "General Term",
     "indonesian_translation": "Peso's Challenge Note"
   },
@@ -6083,6 +6423,11 @@
     "zh": "菲比的回音频段",
     "category": "General Term",
     "indonesian_translation": "Phoebe's Waveband"
+  },
+  "Phoenix Butterfly": {
+    "zh": "霄凤蝶",
+    "category": "General Term",
+    "indonesian_translation": "Phoenix Butterfly"
   },
   "Phrolova's Waveband": {
     "zh": "弗洛洛的回音频段",
@@ -6124,6 +6469,16 @@
     "category": "General Term",
     "indonesian_translation": "Pioneer Association Advanced Supply"
   },
+  "Pioneer Association Expedition Reports, Lahai-Roi Region - Excerpt I": {
+    "zh": "《先行公约关于拉海洛地区的科考报告·节选一》",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Pioneer Association Expedition Reports, Lahai-Roi Region - Excerpt I"
+  },
+  "Pioneer Association Expedition Reports, Lahai-Roi Region - Excerpt II": {
+    "zh": "《先行公约关于拉海洛地区的科考报告·节选二》",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Pioneer Association Expedition Reports, Lahai-Roi Region - Excerpt II"
+  },
   "Pioneer Association Medium Supply": {
     "zh": "先约中级物资箱",
     "category": "General Term",
@@ -6138,6 +6493,11 @@
     "zh": "羁旅印章补给包",
     "category": "General Term",
     "indonesian_translation": "Pioneer Association Sigil Supply"
+  },
+  "Pioneer Podcast": {
+    "zh": "先约电台说明",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Pioneer Podcast"
   },
   "Pioneer Podcast Supply Pack": {
     "zh": "寰宇开拓物资箱",
@@ -6229,6 +6589,11 @@
     "category": "General Term",
     "indonesian_translation": "Plunderer Captain's Seal"
   },
+  "Plushie Squad": {
+    "zh": "布偶小队",
+    "category": "Monster",
+    "indonesian_translation": "Plushie Squad"
+  },
   "Plushie Village Restoration Log: Final": {
     "zh": "布偶村修复日志·终",
     "category": "General Term",
@@ -6295,9 +6660,14 @@
     "indonesian_translation": "Port Business Advertisement"
   },
   "Port City of Guixu": {
-    "zh": "推荐：归墟港市采集",
+    "zh": "归墟港市",
     "category": "Location/Map",
     "indonesian_translation": "Port City of Guixu"
+  },
+  "Post-Doomsday Coffee": {
+    "zh": "末日后咖啡",
+    "category": "General Term",
+    "indonesian_translation": "Post-Doomsday Coffee"
   },
   "Potion Vial": {
     "zh": "秘药瓶",
@@ -6378,6 +6748,11 @@
     "zh": "急板涡流",
     "category": "General Term",
     "indonesian_translation": "Presto Helix"
+  },
+  "Prism Heart": {
+    "zh": "棱镜之心",
+    "category": "Monster",
+    "indonesian_translation": "Prism Heart"
   },
   "Private Journal V": {
     "zh": "私人日志-V",
@@ -6494,16 +6869,6 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Qingri"
   },
-  "Qingxiao": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Qingxiao"
-  },
-  "Qiuyan": {
-    "zh": "秋艳",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Qiuyan"
-  },
   "Qiuyuan's Waveband": {
     "zh": "仇远的回音频段",
     "category": "General Term",
@@ -6544,6 +6909,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "RESONANCE ENERGY"
   },
+  "Rabelle College": {
+    "zh": "拉贝尔学部",
+    "category": "Location/Map",
+    "indonesian_translation": "Rabelle College"
+  },
   "Rabelle's Curve": {
     "zh": "拉贝尔曲线",
     "category": "Core Gameplay Term",
@@ -6570,7 +6940,7 @@
     "indonesian_translation": "Rage Tacet Core"
   },
   "Ragunna": {
-    "zh": "拉古那",
+    "zh": "黎那汐塔",
     "category": "Location/Map",
     "indonesian_translation": "Ragunna"
   },
@@ -6639,6 +7009,11 @@
     "category": "General Term",
     "indonesian_translation": "Rebecca's Waveband"
   },
+  "Recipe": {
+    "zh": "食谱",
+    "category": "General Term",
+    "indonesian_translation": "Recipe"
+  },
   "Record Fragment": {
     "zh": "唱片残片",
     "category": "General Term",
@@ -6653,6 +7028,11 @@
     "zh": "",
     "category": "Weapon",
     "indonesian_translation": "Rectifier25"
+  },
+  "Red Feather Butterfly": {
+    "zh": "赤羽蝶",
+    "category": "General Term",
+    "indonesian_translation": "Red Feather Butterfly"
   },
   "Redbell": {
     "zh": "赤铃兰",
@@ -6719,6 +7099,11 @@
     "category": "General Term",
     "indonesian_translation": "Remnant Combustor"
   },
+  "Report on Recent Conditions at the Sealed Fissure in the Dimmr Plains": {
+    "zh": "关于黯原封存地的近况汇报",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Report on Recent Conditions at the Sealed Fissure in the Dimmr Plains"
+  },
   "Research Memo-C2068": {
     "zh": "研究备忘录-C2068",
     "category": "Core Gameplay Term",
@@ -6728,6 +7113,11 @@
     "zh": "研究备忘录-CT1946",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Research Memo–CT1946"
+  },
+  "Research Recording: Sundermere Lakebed - Aleph-1 (Damaged Section)": {
+    "zh": "研究录音·坠剑湖底-阿列夫一（损毁部分）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Research Recording: Sundermere Lakebed - Aleph-1 (Damaged Section)"
   },
   "Reset": {
     "zh": "重置",
@@ -6753,6 +7143,11 @@
     "zh": "共鸣解放充能",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Resonance Liberation Regeneration"
+  },
+  "Resonance Mode": {
+    "zh": "共鸣模态",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Resonance Mode"
   },
   "Resonance Skill Damage": {
     "zh": "",
@@ -7109,6 +7504,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Santo"
   },
+  "Sauron": {
+    "zh": "索伦",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Sauron"
+  },
   "Save Me From the Tides of Mundanity": {
     "zh": "救我于尘世汪洋",
     "category": "General Term",
@@ -7133,6 +7533,11 @@
     "zh": "",
     "category": "Speaker/NPC",
     "indonesian_translation": "Schwarzloch"
+  },
+  "Scorpion's Nest": {
+    "zh": "巨蝎之巢",
+    "category": "Monster",
+    "indonesian_translation": "Scorpion's Nest"
   },
   "Scott Rabelle": {
     "zh": "",
@@ -7290,7 +7695,7 @@
     "indonesian_translation": "Shiyuan"
   },
   "Shop": {
-    "zh": "商店",
+    "zh": "交易所",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Shop"
   },
@@ -7340,7 +7745,7 @@
     "indonesian_translation": "Side Quest"
   },
   "Sigil": {
-    "zh": "羁旅印章",
+    "zh": "徽记",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Sigil"
   },
@@ -7389,6 +7794,16 @@
     "category": "General Term",
     "indonesian_translation": "Silver-Banded Lizard"
   },
+  "Simulation Training": {
+    "zh": "模拟训练场",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Simulation Training"
+  },
+  "Sinister Lurkers": {
+    "zh": "暗流恶鳄",
+    "category": "Monster",
+    "indonesian_translation": "Sinister Lurkers"
+  },
   "Skelecanth Tartare": {
     "zh": "生拌化石鳍",
     "category": "General Term",
@@ -7400,7 +7815,7 @@
     "indonesian_translation": "Skill"
   },
   "Skill Training": {
-    "zh": "技巧训练",
+    "zh": "角色教学",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Skill Training"
   },
@@ -7408,6 +7823,11 @@
     "zh": "技能升级材料",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Skill Upgrade Material"
+  },
+  "SkyArk Space Station Project Summary (Excerpt)": {
+    "zh": "天槎空间站工程简介（节选）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "SkyArk Space Station Project Summary (Excerpt)"
   },
   "SkyArk Space Station: Central Sector": {
     "zh": "天槎空间站·中央舱段",
@@ -7449,6 +7869,11 @@
     "category": "Monster",
     "indonesian_translation": "Snip Snap/Echo"
   },
+  "Snowfluff Seal": {
+    "zh": "雪绒海豹",
+    "category": "General Term",
+    "indonesian_translation": "Snowfluff Seal"
+  },
   "Sofia": {
     "zh": "索菲亚",
     "category": "Speaker/NPC",
@@ -7468,6 +7893,11 @@
     "zh": "凝固的弦线",
     "category": "General Term",
     "indonesian_translation": "Solidified String"
+  },
+  "Solis Tavern": {
+    "zh": "「烈日」酒馆购买",
+    "category": "Location/Map",
+    "indonesian_translation": "Solis Tavern"
   },
   "Soliseed of Essehalo": {
     "zh": "须轮的青实",
@@ -7548,6 +7978,11 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Spacetrek Explorer/Echo"
+  },
+  "Spearback King": {
+    "zh": "箭簇熊王",
+    "category": "Monster",
+    "indonesian_translation": "Spearback King"
   },
   "Spearback/Echo": {
     "zh": "",
@@ -7664,10 +8099,20 @@
     "category": "General Term",
     "indonesian_translation": "Star Flakes"
   },
+  "Starbright Resonance": {
+    "zh": "映照万音的星彩",
+    "category": "General Term",
+    "indonesian_translation": "Starbright Resonance"
+  },
   "Stardust": {
     "zh": "星屑",
     "category": "General Term",
     "indonesian_translation": "Stardust"
+  },
+  "Stargate": {
+    "zh": "",
+    "category": "Location/Map",
+    "indonesian_translation": "Stargate"
   },
   "Starstack": {
     "zh": "",
@@ -7685,7 +8130,7 @@
     "indonesian_translation": "Startorch Academy Student Handbook: Orientation Guide (Excerpt)"
   },
   "Stats": {
-    "zh": "属性",
+    "zh": "属性说明",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Stats"
   },
@@ -7693,6 +8138,21 @@
     "zh": "玛格烈特牛排",
     "category": "General Term",
     "indonesian_translation": "Steak Margherita"
+  },
+  "Stellar Matrices": {
+    "zh": "",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Stellar Matrices"
+  },
+  "Stellar Matrix's Core": {
+    "zh": "星图核心",
+    "category": "General Term",
+    "indonesian_translation": "Stellar Matrix's Core"
+  },
+  "Stillmind": {
+    "zh": "无念",
+    "category": "General Term",
+    "indonesian_translation": "Stillmind"
   },
   "Stone Rose": {
     "zh": "石蔷薇",
@@ -7703,6 +8163,11 @@
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Stonewall Bracer/Echo"
+  },
+  "Store": {
+    "zh": "商城",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Store"
   },
   "Stories of Guqin": {
     "zh": "《琴中事》",
@@ -7784,10 +8249,10 @@
     "category": "General Term",
     "indonesian_translation": "Sugar Pearl"
   },
-  "Suisui": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Suisui"
+  "Summary of the Conversation with A Solsworn": {
+    "zh": "与昭日者的谈话总结",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Summary of the Conversation with A Solsworn"
   },
   "Summer Flower": {
     "zh": "长夏花",
@@ -7939,20 +8404,30 @@
     "category": "General Term",
     "indonesian_translation": "Synchro Coin"
   },
+  "Synthesis": {
+    "zh": "合成",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Synthesis"
+  },
   "Synthesis/Synthesis Level": {
     "zh": "",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Synthesis/Synthesis Level"
   },
+  "TACET FIELD": {
+    "zh": "无音区",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "TACET FIELD"
+  },
+  "TD Terminator": {
+    "zh": "残象终结者",
+    "category": "General Term",
+    "indonesian_translation": "TD Terminator"
+  },
   "Tacet Discord Nest": {
     "zh": "残象聚落",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Tacet Discord Nest"
-  },
-  "Tacet Field": {
-    "zh": "无音清剿获得",
-    "category": "Core Gameplay Term",
-    "indonesian_translation": "Tacet Field"
   },
   "Tacet Mark": {
     "zh": "声痕",
@@ -8024,10 +8499,20 @@
     "category": "General Term",
     "indonesian_translation": "Tea"
   },
+  "Team": {
+    "zh": "编队",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Team"
+  },
   "Tempest Mephis/Echo": {
     "zh": "",
     "category": "Monster",
     "indonesian_translation": "Tempest Mephis/Echo"
+  },
+  "Temporary Team Photo": {
+    "zh": "临时小队留影",
+    "category": "General Term",
+    "indonesian_translation": "Temporary Team Photo"
   },
   "Terminal": {
     "zh": "终端",
@@ -8209,6 +8694,11 @@
     "category": "General Term",
     "indonesian_translation": "The Midnight Elegy"
   },
+  "The Moon": {
+    "zh": "月球",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "The Moon"
+  },
   "The Netherworld's Stare": {
     "zh": "冥扉的欢觑",
     "category": "General Term",
@@ -8305,7 +8795,7 @@
     "indonesian_translation": "The Wave that Cleanses the World"
   },
   "Thessaleo Fells": {
-    "zh": "推荐：狄萨莱海脊采集",
+    "zh": "狄萨莱海脊",
     "category": "Location/Map",
     "indonesian_translation": "Thessaleo Fells"
   },
@@ -8323,6 +8813,11 @@
     "zh": "鸣式",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Threnodian"
+  },
+  "Thundercrest & Galecrest": {
+    "zh": "雷羽角斗家",
+    "category": "Monster",
+    "indonesian_translation": "Thundercrest & Galecrest"
   },
   "Thundering Mephis/Echo": {
     "zh": "",
@@ -8360,7 +8855,7 @@
     "indonesian_translation": "Tideline Verge"
   },
   "Tiger's Maw": {
-    "zh": "推荐：虎口山脉采集",
+    "zh": "虎口山脉",
     "category": "Location/Map",
     "indonesian_translation": "Tiger's Maw"
   },
@@ -8378,6 +8873,16 @@
     "zh": "向下一个梦进发",
     "category": "General Term",
     "indonesian_translation": "To the Next Dream"
+  },
+  "To the Pole - Excerpt I": {
+    "zh": "《沿着地极的方向》节选一",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "To the Pole - Excerpt I"
+  },
+  "To the Pole - Excerpt II": {
+    "zh": "《沿着地极的方向》节选二",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "To the Pole - Excerpt II"
   },
   "Tofu": {
     "zh": "豆腐",
@@ -8489,6 +8994,11 @@
     "category": "General Term",
     "indonesian_translation": "Trace Scale"
   },
+  "Traceability Analysis Report on Abnormal Accumulation in the Dimmr Plains Region": {
+    "zh": "关于黯原地区异常堆积物的溯源分析报告",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Traceability Analysis Report on Abnormal Accumulation in the Dimmr Plains Region"
+  },
   "Traction": {
     "zh": "牵引",
     "category": "Core Gameplay Term",
@@ -8544,10 +9054,30 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Trial Events"
   },
+  "Trio of Drakes": {
+    "zh": "龙乡三翼",
+    "category": "Monster",
+    "indonesian_translation": "Trio of Drakes"
+  },
+  "Trip Recording: Dimmr Plains Survey Team 1 (Excerpt One)": {
+    "zh": "行程录音·黯原勘探队一期（节选一）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Trip Recording: Dimmr Plains Survey Team 1 (Excerpt One)"
+  },
+  "Trip Recording: Dimmr Plains Survey Team 1 (Excerpt Two)": {
+    "zh": "行程录音·黯原勘探队一期（节选二）",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Trip Recording: Dimmr Plains Survey Team 1 (Excerpt Two)"
+  },
   "Triple-Scoop Ice Cream": {
     "zh": "三球冰激凌",
     "category": "General Term",
     "indonesian_translation": "Triple-Scoop Ice Cream"
+  },
+  "Trophies": {
+    "zh": "成就",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Trophies"
   },
   "Troupe Strength": {
     "zh": "剧团烈度",
@@ -8600,7 +9130,7 @@
     "indonesian_translation": "Tune of Rocks"
   },
   "Tutorial": {
-    "zh": "教程百科",
+    "zh": "教学训练",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Tutorial"
   },
@@ -8613,6 +9143,11 @@
     "zh": "曙光微明",
     "category": "General Term",
     "indonesian_translation": "Twilight of Tomorrow"
+  },
+  "Twin Heron": {
+    "zh": "双生翎鹭",
+    "category": "Monster",
+    "indonesian_translation": "Twin Heron"
   },
   "Twin Nova: Collapsar Blade/Echo": {
     "zh": "",
@@ -8643,6 +9178,11 @@
     "zh": "伞下客",
     "category": "General Term",
     "indonesian_translation": "Umbragricus"
+  },
+  "Unbound Brilliance": {
+    "zh": "折映万彩",
+    "category": "General Term",
+    "indonesian_translation": "Unbound Brilliance"
   },
   "Uncle Bin": {
     "zh": "彬叔",
@@ -8704,6 +9244,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "Unknown Master's Journal"
   },
+  "Unknown Recording: Voidthirst Cradle": {
+    "zh": "未知录音·虚妄摇篮",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Unknown Recording: Voidthirst Cradle"
+  },
   "Unsent Electronic Communication": {
     "zh": "未能发出的电子通信",
     "category": "General Term",
@@ -8713,6 +9258,11 @@
     "zh": "《无名家书》",
     "category": "General Term",
     "indonesian_translation": "Untitled Family Letters"
+  },
+  "Utility": {
+    "zh": "探索工具",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Utility"
   },
   "Valerius": {
     "zh": "维塔利斯",
@@ -8849,6 +9399,11 @@
     "category": "Monster",
     "indonesian_translation": "Vitreum Dancer/Echo"
   },
+  "Vitreum Duet": {
+    "zh": "琉璃双刃",
+    "category": "Monster",
+    "indonesian_translation": "Vitreum Duet"
+  },
   "Void Storm": {
     "zh": "虚质磁暴",
     "category": "Core Gameplay Term",
@@ -8884,6 +9439,11 @@
     "category": "Core Gameplay Term",
     "indonesian_translation": "WUWA Discord Quest Event"
   },
+  "Wasteland Bellower": {
+    "zh": "荒原嗥鸣",
+    "category": "Monster",
+    "indonesian_translation": "Wasteland Bellower"
+  },
   "Waterlamp": {
     "zh": "水灯花",
     "category": "General Term",
@@ -8905,7 +9465,7 @@
     "indonesian_translation": "Waves Sing Goodnight"
   },
   "WavesLine": {
-    "zh": "飞讯",
+    "zh": "飞讯说明",
     "category": "Core Gameplay Term",
     "indonesian_translation": "WavesLine"
   },
@@ -8954,6 +9514,11 @@
     "category": "General Term",
     "indonesian_translation": "We Who Question"
   },
+  "Weapon": {
+    "zh": "武器",
+    "category": "Weapon",
+    "indonesian_translation": "Weapon"
+  },
   "Weapon EXP": {
     "zh": "武器经验",
     "category": "Core Gameplay Term",
@@ -8963,6 +9528,11 @@
     "zh": "武器经验材料",
     "category": "Weapon",
     "indonesian_translation": "Weapon EXP Material"
+  },
+  "Weapon Projection": {
+    "zh": "武器投影",
+    "category": "Core Gameplay Term",
+    "indonesian_translation": "Weapon Projection"
   },
   "Weapon Series": {
     "zh": "",
@@ -9009,6 +9579,16 @@
     "category": "General Term",
     "indonesian_translation": "Weekly Challenge Supply Pack III"
   },
+  "Weekly Challenge Supply Pack IV": {
+    "zh": "战歌重奏物资箱IV",
+    "category": "General Term",
+    "indonesian_translation": "Weekly Challenge Supply Pack IV"
+  },
+  "Weekly Challenge Supply Pack V": {
+    "zh": "战歌重奏物资箱V",
+    "category": "General Term",
+    "indonesian_translation": "Weekly Challenge Supply Pack V"
+  },
   "Wei": {
     "zh": "阿伟",
     "category": "Speaker/NPC",
@@ -9025,7 +9605,7 @@
     "indonesian_translation": "Wenmao"
   },
   "Wenmo": {
-    "zh": "文末",
+    "zh": "闻默",
     "category": "Speaker/NPC",
     "indonesian_translation": "Wenmo"
   },
@@ -9060,7 +9640,7 @@
     "indonesian_translation": "Whiff Whaff/Echo"
   },
   "Whining Aix's Mire": {
-    "zh": "推荐：怨鸟泽采集",
+    "zh": "怨鸟泽",
     "category": "Location/Map",
     "indonesian_translation": "Whining Aix's Mire"
   },
@@ -9070,7 +9650,7 @@
     "indonesian_translation": "Whispers from Dim Abyss"
   },
   "Whisperwind Haven": {
-    "zh": "推荐：拂风水畔采集",
+    "zh": "拂风水畔",
     "category": "Location/Map",
     "indonesian_translation": "Whisperwind Haven"
   },
@@ -9078,6 +9658,11 @@
     "zh": "关于所谓“流民”（节选）",
     "category": "Core Gameplay Term",
     "indonesian_translation": "Who Are the \"Outcasts\" (Excerpt)"
+  },
+  "Wild Gorilla": {
+    "zh": "狂野之猩",
+    "category": "Monster",
+    "indonesian_translation": "Wild Gorilla"
   },
   "Wilting Reverberation": {
     "zh": "凋落回响",
@@ -9113,6 +9698,11 @@
     "zh": "",
     "category": "General Term",
     "indonesian_translation": "Witchcraft, Spies, and Complaints"
+  },
+  "With Glory I Shall Fall": {
+    "zh": "愿戴荣光坠入天渊",
+    "category": "General Term",
+    "indonesian_translation": "With Glory I Shall Fall"
   },
   "Within Nimbus Sanctum I": {
     "zh": "「在云海·其一」",
@@ -9289,6 +9879,11 @@
     "category": "Location/Map",
     "indonesian_translation": "Xuanfang"
   },
+  "Xuanmiao": {
+    "zh": "",
+    "category": "Speaker/NPC",
+    "indonesian_translation": "Xuanmiao"
+  },
   "Xuanxuan": {
     "zh": "萱萱",
     "category": "Speaker/NPC",
@@ -9319,11 +9914,6 @@
     "category": "General Term",
     "indonesian_translation": "Yangyang's Waveband"
   },
-  "Yangyang: Xuanling": {
-    "zh": "",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Yangyang: Xuanling"
-  },
   "Yellowed Sketch": {
     "zh": "一张泛黄的简笔画",
     "category": "General Term",
@@ -9338,11 +9928,6 @@
     "zh": "逸安",
     "category": "Speaker/NPC",
     "indonesian_translation": "Yi'an"
-  },
-  "Yingda": {
-    "zh": "英达",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Yingda"
   },
   "Yinlin's Waveband": {
     "zh": "吟霖的回音频段",
@@ -9394,6 +9979,11 @@
     "category": "Speaker/NPC",
     "indonesian_translation": "Youling"
   },
+  "Young Murmurin": {
+    "zh": "咕噜幼像",
+    "category": "Monster",
+    "indonesian_translation": "Young Murmurin"
+  },
   "Yu": {
     "zh": "小玉",
     "category": "Speaker/NPC",
@@ -9403,11 +9993,6 @@
     "zh": "渊武的回音频段",
     "category": "General Term",
     "indonesian_translation": "Yuanwu's Waveband"
-  },
-  "Yuanzhi": {
-    "zh": "远知",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Yuanzhi"
   },
   "Yuezhou": {
     "zh": "",
@@ -9450,7 +10035,7 @@
     "indonesian_translation": "Zani's Waveband"
   },
   "Zapstring": {
-    "zh": "悬丝",
+    "zh": "吟霖人偶",
     "category": "General Term",
     "indonesian_translation": "Zapstring"
   },
@@ -9483,11 +10068,6 @@
     "zh": "知秋",
     "category": "Speaker/NPC",
     "indonesian_translation": "Zhiqiu"
-  },
-  "Zhixing": {
-    "zh": "致行",
-    "category": "Speaker/NPC",
-    "indonesian_translation": "Zhixing"
   },
   "Zhiyu": {
     "zh": "知雨",

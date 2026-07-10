@@ -181,14 +181,22 @@ def decode_questtreenode(bindata: bytes) -> QuestTreeNodeInfo | None:
         return None
     root = _fb_root_offset(bindata)
     vtable = _fb_vtable_offset(bindata, root)
+    # Current QuestTreeNode schema:
+    #   1 = node_id, 2 = chapter_id, 3 = quest_ids (vec<i32>)
+    #   6 = node_type, 7 = quest_type
+    #   9 = pre_nodes (vec<i32>), 10 = next_node
+    #
+    # Fields 5-10 used to be read one slot too early. In particular, field 8
+    # is a scalar on branch nodes, so treating it as a vector produced an
+    # out-of-bounds FlatBuffer offset and crashed the export.
     return QuestTreeNodeInfo(
         node_id=_fb_i32(bindata, root, vtable, 1),
         chapter_id=_fb_i32(bindata, root, vtable, 2),
         quest_ids=_fb_vec_i32(bindata, root, vtable, 3),
-        node_type=_fb_i32(bindata, root, vtable, 5),
-        quest_type=_fb_i32(bindata, root, vtable, 6),
-        pre_nodes=_fb_vec_i32(bindata, root, vtable, 8),
-        next_node=_fb_i32(bindata, root, vtable, 9),
+        node_type=_fb_i32(bindata, root, vtable, 6),
+        quest_type=_fb_i32(bindata, root, vtable, 7),
+        pre_nodes=_fb_vec_i32(bindata, root, vtable, 9),
+        next_node=_fb_i32(bindata, root, vtable, 10),
     )
 
 
