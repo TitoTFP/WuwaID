@@ -26,6 +26,7 @@ class TextRow:
     source_kind: str
     source_ref: str
     source_path: str
+    source_name: str
 
     def content(self, language: Language) -> str:
         return {"en": self.en, "zh-Hans": self.zh_hans, "ja": self.ja}[language]
@@ -65,6 +66,7 @@ def _row_from_value(text_id: object, value: object, kind: str, ref: str, source_
         source_kind=kind,
         source_ref=ref,
         source_path=source_path,
+        source_name=_normalise(value.get("speaker_en")) if kind == "quest" else "",
     )
 
 
@@ -212,7 +214,9 @@ def connect_history(path: Path) -> sqlite3.Connection:
     columns = {row[1] for row in con.execute("PRAGMA table_info(version_rows)")}
     if "source_path" not in columns:
         con.execute("ALTER TABLE version_rows ADD COLUMN source_path TEXT")
-        con.commit()
+    if "source_name" not in columns:
+        con.execute("ALTER TABLE version_rows ADD COLUMN source_name TEXT")
+    con.commit()
     return con
 
 
@@ -243,11 +247,14 @@ def create_snapshot(history_path: Path, source: Path, tag: str, note: str | None
                 hashes = tuple(_text_hash(value) for value in (row.en, row.zh_hans, row.ja))
                 for blob_hash, content in zip(hashes, (row.en, row.zh_hans, row.ja)):
                     blobs.setdefault(blob_hash, content)
-                version_rows.append((version_id, row.text_id, *hashes, row.source_kind, row.source_ref, row.source_path))
+                version_rows.append((
+                    version_id, row.text_id, *hashes, row.source_kind, row.source_ref,
+                    row.source_path, row.source_name,
+                ))
             con.executemany("INSERT OR IGNORE INTO content_blobs(hash, content) VALUES (?, ?)", blobs.items())
             con.executemany("""INSERT INTO version_rows
-                (version_id, text_id, en_hash, zh_hans_hash, ja_hash, source_kind, source_ref, source_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", version_rows)
+                (version_id, text_id, en_hash, zh_hans_hash, ja_hash, source_kind, source_ref, source_path, source_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", version_rows)
         return {
             "id": version_id,
             "tag": tag,
@@ -283,8 +290,8 @@ def enrich_snapshot_paths(history_path: Path, tag: str, source: Path) -> dict:
             raise ValueError(f"source dataset does not match tag {tag}")
         with con:
             con.executemany(
-                "UPDATE version_rows SET source_path = ? WHERE version_id = ? AND text_id = ?",
-                [(row.source_path, version["id"], text_id) for text_id, row in rows.items()],
+                "UPDATE version_rows SET source_path = ?, source_name = ? WHERE version_id = ? AND text_id = ?",
+                [(row.source_path, row.source_name, version["id"], text_id) for text_id, row in rows.items()],
             )
         count = con.execute(
             "SELECT count(*) FROM version_rows WHERE version_id = ? AND source_path IS NOT NULL",
@@ -295,7 +302,7 @@ def enrich_snapshot_paths(history_path: Path, tag: str, source: Path) -> dict:
         con.close()
 
 
-def _saved_rows(history_path: Path, tag: str, language: Language) -> dict[str, tuple[str, str, str, str | None]]:
+def _saved_rows(history_path: Path, tag: str, language: Language) -> dict[str, tuple[str, str, str, str | None, str]]:
     column = {"en": "en_hash", "zh-Hans": "zh_hans_hash", "ja": "ja_hash"}[language]
     con = connect_history(history_path)
     try:
@@ -303,20 +310,26 @@ def _saved_rows(history_path: Path, tag: str, language: Language) -> dict[str, t
         if version is None:
             raise ValueError(f"unknown version tag: {tag}")
         query = f"""
-            SELECT vr.text_id, cb.content, vr.source_kind, vr.source_ref, vr.source_path
+            SELECT vr.text_id, cb.content, vr.source_kind, vr.source_ref, vr.source_path,
+                   COALESCE(vr.source_name, '') AS source_name
             FROM version_rows vr
             JOIN content_blobs cb ON cb.hash = vr.{column}
             WHERE vr.version_id = ?
         """
-        return {row["text_id"]: (row["content"], row["source_kind"], row["source_ref"], row["source_path"])
+        return {row["text_id"]: (
+                    row["content"], row["source_kind"], row["source_ref"], row["source_path"], row["source_name"]
+                )
                 for row in con.execute(query, (version["id"],))}
     finally:
         con.close()
 
 
-def _working_rows(source: Path, language: Language) -> dict[str, tuple[str, str, str, str]]:
+def _working_rows(source: Path, language: Language) -> dict[str, tuple[str, str, str, str, str]]:
     rows, _ = load_dataset(source)
-    return {text_id: (row.content(language), row.source_kind, row.source_ref, row.source_path) for text_id, row in rows.items()}
+    return {
+        text_id: (row.content(language), row.source_kind, row.source_ref, row.source_path, row.source_name)
+        for text_id, row in rows.items()
+    }
 
 
 def _target_rows(history_path: Path, working_source: Path, target: str, language: Language):
@@ -359,6 +372,7 @@ def diff_rows(
             "source_kind": source[1],
             "source_ref": source[2],
             "source_path": source[3],
+            "name": source[4],
         })
     return results, summary
 
@@ -539,10 +553,13 @@ def export_sqlite(path: Path, rows: list[dict]) -> None:
     path.unlink(missing_ok=True)
     con = sqlite3.connect(path)
     try:
-        con.execute("CREATE TABLE MultiText (Id TEXT UNIQUE PRIMARY KEY NOT NULL, Content TEXT)")
+        con.execute("CREATE TABLE MultiText (Id TEXT UNIQUE PRIMARY KEY NOT NULL, Name TEXT, Content TEXT)")
         con.executemany(
-            "INSERT INTO MultiText(Id, Content) VALUES (?, ?)",
-            [(row["text_id"], row["new_content"] or "") for row in rows if row["status"] in ("added", "changed")],
+            "INSERT INTO MultiText(Id, Name, Content) VALUES (?, ?, ?)",
+            [
+                (row["text_id"], row.get("name") or "", row["new_content"] or "")
+                for row in rows if row["status"] in ("added", "changed")
+            ],
         )
         con.commit()
     finally:

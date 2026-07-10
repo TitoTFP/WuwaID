@@ -47,6 +47,7 @@ def write_dataset(root: Path, *, changed: bool = False) -> None:
             "text_en": "Quest line",
             "text_zh-Hans": "任务",
             "text_ja": "クエスト",
+            "speaker_en": "Rover",
             "options": [{
                 "text_key": "quest-option",
                 "text_en": "Option",
@@ -65,6 +66,8 @@ def test_loader_includes_categories_quests_and_options(tmp_path):
     assert stats == {"rows": 5, "category_rows": 3, "quest_rows": 2, "category_files": 1, "quest_files": 1}
     assert rows["same"].source_path == "categories/Item.json"
     assert rows["quest-line"].source_path == "export_quest_ordered/Chapter_0_Chapter 0/000_Quest_7/dialogue.json"
+    assert rows["quest-line"].source_name == "Rover"
+    assert rows["quest-option"].source_name == ""
 
 
 def test_loader_preserves_nested_wuwaid_quest_path(tmp_path):
@@ -142,7 +145,9 @@ def test_connect_history_adds_source_path_to_legacy_schema(tmp_path):
     con.commit()
     con.close()
     migrated = connect_history(history)
-    assert "source_path" in {row[1] for row in migrated.execute("PRAGMA table_info(version_rows)")}
+    assert {"source_path", "source_name"} <= {
+        row[1] for row in migrated.execute("PRAGMA table_info(version_rows)")
+    }
     migrated.close()
 
 
@@ -223,7 +228,9 @@ def test_group_summary_detects_new_groups_and_structured_zip_subset(tmp_path):
         db_path = tmp_path / "exported.db"
         db_path.write_bytes(archive.read("categories/NewGroup.db"))
     con = sqlite3.connect(db_path)
-    assert con.execute("SELECT Id, Content FROM MultiText").fetchall() == [("added", "Added café")]
+    assert con.execute("SELECT Id, Name, Content FROM MultiText").fetchall() == [
+        ("added", "", "Added café")
+    ]
     con.close()
 
 
@@ -260,6 +267,9 @@ def test_exports_are_translation_compatible_and_unicode_safe(tmp_path):
     history = tmp_path / "history.db"
     write_dataset(old)
     write_dataset(current, changed=True)
+    quest = json.loads((current / "quests" / "7.json").read_text())
+    quest["all_lines"][0]["text_en"] = "Quest line changed"
+    (current / "quests" / "7.json").write_text(json.dumps(quest, ensure_ascii=False))
     create_snapshot(history, old, "v1")
     create_snapshot(history, current, "v2")
     rows, _ = diff_rows(history, current, "v1", "v2", "en")
@@ -268,9 +278,11 @@ def test_exports_are_translation_compatible_and_unicode_safe(tmp_path):
     export_sqlite(db_path, rows)
     export_csv(csv_path, rows)
     con = sqlite3.connect(db_path)
-    assert con.execute("PRAGMA table_info(MultiText)").fetchall()[0][1] == "Id"
-    assert con.execute("SELECT Id, Content FROM MultiText ORDER BY Id").fetchall() == [
-        ("added", "Added café"), ("change", "New\nvalue")
+    assert [row[1] for row in con.execute("PRAGMA table_info(MultiText)").fetchall()] == ["Id", "Name", "Content"]
+    assert con.execute("SELECT Id, Name, Content FROM MultiText ORDER BY Id").fetchall() == [
+        ("added", "", "Added café"),
+        ("change", "", "New\nvalue"),
+        ("quest-line", "Rover", "Quest line changed"),
     ]
     con.close()
     with csv_path.open(encoding="utf-8", newline="") as handle:
