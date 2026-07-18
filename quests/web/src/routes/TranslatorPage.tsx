@@ -413,15 +413,25 @@ export default function TranslatorPage() {
 
   return (
     <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
-      <header className="mb-3 space-y-2 border-b border-white/10 pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <header className="mb-3 border-b border-white/10 pb-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-2">
           <Link
             to={qidN ? `/quests/${qidN}` : "/"}
             className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
           >
-            ← back to viewer
+            ← Viewer
           </Link>
-          <div className="flex flex-wrap gap-2">
+          <span className="hidden h-4 w-px bg-white/10 sm:block" aria-hidden="true" />
+          <div className="flex min-w-0 flex-1 items-baseline gap-2">
+            <h1 className="truncate font-serif text-xl text-slate-100 sm:text-2xl">
+              Indonesian translator
+            </h1>
+            <span className="shrink-0 font-mono text-[11px] text-accent-gold">Q{qidN}</span>
+            <span className="hidden truncate text-xs text-slate-500 md:inline">
+              {questQ.data?.quest_name ?? "Loading quest…"}
+            </span>
+          </div>
+          <nav className="flex gap-1" aria-label="Editor mode">
             <Link
               to={`/editor/${qidN}`}
               className="btn whitespace-nowrap bg-bg-2 text-xs hover:bg-white/5"
@@ -429,20 +439,13 @@ export default function TranslatorPage() {
             >
               Structure
             </Link>
-            <div className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold">
+            <span className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold" aria-current="page">
               Translation
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
-            Indonesian Translator <span className="font-mono text-sm text-accent-gold">Q{qidN}</span>
-            <span className="mt-1 block [overflow-wrap:anywhere] font-sans text-sm font-normal text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
-          </h1>
+            </span>
+          </nav>
           <button
             type="button"
-            className="btn min-w-11 text-xs"
+            className="btn min-w-11 px-0 text-xs"
             onClick={() => setShowHelp(true)}
             title="Show keyboard shortcuts"
             aria-label="Show keyboard shortcuts"
@@ -451,35 +454,42 @@ export default function TranslatorPage() {
           </button>
         </div>
 
-        {/* Translation Progress bar */}
-        {questQ.data && (
-          <div className="flex flex-col gap-2 border border-white/10 bg-bg-2/30 px-3 py-2 text-xs sm:flex-row sm:items-center sm:gap-3">
-            <div className="shrink-0 font-semibold text-slate-300">Translation progress</div>
-            <div className="relative h-1.5 w-full shrink-0 overflow-hidden bg-slate-800 sm:w-auto sm:flex-1">
+        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          {questQ.data && (
+            <div className="flex min-w-[15rem] flex-1 items-center gap-3 text-xs">
+              <span className="shrink-0 font-medium text-slate-400">Quest progress</span>
+              <div
+                className="relative h-1.5 min-w-16 flex-1 overflow-hidden rounded-sm bg-slate-800"
+                role="progressbar"
+                aria-label="Translation progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={stats.percentage}
+              >
               <div
                 className="h-full bg-accent-gold"
                 style={{ width: `${stats.percentage}%` }}
               />
+              </div>
+              <span className="shrink-0 select-none font-mono text-slate-500">
+                <strong className="font-semibold text-accent-gold">{stats.percentage}%</strong>
+                <span className="hidden sm:inline"> · {stats.count}/{stats.total}</span>
+              </span>
             </div>
-            <div className="font-mono text-slate-400 shrink-0 select-none">
-              <span className="text-accent-gold font-bold">{stats.percentage}%</span> ({stats.count} / {stats.total} lines translated)
+          )}
+
+          {breadcrumb && (
+            <div className="min-w-0 flex-1 truncate text-right font-mono text-[11px] text-slate-600" aria-label="Current translator location">
+              <span>{breadcrumb.flow}</span>
+              <span className="mx-1 text-slate-700">/</span>
+              <span>{breadcrumb.state}</span>
+              <span className="mx-1 text-slate-700">/</span>
+              <span className="text-slate-400">line #{breadcrumb.line}</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {breadcrumb && (
-          <div className="mt-1 truncate font-mono text-[11px] text-slate-500" aria-label="Current translator location">
-            <span>quest #{qidN}</span>
-            <span className="mx-1 text-slate-700">›</span>
-            <span>{breadcrumb.flow}</span>
-            <span className="mx-1 text-slate-700">›</span>
-            <span>{breadcrumb.state}</span>
-            <span className="mx-1 text-slate-700">›</span>
-            <span className="text-slate-300">line #{breadcrumb.line}</span>
-          </div>
-        )}
-
-        <DraftBanner qid={qidN} />
+        <div className="mt-2"><DraftBanner qid={qidN} /></div>
       </header>
 
       <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Translator workspace panes">
@@ -507,11 +517,11 @@ export default function TranslatorPage() {
         </button>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-0 lg:gap-4">
+      <div className="flex min-h-0 flex-1 gap-0 lg:gap-3">
         {/* Dialogue line tree sidebar */}
         <div
           id="translator-lines-panel"
-          className={["relative w-full max-w-full shrink-0 lg:w-[22rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
+          className={["relative w-full max-w-full shrink-0 lg:w-[23rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
         >
           <aside className="card flex-1 flex flex-col overflow-hidden p-2">
             {linesQ.isLoading && questQ.isLoading && (
@@ -545,12 +555,12 @@ export default function TranslatorPage() {
         {/* Translation Workbench panel */}
         <section
           id="translator-detail-panel"
-          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4", mobilePane === "translation" ? "flex" : "hidden", "lg:flex"].join(" ")}
+          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto", mobilePane === "translation" ? "flex" : "hidden", "lg:flex"].join(" ")}
         >
           {selectedId === null ? (
-            <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
-              <p>Select a dialogue line on the left to start translating.</p>
-              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to search dialogue, or <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
+            <div className="flex h-full flex-col items-center justify-center px-6 text-center text-sm text-slate-500">
+              <p className="font-serif text-xl text-slate-300">Choose a line to translate</p>
+              <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-600">Use dialogue navigator, press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">/</kbd> to search, or navigate with <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">J</kbd> and <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">K</kbd>.</p>
             </div>
           ) : questQ.isLoading ? (
             <Skeleton variant="form" />

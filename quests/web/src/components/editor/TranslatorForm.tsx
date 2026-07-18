@@ -187,86 +187,88 @@ export default function TranslatorForm({
 
   return (
     <form
-      className="flex h-full flex-col gap-4"
+      className="flex min-h-full flex-col"
       onSubmit={(e) => {
         e.preventDefault();
         submit(0);
       }}
     >
-      <div className="space-y-4 pb-32">
-        {/* Line meta and viewer links */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-2">
-          <div>
-            <div className="text-[10px] font-mono text-slate-500">LINE ID #{line.id} · TYPE: <span className="text-slate-400 font-semibold">{line.type}</span></div>
-            <div className="mt-1 font-mono text-sm text-accent-gold">{line.text_key || <span className="text-slate-500">no text_key</span>}</div>
+      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-white/10 bg-bg-1 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-slate-500">
+            <span>LINE #{line.id}</span>
+            <span className="border border-white/10 bg-bg-2 px-1.5 py-0.5 text-slate-400">{line.type}</span>
           </div>
-          <div className="text-xs text-slate-500">
-            <a className="link inline-flex min-h-11 items-center whitespace-nowrap" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
-              open in viewer ↗
-            </a>
+          <div className="mt-1 truncate font-mono text-xs text-accent-gold">
+            {line.text_key || <span className="text-slate-600">No text key</span>}
           </div>
         </div>
+        <a className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
+          Open in viewer ↗
+        </a>
+      </div>
 
-        {/* Restore draft indicator */}
+      <div className="flex-1 pb-36 lg:pb-24">
+        <div className="px-4 pt-4">
         {showRestore && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-2 text-xs text-slate-200">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-3 text-xs text-slate-200">
             <span>Restored unsaved translation edits from your last session.</span>
-            <div className="flex gap-2">
-              <button type="button" className="btn text-[11px]" onClick={discardLocal}>
-                Discard local
-              </button>
-            </div>
+            <button type="button" className="btn text-[11px]" onClick={discardLocal}>Discard local</button>
           </div>
         )}
+        </div>
 
-        {/* English Source Card — hidden for option-only lines */}
         {!isOptionLine && (
-          <div className="border-y border-white/10 bg-bg-2/50 px-3 py-4">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">English Source</div>
-            {line.speaker_en && (
-              <div className="font-semibold text-accent-gold text-sm mb-1">{line.speaker_en}</div>
-            )}
-            <div className="text-slate-100 text-sm whitespace-pre-wrap leading-relaxed">{line.text_en || <em className="text-slate-500">No English text</em>}</div>
-          </div>
-        )}
-
-        {/* Chinese & Japanese References Accordion — hidden for option-only lines */}
-        {!isOptionLine && (
-          <details className="group overflow-hidden border-y border-white/10 bg-bg-1/20">
-            <summary className="flex min-h-11 cursor-pointer select-none items-center justify-between px-3 py-2 text-xs text-slate-400 hover:bg-bg-1/40 hover:text-slate-200">
-              <span>Chinese & Japanese References</span>
-              <span className="text-[10px] text-slate-500">▼</span>
-            </summary>
-            <div className="border-t border-white/5 p-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-2">
-                <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">Chinese (Simplified)</div>
-                {line["speaker_zh-Hans"] && (
-                  <div className="font-semibold text-accent-teal">{line["speaker_zh-Hans"]}</div>
-                )}
-                <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{line["text_zh-Hans"] || <em className="text-slate-600">No Chinese text</em>}</div>
+          <div className="grid border-y border-white/10 xl:grid-cols-[minmax(18rem,0.85fr)_minmax(24rem,1.15fr)] xl:divide-x xl:divide-white/10">
+            <section className="bg-bg-1/40 px-4 py-5" aria-labelledby="source-language-heading">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 id="source-language-heading" className="font-sans text-sm font-semibold text-slate-300">Source</h2>
+                <span className="font-mono text-[10px] text-slate-600">EN · ZH-HANS · JA</span>
               </div>
-            <div className="space-y-2">
-                <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">Japanese</div>
-                {line.speaker_ja && (
-                  <div className="font-semibold text-accent-violet">{line.speaker_ja}</div>
-                )}
-                <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{line.text_ja || <em className="text-slate-600">No Japanese text</em>}</div>
+              <div className="border-l-2 border-accent-gold/50 pl-4">
+                <div className="mb-2 text-sm font-semibold text-accent-gold">
+                  {line.speaker_en || <span className="text-slate-600">Unknown speaker</span>}
+                </div>
+                <div className="whitespace-pre-wrap text-base leading-relaxed text-slate-100">
+                  {line.text_en || <span className="text-slate-500">No English text</span>}
+                </div>
               </div>
-            </div>
-          </details>
-        )}
 
-        {/* Translation workspace */}
-        <div className="space-y-4 border-t border-white/5 pt-4">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-accent-gold">Indonesian Translation</div>
+              <details className="group mt-5 border-t border-white/10 text-xs">
+                <summary className="flex min-h-11 cursor-pointer select-none items-center justify-between text-slate-500 hover:text-slate-200">
+                  <span>Supporting references</span>
+                  <span className="text-[10px]" aria-hidden="true">▼</span>
+                </summary>
+                <div className="grid gap-4 border-t border-white/5 pt-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                  <div className="space-y-2">
+                    <div className="font-mono text-[10px] uppercase text-slate-500">Chinese (Simplified)</div>
+                    {line["speaker_zh-Hans"] && <div className="font-semibold text-accent-teal">{line["speaker_zh-Hans"]}</div>}
+                    <div className="whitespace-pre-wrap leading-relaxed text-slate-300">{line["text_zh-Hans"] || <span className="text-slate-600">No Chinese text</span>}</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-mono text-[10px] uppercase text-slate-500">Japanese</div>
+                    {line.speaker_ja && <div className="font-semibold text-accent-violet">{line.speaker_ja}</div>}
+                    <div className="whitespace-pre-wrap leading-relaxed text-slate-300">{line.text_ja || <span className="text-slate-600">No Japanese text</span>}</div>
+                  </div>
+                </div>
+              </details>
+            </section>
 
-          {/* Speaker ID & Text ID Inputs — hidden for option-only lines */}
-          {!isOptionLine && (
-            <>
-              {/* Speaker ID Input */}
-              <div className="space-y-2">
+            <section className="px-4 py-5" aria-labelledby="target-language-heading">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h2 id="target-language-heading" className="font-sans text-sm font-semibold text-slate-100">Bahasa Indonesia</h2>
+                <button
+                  type="button"
+                  className="btn border-accent-teal/30 bg-transparent text-xs text-accent-teal"
+                  onClick={() => updateField("text_id", line.text_en ?? "")}
+                >
+                  Copy English source
+                </button>
+              </div>
+              <div className="space-y-5">
+                <div>
                 <DiffField
-                  label="Speaker Name (speaker_id)"
+                  label="Speaker name"
                   value={draft.speaker_id ?? ""}
                   original={baseLine.speaker_id ?? ""}
                   onChange={(value) => updateField("speaker_id", value)}
@@ -274,12 +276,12 @@ export default function TranslatorForm({
                 />
                 {speakerSuggestions.length > 0 && (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px]">
-                    <span className="text-slate-500 select-none">Suggestions:</span>
+                    <span className="select-none text-slate-500">Known names</span>
                     {speakerSuggestions.map((name) => (
                       <button
                         key={name}
                         type="button"
-                        className="min-h-11 rounded-sm border border-white/10 bg-bg-2 px-2 py-1 text-slate-300 transition-colors hover:border-white/20 hover:bg-white/5"
+                        className="chip min-h-11 text-slate-300"
                         onClick={() => updateField("speaker_id", name)}
                       >
                         {name}
@@ -288,20 +290,8 @@ export default function TranslatorForm({
                   </div>
                 )}
               </div>
-
-              {/* Text ID Input */}
-              <div className="space-y-2">
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
-                    onClick={() => updateField("text_id", line.text_en ?? "")}
-                  >
-                    Copy English
-                  </button>
-                </div>
                 <DiffField
-                  label="Dialogue Text (text_id)"
+                  label="Dialogue text"
                   value={draft.text_id ?? ""}
                   original={baseLine.text_id ?? ""}
                   onChange={(value) => updateField("text_id", value)}
@@ -310,97 +300,84 @@ export default function TranslatorForm({
                   maxLength={MAX_TEXT_LEN}
                 />
               </div>
-            </>
-          )}
+            </section>
+          </div>
+        )}
 
-          {/* Options Translation Section */}
-          {hasOptions && (
-            <div className="space-y-3 border-t border-white/5 pt-3">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-accent-teal">Option Translations</div>
+        {hasOptions && (
+          <section className="border-b border-white/10 px-4 py-5" aria-labelledby="option-translations-heading">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <h2 id="option-translations-heading" className="font-sans text-sm font-semibold text-slate-200">Option translations</h2>
+              <span className="font-mono text-[10px] text-slate-600">{draft.options?.length ?? 0} OPTIONS</span>
+            </div>
+            <div className="space-y-4">
               {(draft.options ?? []).map((opt, idx) => {
                 const origOpt = baseLine.options?.[idx];
                 return (
-                  <div key={idx} className="space-y-2 border border-accent-teal/25 bg-bg-2/30 p-3">
-                    <div className="flex items-center justify-between">
+                  <div key={idx} className="border border-white/10 bg-bg-1/30">
+                    <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
                       <span className="text-xs font-semibold text-slate-400">Option {idx + 1}</span>
-                      <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]">{opt.text_key}</span>
+                      <span className="max-w-[60%] truncate font-mono text-[10px] text-slate-600">{opt.text_key}</span>
                     </div>
-
-                    {/* Source references grid */}
-                    <div className="grid grid-cols-1 divide-y divide-white/10 border-y border-white/10 text-xs md:grid-cols-3 md:divide-x md:divide-y-0">
-                    <div className="space-y-1 bg-bg-1/30 p-2">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase">English</div>
-                        <div className="text-slate-200 whitespace-pre-wrap leading-relaxed">{opt.text_en || <em className="text-slate-600">—</em>}</div>
+                    <div className="grid lg:grid-cols-2 lg:divide-x lg:divide-white/10">
+                      <div className="space-y-3 border-b border-white/10 p-3 text-xs lg:border-b-0">
+                        <div>
+                          <div className="mb-1 font-mono text-[10px] uppercase text-slate-500">English source</div>
+                          <div className="whitespace-pre-wrap leading-relaxed text-slate-200">{opt.text_en || <span className="text-slate-600">—</span>}</div>
+                        </div>
+                        <details className="text-slate-500">
+                          <summary className="flex min-h-11 cursor-pointer items-center">Chinese & Japanese</summary>
+                          <div className="grid gap-3 border-t border-white/5 pt-3 sm:grid-cols-2">
+                            <div className="whitespace-pre-wrap leading-relaxed">{opt["text_zh-Hans"] || "—"}</div>
+                            <div className="whitespace-pre-wrap leading-relaxed">{opt.text_ja || "—"}</div>
+                          </div>
+                        </details>
                       </div>
-                    <div className="space-y-1 bg-bg-1/30 p-2">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase">Chinese</div>
-                        <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{opt["text_zh-Hans"] || <em className="text-slate-600">—</em>}</div>
-                      </div>
-                    <div className="space-y-1 bg-bg-1/30 p-2">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase">Japanese</div>
-                        <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{opt.text_ja || <em className="text-slate-600">—</em>}</div>
-                      </div>
-                    </div>
-
-                    {/* Indonesian translation input */}
-                    <div className="space-y-1">
-                      <div className="flex justify-end">
+                      <div className="p-3">
+                        <div className="mb-2 flex justify-end">
                         <button
                           type="button"
-                          className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
+                          className="min-h-11 whitespace-nowrap px-2 text-xs text-accent-teal"
                           onClick={() => updateOptionText(idx, opt.text_en ?? "")}
                         >
-                          Copy English
+                          Copy English source
                         </button>
+                        </div>
+                        <DiffField
+                          label="Bahasa Indonesia"
+                          value={opt.text_id ?? ""}
+                          original={origOpt?.text_id ?? ""}
+                          onChange={(value) => updateOptionText(idx, value)}
+                          onReset={() => resetOptionText(idx)}
+                          multiline
+                          maxLength={MAX_TEXT_LEN}
+                        />
                       </div>
-                      <DiffField
-                        label={`Option ${idx + 1} — Indonesian (text_id)`}
-                        value={opt.text_id ?? ""}
-                        original={origOpt?.text_id ?? ""}
-                        onChange={(value) => updateOptionText(idx, value)}
-                        onReset={() => resetOptionText(idx)}
-                        multiline
-                        maxLength={MAX_TEXT_LEN}
-                      />
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
+          </section>
+        )}
 
-          {/* Review Note */}
-        <div className="space-y-2 border-t border-white/5 pt-3">
+        <div className="space-y-2 px-4 py-5">
             <label className="text-xs font-medium text-slate-300" htmlFor="draft-note">
-              Translator/Review Note (optional)
+              Note for reviewer <span className="font-normal text-slate-600">(optional)</span>
             </label>
             <textarea
               id="draft-note"
-              className="input min-h-16 resize-y text-xs"
+              className="input min-h-20 resize-y text-xs"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Provide comments, translation rationales, or questions for reviewers here…"
+              placeholder="Context, rationale, or question for reviewer…"
             />
-          </div>
         </div>
       </div>
 
-      {/* Sticky footer for saving actions */}
-      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1 px-4 py-3">
+      <div className="sticky bottom-0 z-20 mt-auto border-t border-white/10 bg-bg-1 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
-          <button type="submit" className="btn btn-active" disabled={!canSave} title="Ctrl+S">
-            {busy ? "Saving…" : "Save as draft"}
-          </button>
-          <button
-            type="button"
-            className="btn border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
-            disabled={!canSave}
-            onClick={() => submit(1)}
-            title="Save draft then jump to next line"
-          >
-            Save & next
-          </button>
-          <span className="mx-1 h-4 w-px bg-white/10" aria-hidden="true" />
+          <div className="flex gap-1" aria-label="Line navigation">
           <button
             type="button"
             className="btn"
@@ -419,6 +396,18 @@ export default function TranslatorForm({
           >
             →
           </button>
+          </div>
+          <div className="min-w-0 flex-1 text-xs" aria-live="polite">
+            {Object.keys(fieldErrors).length > 0 ? (
+              <span className="text-rose-300">{Object.keys(fieldErrors).length} validation issue(s)</span>
+            ) : hasPatch(patch) ? (
+              <span className="text-accent-gold">Unsaved translation changes</span>
+            ) : dirty ? (
+              <span className="text-slate-400">Note needs a translation change before saving</span>
+            ) : (
+              <span className="text-slate-600">No translation changes</span>
+            )}
+          </div>
           <button
             type="button"
             className="btn"
@@ -427,16 +416,19 @@ export default function TranslatorForm({
           >
             Discard
           </button>
-          {hasPatch(patch) && (
-            <span className="text-xs text-slate-500">
-              Unsaved translation changes
-            </span>
-          )}
-          {Object.keys(fieldErrors).length > 0 && (
-            <span className="ml-auto text-xs text-rose-300">
-              {Object.keys(fieldErrors).length} validation issue(s)
-            </span>
-          )}
+          <button type="submit" className="btn" disabled={!canSave} title="Ctrl+S" aria-busy={busy}>
+            {busy ? "Saving…" : "Save draft"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-active"
+            disabled={!canSave}
+            onClick={() => submit(1)}
+            title="Save draft then jump to next line"
+            aria-busy={busy}
+          >
+            Save & next
+          </button>
         </div>
       </div>
 

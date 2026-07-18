@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-07-18",
+    "scope": "page",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "dark / roman-serif / brass-and-signal-teal",
+    "vibe": "Focused Bilingual Workbench",
+    "enrichment": "none",
+    "brief": "Translator UI redesign with side-by-side source and Indonesian editing"
+  },
+  {
+    "date": "2026-07-18",
     "scope": "app",
     "macrostructure": "Index-First / Long Document / Workbench",
     "theme": "custom",
