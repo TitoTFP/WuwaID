@@ -8,6 +8,7 @@
     "dev:web": "cd web && vite",
     "dev:api": "uv run uvicorn app.main:app --reload --reload-dir app --port 8000 --app-dir .",
     "build": "cd web && tsc --noEmit && vite build",
+    "test:web": "node --experimental-strip-types --test web/tests/*.test.ts",
     "preview": "cd web && vite preview",
     "serve": "node scripts/serve-check.js && uv run uvicorn app.main:app --port 8000 --app-dir .",
     "build:index": "python scripts/build_index.py",

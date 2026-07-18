@@ -13,6 +13,7 @@ export type TreeFilters = {
   pendingOnly: boolean;
   hasOptionsOnly: boolean;
   untranslatedOnly: boolean;
+  localDraftOnly: boolean;
   type: string | null;
 };
 
@@ -166,15 +167,16 @@ function flatten(
   }
 }
 
-function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCounts: Record<number, number>): boolean {
+function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCounts: Record<number, number>, localDraftIds: ReadonlySet<number>): boolean {
   if (node.kind !== "line" || !node.line) {
     const children = node.children ?? [];
     if (children.length === 0) return false;
-    return children.some((child) => matchesFilters(child, filters, pendingCounts));
+    return children.some((child) => matchesFilters(child, filters, pendingCounts, localDraftIds));
   }
   const line = node.line;
   if (filters.editedOnly && !line.is_edited) return false;
   if (filters.pendingOnly && (pendingCounts[line.id] ?? 0) === 0) return false;
+  if (filters.localDraftOnly && !localDraftIds.has(line.id)) return false;
   if (filters.hasOptionsOnly && !(line.options && line.options.length > 0)) return false;
   if (filters.untranslatedOnly) {
     const hasParentText = !!(line.text_en && line.text_en.trim() !== "");
@@ -194,13 +196,13 @@ function matchesFilters(node: DialogueTreeNode, filters: TreeFilters, pendingCou
   return true;
 }
 
-export function applyFilters(nodes: DialogueTreeNode[], filters: TreeFilters, pendingCounts: Record<number, number>): DialogueTreeNode[] {
+export function applyFilters(nodes: DialogueTreeNode[], filters: TreeFilters, pendingCounts: Record<number, number>, localDraftIds: ReadonlySet<number> = new Set()): DialogueTreeNode[] {
   return nodes
     .map((node) => {
       if (node.kind === "line") {
-        return matchesFilters(node, filters, pendingCounts) ? node : null;
+        return matchesFilters(node, filters, pendingCounts, localDraftIds) ? node : null;
       }
-      const filteredChildren = applyFilters(node.children ?? [], filters, pendingCounts);
+      const filteredChildren = applyFilters(node.children ?? [], filters, pendingCounts, localDraftIds);
       if (filteredChildren.length === 0) return null;
       return { ...node, children: filteredChildren, lineIds: filteredChildren.flatMap((c) => c.lineIds) };
     })
@@ -232,6 +234,7 @@ export default function DialogueTreeView({
   onSelectMany,
   storageKeyOpen,
   storageKeyReview,
+  localDraftIds,
 }: {
   nodes: DialogueTreeNode[];
   selectedId: number | null;
@@ -255,6 +258,7 @@ export default function DialogueTreeView({
   onSelectMany?: (ids: number[], replace: boolean) => void;
   storageKeyOpen: string;
   storageKeyReview: string;
+  localDraftIds?: ReadonlySet<number>;
 }) {
   const expandable = useMemo(() => allExpandableIds(nodes), [nodes]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(expandable));
@@ -490,6 +494,13 @@ export default function DialogueTreeView({
             active={filters.untranslatedOnly}
             onClick={() => updateFilter("untranslatedOnly", !filters.untranslatedOnly)}
           />
+          {localDraftIds && (
+            <FilterChip
+              label="local draft"
+              active={filters.localDraftOnly}
+              onClick={() => updateFilter("localDraftOnly", !filters.localDraftOnly)}
+            />
+          )}
           <FilterChip
             label="has options"
             active={filters.hasOptionsOnly}
@@ -600,6 +611,7 @@ export default function DialogueTreeView({
                   selected={row.kind === "line" && row.line?.id === selectedId}
                   multiSelected={row.kind === "line" && !!row.line && !!selectedIds?.has(row.line.id)}
                   pending={row.kind === "line" && row.line ? pendingCounts[row.line.id] ?? 0 : 0}
+                  localDraft={row.kind === "line" && !!row.line && !!localDraftIds?.has(row.line.id)}
                   searchQ={searchQ}
                   activeLang={activeLang}
                   dropTarget={dropTarget}
@@ -726,6 +738,7 @@ function Row({
   selected,
   multiSelected,
   pending,
+  localDraft,
   searchQ,
   activeLang,
   dropTarget,
@@ -748,6 +761,7 @@ function Row({
   selected: boolean;
   multiSelected: boolean;
   pending: number;
+  localDraft: boolean;
   searchQ: string;
   activeLang: Lang;
   dropTarget: string | null;
@@ -868,6 +882,7 @@ function Row({
               )}
               {(() => {
                 const pills: { label: string; cls: string; title: string }[] = [];
+                if (localDraft) pills.push({ label: "LOCAL", cls: "bg-accent-violet/15 text-accent-violet", title: "Has unsaved local translation" });
                 if (row.line?.is_edited) pills.push({ label: "EDITED", cls: "bg-accent-gold/15 text-accent-gold", title: "Has approved edits" });
                 if (pending > 0) pills.push({ label: `${pending} ${pending === 1 ? "DRAFT" : "DRAFTS"}`, cls: "bg-accent-ember/15 text-accent-ember", title: `${pending} pending draft(s)` });
                 const optCount = row.line?.options?.length ?? 0;

@@ -32,9 +32,10 @@ def test_get_draft_returns_full_row(tmp_db):
 
 def test_update_draft_only_owner_or_editor(tmp_db):
     did = db.create_draft(qid=106000002, line_id=1, patch={}, author_label="alice")
-    db.update_draft(did, author_label="alice", patch={"text_en": "Hey."})
+    db.update_draft(did, author_label="alice", patch={"text_en": "Hey."}, note="Updated note")
     d = db.get_draft(did)
     assert json.loads(d["patch_json"]) == {"text_en": "Hey."}
+    assert d["note"] == "Updated note"
     with pytest.raises(PermissionError):
         db.update_draft(did, author_label="mallory", patch={"text_en": "x"})
     # editor (no author_label) can still update

@@ -190,6 +190,7 @@ export default function EditorPage() {
     pendingOnly: false,
     hasOptionsOnly: false,
     untranslatedOnly: false,
+    localDraftOnly: false,
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);

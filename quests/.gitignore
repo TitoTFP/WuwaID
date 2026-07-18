@@ -52,5 +52,9 @@ docs/superpowers/
 # Command Code
 .commandcode/
 
+# Experiments
 Experiments
 experiments/
+
+# Hallmark
+.hallmark/

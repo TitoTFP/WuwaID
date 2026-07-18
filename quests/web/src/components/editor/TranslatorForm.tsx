@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { DialogueLine, DraftPatch } from "../../lib/types";
+import { useQuery } from "@tanstack/react-query";
+import type { DialogueLine, Draft, DraftPatch } from "../../lib/types";
 import ConfirmDialog from "./ConfirmDialog";
 import DiffField from "./DiffField";
 import { useUnsavedGuard } from "../../lib/useUnsavedGuard";
 import { useLocalDraft } from "../../lib/useLocalDraft";
 import { useToast } from "../Toast";
 import { useHotkey } from "../../lib/keyboard";
+import { api } from "../../lib/api";
+import { applyDraftPatch, localDraftForLine, parseDraftPatch, translationFindings } from "../../lib/translatorWorkflow";
 
 const MAX_TEXT_LEN = 1000;
 
@@ -30,59 +33,104 @@ export default function TranslatorForm({
   onSubmit,
   onPreview,
   busy,
+  pendingDraft,
+  context,
+  actionableRemaining,
   onSelectNext,
+  onSelectActionable,
+  onSelectLine,
   allLines,
 }: {
   line: DialogueLine;
   originalLine?: DialogueLine;
   qid: number;
-  onSubmit: (patch: DraftPatch, note: string) => void;
+  onSubmit: (patch: DraftPatch, note: string) => Promise<void>;
   onPreview?: (line: DialogueLine) => void;
   busy: boolean;
+  pendingDraft?: Draft;
+  context: { previous: DialogueLine | null; next: DialogueLine | null };
+  actionableRemaining: number;
   onSelectNext?: (direction: 1 | -1) => void;
+  onSelectActionable: () => void;
+  onSelectLine: (id: number) => void;
   allLines?: DialogueLine[];
 }) {
   const baseLine = originalLine ?? line;
-  const [draft, setDraft] = useState<DialogueLine>(line);
-  const [note, setNote] = useState("");
+  const pendingPatch = useMemo(() => parseDraftPatch(pendingDraft), [pendingDraft]);
+  const pendingLine = useMemo(() => applyDraftPatch(baseLine, pendingPatch), [baseLine, pendingPatch]);
+  const pendingNote = pendingDraft?.note ?? "";
+  const serverSignature = JSON.stringify({ patch: pendingPatch, note: pendingNote.trim() });
+  const [draft, setDraft] = useState<DialogueLine>(pendingLine);
+  const [note, setNote] = useState(pendingNote);
+  const [lastSubmittedSignature, setLastSubmittedSignature] = useState(serverSignature);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
+  const [contextOpen, setContextOpen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
+  const [qualityOpen, setQualityOpen] = useState(true);
   const localDraft = useLocalDraft<{ draft: DialogueLine; note: string }>(qid, line.id);
-  const initialised = useRef(false);
+  const restoredLocalDraft = localDraftForLine(localDraft.restored, line.id);
+  const initialisedKey = useRef("");
+  const initialisationKey = `${line.id}:${pendingDraft?.id ?? "new"}:${pendingDraft?.updated_at ?? ""}`;
+  const formRef = useRef<HTMLFormElement>(null);
   const toast = useToast();
 
   useEffect(() => {
-    initialised.current = false;
-    setNote("");
-    setShowRestore(false);
     setConfirmDiscard(false);
+    setContextOpen(window.matchMedia("(min-width: 1024px)").matches);
+    setQualityOpen(true);
   }, [line.id]);
 
   useEffect(() => {
-    if (initialised.current) return;
-    if (localDraft.restored) {
-      setDraft(localDraft.restored.draft);
-      setNote(localDraft.restored.note);
+    if (initialisedKey.current === initialisationKey) return;
+    if (restoredLocalDraft) {
+      setDraft(restoredLocalDraft.draft);
+      setNote(restoredLocalDraft.note);
       setShowRestore(true);
     } else {
-      setDraft(line);
-      setNote("");
+      setDraft(pendingLine);
+      setNote(pendingNote);
+      setShowRestore(false);
+      if (localDraft.restored) localDraft.clear();
     }
-    initialised.current = true;
-  }, [line, localDraft.restored]);
+    setLastSubmittedSignature(serverSignature);
+    initialisedKey.current = initialisationKey;
+  }, [initialisationKey, localDraft.clear, localDraft.restored, pendingLine, pendingNote, restoredLocalDraft, serverSignature]);
 
   useEffect(() => {
-    if (!initialised.current) return;
-    if (!showRestore) return;
-    localDraft.save({ draft, note });
-  }, [draft, note, showRestore, localDraft]);
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    const frame = requestAnimationFrame(() => formRef.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [line.id]);
 
   const patch = basePatch(baseLine, draft);
-  const canSave = hasPatch(patch) && !busy;
-  const dirty = hasPatch(patch) || note.trim().length > 0;
-  useUnsavedGuard(dirty);
+  const currentSignature = JSON.stringify({ patch, note: note.trim() });
+  const dirty = currentSignature !== lastSubmittedSignature;
 
-  useHotkey("s", () => submit(0), { mod: true, allowInInputs: true });
+  useEffect(() => {
+    if (initialisedKey.current !== initialisationKey || draft.id !== line.id || !dirty) return;
+    localDraft.save({ draft, note });
+  }, [dirty, draft, initialisationKey, line.id, note, localDraft.save]);
+
+  const canSave = hasPatch(patch) && dirty && !busy;
+  useUnsavedGuard(dirty && localDraft.status !== "saved");
+
+  useHotkey("s", () => void submit(0), { mod: true, allowInInputs: true });
+  useHotkey("Enter", () => void submit(1), { mod: true, allowInInputs: true });
+
+  const sourceTexts = useMemo(
+    () => [baseLine.speaker_en, baseLine.text_en, ...(baseLine.options ?? []).map((option) => option.text_en)].filter(Boolean),
+    [baseLine],
+  );
+  const glossaryQ = useQuery({
+    queryKey: ["translator", "glossary", sourceTexts],
+    queryFn: () => api.glossaryMatches(sourceTexts),
+    enabled: sourceTexts.length > 0,
+    staleTime: Infinity,
+  });
+  const findings = useMemo(
+    () => translationFindings(baseLine, draft, glossaryQ.data ?? []),
+    [baseLine, draft, glossaryQ.data],
+  );
 
   const speakerSuggestions = useMemo(() => {
     if (!line.speaker_en) return [];
@@ -156,41 +204,46 @@ export default function TranslatorForm({
   }
 
   function discardAll() {
-    setDraft(baseLine);
-    setNote("");
-    onPreview?.(baseLine);
+    setDraft(pendingLine);
+    setNote(pendingNote);
+    onPreview?.(pendingLine);
     localDraft.clear();
     setShowRestore(false);
     setConfirmDiscard(false);
   }
 
   function discardLocal() {
-    setDraft(line);
-    setNote("");
-    onPreview?.(line);
+    setDraft(pendingLine);
+    setNote(pendingNote);
+    onPreview?.(pendingLine);
     localDraft.clear();
     setShowRestore(false);
   }
 
-  function submit(advance: 0 | 1 = 0) {
+  async function submit(advance: 0 | 1 = 0) {
     if (!canSave) return;
     if (Object.keys(fieldErrors).length > 0) {
       toast.error("Fix validation errors before saving");
       return;
     }
-    onSubmit(patch, note.trim());
-    setNote("");
+    try {
+      await onSubmit(patch, note.trim());
+    } catch {
+      return;
+    }
+    setLastSubmittedSignature(currentSignature);
     localDraft.clear();
     setShowRestore(false);
-    if (advance === 1) onSelectNext?.(1);
+    if (advance === 1) onSelectActionable();
   }
 
   return (
     <form
+      ref={formRef}
       className="flex min-h-full flex-col"
       onSubmit={(e) => {
         e.preventDefault();
-        submit(0);
+        void submit(0);
       }}
     >
       <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-white/10 bg-bg-1 px-4 py-3">
@@ -217,6 +270,35 @@ export default function TranslatorForm({
           </div>
         )}
         </div>
+
+        {(context.previous || context.next) && (
+          <details
+            className="border-t border-white/10 bg-bg-1/30"
+            open={contextOpen}
+            onToggle={(event) => setContextOpen(event.currentTarget.open)}
+          >
+            <summary className="flex min-h-11 cursor-pointer items-center justify-between px-4 text-xs text-slate-400 hover:text-slate-200">
+              <span>Dialogue context</span>
+              <span className="font-mono text-[10px] text-slate-600">SAME STATE</span>
+            </summary>
+            <div className="grid border-t border-white/10 md:grid-cols-2 md:divide-x md:divide-white/10">
+              {[{ label: "Previous", value: context.previous }, { label: "Next", value: context.next }].map(({ label, value }) => value ? (
+                <button
+                  key={label}
+                  type="button"
+                  className="min-w-0 border-b border-white/10 p-3 text-left hover:bg-white/[0.03] md:border-b-0"
+                  onClick={() => onSelectLine(value.id)}
+                >
+                  <span className="font-mono text-[10px] text-slate-600">{label.toUpperCase()} · #{value.id}</span>
+                  <span className="mt-1 block truncate text-xs font-semibold text-slate-300">{value.speaker_id || value.speaker_en || "Unknown speaker"}</span>
+                  <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-slate-500">{value.text_id || value.text_en || "No dialogue text"}</span>
+                </button>
+              ) : (
+                <div key={label} className="hidden md:block" />
+              ))}
+            </div>
+          </details>
+        )}
 
         {!isOptionLine && (
           <div className="grid border-y border-white/10 xl:grid-cols-[minmax(18rem,0.85fr)_minmax(24rem,1.15fr)] xl:divide-x xl:divide-white/10">
@@ -302,6 +384,57 @@ export default function TranslatorForm({
               </div>
             </section>
           </div>
+        )}
+
+        {(glossaryQ.data?.length || findings.length > 0) && (
+          <details
+            className="border-b border-white/10 bg-bg-1/20"
+            open={qualityOpen}
+            onToggle={(event) => setQualityOpen(event.currentTarget.open)}
+          >
+            <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 text-xs text-slate-400 hover:text-slate-200">
+              <span>Quality & glossary</span>
+              <span className="font-mono text-[10px]">
+                {findings.length > 0 ? `${findings.length} WARNING${findings.length === 1 ? "" : "S"}` : `${glossaryQ.data?.length ?? 0} TERMS`}
+              </span>
+            </summary>
+            <div className="grid gap-4 border-t border-white/10 px-4 py-4 lg:grid-cols-2">
+              <div>
+                <div className="mb-2 font-mono text-[10px] uppercase text-slate-600">Advisory checks</div>
+                {findings.length > 0 ? (
+                  <ul className="space-y-2 text-xs text-amber-300">
+                    {findings.map((finding, index) => (
+                      <li key={`${finding.code}:${finding.field}:${index}`} className="border-l border-amber-300/40 pl-2">
+                        {finding.message}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-xs text-accent-emerald">No advisory issues.</div>
+                )}
+              </div>
+              <div>
+                <div className="mb-2 font-mono text-[10px] uppercase text-slate-600">Relevant glossary</div>
+                {glossaryQ.isLoading ? (
+                  <div className="text-xs text-slate-600">Checking glossary…</div>
+                ) : glossaryQ.error ? (
+                  <div className="text-xs text-rose-300">Glossary unavailable; saving remains enabled.</div>
+                ) : (glossaryQ.data?.length ?? 0) > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {glossaryQ.data?.map((match) => (
+                      <span key={match.term} className="chip" title={match.category}>
+                        <span className="text-slate-500">{match.term}</span>
+                        <span aria-hidden="true">/</span>
+                        <span className="text-accent-teal">{match.indonesian_translation || "—"}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-600">No glossary terms in this line.</div>
+                )}
+              </div>
+            </div>
+          </details>
         )}
 
         {hasOptions && (
@@ -400,6 +533,12 @@ export default function TranslatorForm({
           <div className="min-w-0 flex-1 text-xs" aria-live="polite">
             {Object.keys(fieldErrors).length > 0 ? (
               <span className="text-rose-300">{Object.keys(fieldErrors).length} validation issue(s)</span>
+            ) : localDraft.status === "error" ? (
+              <span className="text-rose-300">Local autosave unavailable</span>
+            ) : localDraft.status === "saving" ? (
+              <span className="text-slate-400">Saving locally…</span>
+            ) : dirty && localDraft.status === "saved" ? (
+              <span className="text-accent-teal">Saved locally</span>
             ) : hasPatch(patch) ? (
               <span className="text-accent-gold">Unsaved translation changes</span>
             ) : dirty ? (
@@ -407,6 +546,7 @@ export default function TranslatorForm({
             ) : (
               <span className="text-slate-600">No translation changes</span>
             )}
+            <span className="ml-2 hidden font-mono text-[10px] text-slate-600 sm:inline">{actionableRemaining} actionable</span>
           </div>
           <button
             type="button"
@@ -416,15 +556,15 @@ export default function TranslatorForm({
           >
             Discard
           </button>
-          <button type="submit" className="btn" disabled={!canSave} title="Ctrl+S" aria-busy={busy}>
+          <button type="submit" className="btn" disabled={!canSave} title="Ctrl/⌘ + S" aria-busy={busy}>
             {busy ? "Saving…" : "Save draft"}
           </button>
           <button
             type="button"
             className="btn btn-active"
             disabled={!canSave}
-            onClick={() => submit(1)}
-            title="Save draft then jump to next line"
+            onClick={() => void submit(1)}
+            title="Save draft then jump to next actionable line · Ctrl/⌘ + Enter"
             aria-busy={busy}
           >
             Save & next

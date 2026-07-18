@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from functools import lru_cache
 from starlette.background import BackgroundTask
+from scripts.translate_id.glossary import load_glossary, terms_for_state
 
 from . import db
 from .auth import (
@@ -69,6 +70,18 @@ def _load_quest(qid: int) -> dict | None:
         return None
     st = p.stat()
     return _load_quest_cached(qid, st.st_mtime_ns)
+
+
+@lru_cache(maxsize=4)
+def _load_glossary_cached(path: str, mtime_ns: int) -> dict[str, dict]:
+    return load_glossary(Path(path))
+
+
+def _glossary() -> dict[str, dict]:
+    path = DATA_DIR / "glossary.json"
+    if not path.is_file():
+        return {}
+    return _load_glossary_cached(str(path), path.stat().st_mtime_ns)
 
 
 def _merge_id_translation(quest: dict, qid: int) -> bool:
@@ -782,13 +795,43 @@ def api_update_draft(draft_id: int, payload: dict, request: Request, role: str =
     if role != "editor" and author_label is None:
         raise HTTPException(403, "author label required")
     try:
-        db.update_draft(draft_id, author_label=author_label, patch=payload.get("patch", {}))
+        update_args = {
+            "author_label": author_label,
+            "patch": payload.get("patch", {}),
+        }
+        if "note" in payload:
+            note = payload["note"]
+            if note is not None and not isinstance(note, str):
+                raise HTTPException(422, "note must be a string or null")
+            update_args["note"] = note
+        db.update_draft(draft_id, **update_args)
     except PermissionError as e:
         raise HTTPException(403, str(e))
     except ValueError as e:
         msg = str(e)
         raise HTTPException(409 if "already" in msg else 404, msg)
     return {"ok": True}
+
+
+@app.post("/api/editor/glossary/matches")
+def api_glossary_matches(payload: dict):
+    texts = payload.get("texts")
+    if not isinstance(texts, list) or not all(isinstance(text, str) for text in texts):
+        raise HTTPException(422, "texts must be an array of strings")
+    if len(texts) > 32 or sum(len(text) for text in texts) > 20_000:
+        raise HTTPException(422, "texts payload is too large")
+    glossary = _glossary()
+    terms = terms_for_state(glossary, [{"text_en": " ".join(texts), "options": []}])
+    terms.sort(key=lambda term: (-len(term), term.casefold()))
+    matches = []
+    for term in terms[:50]:
+        entry = glossary.get(term, {})
+        matches.append({
+            "term": term,
+            "indonesian_translation": str(entry.get("indonesian_translation", "")),
+            "category": str(entry.get("category", "")),
+        })
+    return _json(matches)
 
 
 @app.delete("/api/editor/drafts/{draft_id}")

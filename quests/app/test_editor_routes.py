@@ -78,6 +78,7 @@ def client(tmp_path, monkeypatch):
 
     from app import main as appmain
     monkeypatch.setattr(appmain, "QUESTS_DIR", quests_dir)
+    monkeypatch.setattr(appmain, "DATA_DIR", data_dir)
 
     yield TestClient(app)
     db.set_db_path(None)
@@ -131,6 +132,28 @@ def test_list_drafts_editor_sees_all(client):
     r = client.get("/api/drafts")
     assert r.status_code == 200
     assert len(r.json()) == 1
+
+
+def test_glossary_matches_use_existing_boundary_and_case_rules(client, tmp_path):
+    glossary_path = tmp_path / "data" / "glossary.json"
+    glossary_path.write_text(json.dumps({
+        "Rover": {"category": "Character", "indonesian_translation": "Rover"},
+        "Will": {"category": "Character", "indonesian_translation": "Will"},
+    }), encoding="utf-8")
+    r = client.post("/api/editor/glossary/matches", json={"texts": ["Rover will return"]})
+    assert r.status_code == 200
+    assert [match["term"] for match in r.json()] == ["Rover"]
+    r = client.post("/api/editor/glossary/matches", json={"texts": ["Will meets Rover"]})
+    assert {match["term"] for match in r.json()} == {"Will", "Rover"}
+
+
+def test_glossary_matches_validate_payload_and_tolerate_corrupt_file(client, tmp_path):
+    r = client.post("/api/editor/glossary/matches", json={"texts": "not-a-list"})
+    assert r.status_code == 422
+    (tmp_path / "data" / "glossary.json").write_text("{broken", encoding="utf-8")
+    r = client.post("/api/editor/glossary/matches", json={"texts": ["Rover"]})
+    assert r.status_code == 200
+    assert r.json() == []
 
 
 def test_approve_requires_editor(client):
@@ -187,6 +210,16 @@ def test_anon_cannot_update_or_delete_without_author_label(client):
         headers={"X-Author-Label": "mallory"},
     )
     assert r.status_code == 403
+
+    r = client.put(
+        f"/api/editor/drafts/{did}",
+        json={"patch": {"text_en": "owner updated"}, "note": "Keep this note"},
+        headers={"X-Author-Label": "alice"},
+    )
+    assert r.status_code == 200
+    updated = db.get_draft(did)
+    assert updated is not None
+    assert updated["note"] == "Keep this note"
 
 
 def test_search_finds_approved_overlay_text(client):

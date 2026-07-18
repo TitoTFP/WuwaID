@@ -2,6 +2,7 @@ import type {
   Chapter,
   Draft,
   DraftPatch,
+  GlossaryMatch,
   LineSummary,
   MeResponse,
   Quest,
@@ -117,10 +118,12 @@ export const api = {
     send<{ id: number }>("POST", "/editor/drafts", params, {
       "X-Author-Label": authorLabel,
     }),
-  updateDraft: (id: number, patch: DraftPatch, authorLabel: string | null) =>
-    send<{ ok: true }>("PUT", `/editor/drafts/${id}`, { patch }, {
+  updateDraft: (id: number, patch: DraftPatch, note: string | null, authorLabel: string | null) =>
+    send<{ ok: true }>("PUT", `/editor/drafts/${id}`, { patch, note }, {
       "X-Author-Label": authorLabel ?? "",
     }),
+  glossaryMatches: (texts: string[]) =>
+    send<GlossaryMatch[]>("POST", "/editor/glossary/matches", { texts }),
   deleteDraft: (id: number, authorLabel: string | null) =>
     send<{ ok: true }>("DELETE", `/editor/drafts/${id}`, undefined, {
       "X-Author-Label": authorLabel ?? "",

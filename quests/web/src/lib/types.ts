@@ -187,6 +187,18 @@ export interface Draft {
   }) | null;
 }
 
+export interface GlossaryMatch {
+  term: string;
+  indonesian_translation: string;
+  category: string;
+}
+
+export interface TranslationFinding {
+  code: "token-mismatch" | "tag-mismatch" | "missing-translation" | "outer-whitespace" | "same-as-source" | "glossary-mismatch";
+  field: string;
+  message: string;
+}
+
 export interface LineSummary {
   id: number;
   type: string;

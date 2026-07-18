@@ -711,11 +711,15 @@ def get_draft_with_diff(draft_id: int) -> dict | None:
     return {**d, "patch": patch if isinstance(patch, dict) else {}, "original_json": original}
 
 
+_UNSET = object()
+
+
 def update_draft(
     draft_id: int,
     *,
     author_label: str | None,
     patch: dict,
+    note: str | None | object = _UNSET,
 ) -> None:
     con = connect()
     try:
@@ -738,15 +742,16 @@ def update_draft(
         if not is_editor and row["author_label"] != author_label:
             raise PermissionError("not your draft")
 
-        if is_category:
+        table = "category_drafts" if is_category else "drafts"
+        if note is _UNSET:
             con.execute(
-                "UPDATE category_drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
+                f"UPDATE {table} SET patch_json = ?, updated_at = ? WHERE id = ?",
                 (json.dumps(patch), _now(), draft_id),
             )
         else:
             con.execute(
-                "UPDATE drafts SET patch_json = ?, updated_at = ? WHERE id = ?",
-                (json.dumps(patch), _now(), draft_id),
+                f"UPDATE {table} SET patch_json = ?, note = ?, updated_at = ? WHERE id = ?",
+                (json.dumps(patch), note, _now(), draft_id),
             )
         con.commit()
     finally:

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
-import type { DialogueLine, DialogueTreeNode, DraftPatch, LineSummary } from "../lib/types";
+import type { DialogueLine, DialogueTreeNode, Draft, DraftPatch, LineSummary } from "../lib/types";
 import DialogueTreeView, { applyFilters, type TreeFilters } from "../components/editor/DialogueTreeView";
 import TranslatorForm from "../components/editor/TranslatorForm";
 import DraftBanner from "../components/editor/DraftBanner";
@@ -14,6 +14,16 @@ import Skeleton from "../components/editor/Skeleton";
 import { useGlobalHotkeys } from "../lib/keyboard";
 import { useToast } from "../components/Toast";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
+import { listLocalDraftLineIds, LOCAL_DRAFT_EVENT } from "../lib/useLocalDraft";
+import {
+  applyDraftPatch,
+  dialogueContext,
+  isTranslationComplete,
+  lineNeedsTranslation,
+  nextActionableLineId,
+  parseDraftPatch,
+  translationStats,
+} from "../lib/translatorWorkflow";
 
 const STATE_KEY_RE = /^(.*)_(\d+)_(\d+)$/;
 
@@ -186,10 +196,12 @@ export default function TranslatorPage() {
     pendingOnly: false,
     hasOptionsOnly: false,
     untranslatedOnly: false,
+    localDraftOnly: false,
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);
   const [mobilePane, setMobilePane] = useState<"lines" | "translation">("lines");
+  const [localDraftIds, setLocalDraftIds] = useState<Set<number>>(() => listLocalDraftLineIds(qidN));
   const detailTabRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
   const meQ = useMe();
@@ -216,15 +228,18 @@ export default function TranslatorPage() {
   });
 
   const submitQ = useMutation({
-    mutationFn: (params: { patch: DraftPatch; note: string }) =>
-      api.createDraft(
-        { qid: qidN, line_id: selectedId!, patch: params.patch, note: params.note || undefined },
-        authorLabel,
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drafts"] });
-      // Invalidate quest details so the progress tracker and tree lines refresh
-      queryClient.invalidateQueries({ queryKey: ["editor", "quest", qidN] });
+    mutationFn: async (params: { patch: DraftPatch; note: string; draftId?: number }) => {
+      if (params.draftId) {
+        await api.updateDraft(params.draftId, params.patch, params.note || null, role === "editor" ? null : authorLabel);
+      } else {
+        await api.createDraft(
+          { qid: qidN, line_id: selectedId!, patch: params.patch, note: params.note || undefined },
+          authorLabel,
+        );
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["drafts"] });
       toast.success("Draft saved");
     },
     onError: () => toast.error("Failed to save draft"),
@@ -243,6 +258,22 @@ export default function TranslatorPage() {
     setMobilePane("lines");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
+  useEffect(() => {
+    setLocalDraftIds(listLocalDraftLineIds(qidN));
+    const onChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ qid: number; lineId: number; hasDraft: boolean }>).detail;
+      if (!detail || detail.qid !== qidN) return;
+      setLocalDraftIds((current) => {
+        const next = new Set(current);
+        if (detail.hasDraft) next.add(detail.lineId);
+        else next.delete(detail.lineId);
+        return next;
+      });
+    };
+    window.addEventListener(LOCAL_DRAFT_EVENT, onChange);
+    return () => window.removeEventListener(LOCAL_DRAFT_EVENT, onChange);
+  }, [qidN]);
+
   const lines = linesQ.data ?? [];
   const previewLineMap = useMemo(() => {
     const m = new Map<number, DialogueLine>();
@@ -256,6 +287,17 @@ export default function TranslatorPage() {
   }, [questQ.data]);
   const selectedLine = selectedId !== null ? (previewLineMap.get(selectedId) ?? null) : null;
   const originalSelectedLine = selectedId !== null ? (originalLineMap.get(selectedId) ?? null) : null;
+
+  const ownPendingByLine = useMemo(() => {
+    const map = new Map<number, Draft>();
+    for (const draft of draftsQ.data ?? []) {
+      if (draft.qid !== qidN || draft.status !== "pending" || draft.line_id === undefined) continue;
+      if (draft.author_label !== authorLabel) continue;
+      if (!map.has(draft.line_id)) map.set(draft.line_id, draft);
+    }
+    return map;
+  }, [authorLabel, draftsQ.data, qidN]);
+  const selectedPendingDraft = selectedId === null ? undefined : ownPendingByLine.get(selectedId);
 
   const plotModeByKey = useMemo(() => {
     const map = new Map<string, string>();
@@ -280,8 +322,8 @@ export default function TranslatorPage() {
   }, [draftsQ.data, qidN]);
 
   const filteredTree = useMemo(
-    () => applyFilters(searchedTree, filters, pendingCountsById),
-    [searchedTree, filters, pendingCountsById],
+    () => applyFilters(searchedTree, filters, pendingCountsById, localDraftIds),
+    [searchedTree, filters, pendingCountsById, localDraftIds],
   );
   const searchMatchCount = useMemo(() => countTreeLines(searchedTree), [searchedTree]);
   const allLineIds = useMemo(() => collectLineIds(tree), [tree]);
@@ -290,6 +332,32 @@ export default function TranslatorPage() {
     allLineIds.forEach((id, idx) => map.set(id, idx));
     return map;
   }, [allLineIds]);
+
+  const effectiveLineMap = useMemo(() => {
+    const map = new Map(originalLineMap);
+    for (const [lineId, draft] of ownPendingByLine) {
+      const line = map.get(lineId);
+      if (line) map.set(lineId, applyDraftPatch(line, parseDraftPatch(draft)));
+    }
+    for (const line of previewLines) {
+      if (line.id === selectedId) map.set(line.id, line);
+    }
+    return map;
+  }, [originalLineMap, ownPendingByLine, previewLines, selectedId]);
+
+  const selectedContext = useMemo(
+    () => selectedId === null ? { previous: null, next: null } : dialogueContext(allLineIds, selectedId, effectiveLineMap),
+    [allLineIds, effectiveLineMap, selectedId],
+  );
+
+  const pendingLineIds = useMemo(() => new Set(Object.keys(pendingCountsById).map(Number)), [pendingCountsById]);
+  const actionableRemaining = useMemo(
+    () => allLineIds.filter((id) => {
+      const line = originalLineMap.get(id);
+      return line && !pendingLineIds.has(id) && lineNeedsTranslation(line) && !isTranslationComplete(line);
+    }).length,
+    [allLineIds, originalLineMap, pendingLineIds],
+  );
 
   const typesInQuest = useMemo(() => {
     const set = new Set<string>();
@@ -320,6 +388,16 @@ export default function TranslatorPage() {
     },
     [],
   );
+
+  const selectNextActionable = useCallback(() => {
+    if (selectedId === null) return;
+    const next = nextActionableLineId(allLineIds, selectedId, originalLineMap, pendingLineIds);
+    if (next === null) {
+      toast.success("No actionable lines remaining");
+      return;
+    }
+    selectById(next);
+  }, [allLineIds, originalLineMap, pendingLineIds, selectById, selectedId, toast]);
 
   const selectRelative = useCallback(
     (direction: 1 | -1) => {
@@ -360,38 +438,7 @@ export default function TranslatorPage() {
     [allLineIds, stateKeyIndex, selectById, toast],
   );
 
-  // Indonesian Translation Stats
-  const stats = useMemo(() => {
-    if (!questQ.data?.all_lines) return { count: 0, percentage: 0 };
-    const all = questQ.data.all_lines;
-    
-    let total = 0;
-    let count = 0;
-    
-    for (const l of all) {
-      const hasParentText = !!(l.text_en && l.text_en.trim() !== "");
-      const parentTranslated = !hasParentText || !!(l.text_id && l.text_id.trim() !== "");
-      
-      const hasOptionsText = !!(l.options && l.options.some(opt => opt.text_en && opt.text_en.trim() !== ""));
-      const optionsTranslated = !l.options || l.options.every(opt => 
-        !(opt.text_en && opt.text_en.trim() !== "") || !!(opt.text_id && opt.text_id.trim() !== "")
-      );
-      
-      const needsTranslation = hasParentText || hasOptionsText;
-      const isFullyTranslated = parentTranslated && optionsTranslated;
-      
-      if (needsTranslation) {
-        total += 1;
-        if (isFullyTranslated) {
-          count += 1;
-        }
-      }
-    }
-    
-    if (total === 0) return { count: 0, percentage: 100, total: 0 };
-    const percentage = Math.round((count / total) * 100);
-    return { count, percentage, total };
-  }, [questQ.data]);
+  const stats = useMemo(() => translationStats(questQ.data?.all_lines ?? []), [questQ.data]);
 
   const dirty = submitQ.isPending;
   useUnsavedGuard(dirty);
@@ -546,6 +593,7 @@ export default function TranslatorPage() {
                 activeLang="id"
                 storageKeyOpen={`translator:open:${qidN}`}
                 storageKeyReview={`translator:review:${qidN}`}
+                localDraftIds={localDraftIds}
               />
             )}
           </aside>
@@ -569,12 +617,18 @@ export default function TranslatorPage() {
           ) : selectedLine ? (
             <div className="flex h-full flex-col gap-3">
               <TranslatorForm
+                key={selectedLine.id}
                 line={selectedLine}
                 originalLine={originalSelectedLine ?? selectedLine}
                 qid={qidN}
                 busy={submitQ.isPending}
+                pendingDraft={selectedPendingDraft}
+                context={selectedContext}
+                actionableRemaining={actionableRemaining}
                 onPreview={previewLineEdit}
-                onSubmit={(patch, note) => submitQ.mutate({ patch, note })}
+                onSubmit={(patch, note) => submitQ.mutateAsync({ patch, note, draftId: selectedPendingDraft?.id }).then(() => undefined)}
+                onSelectLine={selectById}
+                onSelectActionable={selectNextActionable}
                 onSelectNext={(dir) => {
                   selectRelative(dir);
                 }}
