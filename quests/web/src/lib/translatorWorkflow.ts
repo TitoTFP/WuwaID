@@ -1,4 +1,4 @@
-import type { DialogueLine, Draft, DraftPatch, GlossaryMatch, TranslationFinding } from "./types";
+import type { CategoryEditorEntry, DialogueLine, Draft, DraftPatch, GlossaryMatch, TranslationFinding } from "./types";
 
 export function parseDraftPatch(draft: Draft | null | undefined): DraftPatch {
   if (!draft) return {};
@@ -22,6 +22,16 @@ export function applyDraftPatch(line: DialogueLine, patch: DraftPatch): Dialogue
 
 export function localDraftForLine<T extends { draft: DialogueLine }>(value: T | null, lineId: number): T | null {
   return value?.draft.id === lineId ? value : null;
+}
+
+export function filterCategoryEntries(entries: CategoryEditorEntry[], query: string, untranslatedOnly: boolean): CategoryEditorEntry[] {
+  const search = query.trim().toLowerCase();
+  return entries.filter((entry) => {
+    if (untranslatedOnly && entry.id?.trim()) return false;
+    if (!search) return true;
+    return [entry.key, entry.en, entry["zh-Hans"], entry.ja, entry.id]
+      .some((value) => String(value ?? "").toLowerCase().includes(search));
+  });
 }
 
 export function lineNeedsTranslation(line: DialogueLine): boolean {

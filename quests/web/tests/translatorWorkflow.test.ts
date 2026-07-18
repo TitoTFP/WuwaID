@@ -3,6 +3,7 @@ import test from "node:test";
 import type { DialogueLine, GlossaryMatch } from "../src/lib/types.ts";
 import {
   dialogueContext,
+  filterCategoryEntries,
   isTranslationComplete,
   lineNeedsTranslation,
   localDraftForLine,
@@ -63,6 +64,16 @@ test("local draft never crosses into another line", () => {
   const saved = { draft: line(1, { text_id: "Baris satu" }), note: "" };
   assert.equal(localDraftForLine(saved, 1), saved);
   assert.equal(localDraftForLine(saved, 2), null);
+});
+
+test("category untranslated filter combines with search", () => {
+  const entries = [
+    { key: "RoverName", prefix: "Names", en: "Rover", id: "Pengembara", "zh-Hans": "", ja: "", is_edited: false },
+    { key: "ShorekeeperName", prefix: "Names", en: "Shorekeeper", id: null, "zh-Hans": "", ja: "", is_edited: false },
+    { key: "BlankName", prefix: "Names", en: "Blank", id: "   ", "zh-Hans": "", ja: "", is_edited: false },
+  ];
+  assert.deepEqual(filterCategoryEntries(entries, "name", true).map((entry) => entry.key), ["ShorekeeperName", "BlankName"]);
+  assert.deepEqual(filterCategoryEntries(entries, "shore", false).map((entry) => entry.key), ["ShorekeeperName"]);
 });
 
 test("QA reports missing tokens, tags, options, whitespace, and glossary terms", () => {

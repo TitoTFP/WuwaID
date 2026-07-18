@@ -10,11 +10,13 @@ import Skeleton from "../components/editor/Skeleton";
 import { useGlobalHotkeys } from "../lib/keyboard";
 import { useToast } from "../components/Toast";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
+import { filterCategoryEntries } from "../lib/translatorWorkflow";
 
 export default function CategoryTranslatorPage() {
   const { categoryName = "" } = useParams();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [searchQ, setSearchQ] = useState("");
+  const [untranslatedOnly, setUntranslatedOnly] = useState(false);
   const [expandedPrefixes, setExpandedPrefixes] = useState<Set<string>>(new Set());
   const [previewEntries, setPreviewEntries] = useState<CategoryEditorEntry[]>([]);
   const [mobilePane, setMobilePane] = useState<"keys" | "translation">("keys");
@@ -70,6 +72,7 @@ export default function CategoryTranslatorPage() {
   useEffect(() => {
     setSelectedKey(null);
     setSearchQ("");
+    setUntranslatedOnly(false);
     setMobilePane("keys");
   }, [categoryName]);
 
@@ -92,44 +95,21 @@ export default function CategoryTranslatorPage() {
     return acc;
   }, [draftsQ.data, categoryName]);
 
-  const flatFilteredKeys = useMemo(() => {
-    const search = searchQ.trim().toLowerCase();
-    return entries
-      .filter(e => {
-        if (!search) return true;
-        return [
-          e.key,
-          e.en,
-          e["zh-Hans"],
-          e.ja,
-          e.id,
-        ].some(val => String(val ?? "").toLowerCase().includes(search));
-      })
-      .map(e => e.key);
-  }, [entries, searchQ]);
+  const filteredEntries = useMemo(
+    () => filterCategoryEntries(entries, searchQ, untranslatedOnly),
+    [entries, searchQ, untranslatedOnly],
+  );
+  const flatFilteredKeys = useMemo(() => filteredEntries.map((entry) => entry.key), [filteredEntries]);
 
   const groupedEntries = useMemo(() => {
     const groups: Record<string, CategoryEditorEntry[]> = {};
-    const search = searchQ.trim().toLowerCase();
-    
-    const filtered = entries.filter(e => {
-      if (!search) return true;
-      return [
-        e.key,
-        e.en,
-        e["zh-Hans"],
-        e.ja,
-        e.id,
-      ].some(val => String(val ?? "").toLowerCase().includes(search));
-    });
-
-    for (const e of filtered) {
+    for (const e of filteredEntries) {
       const p = e.prefix || "NoPrefix";
       if (!groups[p]) groups[p] = [];
       groups[p].push(e);
     }
     return groups;
-  }, [entries, searchQ]);
+  }, [filteredEntries]);
 
   // Indonesian Translation Stats
   const stats = useMemo(() => {
@@ -303,6 +283,18 @@ export default function CategoryTranslatorPage() {
                       ×
                     </button>
                   )}
+                </div>
+
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Category entry filters">
+                  <button
+                    type="button"
+                    aria-pressed={untranslatedOnly}
+                    className={untranslatedOnly ? "btn btn-active text-xs" : "btn text-xs"}
+                    onClick={() => setUntranslatedOnly((current) => !current)}
+                  >
+                    Untranslated
+                    <span className="ml-1 font-mono text-[10px] opacity-70">{stats.total - stats.count}</span>
+                  </button>
                 </div>
 
                 {/* Toolbar */}
