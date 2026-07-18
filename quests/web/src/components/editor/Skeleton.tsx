@@ -7,7 +7,8 @@ export default function Skeleton({
 }) {
   if (variant === "form") {
     return (
-      <div className="space-y-3" aria-busy="true" aria-live="polite">
+      <div className="space-y-3" role="status" aria-busy="true" aria-live="polite">
+        <span className="sr-only">Loading editor form…</span>
         <div className="skeleton h-6 w-40" />
         <div className="skeleton h-4 w-24" />
         <div className="skeleton h-9 w-full" />
@@ -18,7 +19,8 @@ export default function Skeleton({
     );
   }
   return (
-    <div className="space-y-1.5" aria-busy="true" aria-live="polite">
+      <div className="space-y-2" role="status" aria-busy="true" aria-live="polite">
+      <span className="sr-only">Loading dialogue tree…</span>
       <div className="skeleton h-8 w-full" />
       {Array.from({ length: lines }).map((_, idx) => (
         <div

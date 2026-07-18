@@ -1,0 +1,12 @@
+[
+  {
+    "date": "2026-07-18",
+    "scope": "app",
+    "macrostructure": "Index-First / Long Document / Workbench",
+    "theme": "custom",
+    "theme_axes": "dark / roman-serif / brass-and-signal-teal",
+    "vibe": "Archivist Workbench",
+    "enrichment": "none",
+    "brief": "In-place redesign of the WuwaID Quests WebUI"
+  }
+]

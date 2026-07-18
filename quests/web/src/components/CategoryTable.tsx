@@ -42,7 +42,6 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
     mutationFn: () => api.deleteCategoryTranslation(category),
     onSuccess: () => {
       setConfirmDelete(false);
-      toast.success("Category Indonesian translations deleted successfully!");
       window.location.reload();
     },
     onError: (err: any) => {
@@ -159,25 +158,27 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
   const progressText = `${translatedCount} / ${entries.length} translated`;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-        <div className="flex items-baseline gap-3">
-          <h2 className="font-serif text-xl text-accent-gold" id="category-table-title">{category}</h2>
-          <span className="text-xs text-slate-500">{progressText}</span>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 border-b border-white/10 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl" id="category-table-title">
+            {category}
+          </h1>
+          <span className="mt-1 block font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">{progressText}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setShowExportModal(true)}
-            className="btn text-xs btn-active"
+            className="btn btn-active whitespace-nowrap text-xs"
           >
-            Export Category to SQLite
+            Export SQLite
           </button>
           {role === "editor" && (
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="btn text-xs border-rose-400/40 text-rose-300 hover:bg-rose-500/10"
+              className="btn whitespace-nowrap border-rose-400/40 text-xs text-rose-300 hover:bg-rose-500/10"
               title="Delete Indonesian translation locally"
             >
               Delete ID
@@ -185,7 +186,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           )}
           <Link
             to={`/translator/category/${category}`}
-            className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+            className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
             title="Translate category entries to Indonesian"
           >
             Translate
@@ -194,31 +195,35 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
       </div>
 
       <div className="space-y-3">
-        <input
-          type="text"
-          id="category-filter-input"
-          placeholder="Filter by key, english, translation..."
-          value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            setPage(0);
-          }}
-          className="input"
-        />
+        <label className="block">
+          <span className="mb-1 block text-[10px] text-slate-500">Filter entries</span>
+          <input
+            type="text"
+            id="category-filter-input"
+            placeholder="Key, English, translation…"
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setPage(0);
+            }}
+            className="input"
+          />
+        </label>
 
         {prefixes.length > 1 && (
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-            <span className="font-medium">Prefixes:</span>
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-xs text-slate-400" role="group" aria-label="Filter by prefix">
+            <span className="mr-2 font-medium">Prefixes</span>
             <button
               type="button"
               onClick={() => {
                 setSelectedPrefixes([]);
                 setPage(0);
               }}
-              className={`chip transition hover:border-accent-gold/40 cursor-pointer ${
+              aria-pressed={selectedPrefixes.length === 0}
+              className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                 selectedPrefixes.length === 0
-                  ? "border-accent-gold bg-accent-gold/10 text-accent-gold font-medium"
-                  : "hover:bg-bg-3"
+                  ? "border-accent-gold text-accent-gold"
+                  : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
               }`}
             >
               All
@@ -237,10 +242,11 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                     );
                     setPage(0);
                   }}
-                  className={`chip transition hover:border-accent-gold/40 cursor-pointer ${
+                  aria-pressed={isSelected}
+                  className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                     isSelected
-                      ? "border-accent-gold bg-accent-gold/10 text-accent-gold font-medium"
-                      : "hover:bg-bg-3"
+                      ? "border-accent-gold text-accent-gold"
+                      : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
                   }`}
                 >
                   {pref}
@@ -251,18 +257,19 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         )}
 
         {types.length > 1 && (
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-            <span className="font-medium">Types:</span>
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-xs text-slate-400" role="group" aria-label="Filter by type">
+            <span className="mr-2 font-medium">Types</span>
             <button
               type="button"
               onClick={() => {
                 setSelectedTypes([]);
                 setPage(0);
               }}
-              className={`chip transition hover:border-accent-gold/40 cursor-pointer ${
+              aria-pressed={selectedTypes.length === 0}
+              className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                 selectedTypes.length === 0
-                  ? "border-accent-gold bg-accent-gold/10 text-accent-gold font-medium"
-                  : "hover:bg-bg-3"
+                  ? "border-accent-gold text-accent-gold"
+                  : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
               }`}
             >
               All
@@ -281,10 +288,11 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                     );
                     setPage(0);
                   }}
-                  className={`chip transition hover:border-accent-gold/40 cursor-pointer ${
+                  aria-pressed={isSelected}
+                  className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                     isSelected
-                      ? "border-accent-gold bg-accent-gold/10 text-accent-gold font-medium"
-                      : "hover:bg-bg-3"
+                      ? "border-accent-gold text-accent-gold"
+                      : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
                   }`}
                 >
                   {t}
@@ -295,23 +303,59 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         )}
       </div>
 
-      <div className="overflow-x-auto card">
+      <div className="divide-y divide-white/10 border-y border-white/10 md:hidden" aria-labelledby="category-table-title">
+        {pageEntries.map((entry) => (
+          <article key={entry.key} className="space-y-3 py-4">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <code className="min-w-0 [overflow-wrap:anywhere] font-mono text-[10px] text-accent-gold select-all">
+                {entry.key}
+              </code>
+              <span className="shrink-0 font-mono text-[10px] text-slate-500">{entry.prefix}</span>
+            </div>
+            <dl className="space-y-2 text-base leading-relaxed">
+              <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
+                <dt className="font-mono text-[10px] text-slate-500">ZH</dt>
+                <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-300">{entry["zh-Hans"] || "—"}</dd>
+              </div>
+              <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
+                <dt className="font-mono text-[10px] text-accent-gold">EN</dt>
+                <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-100">{entry.en || "—"}</dd>
+              </div>
+              <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
+                <dt className="font-mono text-[10px] text-slate-500">JA</dt>
+                <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-300">{entry.ja || "—"}</dd>
+              </div>
+              {showIdColumn && (
+                <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
+                  <dt className="font-mono text-[10px] text-accent-teal">ID</dt>
+                  <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-200">{entry.id || "—"}</dd>
+                </div>
+              )}
+            </dl>
+          </article>
+        ))}
+        {pageEntries.length === 0 && (
+          <p className="py-8 text-center text-sm text-slate-500">No matching entries found.</p>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto border-y border-white/10 md:block">
         <table className="w-full text-sm border-collapse" aria-labelledby="category-table-title">
           <thead>
-            <tr className="border-b border-white/5 bg-bg-2">
-              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Key</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Prefix</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ZH</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">EN</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">JA</th>
+            <tr className="border-b border-white/10 bg-bg-2">
+              <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Key</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">Prefix</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ZH</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">EN</th>
+              <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">JA</th>
               {showIdColumn && (
-                <th className="px-4 py-2.5 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ID</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-300 text-xs uppercase tracking-wider">ID</th>
               )}
             </tr>
           </thead>
           <tbody>
             {pageEntries.map((entry) => (
-              <tr key={entry.key} className="border-b border-white/5 bg-bg-1/40 hover:bg-bg-1/80 transition-colors">
+              <tr key={entry.key} className="border-b border-white/10 transition-colors hover:bg-bg-2">
                 <td className="px-4 py-2 font-mono text-[10px] text-accent-gold select-all">{entry.key}</td>
                 <td className="px-4 py-2 text-xs text-slate-500 font-mono">{entry.prefix}</td>
                 <td className="px-4 py-2 text-slate-300 font-sans leading-relaxed">{entry["zh-Hans"]}</td>
@@ -340,11 +384,11 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
       </div>
 
       {pageCount > 1 && (
-        <div className="flex items-center justify-between text-sm pt-2">
+        <nav className="flex items-center justify-between gap-3 pt-2 text-sm" aria-label="Category entry pages">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="btn disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40"
           >
             &larr; Prev
           </button>
@@ -354,11 +398,11 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           <button
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
             disabled={page === pageCount - 1}
-            className="btn disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next &rarr;
           </button>
-        </div>
+        </nav>
       )}
       <ExportDialog
         open={showExportModal}
@@ -371,7 +415,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         open={confirmDelete}
         title="Delete Indonesian Translation?"
         message="This will permanently delete all Indonesian translation data (including edits, drafts, and cache) for this category. This action cannot be undone."
-        confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        confirmLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
         destructive
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => deleteMutation.mutate()}

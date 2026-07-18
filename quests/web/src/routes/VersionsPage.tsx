@@ -101,13 +101,13 @@ export default function VersionsPage() {
     }
   }
 
-  if (meQ.isLoading) return <div className="container-narrow"><div className="card p-6">Loading…</div></div>;
+  if (meQ.isLoading) return <div className="container-narrow"><div className="border-y border-white/10 p-6">Loading…</div></div>;
   if (meQ.data?.role !== "editor") {
     return (
       <div className="container-narrow">
-        <div className="card p-6 text-center">
-          <h1 className="font-serif text-2xl text-slate-100">Text Versions</h1>
-          <p className="mt-2 text-sm text-slate-400">Editor login is required to view official-text history.</p>
+        <div className="border-y border-white/10 p-6 text-center">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100">Text Versions</h1>
+          <p className="mt-2 text-base text-slate-400">Editor login is required to view official-text history.</p>
           <Link className="btn mt-4" to="/login">Login</Link>
         </div>
       </div>
@@ -129,16 +129,16 @@ export default function VersionsPage() {
     .reduce((total, group) => total + group.total, 0);
   return (
     <div className="versions-page container-wide overflow-y-auto pb-12">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.25em] text-accent-gold">Official MultiText history</div>
-          <h1 className="mt-1 font-serif text-3xl text-slate-100">Text Versions</h1>
-          <p className="mt-1 text-sm text-slate-400">Immutable EN, ZH-Hans, and JA snapshots. Indonesian/editor overlays are excluded.</p>
+          <div className="font-mono text-xs text-accent-gold">Official MultiText history</div>
+          <h1 className="mt-1 min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Text Versions</h1>
+          <p className="mt-1 text-base text-slate-400">Immutable EN, ZH-Hans, and JA snapshots. Indonesian/editor overlays are excluded.</p>
         </div>
-      </div>
+      </header>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="card overflow-hidden">
+        <div className="overflow-hidden border-y border-white/15 bg-bg-1/40">
           <div className="border-b border-white/5 px-4 py-3 text-xs uppercase tracking-widest text-slate-500">Saved tags</div>
           <div className="max-h-64 overflow-y-auto">
             {versions.map((version) => (
@@ -158,8 +158,8 @@ export default function VersionsPage() {
           </div>
         </div>
 
-        <form className="card p-4" onSubmit={(event) => { event.preventDefault(); if (tag.trim()) createM.mutate(); }}>
-          <div className="text-xs uppercase tracking-widest text-slate-500">Tag working tree</div>
+        <form className="border-y border-white/15 bg-bg-2/30 p-4" onSubmit={(event) => { event.preventDefault(); if (tag.trim()) createM.mutate(); }}>
+          <h2 className="font-serif text-xl text-slate-100">Tag working tree</h2>
           <label className="mt-3 block text-xs text-slate-400">Tag</label>
           <input className="input mt-1" value={tag} onChange={(event) => setTag(event.target.value)} placeholder="v3.6" />
           <label className="mt-3 block text-xs text-slate-400">Note</label>
@@ -171,7 +171,7 @@ export default function VersionsPage() {
         </form>
       </section>
 
-      <section className="card mb-4 p-4">
+      <section className="mb-4 border-y border-white/15 bg-bg-2/30 p-4">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_10rem_1fr_auto]">
           <label className="text-xs text-slate-400">Base
             <select className="input mt-1" value={base} onChange={(event) => setBase(event.target.value)}>
@@ -189,7 +189,7 @@ export default function VersionsPage() {
             </select>
           </label>
           <label className="text-xs text-slate-400">Search Id or Content
-            <input className="input mt-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Quest_..." />
+            <input className="input mt-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Quest_…" />
           </label>
           <div className="flex items-end gap-2">
             {base && target && base !== target && <>
@@ -202,18 +202,18 @@ export default function VersionsPage() {
       </section>
 
       {diffQ.data && (
-        <div className="mb-4 grid grid-cols-3 gap-3">
+        <div className="mb-4 grid grid-cols-3 divide-x divide-white/10 border-y border-white/15">
           {(["added", "removed", "changed"] as TextDiffStatus[]).map((value) => (
-            <button key={value} onClick={() => setStatus(status === value ? "" : value)} className={`rounded-lg border p-3 text-left ${STATUS_STYLE[value]} ${status && status !== value ? "opacity-40" : ""}`}>
+            <button key={value} onClick={() => setStatus(status === value ? "" : value)} className={`min-w-0 border-0 p-3 text-left ${STATUS_STYLE[value]} ${status && status !== value ? "opacity-40" : ""}`}>
               <div className="text-[10px] uppercase tracking-widest">{value}</div>
-              <div className="mt-1 text-2xl font-semibold">{diffQ.data.summary[value].toLocaleString()}</div>
+              <div className="mt-1 truncate font-mono text-xl font-semibold sm:text-2xl">{diffQ.data.summary[value].toLocaleString()}</div>
             </button>
           ))}
         </div>
       )}
 
       {base && target && base !== target && (
-        <section className="card mb-4 overflow-hidden">
+        <section className="mb-4 overflow-hidden border-y border-white/15 bg-bg-1/40">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
             <div>
               <div className="text-xs uppercase tracking-widest text-slate-400">Groups &amp; Quests</div>
@@ -261,7 +261,7 @@ export default function VersionsPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-xs text-slate-200">{group.source_ref}</span>
-                    {group.is_new_group && <span className="rounded border border-accent-teal/30 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-accent-teal">new group</span>}
+                    {group.is_new_group && <span className="border border-accent-teal/30 bg-accent-teal/10 px-2 py-1 text-[10px] uppercase tracking-wider text-accent-teal">new group</span>}
                   </div>
                   <div className="mt-1 truncate font-mono text-[10px] text-slate-500" title={group.db_path}>{group.db_path}</div>
                 </div>
@@ -276,7 +276,7 @@ export default function VersionsPage() {
         </section>
       )}
 
-      <section className="card overflow-hidden">
+      <section className="overflow-hidden border-y border-white/15 bg-bg-1/40">
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 text-xs text-slate-500">
           <span>{diffQ.isFetching ? "Comparing…" : `${(diffQ.data?.total ?? 0).toLocaleString()} matching rows`}</span>
           <span>Page {page} / {totalPages}</span>
@@ -285,16 +285,16 @@ export default function VersionsPage() {
         {diffQ.data?.items.map((item) => (
           <article key={item.text_id} className="border-b border-white/5 p-4">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className={`rounded border px-2 py-0.5 text-[10px] uppercase ${STATUS_STYLE[item.status]}`}>{item.status}</span>
+              <span className={`border px-2 py-1 text-[10px] uppercase ${STATUS_STYLE[item.status]}`}>{item.status}</span>
               <code className="break-all text-xs text-slate-200">{item.text_id}</code>
               <span className="ml-auto text-[10px] text-slate-500">{item.source_kind}:{item.source_ref}</span>
             </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              <div className="rounded border border-rose-400/10 bg-bg-2 p-3">
+            <div className="grid divide-y divide-white/10 border-y border-white/10 md:grid-cols-2 md:divide-x md:divide-y-0">
+              <div className="bg-bg-2 p-3">
                 <div className="mb-1 text-[10px] uppercase tracking-widest text-rose-300/70">{base}</div>
                 <pre className="whitespace-pre-wrap break-words font-sans text-xs text-slate-400">{item.old_content ?? "∅"}</pre>
               </div>
-              <div className="rounded border border-accent-teal/10 bg-bg-2 p-3">
+              <div className="bg-bg-2 p-3">
                 <div className="mb-1 text-[10px] uppercase tracking-widest text-accent-teal/70">{target}</div>
                 <pre className="whitespace-pre-wrap break-words font-sans text-xs text-slate-200">{item.new_content ?? "∅"}</pre>
               </div>

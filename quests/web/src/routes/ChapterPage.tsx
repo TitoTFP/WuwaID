@@ -30,20 +30,20 @@ export default function ChapterPage() {
   }, [items]);
 
   return (
-    <div className="container-narrow space-y-6">
-      <div>
-        <Link to="/" className="link text-xs">← home</Link>
-        <h1 className="mt-1 font-serif text-2xl text-accent-gold">
+    <div className="container-narrow gap-6 pb-8">
+      <header className="border-b border-white/10 pb-5">
+        <Link to="/" className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs">← Home</Link>
+        <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
           {chapter?.name ?? `Chapter ${chid}`}
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="mt-1 font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">
           {chapter?.quest_count ?? items.length} quests · {chapter?.line_count.toLocaleString() ?? 0} lines
         </p>
-      </div>
+      </header>
 
-      {isLoading && <div className="text-sm text-slate-500">Loading…</div>}
+      {isLoading && <div className="py-4 text-sm text-slate-500">Loading quests…</div>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      <div className="divide-y divide-white/10 border-y border-white/10" aria-label="Chapter quests">
         {dupInfo.map(({ q, dupIndex, dupTotal }) => (
           <QuestCard key={q.qid} q={q} dupIndex={dupIndex} dupTotal={dupTotal} />
         ))}

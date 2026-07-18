@@ -152,7 +152,6 @@ export default function LineForm({
     const targetLineIds = targetLines.map((l) => l.id);
 
     onMoveBlock(currentLineIds, targetLineIds, position);
-    toast.success(`Moved state ${position} target state`);
     setMoveStateTarget("");
   }
 
@@ -204,7 +203,6 @@ export default function LineForm({
     localDraft.clear();
     setShowRestore(false);
     setConfirmDiscard(false);
-    toast.success("Discarded local edits");
   }
 
   function discardLocal() {
@@ -236,10 +234,10 @@ export default function LineForm({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-2">
           <div>
             <div className="text-xs text-slate-500">Line #{line.id}</div>
-            <div className="font-serif text-lg text-slate-100">{line.text_key || <em className="text-slate-500">no text_key</em>}</div>
+            <div className="font-serif text-lg text-slate-100">{line.text_key || <span className="text-slate-500">no text_key</span>}</div>
           </div>
           <div className="text-xs text-slate-500">
-            <a className="link" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
+            <a className="link inline-flex min-h-11 items-center whitespace-nowrap" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
               open in viewer ↗
             </a>
           </div>
@@ -257,38 +255,38 @@ export default function LineForm({
         )}
 
         {/* English Text Context Box */}
-        <div className="rounded-lg border border-white/5 bg-bg-2/30 p-3 text-xs mb-1">
+          <div className="mb-1 border-y border-white/10 bg-bg-2/30 px-3 py-4 text-xs">
           <div className="text-[10px] font-mono text-slate-500 mb-1 uppercase">English Source Context</div>
           {line.speaker_en && (
-            <div className="font-semibold text-accent-gold mb-0.5">{line.speaker_en}</div>
+          <div className="mb-1 font-semibold text-accent-gold">{line.speaker_en}</div>
           )}
           <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{line.text_en || <em className="text-slate-500">no source text</em>}</div>
         </div>
 
         {/* Quick Move Section */}
         {line.state_key && (
-          <div className="rounded-md border border-white/10 bg-bg-2 p-3 space-y-3">
+          <div className="space-y-3 border border-accent-gold/30 bg-bg-2/50 p-3">
             <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Quick Move State</div>
-            <div className="space-y-1.5">
+        <div className="space-y-2">
               <label className="block text-xs font-medium text-slate-300">
                 Move entire State ({(() => {
                   const parsed = parseStateKey(line.state_key ?? "");
                   return parsed ? `${parsed.stateId}.${parsed.subId}` : line.state_key;
                 })()})
               </label>
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   type="text"
                   placeholder="target state (e.g. 1.2 or [2])"
                   value={moveStateTarget}
                   onChange={(e) => setMoveStateTarget(e.target.value)}
-                  className="input h-8 text-xs font-mono w-44"
+                  className="input w-full font-mono text-xs sm:w-44"
                 />
                 <button
                   type="button"
                   disabled={!moveStateTarget.trim() || !onMoveBlock}
                   onClick={() => handleMoveState("before")}
-                  className="btn h-8 px-2.5 text-xs"
+                    className="btn px-3 text-xs"
                 >
                   Before
                 </button>
@@ -296,7 +294,7 @@ export default function LineForm({
                   type="button"
                   disabled={!moveStateTarget.trim() || !onMoveBlock}
                   onClick={() => handleMoveState("after")}
-                  className="btn h-8 px-2.5 text-xs"
+                    className="btn px-3 text-xs"
                 >
                   After
                 </button>
@@ -331,7 +329,7 @@ export default function LineForm({
         </div>
 
         {/* Save Note */}
-        <div className="space-y-1.5 border-t border-white/5 pt-3">
+        <div className="space-y-2 border-t border-white/5 pt-3">
           <label className="text-xs font-medium text-slate-300" htmlFor="draft-note">
             Note (optional)
           </label>
@@ -345,7 +343,7 @@ export default function LineForm({
         </div>
       </div>
 
-      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1/90 px-4 py-3 backdrop-blur-md">
+      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <button type="submit" className="btn btn-active" disabled={!canSave} title="Ctrl+S">
             {busy ? "Saving…" : "Save as draft"}

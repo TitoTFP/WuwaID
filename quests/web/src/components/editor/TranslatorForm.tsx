@@ -162,7 +162,6 @@ export default function TranslatorForm({
     localDraft.clear();
     setShowRestore(false);
     setConfirmDiscard(false);
-    toast.success("Discarded local edits");
   }
 
   function discardLocal() {
@@ -199,10 +198,10 @@ export default function TranslatorForm({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-2">
           <div>
             <div className="text-[10px] font-mono text-slate-500">LINE ID #{line.id} · TYPE: <span className="text-slate-400 font-semibold">{line.type}</span></div>
-            <div className="font-serif text-sm text-accent-gold mt-0.5">{line.text_key || <em className="text-slate-500">no text_key</em>}</div>
+            <div className="mt-1 font-mono text-sm text-accent-gold">{line.text_key || <span className="text-slate-500">no text_key</span>}</div>
           </div>
           <div className="text-xs text-slate-500">
-            <a className="link" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
+            <a className="link inline-flex min-h-11 items-center whitespace-nowrap" href={`/quests/${qid}#line-${line.id}`} target="_blank" rel="noreferrer">
               open in viewer ↗
             </a>
           </div>
@@ -222,7 +221,7 @@ export default function TranslatorForm({
 
         {/* English Source Card — hidden for option-only lines */}
         {!isOptionLine && (
-          <div className="rounded-lg border border-white/10 bg-bg-2/50 p-4 shadow-sm ring-1 ring-white/5">
+          <div className="border-y border-white/10 bg-bg-2/50 px-3 py-4">
             <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">English Source</div>
             {line.speaker_en && (
               <div className="font-semibold text-accent-gold text-sm mb-1">{line.speaker_en}</div>
@@ -233,20 +232,20 @@ export default function TranslatorForm({
 
         {/* Chinese & Japanese References Accordion — hidden for option-only lines */}
         {!isOptionLine && (
-          <details className="group rounded-md border border-white/5 bg-bg-1/20 overflow-hidden">
-            <summary className="flex cursor-pointer select-none items-center justify-between px-3 py-2 text-xs text-slate-400 hover:bg-bg-1/40 hover:text-slate-200">
+          <details className="group overflow-hidden border-y border-white/10 bg-bg-1/20">
+            <summary className="flex min-h-11 cursor-pointer select-none items-center justify-between px-3 py-2 text-xs text-slate-400 hover:bg-bg-1/40 hover:text-slate-200">
               <span>Chinese & Japanese References</span>
-              <span className="text-[10px] text-slate-500 transition-transform group-open:rotate-180">▼</span>
+              <span className="text-[10px] text-slate-500">▼</span>
             </summary>
             <div className="border-t border-white/5 p-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1.5">
+            <div className="space-y-2">
                 <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">Chinese (Simplified)</div>
                 {line["speaker_zh-Hans"] && (
                   <div className="font-semibold text-accent-teal">{line["speaker_zh-Hans"]}</div>
                 )}
                 <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{line["text_zh-Hans"] || <em className="text-slate-600">No Chinese text</em>}</div>
               </div>
-              <div className="space-y-1.5">
+            <div className="space-y-2">
                 <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">Japanese</div>
                 {line.speaker_ja && (
                   <div className="font-semibold text-accent-violet">{line.speaker_ja}</div>
@@ -265,7 +264,7 @@ export default function TranslatorForm({
           {!isOptionLine && (
             <>
               {/* Speaker ID Input */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <DiffField
                   label="Speaker Name (speaker_id)"
                   value={draft.speaker_id ?? ""}
@@ -274,13 +273,13 @@ export default function TranslatorForm({
                   onReset={() => resetField("speaker_id")}
                 />
                 {speakerSuggestions.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px]">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px]">
                     <span className="text-slate-500 select-none">Suggestions:</span>
                     {speakerSuggestions.map((name) => (
                       <button
                         key={name}
                         type="button"
-                        className="rounded bg-bg-2 hover:bg-white/5 border border-white/10 hover:border-white/20 px-1.5 py-0.5 text-slate-300 transition"
+                        className="min-h-11 rounded-sm border border-white/10 bg-bg-2 px-2 py-1 text-slate-300 transition-colors hover:border-white/20 hover:bg-white/5"
                         onClick={() => updateField("speaker_id", name)}
                       >
                         {name}
@@ -291,11 +290,11 @@ export default function TranslatorForm({
               </div>
 
               {/* Text ID Input */}
-              <div className="space-y-1.5 relative">
-                <div className="absolute right-0 top-0 z-10 flex gap-2">
+              <div className="space-y-2">
+                <div className="flex justify-end">
                   <button
                     type="button"
-                    className="text-[10px] text-accent-teal/80 hover:text-accent-teal transition hover:underline"
+                    className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
                     onClick={() => updateField("text_id", line.text_en ?? "")}
                   >
                     Copy English
@@ -310,9 +309,6 @@ export default function TranslatorForm({
                   multiline
                   maxLength={MAX_TEXT_LEN}
                 />
-                {fieldErrors.text_id === "too long" && (
-                  <div className="text-[11px] text-rose-300">over {MAX_TEXT_LEN} characters</div>
-                )}
               </div>
             </>
           )}
@@ -324,34 +320,34 @@ export default function TranslatorForm({
               {(draft.options ?? []).map((opt, idx) => {
                 const origOpt = baseLine.options?.[idx];
                 return (
-                  <div key={idx} className="space-y-2 rounded-lg border border-white/10 bg-bg-2/30 p-3">
+                  <div key={idx} className="space-y-2 border border-accent-teal/25 bg-bg-2/30 p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-400">Option {idx + 1}</span>
                       <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]">{opt.text_key}</span>
                     </div>
 
                     {/* Source references grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                      <div className="rounded-md bg-bg-1/30 border border-white/5 p-2 space-y-0.5">
+                    <div className="grid grid-cols-1 divide-y divide-white/10 border-y border-white/10 text-xs md:grid-cols-3 md:divide-x md:divide-y-0">
+                    <div className="space-y-1 bg-bg-1/30 p-2">
                         <div className="text-[10px] font-mono text-slate-500 uppercase">English</div>
                         <div className="text-slate-200 whitespace-pre-wrap leading-relaxed">{opt.text_en || <em className="text-slate-600">—</em>}</div>
                       </div>
-                      <div className="rounded-md bg-bg-1/30 border border-white/5 p-2 space-y-0.5">
+                    <div className="space-y-1 bg-bg-1/30 p-2">
                         <div className="text-[10px] font-mono text-slate-500 uppercase">Chinese</div>
                         <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{opt["text_zh-Hans"] || <em className="text-slate-600">—</em>}</div>
                       </div>
-                      <div className="rounded-md bg-bg-1/30 border border-white/5 p-2 space-y-0.5">
+                    <div className="space-y-1 bg-bg-1/30 p-2">
                         <div className="text-[10px] font-mono text-slate-500 uppercase">Japanese</div>
                         <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{opt.text_ja || <em className="text-slate-600">—</em>}</div>
                       </div>
                     </div>
 
                     {/* Indonesian translation input */}
-                    <div className="space-y-1 relative">
-                      <div className="absolute right-0 top-0 z-10">
+                    <div className="space-y-1">
+                      <div className="flex justify-end">
                         <button
                           type="button"
-                          className="text-[10px] text-accent-teal/80 hover:text-accent-teal transition hover:underline"
+                          className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
                           onClick={() => updateOptionText(idx, opt.text_en ?? "")}
                         >
                           Copy English
@@ -374,7 +370,7 @@ export default function TranslatorForm({
           )}
 
           {/* Review Note */}
-          <div className="space-y-1.5 border-t border-white/5 pt-3">
+        <div className="space-y-2 border-t border-white/5 pt-3">
             <label className="text-xs font-medium text-slate-300" htmlFor="draft-note">
               Translator/Review Note (optional)
             </label>
@@ -383,14 +379,14 @@ export default function TranslatorForm({
               className="input min-h-16 resize-y text-xs"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Provide comments, translation rationales, or questions for reviewers here..."
+              placeholder="Provide comments, translation rationales, or questions for reviewers here…"
             />
           </div>
         </div>
       </div>
 
       {/* Sticky footer for saving actions */}
-      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1/90 px-4 py-3 backdrop-blur-md">
+      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <button type="submit" className="btn btn-active" disabled={!canSave} title="Ctrl+S">
             {busy ? "Saving…" : "Save as draft"}

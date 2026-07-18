@@ -91,7 +91,6 @@ export default function CategoryTranslatorForm({
     localDraft.clear();
     setShowRestore(false);
     setConfirmDiscard(false);
-    toast.success("Discarded local edits");
   }
 
   function discardLocal() {
@@ -130,12 +129,12 @@ export default function CategoryTranslatorForm({
             <div className="text-[10px] font-mono text-slate-500">
               CATEGORY: <span className="text-slate-400 font-semibold">{category}</span>
             </div>
-            <div className="font-serif text-sm text-accent-gold mt-0.5">
+        <div className="mt-1 font-mono text-sm text-accent-gold">
               {entry.key}
             </div>
           </div>
           <div className="text-xs text-slate-500">
-            <span className="font-mono text-[10px] rounded px-1.5 py-0.5 bg-white/5">
+            <span className="rounded-sm bg-white/5 px-2 py-1 font-mono text-[10px]">
               {entry.prefix}
             </span>
           </div>
@@ -154,7 +153,7 @@ export default function CategoryTranslatorForm({
         )}
 
         {/* English Source Card */}
-        <div className="rounded-lg border border-white/10 bg-bg-2/50 p-4 shadow-sm ring-1 ring-white/5">
+        <div className="border-y border-white/10 bg-bg-2/50 px-3 py-4">
           <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">
             English Source
           </div>
@@ -164,13 +163,13 @@ export default function CategoryTranslatorForm({
         </div>
 
         {/* Chinese & Japanese References Accordion */}
-        <details className="group rounded-md border border-white/5 bg-bg-1/20 overflow-hidden" open>
-          <summary className="flex cursor-pointer select-none items-center justify-between px-3 py-2 text-xs text-slate-400 hover:bg-bg-1/40 hover:text-slate-200">
+        <details className="group overflow-hidden border-y border-white/10 bg-bg-1/20" open>
+          <summary className="flex min-h-11 cursor-pointer select-none items-center justify-between px-3 py-2 text-xs text-slate-400 hover:bg-bg-1/40 hover:text-slate-200">
             <span>Chinese & Japanese References</span>
-            <span className="text-[10px] text-slate-500 transition-transform group-open:rotate-180">▼</span>
+            <span className="text-[10px] text-slate-500">▼</span>
           </summary>
           <div className="border-t border-white/5 p-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">
                 Chinese (Simplified)
               </div>
@@ -178,7 +177,7 @@ export default function CategoryTranslatorForm({
                 {entry["zh-Hans"] || <em className="text-slate-600">No Chinese text</em>}
               </div>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="text-slate-500 font-medium font-mono text-[10px] uppercase">
                 Japanese
               </div>
@@ -196,11 +195,11 @@ export default function CategoryTranslatorForm({
           </div>
 
           {/* Text ID Input */}
-          <div className="space-y-1.5 relative">
-            <div className="absolute right-0 top-0 z-10 flex gap-2">
+          <div className="space-y-2">
+            <div className="flex justify-end">
               <button
                 type="button"
-                className="text-[10px] text-accent-teal/80 hover:text-accent-teal transition hover:underline"
+                className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
                 onClick={() => handleTranslationChange(entry.en ?? "")}
               >
                 Copy English
@@ -215,13 +214,10 @@ export default function CategoryTranslatorForm({
               multiline
               maxLength={MAX_TEXT_LEN}
             />
-            {tooLong && (
-              <div className="text-[11px] text-rose-300">over {MAX_TEXT_LEN} characters</div>
-            )}
           </div>
 
           {/* Review Note */}
-          <div className="space-y-1.5 border-t border-white/5 pt-3">
+        <div className="space-y-2 border-t border-white/5 pt-3">
             <label className="text-xs font-medium text-slate-300" htmlFor="draft-note">
               Translator/Review Note (optional)
             </label>
@@ -230,14 +226,14 @@ export default function CategoryTranslatorForm({
               className="input min-h-16 resize-y text-xs"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Provide comments, translation rationales, or questions for reviewers here..."
+              placeholder="Provide comments, translation rationales, or questions for reviewers here…"
             />
           </div>
         </div>
       </div>
 
       {/* Sticky footer for saving actions */}
-      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1/90 px-4 py-3 backdrop-blur-md">
+      <div className="sticky bottom-0 -mx-4 mt-auto border-t border-white/10 bg-bg-1 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <button type="submit" className="btn btn-active" disabled={!canSave} title="Ctrl+S">
             {busy ? "Saving…" : "Save as draft"}

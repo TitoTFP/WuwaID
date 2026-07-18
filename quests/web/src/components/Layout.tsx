@@ -1,4 +1,10 @@
-import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LangSwitcher from "./LangSwitcher";
@@ -36,19 +42,15 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-bg-0/80 backdrop-blur-md">
-        <div className="container-narrow flex items-center gap-3 py-3">
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-bg-2 font-serif text-lg text-accent-gold ring-1 ring-white/5 group-hover:ring-accent-gold/40">
-              W
-            </span>
-            <span className="hidden sm:inline text-sm font-semibold tracking-wide text-slate-200">
-              wuwaid-quests
-            </span>
+    <div className="app-shell min-h-screen flex flex-col">
+      <header className="archive-masthead">
+        <div className="archive-masthead__inner container-wide">
+          <Link to="/" className="archive-brand" aria-label="WuwaID Quests home">
+            <span className="archive-brand__mark" aria-hidden="true">W</span>
+            <span className="archive-brand__name">wuwaid-quests</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1 text-sm">
+          <nav className="archive-browse" aria-label="Browse archive">
             <NavLink to="/" end className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
               Home
             </NavLink>
@@ -60,59 +62,135 @@ export default function Layout() {
             </NavLink>
           </nav>
 
-          <form onSubmit={onSubmit} className="flex-1 max-w-xl">
-            <div className="relative">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search quests & categories…"
-                className="input pl-9"
-              />
+          <form
+            onSubmit={onSubmit}
+            className="archive-search"
+            role="search"
+            aria-label="Search quests and grouped texts"
+          >
+            <label htmlFor="global-search" className="sr-only">
+              Search quests and grouped texts
+            </label>
+            <input
+              id="global-search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search quests and grouped texts…"
+              className="input archive-search__input"
+            />
+            <button type="submit" className="archive-search__submit" aria-label="Search">
               <svg
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
               >
                 <circle cx="11" cy="11" r="7" />
                 <path d="M21 21l-4.3-4.3" />
               </svg>
-            </div>
+            </button>
           </form>
 
-          <NavLink
-            to="/drafts"
-            className={({ isActive }) =>
-              `btn relative ${isActive ? "btn-active" : ""}`
-            }
-            title="Drafts"
-            aria-label={`Drafts (${pendingCount} pending)`}
-          >
-            <span>Drafts</span>
-            {pendingCount > 0 && (
-              <span className="ml-1 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-accent-gold/30 px-1.5 text-[10px] font-semibold text-accent-gold">
-                {pendingCount > 99 ? "99+" : pendingCount}
-              </span>
+          <div className="archive-tools">
+            <NavLink
+              to="/drafts"
+              className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}
+              aria-label={`Drafts (${pendingCount} pending)`}
+            >
+              <span>Drafts</span>
+              {pendingCount > 0 && (
+                <span className="archive-count">
+                  {pendingCount > 99 ? "99+" : pendingCount}
+                </span>
+              )}
+            </NavLink>
+
+            {role === "editor" && (
+              <>
+                <NavLink to="/versions" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
+                  Versions
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => setShowImport(true)}
+                  className="btn"
+                  title="Import from SQLite"
+                >
+                  <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  <span>Import</span>
+                </button>
+              </>
             )}
-          </NavLink>
 
-          {role === "editor" && (
-            <>
-              <NavLink to="/versions" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
-                Versions
-              </NavLink>
-              <button
-                onClick={() => setShowImport(true)}
-                className="btn border-accent-gold/40 text-slate-200 hover:border-accent-gold/80 flex items-center gap-1.5"
-                title="Import from SQLite"
-              >
-                <svg className="h-4 w-4 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>Import</span>
-              </button>
-            </>
-          )}
+            <LangSwitcher />
+          </div>
 
-          <LangSwitcher />
+          <details
+            className="archive-menu"
+            onKeyDown={(event) => {
+              if (event.key !== "Escape") return;
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector("summary")?.focus();
+            }}
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest("a, button")) {
+                event.currentTarget.open = false;
+              }
+            }}
+          >
+            <summary className="archive-menu__toggle">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+              <span>Menu</span>
+            </summary>
+            <div className="archive-menu__panel">
+              <nav className="archive-menu__nav" aria-label="Mobile navigation">
+                <NavLink to="/" end className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                  Home
+                </NavLink>
+                <NavLink to="/side-quests" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                  Side Quests
+                </NavLink>
+                <NavLink to="/categories" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                  Grouped Texts
+                </NavLink>
+                <NavLink
+                  to="/drafts"
+                  className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}
+                  aria-label={`Drafts (${pendingCount} pending)`}
+                >
+                  <span>Drafts</span>
+                  {pendingCount > 0 && (
+                    <span className="archive-count">
+                      {pendingCount > 99 ? "99+" : pendingCount}
+                    </span>
+                  )}
+                </NavLink>
+                {role === "editor" && (
+                  <>
+                    <NavLink to="/versions" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                      Versions
+                    </NavLink>
+                    <button
+                      type="button"
+                      onClick={() => setShowImport(true)}
+                      className="archive-menu__link"
+                    >
+                      Import
+                    </button>
+                  </>
+                )}
+              </nav>
+              <div className="archive-menu__language">
+                <span>Language</span>
+                <LangSwitcher />
+              </div>
+            </div>
+          </details>
         </div>
       </header>
 
@@ -120,12 +198,12 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
-        Data sourced from{" "}
+      <footer className="archive-footer">
+        <span>Data source</span>
+        <span aria-hidden="true">·</span>
         <a className="link" href="https://github.com/TitoTFP/WuwaID" target="_blank" rel="noreferrer">
-          WuwaID/export_text_grouped.py
-        </a>{" "}
-        · 504 quests · 71,469 lines · 4 languages
+          WuwaID export pipeline
+        </a>
       </footer>
 
       {showImport && (

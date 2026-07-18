@@ -1,0 +1,133 @@
+/* Hallmark · genre: editorial · tone: technical-austere · macrostructure: Index-First / Long Document / Workbench · theme: custom · anchor hue: ink-navy 250 · design-system: design.md · designed-as-app */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4 · contrast: pass (40–41) · nav: N6 · footer: Ft2 · slop: 58/58 pass · mobile: pass (34, 49, 50–57) */
+:root {
+  color-scheme: dark;
+
+  /* Core palette */
+  --color-ink-navy-channels: 15% 0.012 250;
+  --color-brass-channels: 78% 0.12 78;
+  --color-signal-teal-channels: 74% 0.1 185;
+  --color-ink-navy: oklch(var(--color-ink-navy-channels));
+  --color-brass: oklch(var(--color-brass-channels));
+  --color-signal-teal: oklch(var(--color-signal-teal-channels));
+
+  /* Surfaces, ink, and rules */
+  --color-paper-2-channels: 18% 0.014 250;
+  --color-paper-3-channels: 22% 0.016 250;
+  --color-paper-4-channels: 27% 0.018 250;
+  --color-rule-channels: 34% 0.018 250;
+  --color-rule-strong-channels: 45% 0.022 250;
+  --color-ink-channels: 94% 0.012 250;
+  --color-ink-2-channels: 80% 0.014 250;
+  --color-ink-3-channels: 64% 0.014 250;
+  --color-ink-4-channels: 50% 0.012 250;
+  --color-paper: var(--color-ink-navy);
+  --color-paper-2: oklch(var(--color-paper-2-channels));
+  --color-paper-3: oklch(var(--color-paper-3-channels));
+  --color-paper-4: oklch(var(--color-paper-4-channels));
+  --color-rule: oklch(var(--color-rule-channels));
+  --color-rule-strong: oklch(var(--color-rule-strong-channels));
+  --color-ink: oklch(var(--color-ink-channels));
+  --color-ink-2: oklch(var(--color-ink-2-channels));
+  --color-ink-3: oklch(var(--color-ink-3-channels));
+  --color-muted: var(--color-ink-3);
+
+  /* Semantic colour */
+  --color-success-channels: 72% 0.13 150;
+  --color-warning-channels: 80% 0.13 82;
+  --color-error-channels: 70% 0.16 25;
+  --color-info-channels: 72% 0.11 245;
+  --color-violet-channels: 72% 0.1 305;
+  --color-success: oklch(var(--color-success-channels));
+  --color-warning: oklch(var(--color-warning-channels));
+  --color-error: oklch(var(--color-error-channels));
+  --color-info: oklch(var(--color-info-channels));
+  --color-violet: oklch(var(--color-violet-channels));
+  --color-accent: var(--color-brass);
+  --color-accent-ink: var(--color-paper);
+  --color-link: var(--color-signal-teal);
+  --color-focus: var(--color-signal-teal);
+  --color-accent-selection: oklch(var(--color-brass-channels) / 0.25);
+  --color-accent-surface: oklch(var(--color-brass-channels) / 0.1);
+  --color-accent-surface-subtle: oklch(var(--color-brass-channels) / 0.06);
+  --color-accent-surface-faint: oklch(var(--color-brass-channels) / 0.08);
+  --color-accent-rule: oklch(var(--color-brass-channels) / 0.45);
+  --color-accent-rule-strong: oklch(var(--color-brass-channels) / 0.55);
+  --color-link-decoration: oklch(var(--color-signal-teal-channels) / 0.45);
+  --color-error-surface: oklch(var(--color-error-channels) / 0.16);
+  --color-error-decoration: oklch(var(--color-error-channels) / 0.5);
+  --color-success-surface: oklch(var(--color-signal-teal-channels) / 0.14);
+
+  /* Legacy Tailwind neutral aliases */
+  --color-neutral-50-channels: 97% 0.01 250;
+  --color-neutral-100-channels: 94% 0.012 250;
+  --color-neutral-200-channels: 87% 0.014 250;
+  --color-neutral-300-channels: 79% 0.014 250;
+  --color-neutral-400-channels: 68% 0.014 250;
+  --color-neutral-500-channels: 64% 0.014 250;
+  --color-neutral-600-channels: 64% 0.014 250;
+  --color-neutral-700-channels: 64% 0.014 250;
+  --color-neutral-800-channels: 27% 0.018 250;
+  --color-neutral-900-channels: 20% 0.016 250;
+  --color-neutral-950-channels: 15% 0.012 250;
+  --color-error-100-channels: 90% 0.05 25;
+  --color-error-200-channels: 82% 0.09 25;
+  --color-error-300-channels: 75% 0.13 25;
+  --color-error-400-channels: 70% 0.16 25;
+  --color-error-500-channels: 62% 0.18 25;
+
+  /* Type */
+  --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", serif;
+  --font-body: "Inter Tight", "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Mono", ui-monospace, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.953rem;
+  --text-2xl: 2.441rem;
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --leading-tight: 1.15;
+  --leading-body: 1.6;
+
+  /* 4 px spacing scale */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 8rem;
+
+  /* Shape and rules */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-card: var(--radius-lg);
+  --radius-input: var(--radius-md);
+  --radius-chip: var(--radius-sm);
+  --rule-hairline: 1px;
+  --rule-double: 3px;
+  --control-height: 2.75rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 240ms;
+
+  /* Stacking */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}

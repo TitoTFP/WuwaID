@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
@@ -193,11 +193,19 @@ export default function EditorPage() {
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);
+  const [mobilePane, setMobilePane] = useState<"lines" | "editor">("lines");
+  const detailTabRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const toast = useToast();
+
+  useEffect(() => {
+    if (mobilePane !== "editor" || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const frame = requestAnimationFrame(() => detailTabRef.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [mobilePane]);
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -241,7 +249,6 @@ export default function EditorPage() {
     onSuccess: () => {
       setReorderPreview([]);
       queryClient.invalidateQueries({ queryKey: ["drafts"] });
-      toast.success("Reorder drafts saved");
     },
     onError: () => toast.error("Failed to save reorder drafts"),
   });
@@ -258,6 +265,7 @@ export default function EditorPage() {
     setSelectedId(null);
     setSelectedIds(new Set());
     setSearchQ("");
+    setMobilePane("lines");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   const lines = linesQ.data ?? [];
@@ -428,6 +436,7 @@ export default function EditorPage() {
     (id: number) => {
       setSelectedId(id);
       setSelectedIds(new Set());
+      setMobilePane("editor");
     },
     [],
   );
@@ -458,7 +467,6 @@ export default function EditorPage() {
         const matchLine = stateKeyIndex.get(k);
         if (matchLine) {
           selectById(matchLine.id);
-          toast.success(`Jumped to state ${stateMatch[1]}.${stateMatch[2]}`);
           return;
         }
       }
@@ -467,7 +475,6 @@ export default function EditorPage() {
       const lineId = Number(clean);
       if (Number.isInteger(lineId) && allLineIds.includes(lineId)) {
         selectById(lineId);
-        toast.success(`Jumped to #${lineId}`);
       } else {
         toast.error(`Line/state "${raw}" not found in this quest`);
       }
@@ -515,36 +522,36 @@ export default function EditorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-wide flex-1 flex flex-col overflow-hidden">
-      <div className="mb-3 space-y-2">
-        <div className="flex items-center justify-between">
+    <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
+      <header className="mb-3 space-y-2 border-b border-white/10 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Link
             to={qidN ? `/quests/${qidN}` : "/"}
-            className="link text-xs"
+            className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
           >
             ← back to viewer
           </Link>
-          <div className="flex gap-2">
-            <div className="btn text-xs btn-active">
-              Structure Editor Mode
+          <div className="flex flex-wrap gap-2">
+            <div className="btn btn-active whitespace-nowrap text-xs">
+              Structure
             </div>
             <Link
               to={`/translator/${qidN}`}
-              className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+              className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
               title="Translate dialogue to Indonesian"
             >
-              Indonesian Translation Mode
+              Translation
             </Link>
           </div>
         </div>
-        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="font-serif text-2xl text-slate-100">
-            Editor · quest #{qidN}
-            <span className="ml-2 text-sm text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
+        <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
+            Structure Editor <span className="font-mono text-sm text-accent-gold">Q{qidN}</span>
+            <span className="mt-1 block [overflow-wrap:anywhere] font-sans text-sm font-normal text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
           </h1>
           <button
             type="button"
-            className="btn text-xs"
+            className="btn min-w-11 text-xs"
             onClick={() => setShowHelp(true)}
             title="Show keyboard shortcuts"
             aria-label="Show keyboard shortcuts"
@@ -553,7 +560,7 @@ export default function EditorPage() {
           </button>
         </div>
         {breadcrumb && (
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-1 truncate font-mono text-[11px] text-slate-500" aria-label="Current editor location">
             <span>quest #{qidN}</span>
             <span className="mx-1 text-slate-700">›</span>
             <span>{breadcrumb.flow}</span>
@@ -581,7 +588,7 @@ export default function EditorPage() {
                   disabled={saveReorderQ.isPending}
                   onClick={() => saveReorderQ.mutate(reorderPreview)}
                 >
-                  {saveReorderQ.isPending ? "Saving..." : "Save reorder drafts"}
+                  {saveReorderQ.isPending ? "Saving…" : "Save reorder drafts"}
                 </button>
                 <button type="button" className="btn text-xs" onClick={resetPreview}>
                   Reset preview
@@ -592,7 +599,7 @@ export default function EditorPage() {
               {reorderPreview.map((change) => (
                 <li
                   key={change.line_id}
-                  className="flex items-center justify-between gap-2 rounded border border-white/5 bg-bg-1/40 px-2 py-1"
+                  className="flex items-center justify-between gap-2 rounded-sm border border-white/5 bg-bg-1/40 px-2 py-1"
                 >
                   <span className="font-mono">
                     #<span className="text-slate-400">{change.line_id}</span>{" "}
@@ -605,7 +612,7 @@ export default function EditorPage() {
                   </span>
                   <button
                     type="button"
-                    className="text-rose-300 hover:text-rose-200"
+                    className="grid min-h-11 min-w-11 place-items-center text-rose-300 hover:text-rose-200"
                     onClick={() =>
                       setReorderPreview((current) => current.filter((d) => d.line_id !== change.line_id))
                     }
@@ -631,7 +638,6 @@ export default function EditorPage() {
                   const ids = Array.from(selectedIds);
                   if (!ids.length) return;
                   moveBlock(ids, [ids[ids.length - 1]], "after");
-                  toast.success(`Moved ${ids.length} lines`);
                 }}
               >
                 Move to end
@@ -642,9 +648,36 @@ export default function EditorPage() {
             </div>
           </div>
         )}
+      </header>
+      <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Editor workspace panes">
+        <button
+          id="editor-lines-tab"
+          type="button"
+          aria-pressed={mobilePane === "lines"}
+          aria-controls="editor-lines-panel"
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          onClick={() => setMobilePane("lines")}
+        >
+          Lines
+        </button>
+        <button
+          ref={detailTabRef}
+          id="editor-detail-tab"
+          type="button"
+          aria-pressed={mobilePane === "editor"}
+          aria-controls="editor-detail-panel"
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "editor" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          disabled={selectedId === null}
+          onClick={() => setMobilePane("editor")}
+        >
+          Editor
+        </button>
       </div>
-      <div className="flex flex-1 min-h-0 gap-4">
-        <div className="flex w-[22rem] max-w-full shrink-0 relative">
+      <div className="flex min-h-0 flex-1 gap-0 lg:gap-4">
+        <div
+          id="editor-lines-panel"
+          className={["relative w-full max-w-full shrink-0 lg:w-[22rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           <aside className="card flex-1 flex flex-col overflow-hidden p-2">
             {linesQ.isLoading && questQ.isLoading && (
               <div className="p-2">
@@ -679,11 +712,14 @@ export default function EditorPage() {
           </aside>
           <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
         </div>
-        <section className="card flex-1 flex flex-col p-4 min-h-0 overflow-y-auto">
+        <section
+          id="editor-detail-panel"
+          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4", mobilePane === "editor" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           {selectedId === null ? (
             <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
-              <p>Select a line on the left, or press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
-              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
+              <p>Select a line on the left, or press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
+              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
             </div>
           ) : questQ.isLoading ? (
             <Skeleton variant="form" />
@@ -711,7 +747,7 @@ export default function EditorPage() {
               />
               {backlinks.length > 0 && (
                 <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
-                  <summary className="cursor-pointer text-slate-300">
+                  <summary className="flex min-h-11 cursor-pointer items-center text-slate-300">
                     Backlinks · {backlinks.length} line(s) jump here
                   </summary>
                   <ul className="mt-2 space-y-1">
@@ -722,7 +758,7 @@ export default function EditorPage() {
                       >
                         <button
                           type="button"
-                          className="link text-xs"
+                          className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
                           onClick={() => selectById(link.fromId)}
                         >
                           #{link.fromId} · {link.fromType}

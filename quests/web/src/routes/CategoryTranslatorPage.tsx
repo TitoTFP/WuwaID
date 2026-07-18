@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
@@ -17,12 +17,20 @@ export default function CategoryTranslatorPage() {
   const [searchQ, setSearchQ] = useState("");
   const [expandedPrefixes, setExpandedPrefixes] = useState<Set<string>>(new Set());
   const [previewEntries, setPreviewEntries] = useState<CategoryEditorEntry[]>([]);
+  const [mobilePane, setMobilePane] = useState<"keys" | "translation">("keys");
+  const detailTabRef = useRef<HTMLButtonElement>(null);
 
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const toast = useToast();
+
+  useEffect(() => {
+    if (mobilePane !== "translation" || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const frame = requestAnimationFrame(() => detailTabRef.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [mobilePane]);
 
   const entriesQ = useQuery({
     queryKey: ["editor", "category", categoryName, "entries"],
@@ -62,6 +70,7 @@ export default function CategoryTranslatorPage() {
   useEffect(() => {
     setSelectedKey(null);
     setSearchQ("");
+    setMobilePane("keys");
   }, [categoryName]);
 
   const entries = entriesQ.data ?? [];
@@ -136,6 +145,7 @@ export default function CategoryTranslatorPage() {
       if (flatFilteredKeys.length === 0) return;
       if (selectedKey === null) {
         setSelectedKey(flatFilteredKeys[0]);
+        setMobilePane("translation");
         return;
       }
       const idx = flatFilteredKeys.indexOf(selectedKey);
@@ -143,6 +153,7 @@ export default function CategoryTranslatorPage() {
       const next = flatFilteredKeys[idx + direction];
       if (next !== undefined) {
         setSelectedKey(next);
+        setMobilePane("translation");
         
         // Auto-expand prefix of next selected item
         const nextEntry = previewEntryMap.get(next);
@@ -192,35 +203,35 @@ export default function CategoryTranslatorPage() {
   ]);
 
   return (
-    <div className="container-wide flex-1 flex flex-col overflow-hidden">
-      <div className="mb-3 space-y-2">
-        <div className="flex items-center justify-between">
+    <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
+      <header className="mb-3 space-y-2 border-b border-white/10 pb-3">
+        <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
           <Link
             to={`/categories/${categoryName}`}
-            className="link text-xs"
+            className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
           >
             ← back to category table
           </Link>
           <div className="flex gap-2">
-            <div className="btn text-xs btn-active border-accent-gold/45 text-accent-gold">
-              Category Translation Mode
+            <div className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold">
+              Category translation
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="font-serif text-2xl text-slate-100">
-            Category Translator Workspace · {categoryName}
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
+            Category Translator <span className="block font-mono text-sm text-accent-gold">{categoryName}</span>
           </h1>
         </div>
 
         {/* Translation Progress bar */}
         {!entriesQ.isLoading && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-bg-2/30 border border-white/5 rounded-md px-3 py-2 text-xs">
-            <div className="font-semibold text-slate-300 shrink-0">Indonesian Translation Progress:</div>
-            <div className="relative flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="flex flex-col gap-2 border border-white/10 bg-bg-2/30 px-3 py-2 text-xs sm:flex-row sm:items-center sm:gap-3">
+            <div className="shrink-0 font-semibold text-slate-300">Translation progress</div>
+            <div className="relative h-1.5 w-full shrink-0 overflow-hidden bg-slate-800 sm:w-auto sm:flex-1">
               <div
-                className="h-full bg-gradient-to-r from-accent-gold to-yellow-500 transition-all duration-500 rounded-full"
+                className="h-full bg-accent-gold"
                 style={{ width: `${stats.percentage}%` }}
               />
             </div>
@@ -229,11 +240,39 @@ export default function CategoryTranslatorPage() {
             </div>
           </div>
         )}
+      </header>
+
+      <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Category translator workspace panes">
+        <button
+          id="category-keys-tab"
+          type="button"
+          aria-pressed={mobilePane === "keys"}
+          aria-controls="category-keys-panel"
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "keys" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          onClick={() => setMobilePane("keys")}
+        >
+          Keys
+        </button>
+        <button
+          ref={detailTabRef}
+          id="category-detail-tab"
+          type="button"
+          aria-pressed={mobilePane === "translation"}
+          aria-controls="category-detail-panel"
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          disabled={selectedKey === null}
+          onClick={() => setMobilePane("translation")}
+        >
+          Translation
+        </button>
       </div>
 
-      <div className="flex flex-1 min-h-0 gap-4">
+      <div className="flex min-h-0 flex-1 gap-0 lg:gap-4">
         {/* Category key list sidebar */}
-        <div className="flex w-[22rem] max-w-full shrink-0 relative">
+        <div
+          id="category-keys-panel"
+          className={["relative w-full max-w-full shrink-0 lg:w-[22rem]", mobilePane === "keys" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           <aside className="card flex-1 flex flex-col overflow-hidden p-2 bg-bg-2/20">
             {entriesQ.isLoading && (
               <div className="p-2">
@@ -245,20 +284,20 @@ export default function CategoryTranslatorPage() {
               <div className="flex h-full flex-col gap-2">
                 {/* Search */}
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+                  <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-500">
                     ⌕
                   </span>
                   <input
                     value={searchQ}
                     onChange={(e) => setSearchQ(e.target.value)}
-                    className="input h-9 pl-7 pr-10 text-xs"
-                    placeholder="Filter keys or text..."
+                    className="input min-h-11 pl-7 pr-11 text-xs"
+                    placeholder="Filter keys or text…"
                     type="search"
                   />
                   {searchQ && (
                     <button
                       type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100"
+                      className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center text-slate-400 hover:text-slate-100"
                       onClick={() => setSearchQ("")}
                     >
                       ×
@@ -272,11 +311,11 @@ export default function CategoryTranslatorPage() {
                     {flatFilteredKeys.length} match{flatFilteredKeys.length !== 1 ? "es" : ""}
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" className="hover:text-slate-300" onClick={expandAll}>
+                    <button type="button" className="min-h-11 whitespace-nowrap px-1 hover:text-slate-300" onClick={expandAll}>
                       expand all
                     </button>
                     <span className="text-slate-700">|</span>
-                    <button type="button" className="hover:text-slate-300" onClick={collapseAll}>
+                    <button type="button" className="min-h-11 whitespace-nowrap px-1 hover:text-slate-300" onClick={collapseAll}>
                       collapse all
                     </button>
                   </div>
@@ -287,10 +326,10 @@ export default function CategoryTranslatorPage() {
                   {Object.entries(groupedEntries).map(([prefix, group]) => {
                     const isOpen = expandedPrefixes.has(prefix);
                     return (
-                      <div key={prefix} className="border border-white/5 rounded-md overflow-hidden bg-bg-2/30">
+                      <div key={prefix} className="overflow-hidden border-y border-white/10 bg-bg-2/30">
                         <button
                           type="button"
-                          className="w-full flex items-center justify-between px-3 py-2 bg-bg-2/60 hover:bg-bg-2 text-left font-semibold text-slate-300 transition"
+                          className="flex min-h-11 w-full items-center justify-between bg-bg-2/60 px-3 py-2 text-left font-semibold text-slate-300 transition-colors hover:bg-bg-2"
                           onClick={() => togglePrefix(prefix)}
                         >
                           <span className="truncate">{prefix}</span>
@@ -300,7 +339,7 @@ export default function CategoryTranslatorPage() {
                         </button>
                         
                         {isOpen && (
-                          <div className="p-1 space-y-0.5 bg-bg-1/40 max-h-[300px] overflow-y-auto">
+                          <div className="max-h-[300px] space-y-1 overflow-y-auto bg-bg-1/40 p-1">
                             {group.map((item) => {
                               const isSelected = selectedKey === item.key;
                               const isTranslated = !!(item.id && item.id.trim() !== "");
@@ -310,24 +349,27 @@ export default function CategoryTranslatorPage() {
                                   key={item.key}
                                   type="button"
                                   className={[
-                                    "w-full flex items-center justify-between text-left p-2 rounded transition border text-xs font-mono",
+                                    "flex min-h-11 w-full items-center justify-between border p-2 text-left font-mono text-xs transition-colors",
                                     isSelected
                                       ? "bg-accent-gold/15 text-accent-gold border-accent-gold/30 font-semibold"
                                       : "bg-transparent text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200",
                                   ].join(" ")}
-                                  onClick={() => setSelectedKey(item.key)}
+                                  onClick={() => {
+                                    setSelectedKey(item.key);
+                                    setMobilePane("translation");
+                                  }}
                                 >
                                   <span className="truncate flex-1 mr-2">{item.key}</span>
                                   <div className="flex items-center gap-1 shrink-0">
                                     {item.is_edited && (
                                       <span
-                                        className="w-1.5 h-1.5 rounded-full bg-accent-teal"
+                                        className="h-1.5 w-1.5 rounded-sm bg-accent-teal"
                                         title="Approved editor edits"
                                       />
                                     )}
                                     {pendingDrafts > 0 && (
                                       <span
-                                        className="w-1.5 h-1.5 rounded-full bg-accent-gold"
+                                        className="h-1.5 w-1.5 rounded-sm bg-accent-gold"
                                         title="Pending draft review"
                                       />
                                     )}
@@ -358,12 +400,15 @@ export default function CategoryTranslatorPage() {
         </div>
 
         {/* Translation Workbench panel */}
-        <section className="card flex-1 flex flex-col p-4 min-h-0 overflow-y-auto">
+        <section
+          id="category-detail-panel"
+          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4", mobilePane === "translation" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           {selectedKey === null ? (
             <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
               <p>Select a key on the left to start translating.</p>
               <p className="mt-1 text-[11px] text-slate-600">
-                Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">j</kbd> / <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">k</kbd> to move up/down.
+                Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">j</kbd> / <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">k</kbd> to move up/down.
               </p>
             </div>
           ) : entriesQ.isLoading ? (

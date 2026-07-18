@@ -43,65 +43,82 @@ export default function SideQuestsPage() {
   });
 
   return (
-    <div className="container-narrow space-y-5">
-      <div>
-        <h1 className="font-serif text-2xl text-accent-gold">Side Quests</h1>
-        <p className="text-xs text-slate-500 mt-1">
+    <div className="container-narrow gap-6 pb-8">
+      <header className="border-b border-white/10 pb-5">
+        <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">Side Quests</h1>
+        <p className="mt-1 font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">
           {data?.total.toLocaleString() ?? "…"} quests · filtered & paginated
         </p>
-      </div>
+      </header>
 
-      <div className="card p-3 grid grid-cols-2 sm:grid-cols-5 gap-2">
-        <input
-          className="input col-span-2 sm:col-span-1"
-          placeholder="Name contains…"
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
-        />
-        <select
-          className="input"
-          value={questType}
-          onChange={(e) => { setQuestType(e.target.value === "" ? "" : Number(e.target.value)); setPage(1); }}
-        >
-          <option value="">All types</option>
-          {Object.entries(TYPE_LABEL).map(([k, v]) => (
-            <option key={k} value={k}>{v} ({k})</option>
-          ))}
-        </select>
-        <select
-          className="input"
-          value={speaker}
-          onChange={(e) => { setSpeaker(e.target.value); setPage(1); }}
-        >
-          <option value="">Any speaker</option>
-          {speakers.slice(0, 200).map((s) => (
-            <option key={s.name} value={s.name}>{s.name} ({s.line_count})</option>
-          ))}
-        </select>
-        <select
-          className="input"
-          value={hasOptions}
-          onChange={(e) => { setHasOptions(e.target.value as any); setPage(1); }}
-        >
-          <option value="">Any</option>
-          <option value="yes">Has player options</option>
-          <option value="no">No options</option>
-        </select>
-        <select
-          className="input"
-          value={sort}
-          onChange={(e) => setSort(e.target.value as any)}
-        >
-          <option value="id">Sort: id</option>
-          <option value="name">Sort: name</option>
-          <option value="lines">Sort: most lines</option>
-          <option value="lines_asc">Sort: fewest lines</option>
-          <option value="translated">Sort: most translated</option>
-          <option value="translated_asc">Sort: least translated</option>
-        </select>
-      </div>
+      <section className="border-y border-white/10 py-3" aria-label="Quest filters">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <label className="min-w-0 sm:col-span-2 lg:col-span-1">
+            <span className="mb-1 block text-[10px] text-slate-500">Quest name</span>
+            <input
+              className="input"
+              placeholder="Name contains…"
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+            />
+          </label>
+          <label className="min-w-0">
+            <span className="mb-1 block text-[10px] text-slate-500">Type</span>
+            <select
+              className="input"
+              value={questType}
+              onChange={(e) => { setQuestType(e.target.value === "" ? "" : Number(e.target.value)); setPage(1); }}
+            >
+              <option value="">All types</option>
+              {Object.entries(TYPE_LABEL).map(([k, v]) => (
+                <option key={k} value={k}>{v} ({k})</option>
+              ))}
+            </select>
+          </label>
+          <label className="min-w-0">
+            <span className="mb-1 block text-[10px] text-slate-500">Speaker</span>
+            <select
+              className="input"
+              value={speaker}
+              onChange={(e) => { setSpeaker(e.target.value); setPage(1); }}
+            >
+              <option value="">Any speaker</option>
+              {speakers.slice(0, 200).map((s) => (
+                <option key={s.name} value={s.name}>{s.name} ({s.line_count})</option>
+              ))}
+            </select>
+          </label>
+          <label className="min-w-0">
+            <span className="mb-1 block text-[10px] text-slate-500">Choices</span>
+            <select
+              className="input"
+              value={hasOptions}
+              onChange={(e) => { setHasOptions(e.target.value as any); setPage(1); }}
+            >
+              <option value="">Any</option>
+              <option value="yes">Has player options</option>
+              <option value="no">No options</option>
+            </select>
+          </label>
+          <label className="min-w-0">
+            <span className="mb-1 block text-[10px] text-slate-500">Order</span>
+            <select
+              className="input"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as any)}
+            >
+              <option value="id">Sort: id</option>
+              <option value="name">Sort: name</option>
+              <option value="lines">Sort: most lines</option>
+              <option value="lines_asc">Sort: fewest lines</option>
+              <option value="translated">Sort: most translated</option>
+              <option value="translated_asc">Sort: least translated</option>
+            </select>
+          </label>
+        </div>
+      </section>
 
-      {isLoading && <div className="text-sm text-slate-500">Loading…</div>}
+      {isLoading && <div className="py-4 text-sm text-slate-500">Loading quests…</div>}
 
       {(() => {
         const items = data?.items ?? [];
@@ -115,7 +132,7 @@ export default function SideQuestsPage() {
           return { q, dupIndex: idx, dupTotal: total };
         });
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="divide-y divide-white/10 border-y border-white/10" aria-label="Side quests">
             {dupInfo.map(({ q, dupIndex, dupTotal }) => (
               <QuestCard key={q.qid} q={q} dupIndex={dupIndex} dupTotal={dupTotal} />
             ))}
@@ -124,25 +141,25 @@ export default function SideQuestsPage() {
       })()}
 
       {data && data.total > data.page_size && (
-        <div className="flex items-center justify-between text-sm">
+        <nav className="flex items-center justify-between gap-3 text-sm" aria-label="Side quest pages">
           <button
-            className="btn"
+            className="btn whitespace-nowrap"
             disabled={page === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             ← Prev
           </button>
-          <span className="text-slate-500">
+          <span className="font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">
             Page {page} of {Math.ceil(data.total / data.page_size)}
           </span>
           <button
-            className="btn"
+            className="btn whitespace-nowrap"
             disabled={page * data.page_size >= data.total}
             onClick={() => setPage((p) => p + 1)}
           >
             Next →
           </button>
-        </div>
+        </nav>
       )}
 
       {isFetching && !isLoading && <div className="text-center text-xs text-slate-500">updating…</div>}

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 interface Shortcut {
   keys: string;
   description: string;
@@ -18,35 +20,54 @@ export default function ShortcutsHelp({
   open: boolean;
   onClose: () => void;
 }) {
-  if (!open) return null;
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) {
+      dialog.showModal();
+      closeRef.current?.focus();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%_-_1.5rem)] max-w-md border border-white/15 bg-bg-2 p-0 text-slate-100 backdrop:bg-black/70"
       aria-label="Keyboard shortcuts"
-      onClick={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
     >
       <div
-        className="w-full max-w-md rounded-lg border border-white/10 bg-bg-2 p-4 shadow-xl"
+        className="w-full bg-bg-2 p-4 sm:p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-serif text-lg text-slate-100">Keyboard shortcuts</h2>
           <button
+            ref={closeRef}
             type="button"
-            className="text-xs text-slate-400 hover:text-slate-200"
+            className="grid min-h-11 min-w-11 place-items-center text-sm text-slate-400 hover:text-slate-200"
             onClick={onClose}
             aria-label="Close"
           >
             ×
           </button>
         </div>
-        <ul className="space-y-1.5 text-sm">
+        <ul className="space-y-2 text-sm">
           {SHORTCUTS.map((shortcut) => (
             <li key={shortcut.keys} className="flex items-center justify-between gap-3">
               <span className="text-slate-300">{shortcut.description}</span>
-              <kbd className="rounded border border-white/10 bg-bg-1 px-2 py-0.5 font-mono text-xs text-slate-200">
+              <kbd className="rounded-sm border border-white/10 bg-bg-1 px-2 py-1 font-mono text-xs text-slate-200">
                 {shortcut.keys}
               </kbd>
             </li>
@@ -58,6 +79,6 @@ export default function ShortcutsHelp({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

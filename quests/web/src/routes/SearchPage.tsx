@@ -81,13 +81,13 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container-narrow space-y-5">
-      <div>
-        <h1 className="font-serif text-2xl text-accent-gold">Search</h1>
-        <p className="text-xs text-slate-500 mt-1">
+    <div className="container-narrow gap-6 pb-8">
+      <header className="border-b border-white/10 pb-5">
+        <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">Search</h1>
+        <p className="mt-1 text-xs text-slate-500">
           FTS5 over 71,469 dialogue lines & static categories · bigram tokenized for CJK
         </p>
-      </div>
+      </header>
 
       <form
         onSubmit={(e) => {
@@ -95,66 +95,70 @@ export default function SearchPage() {
           const trimmed = draft.trim();
           if (trimmed) setParams({ q: trimmed, lang });
         }}
-        className="card p-3 flex flex-col sm:flex-row gap-2"
+        className="grid grid-cols-1 gap-3 border-y border-white/10 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end"
       >
-        <input
-          autoFocus
-          className="input flex-1"
-          placeholder="e.g. threnodian, 杨, 漂泊者"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <div className="flex gap-0.5 rounded-md border border-white/10 bg-bg-1 p-0.5">
-          {(["en", "zh", "ja", "id"] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setParams({ q, lang: l })}
-              className={`px-3 py-1.5 text-sm rounded ${
-                lang === l ? "bg-accent-gold/20 text-accent-gold" : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              {LANG_LABEL[l]}
-            </button>
-          ))}
+        <label className="min-w-0">
+          <span className="mb-1 block text-[10px] text-slate-500">Archive query</span>
+          <input
+            autoFocus
+            className="input"
+            placeholder="e.g. threnodian, 杨, 漂泊者"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        </label>
+        <div>
+          <span className="mb-1 block text-[10px] text-slate-500">Language</span>
+          <div className="flex min-h-11 items-center border border-white/10 bg-bg-1" role="group" aria-label="Search language">
+            {(["en", "zh", "ja", "id"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setParams({ q, lang: l })}
+                aria-pressed={lang === l}
+                className={`min-h-11 min-w-11 px-2 text-sm transition-colors ${
+                  lang === l ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400 hover:bg-bg-2 hover:text-slate-200"
+                }`}
+              >
+                {LANG_LABEL[l]}
+              </button>
+            ))}
+          </div>
         </div>
+        <button type="submit" className="btn btn-active whitespace-nowrap">Search</button>
       </form>
 
       {q && (
-        <div className="flex border-b border-white/5 gap-4">
+        <div className="flex items-center gap-5 border-b border-white/10" role="group" aria-label="Search result types">
           <button
             type="button"
             onClick={() => setActiveTab("quests")}
-            className={`pb-2.5 text-sm font-medium transition-colors relative ${
+            aria-pressed={activeTab === "quests"}
+            className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "quests"
-                ? "text-accent-gold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "border-accent-gold text-accent-gold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            Quests / Dialogues
-            <span className="ml-1.5 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
+            Dialogues
+            <span className="ml-2 font-mono text-[10px] text-slate-500 tabular-nums">
               {isQuestLoading ? "…" : questHits.length}
             </span>
-            {activeTab === "quests" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-gold" />
-            )}
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("categories")}
-            className={`pb-2.5 text-sm font-medium transition-colors relative ${
+            aria-pressed={activeTab === "categories"}
+            className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "categories"
-                ? "text-accent-gold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "border-accent-gold text-accent-gold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            Grouped Texts / Categories
-            <span className="ml-1.5 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-400">
+            Grouped texts
+            <span className="ml-2 font-mono text-[10px] text-slate-500 tabular-nums">
               {isCategoryLoading ? "…" : categoryHits.length}
             </span>
-            {activeTab === "categories" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-gold" />
-            )}
           </button>
         </div>
       )}
@@ -176,58 +180,57 @@ export default function SearchPage() {
       )}
 
       {activeTab === "quests" && !isQuestLoading && (
-        <div className="space-y-4">
+        <div id="quest-search-results" className="divide-y divide-white/10 border-y border-white/10">
           {Object.entries(groupedQuests).map(([qid, items]) => {
             const name = items[0]?.quest_name ?? "";
             const { dupIndex, dupTotal } = dupFor(Number(qid), name);
             const isDup = (dupTotal ?? 0) > 1;
             return (
-              <div
-                key={qid}
-                className={`card p-3 sm:p-4 space-y-2 ${isDup ? "border-l-2 border-l-accent-gold/60" : ""}`}
-              >
-                <div className="flex items-center justify-between gap-2">
+              <section key={qid} className="py-4">
+                <div className="flex min-w-0 items-center justify-between gap-3 px-1 sm:px-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="font-medium text-accent-gold hover:underline truncate">
+                    <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="min-h-11 min-w-0 truncate inline-flex items-center font-serif text-lg text-slate-100 hover:text-accent-gold">
                       {name}
                     </Link>
                     {isDup && (
-                      <span className="text-[10px] text-accent-gold shrink-0">
-                        {dupIndex}/{dupTotal}
+                      <span className="shrink-0 font-mono text-[10px] text-accent-gold">
+                        record {dupIndex}/{dupTotal}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-slate-500 font-mono shrink-0">#{qid}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-slate-500">#{qid}</span>
                 </div>
-                {items.map((h) => (
-                  <Link
-                    key={`${h.qid}-${h.line_id}`}
-                    to={`/quests/${h.qid}?q=${encodeURIComponent(q)}&lang=${lang}#L${h.line_id}`}
-                    className="block rounded border-l-2 border-accent-teal/40 bg-bg-1/40 p-2 hover:bg-bg-2 transition"
-                  >
-                    <div className="text-[10px] text-slate-500 mb-0.5">
-                      {h.speaker_en || <em>— narrator —</em>} · line #{h.line_id} · {h.line_type}
-                    </div>
-                    <div
-                      className="text-sm text-slate-200"
-                      dangerouslySetInnerHTML={{ __html: h.snippet }}
-                    />
-                  </Link>
-                ))}
-              </div>
+                <div className="divide-y divide-white/5 border-t border-white/5">
+                  {items.map((h) => (
+                    <Link
+                      key={`${h.qid}-${h.line_id}`}
+                      to={`/quests/${h.qid}?q=${encodeURIComponent(q)}&lang=${lang}#L${h.line_id}`}
+                      className="block min-w-0 px-1 py-3 transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:px-3"
+                    >
+                      <div className="mb-1 font-mono text-[10px] text-slate-500">
+                        {h.speaker_en || <em>— narrator —</em>} · line #{h.line_id} · {h.line_type}
+                      </div>
+                      <div
+                        className="min-w-0 [overflow-wrap:anywhere] text-base leading-relaxed text-slate-200"
+                        dangerouslySetInnerHTML={{ __html: h.snippet }}
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </section>
             );
           })}
         </div>
       )}
 
       {activeTab === "categories" && !isCategoryLoading && (
-        <div className="space-y-4">
+        <div id="category-search-results" className="divide-y divide-white/10 border-y border-white/10">
           {Object.entries(groupedCategories).map(([categoryName, items]) => (
-            <div key={categoryName} className="card p-3 sm:p-4 space-y-2">
-              <div className="flex items-center justify-between gap-2 border-b border-white/5 pb-2 mb-2">
+            <section key={categoryName} className="py-4">
+              <div className="flex min-w-0 items-center justify-between gap-3 px-1 sm:px-3">
                 <Link
                   to={`/categories/${categoryName}`}
-                  className="font-serif text-lg text-accent-gold hover:underline truncate"
+                  className="inline-flex min-h-11 min-w-0 items-center truncate font-serif text-lg text-slate-100 hover:text-accent-gold"
                 >
                   {categoryName}
                 </Link>
@@ -235,23 +238,23 @@ export default function SearchPage() {
                   {items.length} match{items.length !== 1 ? "es" : ""}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="divide-y divide-white/5 border-t border-white/5">
                 {items.map((h) => (
                   <Link
                     key={h.key}
                     to={`/categories/${h.category}?q=${encodeURIComponent(h.key)}`}
-                    className="block rounded border-l-2 border-accent-gold/40 bg-bg-1/40 p-2 hover:bg-bg-2 transition"
+                    className="block min-w-0 px-1 py-3 transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:px-3"
                   >
-                    <div className="text-[10px] text-slate-500 mb-0.5 flex justify-between">
-                      <span className="font-mono text-accent-gold select-all">{h.key}</span>
+                    <div className="mb-1 flex min-w-0 justify-between text-[10px] text-slate-500">
+                      <span className="min-w-0 [overflow-wrap:anywhere] font-mono text-accent-gold select-all">{h.key}</span>
                     </div>
-                    <div className="text-sm text-slate-200 mt-1 font-sans leading-relaxed">
+                    <div className="min-w-0 [overflow-wrap:anywhere] font-sans text-base leading-relaxed text-slate-200">
                       {h.text}
                     </div>
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       )}

@@ -1,3 +1,5 @@
+import { useEffect, useId, useRef } from "react";
+
 export default function ConfirmDialog({
   open,
   title,
@@ -15,15 +17,45 @@ export default function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  if (!open) return null;
+  const titleId = useId();
+  const messageId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) {
+      dialog.showModal();
+      cancelRef.current?.focus();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-      <div className="w-full max-w-sm rounded-lg border border-white/10 bg-bg-2 p-4 shadow-xl">
-        <h2 className="font-serif text-lg text-slate-100">{title}</h2>
-        <p className="mt-2 text-sm text-slate-400">{message}</p>
-        <div className="mt-4 flex justify-end gap-2">
-          <button type="button" className="btn" onClick={onCancel}>
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%_-_1.5rem)] max-w-sm border border-white/15 bg-bg-2 p-0 text-slate-100 backdrop:bg-black/70"
+      role={destructive ? "alertdialog" : undefined}
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
+      onCancel={(event) => {
+        event.preventDefault();
+        onCancel();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onCancel();
+      }}
+    >
+      <div
+        className="w-full bg-bg-2 p-4 sm:p-5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 id={titleId} className="font-serif text-xl text-slate-100">{title}</h2>
+        <p id={messageId} className="mt-2 text-base leading-relaxed text-slate-400">{message}</p>
+        <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-white/10 pt-3">
+          <button ref={cancelRef} type="button" className="btn" onClick={onCancel}>
             Cancel
           </button>
           <button
@@ -40,6 +72,6 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

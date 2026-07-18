@@ -83,20 +83,19 @@ function Row({ index, style, data }: ListChildComponentProps<RowData>) {
   if (r.kind === "header") {
     return (
       <RowWrapper index={index} style={style} setSize={data.setSize}>
-        <div className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-slate-600">
-          <span>{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
+        <div className="flex min-h-10 items-center gap-3 px-1 pt-2 font-mono text-[10px] text-slate-500 sm:px-3">
+          <span className="shrink-0">{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
           {r.plot_mode && r.plot_mode !== "Normal" && (
-            <span className="rounded border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-slate-400">
-              {r.plot_mode}
-            </span>
+            <span className="shrink-0 text-slate-400">{r.plot_mode}</span>
           )}
+          <span className="h-px min-w-4 flex-1 bg-white/10" aria-hidden="true" />
         </div>
       </RowWrapper>
     );
   }
   return (
     <RowWrapper index={index} style={style} setSize={data.setSize}>
-      <div className="pb-2">
+      <div>
         <DialogueLine
           line={r.line}
           primary={data.primary}
@@ -127,7 +126,6 @@ export default function QuestPage() {
     mutationFn: () => api.deleteQuestTranslation(qidN),
     onSuccess: () => {
       setConfirmDelete(false);
-      toast.success("Quest Indonesian translations deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["quest", qidN] });
     },
     onError: (err: any) => {
@@ -157,6 +155,7 @@ export default function QuestPage() {
   });
 
   const listRef = useRef<List>(null);
+  const scrolledRef = useRef(false);
   const sizeMap = useRef<Record<number, number>>({});
   const [, forceUpdate] = useState(0);
 
@@ -169,6 +168,7 @@ export default function QuestPage() {
   }, []);
 
   useEffect(() => {
+    scrolledRef.current = false;
     sizeMap.current = {};
     listRef.current?.resetAfterIndex(0, false);
   }, [qid]);
@@ -248,7 +248,6 @@ export default function QuestPage() {
     return () => ro.disconnect();
   }, []);
 
-  const scrolledRef = useRef(false);
   useEffect(() => {
     if (!quest || scrolledRef.current) return;
     const m = window.location.hash.match(/^#L(\d+)$/);
@@ -256,39 +255,67 @@ export default function QuestPage() {
     const targetId = Number(m[1]);
     const idx = rows.findIndex((r) => r.kind === "line" && r.line.id === targetId);
     if (idx >= 0 && listRef.current) {
-      listRef.current.scrollToItem(idx, "center");
       scrolledRef.current = true;
-      setTimeout(() => {
-        const el = document.getElementById(`L${targetId}`);
-        if (el) {
-          el.classList.add("is-highlighted");
-          setTimeout(() => el.classList.remove("is-highlighted"), 3000);
-        }
-      }, 250);
+      let settleTimer = 0;
+      let highlightTimer = 0;
+      let clearTimer = 0;
+      const initialTimer = window.setTimeout(() => {
+        listRef.current?.scrollToItem(idx, "center");
+        settleTimer = window.setTimeout(() => {
+          listRef.current?.scrollToItem(idx, "center");
+          highlightTimer = window.setTimeout(() => {
+            const el = document.getElementById(`L${targetId}`);
+            if (!el) return;
+            el.classList.add("is-highlighted");
+            clearTimer = window.setTimeout(() => el.classList.remove("is-highlighted"), 3000);
+          }, 50);
+        }, 100);
+      }, 100);
+      return () => {
+        window.clearTimeout(initialTimer);
+        window.clearTimeout(settleTimer);
+        window.clearTimeout(highlightTimer);
+        window.clearTimeout(clearTimer);
+      };
     }
   }, [quest, rows]);
 
-  if (isLoading) return <div className="container-narrow text-sm text-slate-500">Loading quest…</div>;
-  if (error || !quest) return <div className="container-narrow text-sm text-rose-400">Quest {qid} not found.</div>;
+  if (isLoading) return <div className="container-narrow py-6 text-sm text-slate-500">Loading quest…</div>;
+  if (error || !quest) return <div className="container-narrow py-6 text-sm text-rose-400">Quest {qid} not found.</div>;
 
   return (
-    <div className="container-narrow flex-1 flex flex-col overflow-hidden space-y-5">
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`} className="link text-xs">
-            ← {quest.side === 1 ? "side quests" : (quest.chapter_name ?? "chapter")}
-          </Link>
-          <div className="flex items-center gap-2">
+    <div className="container-narrow flex flex-1 flex-col gap-4 overflow-hidden pb-2">
+      <header className="shrink-0 border-b border-white/10 pb-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <Link
+              to={quest.side === 1 ? "/side-quests" : `/chapters/${quest.chapter_id ?? 0}`}
+              className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
+            >
+              ← {quest.side === 1 ? "Side quests" : "Chapter"}
+            </Link>
+            <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl leading-tight text-slate-100 sm:text-3xl">
+              {quest.quest_name}
+            </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">
+              <span>#{quest.quest_id}</span>
+              {quest.chapter_name && quest.side === 0 && (
+                <span className="text-accent-teal">{quest.chapter_name}</span>
+              )}
+              <span>{quest.total_lines} lines</span>
+            </div>
+          </div>
+          <nav className="flex flex-wrap items-center gap-2" aria-label="Quest actions">
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className="btn text-xs btn-active"
+              className="btn btn-active whitespace-nowrap text-xs"
             >
-              Export to SQLite
+              Export SQLite
             </button>
             <Link
               to={`/editor/${quest.quest_id}`}
-              className="btn text-xs hover:border-slate-400"
+              className="btn whitespace-nowrap text-xs hover:border-slate-400"
               title="Edit quest structure and settings"
             >
               Edit Flow
@@ -297,7 +324,7 @@ export default function QuestPage() {
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="btn text-xs border-rose-400/40 text-rose-300 hover:bg-rose-500/10"
+                className="btn whitespace-nowrap border-rose-400/40 text-xs text-rose-300 hover:bg-rose-500/10"
                 title="Delete Indonesian translation locally"
               >
                 Delete ID
@@ -305,43 +332,33 @@ export default function QuestPage() {
             )}
             <Link
               to={`/translator/${quest.quest_id}`}
-              className="btn text-xs border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+              className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
               title="Translate dialogue to Indonesian"
             >
               Translate
             </Link>
-          </div>
+          </nav>
         </div>
-        <h1 className="mt-1 font-serif text-2xl text-slate-100">
-          {quest.quest_name}
-        </h1>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-          <span className="font-mono">#{quest.quest_id}</span>
-          {quest.chapter_name && quest.side === 0 && (
-            <span className="text-accent-teal">{quest.chapter_name}</span>
-          )}
-          <span>{quest.total_lines} lines</span>
-        </div>
-      </div>
+      </header>
 
       <div
         ref={containerRef}
-        className="flex-1 w-full min-h-0"
+        className="min-h-0 w-full flex-1 border-y border-white/10"
       >
         <ErrorBoundary>
-        <List
-          ref={listRef}
-          height={listHeight}
-          itemCount={rows.length}
-          itemSize={getItemSize}
-          width="100%"
-          overscanCount={4}
-          estimatedItemSize={LINE_HEIGHT}
-          itemData={rowData}
-          itemKey={(idx, d) => d.rows[idx]?.key ?? String(idx)}
-        >
-          {Row}
-        </List>
+          <List
+            ref={listRef}
+            height={listHeight}
+            itemCount={rows.length}
+            itemSize={getItemSize}
+            width="100%"
+            overscanCount={4}
+            estimatedItemSize={LINE_HEIGHT}
+            itemData={rowData}
+            itemKey={(idx, d) => d.rows[idx]?.key ?? String(idx)}
+          >
+            {Row}
+          </List>
         </ErrorBoundary>
       </div>
       <ExportDialog
@@ -355,7 +372,7 @@ export default function QuestPage() {
         open={confirmDelete}
         title="Delete Indonesian Translation?"
         message="This will permanently delete all Indonesian translation data (including edits, drafts, and cache) for this quest. This action cannot be undone."
-        confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        confirmLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
         destructive
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => deleteMutation.mutate()}

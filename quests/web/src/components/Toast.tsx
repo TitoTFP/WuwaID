@@ -77,7 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function ToastViewport({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss: (id: number) => void }) {
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-80 max-w-[90vw] flex-col gap-2">
+    <div className="pointer-events-none fixed inset-x-2 bottom-2 z-[60] flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-80">
       {toasts.map((toast) => (
         <ToastView key={toast.id} toast={toast} onDismiss={() => onDismiss(toast.id)} />
       ))}
@@ -97,9 +97,10 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
 
   return (
     <div
-      role="status"
+      role={toast.variant === "error" ? "alert" : "status"}
+      aria-atomic="true"
       className={[
-        "pointer-events-auto flex items-center gap-3 rounded-md border px-3 py-2 text-sm shadow-lg backdrop-blur-sm",
+        "pointer-events-auto flex min-h-14 items-center gap-2 border px-3 py-2 text-sm",
         variantClass,
       ].join(" ")}
     >
@@ -107,7 +108,7 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
       {toast.action && (
         <button
           type="button"
-          className="rounded border border-accent-gold/40 px-2 py-0.5 text-xs text-accent-gold hover:bg-accent-gold/10"
+          className="min-h-11 whitespace-nowrap border border-accent-gold/40 px-3 text-xs text-accent-gold hover:bg-accent-gold/10"
           onClick={() => {
             toast.action?.onClick();
             onDismiss();
@@ -119,7 +120,7 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
       <button
         type="button"
         aria-label="Dismiss"
-        className="text-xs text-slate-400 hover:text-slate-200"
+        className="grid min-h-11 min-w-11 place-items-center text-sm text-slate-400 hover:text-slate-200"
         onClick={onDismiss}
       >
         ×

@@ -16,11 +16,11 @@ export type TreeFilters = {
   type: string | null;
 };
 
-const ROW_INNER = 34;
+const ROW_INNER = 48;
 const DROP_PAD = 8;
-const PREVIEW_GAP = 2;
-const PREVIEW_HEIGHT = 15;
-const ROW_GAP = 6;
+const PREVIEW_GAP = 4;
+const PREVIEW_HEIGHT = 16;
+const ROW_GAP = 8;
 
 const LINE_TYPE_TAG: Record<string, { tag: string; rail: string; tagClass: string }> = {
   Talk:         { tag: "TALK",   rail: "bg-accent-teal",   tagClass: "bg-accent-teal/15 text-accent-teal" },
@@ -79,7 +79,7 @@ function highlight(value: string, query: string) {
   return (
     <>
       {value.slice(0, index)}
-      <mark className="rounded bg-accent-gold/25 px-0.5 text-accent-gold">
+      <mark className="bg-transparent text-accent-gold underline decoration-1 decoration-accent-gold underline-offset-2">
         {value.slice(index, index + q.length)}
       </mark>
       {value.slice(index + q.length)}
@@ -444,32 +444,32 @@ export default function DialogueTreeView({
 
   return (
     <div className="flex h-full flex-col gap-2">
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <div className="relative">
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"
+            className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-500"
           >
             ⌕
           </span>
           <input
             value={searchQ}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="input h-9 pl-7 pr-16 text-xs"
-            placeholder="Search this quest..."
+            className="input min-h-11 pl-7 pr-16 text-xs"
+            placeholder="Search this quest…"
             type="search"
           />
           {searchQ ? (
             <button
               type="button"
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 transition hover:bg-white/5 hover:text-slate-100"
+              className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-100"
               onClick={() => onSearchChange("")}
             >
               ×
             </button>
           ) : (
-            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-500">
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-500">
               esc
             </kbd>
           )}
@@ -499,7 +499,7 @@ export default function DialogueTreeView({
             <select
               value={filters.type ?? ""}
               onChange={(e) => updateFilter("type", e.target.value || null)}
-              className="rounded-md border border-white/10 bg-bg-2 px-2 py-0.5 text-[10px] font-medium text-slate-300 transition hover:border-white/20"
+              className="min-h-11 border border-white/10 bg-bg-2 px-2 text-[10px] font-medium text-slate-300 transition-colors hover:border-white/20"
             >
               <option value="">any type</option>
               {types.map((type) => (
@@ -511,7 +511,7 @@ export default function DialogueTreeView({
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 border-t border-white/5 px-1 pt-2">
+      <div className="flex flex-col items-stretch gap-2 border-t border-white/5 px-1 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-[11px] tabular-nums text-slate-500">
           {searchQ.trim() ? (
             <span>
@@ -525,7 +525,7 @@ export default function DialogueTreeView({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex w-full items-center gap-1 sm:w-auto">
           <input
             value={jumpTo}
             onChange={(e) => setJumpTo(e.target.value)}
@@ -537,21 +537,21 @@ export default function DialogueTreeView({
             }}
             placeholder="#id / state"
             aria-label="Jump to line or state"
-            className="h-6 w-24 rounded-md border border-white/10 bg-bg-1 px-1.5 text-center font-mono text-[10px] text-slate-200 outline-none transition focus:border-accent-gold/60"
+            className="input h-11 w-24 px-2 text-center font-mono text-[10px]"
           />
           <button
             type="button"
-            className="btn h-6 px-2 text-[10px] disabled:opacity-40"
+            className="btn h-11 min-w-11 px-2 text-[10px] disabled:opacity-40"
             onClick={commitJump}
             disabled={!jumpTo.trim()}
             aria-label="Jump"
           >
             go
           </button>
-          <span className="mx-0.5 h-3 w-px bg-white/10" aria-hidden="true" />
+          <span className="mx-1 h-3 w-px bg-white/10" aria-hidden="true" />
           <button
             type="button"
-            className="btn h-6 px-2 text-[10px]"
+            className="btn h-11 min-w-11 px-3 text-[10px] lg:px-2"
             onClick={expandAll}
             aria-label="Expand all groups"
           >
@@ -559,7 +559,7 @@ export default function DialogueTreeView({
           </button>
           <button
             type="button"
-            className="btn h-6 px-2 text-[10px]"
+            className="btn h-11 min-w-11 px-3 text-[10px] lg:px-2"
             onClick={collapseAll}
             aria-label="Collapse all groups"
           >
@@ -568,13 +568,13 @@ export default function DialogueTreeView({
         </div>
       </div>
       {totalRows === 0 ? (
-        <div className="rounded-lg border border-dashed border-white/10 px-4 py-6 text-center">
+        <div className="border border-dashed border-white/10 px-4 py-6 text-center">
           <div className="text-base text-slate-600" aria-hidden="true">⌕</div>
           <div className="mt-1 text-xs text-slate-400">No matches in this quest.</div>
           {searchQ && (
             <button
               type="button"
-              className="mt-2 text-[10px] text-accent-teal hover:text-accent-gold"
+              className="mt-2 min-h-11 whitespace-nowrap px-3 text-[10px] text-accent-teal hover:text-accent-gold"
               onClick={() => onSearchChange("")}
             >
               clear search
@@ -642,7 +642,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
       type="button"
       onClick={onClick}
       className={[
-        "rounded-md border px-2 py-0.5 text-[10px] font-medium transition",
+        "min-h-11 border px-2 text-[10px] font-medium transition-colors",
         active
           ? "border-accent-gold/60 bg-accent-gold/10 text-accent-gold"
           : "border-white/10 bg-bg-2 text-slate-400 hover:border-white/20 hover:text-slate-200",
@@ -670,9 +670,9 @@ function DropBar({
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       className={[
-        "h-1.5 my-0.5 rounded-sm transition-all",
+        "h-2",
         active
-          ? "bg-gradient-to-r from-accent-gold to-accent-gold/40 shadow-[0_0_0_1px_rgba(214,182,107,0.4),0_0_10px_rgba(214,182,107,0.25)]"
+          ? "bg-accent-gold"
           : "bg-transparent",
       ].join(" ")}
     />
@@ -687,11 +687,11 @@ function MarkButton({ marked, onToggle }: { marked: boolean; onToggle: () => voi
         e.stopPropagation();
         onToggle();
       }}
-      title={marked ? "Batal tandai urut" : "Tandai sudah urut"}
-      aria-label={marked ? "Batal tandai urut" : "Tandai sudah urut"}
+      title={marked ? "Unmark reviewed order" : "Mark order reviewed"}
+      aria-label={marked ? "Unmark reviewed order" : "Mark order reviewed"}
       aria-pressed={marked}
       className={[
-        "shrink-0 rounded p-0.5 transition",
+        "grid min-w-11 shrink-0 self-stretch place-items-center transition-colors",
         marked
           ? "text-accent-emerald hover:text-accent-emerald/80"
           : "text-slate-500 hover:text-slate-300",
@@ -702,7 +702,7 @@ function MarkButton({ marked, onToggle }: { marked: boolean; onToggle: () => voi
           <circle cx="8" cy="8" r="7" fill="currentColor" />
           <polyline
             points="4.5 8 7 10.5 11.5 5.5"
-            stroke="#0b0d12"
+            stroke="var(--color-paper)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -826,7 +826,7 @@ function Row({
         onDragLeave={() => onDropTargetChange((cur) => (cur === insideKey ? null : cur))}
         onDrop={(e) => handleDrop(e, "inside")}
         className={[
-          "group flex h-[34px] items-center gap-2 rounded-md border px-2 text-xs transition-all",
+          "group flex h-12 items-center gap-2 border px-2 text-xs transition-colors",
           selected
             ? "border-accent-gold/50 bg-accent-gold/10"
             : multiSelected
@@ -845,7 +845,7 @@ function Row({
           <button
             type="button"
             onClick={onClick}
-            className="flex flex-1 min-w-0 items-center gap-1.5 overflow-hidden text-left"
+            className="flex min-w-0 flex-1 self-stretch items-center gap-2 overflow-hidden text-left"
           >
             {typeInfo && <span className={`self-stretch w-[3px] shrink-0 rounded-sm ${typeInfo.rail}`} />}
             <span className={dragDisabled ? "text-slate-700" : "cursor-grab text-slate-600 active:cursor-grabbing"}>
@@ -853,7 +853,7 @@ function Row({
             </span>
             <span className="shrink-0 font-mono text-[10px] text-slate-500">#{row.line!.id}</span>
             {typeInfo && (
-              <span className={`inline-block min-w-[50px] rounded-sm px-1.5 py-0.5 text-center text-[9px] font-bold tracking-wider ${typeInfo.tagClass}`}>
+              <span className={`inline-block min-w-[50px] rounded-sm px-2 py-1 text-center text-[10px] font-bold tracking-wider ${typeInfo.tagClass}`}>
                 {typeInfo.tag}
               </span>
             )}
@@ -862,7 +862,7 @@ function Row({
             )}
             <div className="ml-auto flex items-center gap-1">
               {activeInside && (
-                <span className="inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                <span className="inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
                   ↳ inside
                 </span>
               )}
@@ -877,11 +877,11 @@ function Row({
                 return (
                   <>
                     {visible.map((p) => (
-                      <span key={p.label} className={`inline-flex items-center rounded-sm px-1.5 py-0.5 text-[9px] font-semibold tracking-wider ${p.cls}`} title={p.title} aria-label={p.title}>
+                      <span key={p.label} className={`inline-flex items-center rounded-sm px-2 py-1 text-[10px] font-semibold tracking-wider ${p.cls}`} title={p.title} aria-label={p.title}>
                         {p.label}
                       </span>
                     ))}
-                    {overflow > 0 && <span className="text-[9px] text-slate-500">+{overflow}</span>}
+                    {overflow > 0 && <span className="text-[10px] text-slate-500">+{overflow}</span>}
                   </>
                 );
               })()}
@@ -891,7 +891,7 @@ function Row({
           <button
             type="button"
             onClick={onClick}
-            className="flex flex-1 min-w-0 items-center gap-2 text-left"
+            className="flex min-w-0 flex-1 self-stretch items-center gap-2 text-left"
             draggable={!dragDisabled}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
@@ -902,31 +902,31 @@ function Row({
             </span>
             {row.kind === "flow" ? (
               <>
-                <span className="inline-block rounded-sm bg-accent-teal px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-bg-0">FLOW</span>
+                <span className="inline-block rounded-sm bg-accent-teal px-2 py-1 text-[10px] font-bold tracking-wider text-bg-0">FLOW</span>
                 <span className="truncate text-[12px] font-semibold text-slate-100">{row.label}</span>
                 {activeInside ? (
-                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
                     ↳ inside
                   </span>
                 ) : (
-                  <span className="ml-auto text-[10px] text-slate-500">{row.lineIds.length} lines</span>
+                  <span className="ml-auto hidden whitespace-nowrap text-[10px] text-slate-500 sm:inline">{row.lineIds.length} lines</span>
                 )}
               </>
             ) : (
               <>
-                <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-accent-gold">STATE</span>
+                <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-2 py-1 text-[10px] font-bold tracking-wider text-accent-gold">STATE</span>
                 <span className="truncate text-[11px] font-medium text-slate-300">{row.label}</span>
                 {row.localIndex !== undefined && (
-                  <span className="ml-1 inline-block rounded-sm bg-accent-violet/15 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-violet">
+                  <span className="ml-1 inline-block rounded-sm bg-accent-violet/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-accent-violet">
                     [{row.localIndex}]
                   </span>
                 )}
                 {activeInside ? (
-                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-accent-teal">
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
                     ↳ inside
                   </span>
                 ) : (
-                  <span className="ml-auto text-[10px] text-slate-500">
+                  <span className="ml-auto hidden whitespace-nowrap text-[10px] text-slate-500 sm:inline">
                     {(() => {
                       const mode = row.plotMode && row.plotMode !== "Normal" ? row.plotMode : null;
                       return [mode, `${row.lineIds.length} lines`].filter(Boolean).join(" · ");
@@ -936,7 +936,7 @@ function Row({
               </>
             )}
             {!activeInside && pending > 0 && (
-              <span className="rounded bg-accent-ember/20 px-1 py-0.5 text-[9px] font-medium text-accent-ember">*{pending}</span>
+              <span className="rounded-sm bg-accent-ember/20 px-1 py-1 text-[10px] font-medium text-accent-ember">*{pending}</span>
             )}
           </button>
         )}

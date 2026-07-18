@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DialogueLine, DialogueLineOption, Lang } from "../../lib/types";
 import DiffField from "./DiffField";
 import { useToast } from "../Toast";
@@ -68,6 +68,7 @@ function LineCombobox({
   excludeId?: number;
   placeholder?: string;
 }) {
+  const listboxId = useId();
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,6 +113,10 @@ function LineCombobox({
     <div ref={containerRef} className="relative">
       <input
         className="input"
+        role="combobox"
+        aria-expanded={open && entries.length > 0}
+        aria-controls={listboxId}
+        aria-autocomplete="list"
         value={value}
         placeholder={placeholder}
         onFocus={() => setOpen(true)}
@@ -128,7 +133,8 @@ function LineCombobox({
       )}
       {open && entries.length > 0 && (
         <ul
-          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-white/10 bg-bg-2 shadow-xl"
+          id={listboxId}
+          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto border border-white/15 bg-bg-2"
           role="listbox"
         >
           {entries.map((entry, idx) => (
@@ -142,7 +148,7 @@ function LineCombobox({
                 commit(entry);
               }}
               className={[
-                "cursor-pointer px-2 py-1.5 text-xs",
+                "min-h-11 cursor-pointer px-2 py-2 text-xs",
                 idx === highlight ? "bg-accent-gold/10 text-accent-gold" : "text-slate-200 hover:bg-white/5",
               ].join(" ")}
             >
@@ -206,7 +212,7 @@ export default function OptionsSubform({
       </div>
 
       {options.length === 0 ? (
-        <div className="rounded-md border border-dashed border-white/10 p-3 text-xs text-slate-500">
+        <div className="border border-dashed border-white/10 p-3 text-xs text-slate-500">
           No options on this line.
         </div>
       ) : (
@@ -214,14 +220,14 @@ export default function OptionsSubform({
           {options.map((option, index) => {
             const original = originals?.[index];
             return (
-              <div key={index} className="space-y-3 rounded-md border border-white/10 p-3">
+              <div key={index} className="space-y-3 border border-accent-gold/25 bg-bg-2/30 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs font-semibold text-slate-400">
                     Option {index + 1}
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-rose-300 hover:text-rose-200"
+                    className="min-h-11 whitespace-nowrap px-2 text-xs text-rose-300 hover:text-rose-200"
                     onClick={() => removeOption(index)}
                   >
                     remove
@@ -243,7 +249,7 @@ export default function OptionsSubform({
                   );
                 })}
 
-                <label className="block space-y-1.5">
+        <label className="block space-y-2">
                   <span className="text-xs font-medium text-slate-300">plot_line_key target</span>
                   <input
                     className="input font-mono"

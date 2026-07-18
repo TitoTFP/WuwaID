@@ -66,18 +66,18 @@ export function CategoriesPage() {
 
   if (!selected) {
     return (
-      <div className="container-narrow space-y-6">
-        <div>
-          <h1 className="font-serif text-2xl text-accent-gold" id="categories-heading">
+      <div className="container-narrow gap-6 pb-8">
+        <header className="border-b border-white/10 pb-5">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl" id="categories-heading">
             Grouped Texts
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="mt-1 text-base text-slate-500">
             Browse static texts grouped by type and domain
           </p>
-        </div>
+        </header>
 
         <div 
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          className="divide-y divide-white/10 border-y border-white/10"
           aria-labelledby="categories-heading"
         >
           {categories.map((c) => {
@@ -89,21 +89,33 @@ export function CategoriesPage() {
                 key={c.name}
                 id={`category-btn-${c.name.toLowerCase()}`}
                 to={`/categories/${c.name}`}
-                className="card p-4 text-left transition duration-200 hover:bg-bg-2 hover:border-accent-gold/40 hover:scale-[1.01] focus:ring-1 focus:ring-accent-gold/40 group block"
+                className="group grid min-h-20 min-w-0 grid-cols-[minmax(0,1fr)_7rem] items-center gap-4 px-1 py-3 text-left transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:grid-cols-[minmax(0,1fr)_10rem] sm:px-3"
               >
-                <div className="font-serif text-lg text-slate-100 group-hover:text-accent-gold transition-colors">
-                  {c.name}
+                <div className="min-w-0">
+                  <div className="min-w-0 truncate font-serif text-lg text-slate-100 transition-colors group-hover:text-accent-gold">
+                    {c.name}
+                  </div>
+                  <div className="mt-1 font-mono text-[10px] text-slate-500 tabular-nums">
+                    {c.key_count.toLocaleString()} keys
+                  </div>
                 </div>
-                <div className="text-xs text-slate-500 mt-1">
-                  {c.translated_count} / {c.key_count} translated ({pct.toFixed(0)}%)
-                </div>
-                <div className="mt-3 h-1 w-full rounded bg-white/5 overflow-hidden">
+                <div className="text-right">
+                  <div className="font-mono text-[10px] text-slate-500 tabular-nums">
+                    {c.translated_count.toLocaleString()} translated · {pct.toFixed(0)}%
+                  </div>
                   <div
-                    className={`h-1 rounded transition-all duration-500 ${
-                      isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"
-                    }`}
-                    style={{ width: `${pct}%` }}
-                  />
+                    className="mt-2 h-px w-full bg-white/10"
+                    role="progressbar"
+                    aria-label={`${c.name} translation progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(pct)}
+                  >
+                    <div
+                      className={`h-px ${isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
                 </div>
               </Link>
             );
@@ -114,16 +126,16 @@ export function CategoriesPage() {
   }
 
   return (
-    <div className="container-narrow space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="container-narrow gap-4 pb-8">
+      <header className="border-b border-white/10 pb-3">
         <Link
           id="back-to-categories-btn"
           to="/categories"
-          className="btn inline-flex items-center gap-1.5"
+          className="link inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-xs"
         >
           <span aria-hidden="true">&larr;</span> Back to categories
         </Link>
-      </div>
+      </header>
       
       <CategoryTable
         category={selected}

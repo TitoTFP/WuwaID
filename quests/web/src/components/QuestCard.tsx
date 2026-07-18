@@ -30,45 +30,37 @@ export default function QuestCard({
   return (
     <Link
       to={`/quests/${q.qid}`}
-      className={`card group block p-3 sm:p-4 transition hover:border-accent-gold/30 hover:bg-bg-2 ${
-        isDup ? "border-l-2 border-l-accent-gold/60" : ""
-      }`}
+      className="group grid min-h-20 min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-1 py-3 transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:px-3"
     >
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 text-[10px] text-slate-500">
-              <span className="font-mono">#{q.qid}</span>
-              {isDup && (
-                <span className="text-accent-gold">
-                  {dupIndex}/{dupTotal}
-                </span>
-              )}
-              {q.side === 1 && <span className="text-accent-teal">side</span>}
-            </div>
-            <div className="mt-0.5 truncate text-sm font-medium text-slate-100 group-hover:text-accent-gold">
-              {q.quest_name}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="chip">{TYPE_LABEL[q.quest_type] ?? `t${q.quest_type}`}</span>
-            <span className="text-[10px] text-slate-500">{q.total_lines} lines</span>
-          </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] text-slate-500">
+          <span>#{q.qid}</span>
+          <span>{TYPE_LABEL[q.quest_type] ?? `type ${q.quest_type}`}</span>
+          {isDup && <span className="text-accent-gold">record {dupIndex}/{dupTotal}</span>}
+          {q.side === 1 && <span className="text-accent-teal">side quest</span>}
         </div>
+        <div className="mt-1 min-w-0 truncate text-sm font-medium text-slate-100 transition-colors group-hover:text-accent-gold sm:text-base">
+          {q.quest_name}
+        </div>
+      </div>
 
-        <div className="space-y-1">
-          <div className="flex justify-between items-center text-[10px] text-slate-500">
-            <span>Translated: {q.translated_count} / {q.total_lines}</span>
-            <span>{pct.toFixed(0)}%</span>
-          </div>
-          <div className="h-1 w-full rounded bg-white/5 overflow-hidden">
-            <div
-              className={`h-1 rounded transition-all duration-500 ${
-                isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"
-              }`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+      <div className="w-24 shrink-0 text-right sm:w-32">
+        <div className="font-mono text-[10px] leading-5 text-slate-500 tabular-nums">
+          <div>{q.total_lines} lines</div>
+          <div>{q.translated_count} translated · {pct.toFixed(0)}%</div>
+        </div>
+        <div
+          className="mt-1 h-px w-full bg-white/10"
+          role="progressbar"
+          aria-label={`${q.quest_name} translation progress`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(pct)}
+        >
+          <div
+            className={`h-px ${isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"}`}
+            style={{ width: `${pct}%` }}
+          />
         </div>
       </div>
     </Link>

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
@@ -189,11 +189,19 @@ export default function TranslatorPage() {
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);
+  const [mobilePane, setMobilePane] = useState<"lines" | "translation">("lines");
+  const detailTabRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const toast = useToast();
+
+  useEffect(() => {
+    if (mobilePane !== "translation" || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const frame = requestAnimationFrame(() => detailTabRef.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [mobilePane]);
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -232,6 +240,7 @@ export default function TranslatorPage() {
     setPreviewLines(questQ.data?.all_lines ?? []);
     setSelectedId(null);
     setSearchQ("");
+    setMobilePane("lines");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   const lines = linesQ.data ?? [];
@@ -307,6 +316,7 @@ export default function TranslatorPage() {
   const selectById = useCallback(
     (id: number) => {
       setSelectedId(id);
+      setMobilePane("translation");
     },
     [],
   );
@@ -336,7 +346,6 @@ export default function TranslatorPage() {
         const matchLine = stateKeyIndex.get(k);
         if (matchLine) {
           selectById(matchLine.id);
-          toast.success(`Jumped to state ${stateMatch[1]}.${stateMatch[2]}`);
           return;
         }
       }
@@ -344,7 +353,6 @@ export default function TranslatorPage() {
       const lineId = Number(clean);
       if (Number.isInteger(lineId) && allLineIds.includes(lineId)) {
         selectById(lineId);
-        toast.success(`Jumped to #${lineId}`);
       } else {
         toast.error(`Line/state "${raw}" not found in this quest`);
       }
@@ -404,37 +412,37 @@ export default function TranslatorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-wide flex-1 flex flex-col overflow-hidden">
-      <div className="mb-3 space-y-2">
-        <div className="flex items-center justify-between">
+    <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
+      <header className="mb-3 space-y-2 border-b border-white/10 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Link
             to={qidN ? `/quests/${qidN}` : "/"}
-            className="link text-xs"
+            className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
           >
             ← back to viewer
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link
               to={`/editor/${qidN}`}
-              className="btn text-xs bg-bg-2 hover:bg-white/5"
+              className="btn whitespace-nowrap bg-bg-2 text-xs hover:bg-white/5"
               title="Edit quest dialogue metadata and ordering flow"
             >
-              Structure Editor Mode
+              Structure
             </Link>
-            <div className="btn text-xs btn-active border-accent-gold/45 text-accent-gold">
-              Indonesian Translation Mode
+            <div className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold">
+              Translation
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="font-serif text-2xl text-slate-100">
-            Translator Workspace · quest #{qidN}
-            <span className="ml-2 text-sm text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
+            Indonesian Translator <span className="font-mono text-sm text-accent-gold">Q{qidN}</span>
+            <span className="mt-1 block [overflow-wrap:anywhere] font-sans text-sm font-normal text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
           </h1>
           <button
             type="button"
-            className="btn text-xs"
+            className="btn min-w-11 text-xs"
             onClick={() => setShowHelp(true)}
             title="Show keyboard shortcuts"
             aria-label="Show keyboard shortcuts"
@@ -445,11 +453,11 @@ export default function TranslatorPage() {
 
         {/* Translation Progress bar */}
         {questQ.data && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-bg-2/30 border border-white/5 rounded-md px-3 py-2 text-xs">
-            <div className="font-semibold text-slate-300 shrink-0">Indonesian Translation Progress:</div>
-            <div className="relative flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="flex flex-col gap-2 border border-white/10 bg-bg-2/30 px-3 py-2 text-xs sm:flex-row sm:items-center sm:gap-3">
+            <div className="shrink-0 font-semibold text-slate-300">Translation progress</div>
+            <div className="relative h-1.5 w-full shrink-0 overflow-hidden bg-slate-800 sm:w-auto sm:flex-1">
               <div
-                className="h-full bg-gradient-to-r from-accent-gold to-yellow-500 transition-all duration-500 rounded-full"
+                className="h-full bg-accent-gold"
                 style={{ width: `${stats.percentage}%` }}
               />
             </div>
@@ -460,7 +468,7 @@ export default function TranslatorPage() {
         )}
 
         {breadcrumb && (
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-1 truncate font-mono text-[11px] text-slate-500" aria-label="Current translator location">
             <span>quest #{qidN}</span>
             <span className="mx-1 text-slate-700">›</span>
             <span>{breadcrumb.flow}</span>
@@ -472,11 +480,39 @@ export default function TranslatorPage() {
         )}
 
         <DraftBanner qid={qidN} />
+      </header>
+
+      <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Translator workspace panes">
+        <button
+          id="translator-lines-tab"
+          type="button"
+          aria-pressed={mobilePane === "lines"}
+          aria-controls="translator-lines-panel"
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          onClick={() => setMobilePane("lines")}
+        >
+          Lines
+        </button>
+        <button
+          ref={detailTabRef}
+          id="translator-detail-tab"
+          type="button"
+          aria-pressed={mobilePane === "translation"}
+          aria-controls="translator-detail-panel"
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          disabled={selectedId === null}
+          onClick={() => setMobilePane("translation")}
+        >
+          Translation
+        </button>
       </div>
 
-      <div className="flex flex-1 min-h-0 gap-4">
+      <div className="flex min-h-0 flex-1 gap-0 lg:gap-4">
         {/* Dialogue line tree sidebar */}
-        <div className="flex w-[22rem] max-w-full shrink-0 relative">
+        <div
+          id="translator-lines-panel"
+          className={["relative w-full max-w-full shrink-0 lg:w-[22rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           <aside className="card flex-1 flex flex-col overflow-hidden p-2">
             {linesQ.isLoading && questQ.isLoading && (
               <div className="p-2">
@@ -507,11 +543,14 @@ export default function TranslatorPage() {
         </div>
 
         {/* Translation Workbench panel */}
-        <section className="card flex-1 flex flex-col p-4 min-h-0 overflow-y-auto">
+        <section
+          id="translator-detail-panel"
+          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4", mobilePane === "translation" ? "flex" : "hidden", "lg:flex"].join(" ")}
+        >
           {selectedId === null ? (
             <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
               <p>Select a dialogue line on the left to start translating.</p>
-              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to search dialogue, or <kbd className="rounded border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
+              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to search dialogue, or <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
             </div>
           ) : questQ.isLoading ? (
             <Skeleton variant="form" />

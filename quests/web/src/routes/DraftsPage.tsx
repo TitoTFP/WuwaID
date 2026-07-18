@@ -31,8 +31,8 @@ function PatchDiff({ field, before, after }: { field: string; before: unknown; a
   const spans = useMemo(() => diffWords(beforeStr, afterStr), [beforeStr, afterStr]);
   const isStruct = field === "options";
   return (
-    <div className="grid gap-2 md:grid-cols-2">
-      <div className="rounded border border-white/10 bg-bg-2 p-2">
+    <div className="grid divide-y divide-white/10 border-y border-white/10 md:grid-cols-2 md:divide-x md:divide-y-0">
+      <div className="bg-bg-2/40 p-3">
         <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-slate-500">
           <span>original {field}</span>
           <span className="text-rose-300/60">−{beforeStr.length}</span>
@@ -49,7 +49,7 @@ function PatchDiff({ field, before, after }: { field: string; before: unknown; a
             )}
         </pre>
       </div>
-      <div className="rounded border border-accent-gold/20 bg-accent-gold/5 p-2">
+      <div className="bg-accent-gold/5 p-3">
         <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-accent-gold">
           <span>draft {field}</span>
           <span className="text-accent-teal/70">+{afterStr.length}</span>
@@ -75,8 +75,8 @@ function OriginalDiff({ draft }: { draft: Draft }) {
   const original = draft.original_json;
   if (!original) return null;
   return (
-    <section className="card p-4">
-      <h2 className="mb-3 text-xs uppercase tracking-widest text-slate-500">Original vs draft</h2>
+    <section className="border-y border-white/10 py-4">
+      <h2 className="mb-3 font-serif text-xl text-slate-100">Original vs draft</h2>
       <div className="space-y-3 text-xs">
         {Object.entries(patch).map(([key, value]) => (
           <PatchDiff
@@ -100,7 +100,7 @@ function PatchSummary({ draft }: { draft: Draft }) {
       {entries.map(([key, value]) => {
         const isStruct = typeof value !== "string";
         return (
-          <div key={key} className="rounded border border-white/10 bg-bg-2 p-2">
+          <div key={key} className="border-t border-white/10 py-2 first:border-t-0">
             <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-accent-teal">
               {key}
             </div>
@@ -141,13 +141,13 @@ function FilterBar({ filters, onChange, qids, authors }: {
   authors: string[];
 }) {
   return (
-    <div className="card flex flex-wrap items-end gap-2 p-2 text-xs">
+    <div className="grid grid-cols-2 gap-2 border-y border-white/10 bg-bg-2/30 p-3 text-xs md:grid-cols-3 xl:grid-cols-6">
       <label className="space-y-1">
         <div className="text-[10px] uppercase tracking-widest text-slate-500">Quest</div>
         <select
           value={filters.qid}
           onChange={(e) => onChange({ ...filters, qid: e.target.value })}
-          className="input h-7 min-w-[6rem] text-xs"
+          className="input min-w-[6rem] text-xs"
         >
           <option value="">all</option>
           {qids.map((qid) => (
@@ -162,7 +162,7 @@ function FilterBar({ filters, onChange, qids, authors }: {
         <select
           value={filters.author}
           onChange={(e) => onChange({ ...filters, author: e.target.value })}
-          className="input h-7 min-w-[8rem] text-xs"
+          className="input min-w-[8rem] text-xs"
         >
           <option value="">all</option>
           {authors.map((author) => (
@@ -177,7 +177,7 @@ function FilterBar({ filters, onChange, qids, authors }: {
         <select
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value as DraftStatus | "" })}
-          className="input h-7 min-w-[7rem] text-xs"
+          className="input min-w-[7rem] text-xs"
         >
           <option value="">all</option>
           {STATUSES.map((status) => (
@@ -193,7 +193,7 @@ function FilterBar({ filters, onChange, qids, authors }: {
           type="date"
           value={filters.dateFrom}
           onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })}
-          className="input h-7 text-xs"
+          className="input text-xs"
         />
       </label>
       <label className="space-y-1">
@@ -202,15 +202,15 @@ function FilterBar({ filters, onChange, qids, authors }: {
           type="date"
           value={filters.dateTo}
           onChange={(e) => onChange({ ...filters, dateTo: e.target.value })}
-          className="input h-7 text-xs"
+          className="input text-xs"
         />
       </label>
       <button
         type="button"
-        className="btn h-7 text-[11px]"
+        className="btn self-end text-[11px]"
         onClick={() => onChange({ qid: "", author: "", status: "", dateFrom: "", dateTo: "" })}
       >
-        reset
+        Reset
       </button>
     </div>
   );
@@ -238,7 +238,6 @@ function QueueView() {
     mutationFn: () => api.clearTranslations(),
     onSuccess: () => {
       setConfirmPurge(false);
-      toast.success("All Indonesian translations purged successfully!");
       queryClient.invalidateQueries({ queryKey: ["drafts"] });
       window.location.reload();
     },
@@ -285,13 +284,12 @@ function QueueView() {
       }
       return count;
     },
-    onSuccess: async (count) => {
+    onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["drafts"] }),
         queryClient.invalidateQueries({ queryKey: ["editor"] }),
       ]);
       setSelected(new Set());
-      toast.success(`Approved ${count} draft(s)`);
     },
     onError: () => toast.error("Bulk approve failed"),
   });
@@ -304,13 +302,12 @@ function QueueView() {
       }
       return count;
     },
-    onSuccess: async (count) => {
+    onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["drafts"] }),
         queryClient.invalidateQueries({ queryKey: ["editor"] }),
       ]);
       setSelected(new Set());
-      toast.success(`Rejected ${count} draft(s)`);
     },
     onError: () => toast.error("Bulk reject failed"),
   });
@@ -330,13 +327,13 @@ function QueueView() {
   }
 
   return (
-    <div className="container-narrow space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="container-wide space-y-5 pb-8">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
         <div>
-          <h1 className="font-serif text-2xl text-slate-100">Drafts</h1>
-          <div className="mt-1 text-xs text-slate-500">role: {role}</div>
+          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Draft review queue</h1>
+          <div className="mt-1 font-mono text-xs text-slate-500">access · {role}</div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {role === "editor" && (
             <>
               <button
@@ -352,7 +349,7 @@ function QueueView() {
                 disabled={exportMutation.isPending}
                 onClick={() => setShowExportModal(true)}
               >
-                {exportMutation.isPending ? "Exporting..." : "Export to SQLite"}
+                {exportMutation.isPending ? "Exporting…" : "Export to SQLite"}
               </button>
             </>
           )}
@@ -366,21 +363,21 @@ function QueueView() {
             </Link>
           )}
         </div>
-      </div>
+      </header>
 
       <FilterBar filters={filters} onChange={setFilters} qids={qids} authors={authors} />
 
       {role === "editor" && selectedDrafts.length > 0 && (
-        <div className="card flex flex-wrap items-center justify-between gap-2 border-accent-gold/30 bg-accent-gold/5 p-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-accent-gold/30 bg-accent-gold/5 px-3 py-2 text-xs">
           <span className="text-slate-200">{selectedDrafts.length} pending selected</span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               className="btn btn-active text-xs"
               onClick={() => setConfirmAction("approve")}
               disabled={bulkApproveQ.isPending}
             >
-              {bulkApproveQ.isPending ? "approving..." : "Approve selected"}
+              {bulkApproveQ.isPending ? "Approving…" : "Approve selected"}
             </button>
             <button
               type="button"
@@ -388,7 +385,7 @@ function QueueView() {
               onClick={() => setConfirmAction("reject")}
               disabled={bulkRejectQ.isPending}
             >
-              {bulkRejectQ.isPending ? "rejecting..." : "Reject selected"}
+              {bulkRejectQ.isPending ? "Rejecting…" : "Reject selected"}
             </button>
             <button type="button" className="btn text-xs" onClick={() => setSelected(new Set())}>
               clear
@@ -397,7 +394,7 @@ function QueueView() {
         </div>
       )}
 
-      <section className="card divide-y divide-white/10">
+      <section className="divide-y divide-white/10 border-y border-white/15 bg-bg-1/40">
         {draftsQ.isLoading && (
           <div className="p-4">
             <Skeleton lines={5} />
@@ -410,10 +407,10 @@ function QueueView() {
           <div className="p-4 text-sm text-slate-500">No drafts match these filters.</div>
         )}
         {filtered.length > 0 && (
-          <div className="flex items-center justify-between border-b border-white/5 px-4 py-1.5 text-[10px] uppercase tracking-widest text-slate-500">
+          <div className="flex items-center justify-between border-b border-white/5 px-4 py-2 text-[10px] uppercase tracking-widest text-slate-500">
             <span>{filtered.length} draft(s)</span>
             {role === "editor" && (
-              <button type="button" className="btn px-2 py-0.5 text-[10px]" onClick={selectAllVisible}>
+              <button type="button" className="btn px-2 py-1 text-[10px]" onClick={selectAllVisible}>
                 select all pending
               </button>
             )}
@@ -426,18 +423,20 @@ function QueueView() {
             <div
               key={draft.id}
               className={[
-                "flex items-start gap-3 p-4 transition hover:bg-white/[0.03]",
+                "flex items-start gap-3 p-3 transition-colors hover:bg-white/[0.03] sm:p-4",
                 isSelected ? "bg-accent-gold/5" : "",
               ].join(" ")}
             >
               {selectable && (
-                <input
-                  type="checkbox"
-                  className="mt-1 accent-accent-gold"
-                  checked={isSelected}
-                  onChange={() => toggleSelect(draft.id)}
-                  aria-label={`Select draft ${draft.id}`}
-                />
+                <label className="grid min-h-11 min-w-11 place-items-center" aria-label={`Select draft ${draft.id}`}>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-accent-gold"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(draft.id)}
+                    aria-label={`Select draft ${draft.id}`}
+                  />
+                </label>
               )}
               <Link to={`/drafts/${draft.id}`} className="block flex-1">
                 <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -457,14 +456,14 @@ function QueueView() {
                   <span>{new Date(draft.created_at).toLocaleString()}</span>
                   <span
                     className={[
-                      "rounded px-1.5 py-0.5 text-[10px]",
+                      "border px-2 py-1 text-[10px]",
                       draft.status === "pending"
-                        ? "bg-violet-500/20 text-violet-200"
+                        ? "border-violet-400/30 bg-violet-500/10 text-violet-200"
                         : draft.status === "applied"
-                          ? "bg-accent-teal/20 text-accent-teal"
+                          ? "border-accent-teal/30 bg-accent-teal/10 text-accent-teal"
                           : draft.status === "rejected"
-                            ? "bg-rose-500/20 text-rose-200"
-                            : "bg-white/5 text-slate-400",
+                            ? "border-rose-400/30 bg-rose-500/10 text-rose-200"
+                            : "border-white/10 bg-white/5 text-slate-400",
                     ].join(" ")}
                   >
                     {draft.status}
@@ -511,7 +510,7 @@ function QueueView() {
         open={confirmPurge}
         title="Purge All Indonesian Translations?"
         message="WARNING: This will permanently and irreversibly delete ALL Indonesian translation files, custom edits, drafts, and caches. The search index will be reset. This cannot be undone."
-        confirmLabel={purgeMutation.isPending ? "Purging..." : "Purge Everything"}
+        confirmLabel={purgeMutation.isPending ? "Purging…" : "Purge Everything"}
         destructive
         onCancel={() => setConfirmPurge(false)}
         onConfirm={() => purgeMutation.mutate()}
@@ -542,7 +541,6 @@ function DetailView({ draftId }: { draftId: number }) {
         draftQ.data?.qid ? queryClient.invalidateQueries({ queryKey: ["quest", draftQ.data.qid] }) : Promise.resolve(),
         draftQ.data?.category ? queryClient.invalidateQueries({ queryKey: ["editor", "category", draftQ.data.category, "entries"] }) : Promise.resolve(),
       ]);
-      toast.success("Draft approved");
     },
     onError: () => toast.error("Failed to approve"),
   });
@@ -554,7 +552,6 @@ function DetailView({ draftId }: { draftId: number }) {
         queryClient.invalidateQueries({ queryKey: ["draft", draftId] }),
         queryClient.invalidateQueries({ queryKey: ["editor"] }),
       ]);
-      toast.success("Draft rejected");
     },
     onError: () => toast.error("Failed to reject"),
   });
@@ -574,10 +571,10 @@ function DetailView({ draftId }: { draftId: number }) {
   }
 
   return (
-    <div className="container-narrow space-y-4">
-      <div>
-        <Link to="/drafts" className="link text-xs">← back to drafts</Link>
-        <h1 className="mt-1 font-serif text-2xl text-slate-100">
+    <div className="container-narrow space-y-5 pb-8">
+      <header className="border-b border-white/10 pb-4">
+        <Link to="/drafts" className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs">← back to drafts</Link>
+        <h1 className="mt-2 min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
           {draft.category ? (
             <>Draft #{draft.id} · category {draft.category} · key {draft.key}</>
           ) : (
@@ -589,21 +586,21 @@ function DetailView({ draftId }: { draftId: number }) {
           <span>{new Date(draft.created_at).toLocaleString()}</span>
           <span
             className={[
-              "rounded px-1.5 py-0.5 text-[10px]",
+              "border px-2 py-1 text-[10px]",
               draft.status === "pending"
-                ? "bg-violet-500/20 text-violet-200"
+                ? "border-violet-400/30 bg-violet-500/10 text-violet-200"
                 : draft.status === "applied"
-                  ? "bg-accent-teal/20 text-accent-teal"
-                  : "bg-white/5 text-slate-400",
+                  ? "border-accent-teal/30 bg-accent-teal/10 text-accent-teal"
+                  : "border-white/10 bg-white/5 text-slate-400",
             ].join(" ")}
           >
             {draft.status}
           </span>
         </div>
-      </div>
+      </header>
 
-      <section className="card p-4">
-        <h2 className="mb-3 text-xs uppercase tracking-widest text-slate-500">Note</h2>
+      <section className="border-y border-white/10 py-4">
+        <h2 className="mb-3 font-serif text-xl text-slate-100">Review note</h2>
         {savedNote !== null ? (
           <div className="text-sm text-slate-300">{savedNote}</div>
         ) : draft.note ? (
@@ -642,8 +639,8 @@ function DetailView({ draftId }: { draftId: number }) {
         )}
       </section>
 
-      <section className="card p-4">
-        <h2 className="mb-3 text-xs uppercase tracking-widest text-slate-500">Patch</h2>
+      <section className="border-y border-white/10 py-4">
+        <h2 className="mb-3 font-serif text-xl text-slate-100">Patch</h2>
         <PatchSummary draft={draft} />
       </section>
 
