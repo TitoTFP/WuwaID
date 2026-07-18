@@ -28,12 +28,10 @@ Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasa
 
 Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 
-| File              | Deskripsi                                              |
-| ----------------- | ------------------------------------------------------ |
-| `WuWaID_99_P.pak` | File utama terjemahan Bahasa Indonesia                 |
-| `winhttp.dll`     | Loader untuk me-mount patch terjemahan secara otomatis |
-
-<!-- > Catatan: jika nama file di Releases masih menggunakan nama lama seperti `WuWaID_99_P.pak`, sesuaikan nama file pada instruksi ini dengan file yang tersedia di release repo kamu. -->
+| File                                             | Deskripsi                                              |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| `pakchunk0-ID-WindowsNoEditor_1000_P.pak`        | File utama terjemahan Bahasa Indonesia                 |
+| `winhttp.dll`                                    | Loader untuk me-mount patch terjemahan secara otomatis |
 
 ### 2. Instalasi
 
@@ -58,12 +56,16 @@ Client\Binaries\Win64\
 ├── winhttp.dll
 ├── Client-Win64-Shipping.exe
 └── wuwaIndonesia\
-    └── WuWaID_99_P.pak
+    └── pakchunk0-ID-WindowsNoEditor_1000_P.pak
 ```
 
 ### 3. Uninstall
 
 Hapus file `winhttp.dll` dan folder `wuwaIndonesia`.
+
+### Kontrak Asset Release
+
+Release baru hanya memuat satu file patch `pakchunk0-ID-WindowsNoEditor_1000_P.pak`, `winhttp.dll`, dan `SHA256sums.txt`. Daftar checksum wajib memuat dua file binary tersebut dan tidak memuat checksum untuk dirinya sendiri. Gunakan WuwaID Launcher `2.6.0` atau lebih baru sebelum beralih metode instalasi; Method 2 pada launcher lama masih meminta nama asset lama.
 
 ---
 
