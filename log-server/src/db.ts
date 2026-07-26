@@ -14,12 +14,22 @@ export class DatabaseManager {
 
     const dbPath = path.join(dbDir, 'wuwaid.db');
     this.db = new Database(dbPath);
+    this.configureDatabase();
 
     // Initialize Schema
     this.initSchema();
 
     // Run Migration from old JSON files
     this.migrateOldData(dataDir);
+  }
+
+  private configureDatabase() {
+    // WAL lets dashboard reads proceed while heartbeats/uploads are being written.
+    // NORMAL keeps WAL durable enough for this telemetry workload without an fsync per write.
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('synchronous = NORMAL');
+    this.db.pragma('busy_timeout = 5000');
+    this.db.pragma('temp_store = MEMORY');
   }
 
   private initSchema() {
@@ -49,6 +59,7 @@ export class DatabaseManager {
       );
 
       CREATE INDEX IF NOT EXISTS idx_log_uploads_timestamp ON log_uploads(timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_log_uploads_created_at ON log_uploads(created_at);
 
       CREATE TABLE IF NOT EXISTS active_players (
         client_id TEXT PRIMARY KEY,
@@ -57,6 +68,8 @@ export class DatabaseManager {
         event TEXT NOT NULL DEFAULT '',
         last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
       );
+
+      CREATE INDEX IF NOT EXISTS idx_active_players_last_seen ON active_players(last_seen DESC);
 
       CREATE TABLE IF NOT EXISTS history_events (
         bucket TEXT NOT NULL,
@@ -137,9 +150,11 @@ export class DatabaseManager {
       }
     }
 
-    // 3. Sync logs metadata from directory
+    // 3. Sync legacy log metadata once. Rewalking the entire archive on every
+    // startup makes boot time grow with the number of uploaded files.
     const logsDir = path.join(dataDir, 'logs');
-    if (fs.existsSync(logsDir)) {
+    const logsSynced = this.db.prepare("SELECT value FROM _schema WHERE key = 'logs_synced'").get();
+    if (!logsSynced && fs.existsSync(logsDir)) {
       try {
         const insertUpload = this.db.prepare(`
           INSERT OR IGNORE INTO log_uploads (id, app_version, timestamp, os, file_count, total_bytes, created_at, storage_path)
@@ -179,6 +194,7 @@ export class DatabaseManager {
           walkDir(logsDir);
         });
         tx();
+        this.db.prepare("INSERT OR REPLACE INTO _schema (key, value) VALUES ('logs_synced', 1)").run();
         console.log('Synchronized logs metadata from logs directory to SQLite.');
       } catch (err) {
         console.error('Failed to sync logs directories:', err);
@@ -202,6 +218,15 @@ export class DatabaseManager {
       upload.created_at,
       upload.storage_path
     );
+  }
+
+  public listLogUploadsBefore(cutoff: Date): LogMeta[] {
+    return this.db.prepare(`
+      SELECT id, app_version, timestamp, os, file_count, total_bytes, created_at, storage_path
+      FROM log_uploads
+      WHERE created_at < ?
+      ORDER BY created_at ASC
+    `).all(cutoff.toISOString()) as LogMeta[];
   }
 
   public listLogUploads(): LogMeta[] {
@@ -229,25 +254,43 @@ export class DatabaseManager {
 
   public saveActiveHeartbeat(clientId: string, launcherVersion: string, installMethod: string, event: string, now: Date) {
     const lastSeen = now.toISOString();
-
-    // 1. Update/insert active_players
-    this.db.prepare(`
-      INSERT OR REPLACE INTO active_players (client_id, launcher_version, install_method, event, last_seen)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(clientId, launcherVersion, installMethod, event, lastSeen);
-
-    // 2. Record to history_events
-    // Truncate to 5 minute interval bucket
     const historyIntervalMs = 5 * 60 * 1000;
-    const bucketTime = new Date(Math.floor(now.getTime() / historyIntervalMs) * historyIntervalMs);
-    const bucket = bucketTime.toISOString();
+    const bucket = new Date(Math.floor(now.getTime() / historyIntervalMs) * historyIntervalMs).toISOString();
     const eventKey = event || 'unknown';
 
-    this.db.prepare(`
+    const upsertPlayer = this.db.prepare(`
+      INSERT INTO active_players (client_id, launcher_version, install_method, event, last_seen)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(client_id) DO UPDATE SET
+        launcher_version = excluded.launcher_version,
+        install_method = excluded.install_method,
+        event = excluded.event,
+        last_seen = excluded.last_seen
+    `);
+    const incrementHistory = this.db.prepare(`
       INSERT INTO history_events (bucket, event_type, count)
       VALUES (?, ?, 1)
       ON CONFLICT(bucket, event_type) DO UPDATE SET count = count + 1
-    `).run(bucket, eventKey);
+    `);
+
+    // One commit instead of two, and readers never observe a half-recorded heartbeat.
+    this.db.transaction(() => {
+      upsertPlayer.run(clientId, launcherVersion, installMethod, event, lastSeen);
+      incrementHistory.run(bucket, eventKey);
+    })();
+  }
+
+  public getActiveCounts(now: Date, activeWindowMs: number, totalWindowMs: number): { active: number; total: number } {
+    const activeCutoff = new Date(now.getTime() - activeWindowMs).toISOString();
+    const totalCutoff = new Date(now.getTime() - totalWindowMs).toISOString();
+    const row = this.db.prepare(`
+      SELECT
+        count(*) FILTER (WHERE last_seen >= ?) AS active,
+        count(*) AS total
+      FROM active_players
+      WHERE last_seen >= ?
+    `).get(activeCutoff, totalCutoff) as { active: number; total: number };
+    return row || { active: 0, total: 0 };
   }
 
   public getActiveSummary(now: Date, windowMs: number): ActiveSummary {
@@ -303,8 +346,6 @@ export class DatabaseManager {
       });
     });
 
-    // Sort by timestamp
-    points.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
     return points;
   }
 
@@ -336,6 +377,7 @@ export class DatabaseManager {
     }
     const dbPath = path.join(dbDir, 'wuwaid.db');
     this.db = new Database(dbPath);
+    this.configureDatabase();
     this.initSchema();
     this.migrateOldData(dataDir);
   }

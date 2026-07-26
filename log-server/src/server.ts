@@ -54,10 +54,6 @@ app.get('/health', (req: Request, res: Response) => {
 // Upload Log Archive (Multipart POST /api/logs)
 app.post('/api/logs', upload.single('logs'), (req: Request, res: Response) => {
   try {
-    console.log('[server] POST /api/logs headers:', req.headers);
-    console.log('[server] POST /api/logs body:', req.body);
-    console.log('[server] POST /api/logs req.file:', req.file);
-    console.log('[server] POST /api/logs req.files:', (req as any).files);
     const appVersion = req.body.appVersion;
     const timestamp = req.body.timestamp;
     const osName = req.body.os;
@@ -68,7 +64,6 @@ app.post('/api/logs', upload.single('logs'), (req: Request, res: Response) => {
       return;
     }
 
-    console.log('[server] checking !req.file:', !req.file);
     if (!req.file) {
       console.warn('[server] 400 Bad Request: missing logs file field');
       res.status(400).json({ error: "missing 'logs' file field" });
@@ -235,13 +230,12 @@ const handleActiveSummary = (req: Request, res: Response) => {
   try {
     const now = new Date();
     const defaultWindowMs = 10 * 60 * 1000; // 10 minutes
-    const summary10m = db.getActiveSummary(now, defaultWindowMs);
-    const summary30d = db.getActiveSummary(now, 30 * 24 * 60 * 60 * 1000); // 30 days
-    
+    const counts = db.getActiveCounts(now, defaultWindowMs, 30 * 24 * 60 * 60 * 1000);
+
     res.json({
-      active: summary10m.active,
-      window_seconds: summary10m.window_seconds,
-      total_30d: summary30d.active,
+      active: counts.active,
+      window_seconds: Math.floor(defaultWindowMs / 1000),
+      total_30d: counts.total,
       updated_at: now.toISOString()
     });
   } catch (err: any) {

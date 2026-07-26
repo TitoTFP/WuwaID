@@ -17,7 +17,9 @@ export function runCleanup(cfg: Config, db: DatabaseManager) {
 
     console.log(`[cleanup] Running log cleanup: deleting uploads older than ${cutoffStr} (retention: ${cfg.retentionDays} days)`);
 
-    const uploads = db.listLogUploads();
+    // Let SQLite use the created_at index instead of loading every upload and
+    // filtering it in JavaScript. Legacy malformed dates remain conservatively kept.
+    const uploads = db.listLogUploadsBefore(cutoffDate);
     let deletedCount = 0;
 
     for (const upload of uploads) {
