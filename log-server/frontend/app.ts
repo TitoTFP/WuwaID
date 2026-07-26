@@ -438,7 +438,12 @@ function renderHistoryChart(data: any) {
   const ctx = (document.getElementById('historyChart') as HTMLCanvasElement).getContext('2d');
   if (!ctx) return;
 
-  const points = data.points || [];
+  const sourcePoints = data.points || [];
+  const maxChartPoints = 1000;
+  const sampleStep = Math.max(1, Math.ceil(sourcePoints.length / maxChartPoints));
+  const points = sampleStep === 1
+    ? sourcePoints
+    : sourcePoints.filter((_: any, index: number) => index % sampleStep === 0 || index === sourcePoints.length - 1);
   const eventKeys = data.event_keys || [];
 
   const labels = points.map((p: any) => fmtTime(p.timestamp));
@@ -469,9 +474,9 @@ function renderHistoryChart(data: any) {
     borderColor: '#7c4dff',
     backgroundColor: 'rgba(124, 77, 255, 0.08)',
     borderWidth: 3,
-    tension: 0.35,
+    tension: 0,
     fill: true,
-    pointRadius: 1,
+    pointRadius: 0,
     pointHoverRadius: 6,
   });
 
@@ -483,7 +488,7 @@ function renderHistoryChart(data: any) {
       borderColor: getEventColor(key, idx),
       backgroundColor: 'transparent',
       borderWidth: 1.5,
-      tension: 0.35,
+      tension: 0,
       fill: false,
       pointRadius: 0,
       pointHoverRadius: 4,
@@ -501,6 +506,8 @@ function renderHistoryChart(data: any) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
+      normalized: true,
       interaction: {
         mode: 'index',
         intersect: false
