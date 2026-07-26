@@ -5,6 +5,10 @@ import { LogMeta, ActivePlayer, HistoryPoint, ActiveSummary } from './types';
 
 export class DatabaseManager {
   private db: Database.Database;
+  private saveHeartbeatTransaction!: (clientId: string, launcherVersion: string, installMethod: string, event: string, lastSeen: string, bucket: string, eventKey: string) => void;
+  private queryActiveCounts!: (activeCutoff: string, totalCutoff: string) => { active: number; total: number } | undefined;
+  private queryActiveSummary!: (cutoff: string) => { count: number } | undefined;
+  private queryActivePlayers!: (cutoff: string) => ActivePlayer[];
 
   constructor(dataDir: string) {
     const dbDir = path.join(dataDir, 'db');
@@ -21,6 +25,7 @@ export class DatabaseManager {
 
     // Run Migration from old JSON files
     this.migrateOldData(dataDir);
+    this.prepareHotStatements();
   }
 
   private configureDatabase() {
@@ -252,12 +257,7 @@ export class DatabaseManager {
     `).run(id);
   }
 
-  public saveActiveHeartbeat(clientId: string, launcherVersion: string, installMethod: string, event: string, now: Date) {
-    const lastSeen = now.toISOString();
-    const historyIntervalMs = 5 * 60 * 1000;
-    const bucket = new Date(Math.floor(now.getTime() / historyIntervalMs) * historyIntervalMs).toISOString();
-    const eventKey = event || 'unknown';
-
+  private prepareHotStatements() {
     const upsertPlayer = this.db.prepare(`
       INSERT INTO active_players (client_id, launcher_version, install_method, event, last_seen)
       VALUES (?, ?, ?, ?, ?)
@@ -273,33 +273,54 @@ export class DatabaseManager {
       ON CONFLICT(bucket, event_type) DO UPDATE SET count = count + 1
     `);
 
-    // One commit instead of two, and readers never observe a half-recorded heartbeat.
-    this.db.transaction(() => {
+    this.saveHeartbeatTransaction = this.db.transaction((clientId, launcherVersion, installMethod, event, lastSeen, bucket, eventKey) => {
       upsertPlayer.run(clientId, launcherVersion, installMethod, event, lastSeen);
       incrementHistory.run(bucket, eventKey);
-    })();
-  }
+    });
 
-  public getActiveCounts(now: Date, activeWindowMs: number, totalWindowMs: number): { active: number; total: number } {
-    const activeCutoff = new Date(now.getTime() - activeWindowMs).toISOString();
-    const totalCutoff = new Date(now.getTime() - totalWindowMs).toISOString();
-    const row = this.db.prepare(`
+    const activeCounts = this.db.prepare(`
       SELECT
         count(*) FILTER (WHERE last_seen >= ?) AS active,
         count(*) AS total
       FROM active_players
       WHERE last_seen >= ?
-    `).get(activeCutoff, totalCutoff) as { active: number; total: number };
+    `);
+    const activeSummary = this.db.prepare(`
+      SELECT count(*) as count
+      FROM active_players
+      WHERE last_seen >= ?
+    `);
+    const activePlayers = this.db.prepare(`
+      SELECT client_id, launcher_version, install_method, event, last_seen
+      FROM active_players
+      WHERE last_seen >= ?
+      ORDER BY last_seen DESC
+    `);
+
+    this.queryActiveCounts = (activeCutoff, totalCutoff) => activeCounts.get(activeCutoff, totalCutoff) as { active: number; total: number } | undefined;
+    this.queryActiveSummary = cutoff => activeSummary.get(cutoff) as { count: number } | undefined;
+    this.queryActivePlayers = cutoff => activePlayers.all(cutoff) as ActivePlayer[];
+  }
+
+  public saveActiveHeartbeat(clientId: string, launcherVersion: string, installMethod: string, event: string, now: Date) {
+    const lastSeen = now.toISOString();
+    const historyIntervalMs = 5 * 60 * 1000;
+    const bucket = new Date(Math.floor(now.getTime() / historyIntervalMs) * historyIntervalMs).toISOString();
+    const eventKey = event || 'unknown';
+
+    this.saveHeartbeatTransaction(clientId, launcherVersion, installMethod, event, lastSeen, bucket, eventKey);
+  }
+
+  public getActiveCounts(now: Date, activeWindowMs: number, totalWindowMs: number): { active: number; total: number } {
+    const activeCutoff = new Date(now.getTime() - activeWindowMs).toISOString();
+    const totalCutoff = new Date(now.getTime() - totalWindowMs).toISOString();
+    const row = this.queryActiveCounts(activeCutoff, totalCutoff);
     return row || { active: 0, total: 0 };
   }
 
   public getActiveSummary(now: Date, windowMs: number): ActiveSummary {
     const cutoff = new Date(now.getTime() - windowMs).toISOString();
-    const row = this.db.prepare(`
-      SELECT count(*) as count
-      FROM active_players
-      WHERE last_seen >= ?
-    `).get(cutoff) as { count: number };
+    const row = this.queryActiveSummary(cutoff);
 
     return {
       active: row ? row.count : 0,
@@ -310,12 +331,7 @@ export class DatabaseManager {
 
   public listActivePlayers(now: Date, windowMs: number): ActivePlayer[] {
     const cutoff = new Date(now.getTime() - windowMs).toISOString();
-    return this.db.prepare(`
-      SELECT client_id, launcher_version, install_method, event, last_seen
-      FROM active_players
-      WHERE last_seen >= ?
-      ORDER BY last_seen DESC
-    `).all(cutoff) as ActivePlayer[];
+    return this.queryActivePlayers(cutoff);
   }
 
   public getHistoryPoints(now: Date, windowMs: number): HistoryPoint[] {
@@ -359,12 +375,12 @@ export class DatabaseManager {
     return Array.from(seen).sort();
   }
 
-  public pruneHistory(cutoff: Date) {
-    const cutoffStr = cutoff.toISOString();
-    this.db.prepare(`
+  public pruneHistory(cutoff: Date): number {
+    const result = this.db.prepare(`
       DELETE FROM history_events
       WHERE bucket < ?
-    `).run(cutoffStr);
+    `).run(cutoff.toISOString());
+    return result.changes;
   }
 
   public reopen(dataDir: string) {
@@ -380,6 +396,7 @@ export class DatabaseManager {
     this.configureDatabase();
     this.initSchema();
     this.migrateOldData(dataDir);
+    this.prepareHotStatements();
   }
 
   public close() {

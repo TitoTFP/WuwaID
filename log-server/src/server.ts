@@ -13,9 +13,6 @@ import { LogMeta } from './types';
 const cfg = loadConfig();
 const db = new DatabaseManager(cfg.dataDir);
 
-// Start background cleanup scheduler
-startCleanupScheduler(cfg, db);
-
 const app = express();
 
 // Middleware
@@ -447,6 +444,8 @@ export { app, db, cfg };
 
 // Start Server
 if (require.main === module) {
+  startCleanupScheduler(cfg, db);
+
   app.listen(cfg.port, () => {
     console.log(`🚀 WuwaID Log Server (TS) starting on :${cfg.port}`);
     console.log(`   Data directory: ${cfg.dataDir}`);

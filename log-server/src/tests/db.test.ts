@@ -75,6 +75,10 @@ test('DatabaseManager operations', () => {
     assert.ok(keys.includes('heartbeat'));
     assert.ok(keys.includes('launch'));
 
+    const deletedHistory = db.pruneHistory(new Date(now.getTime() + 60 * 60 * 1000));
+    assert.strictEqual(deletedHistory, 2);
+    assert.strictEqual(db.getHistoryPoints(now, 60 * 60 * 1000).length, 0);
+
     // 4. Test delete log
     db.deleteLogUpload('test-id-123');
     const logsAfterDelete = db.listLogUploads();

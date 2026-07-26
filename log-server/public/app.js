@@ -97,6 +97,11 @@ function init() {
     });
     // Bind Log Copy Button
     btnCopyLog.addEventListener('click', copyLogContent);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && adminToken) {
+            refreshAll();
+        }
+    });
     // Check auth if token is stored
     if (adminToken) {
         validateTokenAndLogin();
@@ -629,7 +634,7 @@ function startAutoRefresh() {
     stopAutoRefresh();
     // Auto refresh every 15s
     autoRefreshInterval = setInterval(() => {
-        if (adminToken) {
+        if (adminToken && !document.hidden) {
             loadActive();
             if (activeTab === 'active') {
                 loadPlayers();

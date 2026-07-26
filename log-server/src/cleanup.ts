@@ -5,12 +5,20 @@ import { Config } from './types';
 
 export function runCleanup(cfg: Config, db: DatabaseManager) {
   try {
+    const now = new Date();
+
+    // The history API exposes at most 30 days, so older buckets only consume disk.
+    const historyCutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const prunedHistoryCount = db.pruneHistory(historyCutoff);
+    if (prunedHistoryCount > 0) {
+      console.log(`[cleanup] Removed ${prunedHistoryCount} history bucket(s) older than ${historyCutoff.toISOString()}`);
+    }
+
     const logsDirectory = logDir(cfg);
     if (!fs.existsSync(logsDirectory)) {
       return;
     }
 
-    const now = new Date();
     const cutoffMs = retentionDurationMs(cfg);
     const cutoffDate = new Date(now.getTime() - cutoffMs);
     const cutoffStr = cutoffDate.toISOString();
