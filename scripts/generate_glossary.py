@@ -17,7 +17,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 
 CATEGORIES_DIR = REPO_ROOT / "export_text_grouped" / "categories"
 QUESTS_DIR = REPO_ROOT / "export_text_grouped" / "export_quest_ordered"
-OUTPUT_PATH = REPO_ROOT / "glossary_draft.json"
+OUTPUT_PATH = REPO_ROOT / "data" / "glossary" / "glossary_draft.json"
 
 glossary = {}
 

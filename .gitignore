@@ -193,12 +193,19 @@ $RECYCLE.BIN/
 
 # Build output directories
 export_localization_db/export_l.*/
+src/export_localization_db/export_l.*/
 ConfigDB/
 export_quest_ordered/
 export_text_grouped/
 Javascript/*
 WuwaDBExport*/
+data/db_exports/
 export_quest_raw_all/
 experiments/
 build-artifacts/
 .codegraph/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class

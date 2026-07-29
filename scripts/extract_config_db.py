@@ -32,7 +32,7 @@ def main():
     parser = argparse.ArgumentParser(description="Extract Wuthering Waves ConfigDB SQLite files from game PAKs.")
     parser.add_argument("--repak", default=DEFAULT_REPAK, help=f"Path to repak executable (default: {DEFAULT_REPAK})")
     parser.add_argument("--paks", default=DEFAULT_PAKS, help=f"Path to game Paks directory (default: {DEFAULT_PAKS})")
-    parser.add_argument("--output", help="Output directory path (default: ./WuwaDBExport)")
+    parser.add_argument("--output", help="Output directory path (default: ./data/db_exports)")
     parser.add_argument("--key", help="AES decryption key (hex string). Auto-fetched if not provided.")
     args = parser.parse_args()
 
@@ -57,8 +57,8 @@ def main():
     if args.output:
         output_dir = os.path.abspath(args.output)
     else:
-        # Check parent folder name if we can find game version, else default to WuwaDBExport
-        output_dir = os.path.join(os.getcwd(), "WuwaDBExport")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(os.path.dirname(script_dir), "data", "db_exports")
 
     print(f"Output directory: {output_dir}")
 

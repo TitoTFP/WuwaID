@@ -86,20 +86,20 @@ Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di dir
 
 ### 1. Ekspor Dialog Quest Terurut
 
-Skrip `export_quest_ordered.py` mengekstrak dialog quest yang diorganisasikan berdasarkan chapter cerita utama dan side quest.
+Skrip `scripts/export_quest_ordered.py` mengekstrak dialog quest yang diorganisasikan berdasarkan chapter cerita utama dan side quest.
 
 ```sh
-python export_quest_ordered.py [path_ke_ConfigDB]
+python scripts/export_quest_ordered.py [path_ke_ConfigDB]
 ```
 
 Output akan disimpan di folder `export_quest_ordered/`.
 
 ### 2. Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
 
-Skrip `export_text_grouped.py` mengekstrak dan mengelompokkan semua teks lokalisasi (item, skill, dialog quest, UI, dll.) berdasarkan kategori ke dalam file JSON. Skrip ini menghasilkan format data yang dibutuhkan oleh aplikasi web [wuwaid-quests](../wuwaid-quests).
+Skrip `scripts/export_text_grouped.py` mengekstrak dan mengelompokkan semua teks lokalisasi (item, skill, dialog quest, UI, dll.) berdasarkan kategori ke dalam file JSON. Skrip ini menghasilkan format data yang dibutuhkan oleh aplikasi web [wuwaid-quests](../wuwaid-quests).
 
 ```sh
-python export_text_grouped.py [path_ke_ConfigDB]
+python scripts/export_text_grouped.py [path_ke_ConfigDB]
 ```
 
 Output akan disimpan di folder `export_text_grouped/`.

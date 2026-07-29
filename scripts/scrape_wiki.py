@@ -19,10 +19,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 CATEGORIES_DIR = REPO_ROOT / "export_text_grouped" / "categories"
 QUESTS_DIR = REPO_ROOT / "export_text_grouped" / "export_quest_ordered"
-GLOSSARY_PATH = REPO_ROOT / "glossary_draft.json"
+GLOSSARY_PATH = REPO_ROOT / "data" / "glossary" / "glossary_draft.json"
 
-ADDITIONS_PATH = REPO_ROOT / "glossary_wiki_additions.json"
-MERGED_PATH = REPO_ROOT / "glossary_draft_merged.json"
+ADDITIONS_PATH = REPO_ROOT / "data" / "glossary" / "glossary_wiki_additions.json"
+MERGED_PATH = REPO_ROOT / "data" / "glossary" / "glossary_draft_merged.json"
 
 WIKI_API_URL = "https://wutheringwaves.fandom.com/api.php"
 
