@@ -47,7 +47,10 @@ export default function Layout() {
         <div className="archive-masthead__inner container-wide">
           <Link to="/" className="archive-brand" aria-label="WuwaID Quests home">
             <span className="archive-brand__mark" aria-hidden="true">W</span>
-            <span className="archive-brand__name">wuwaid-quests</span>
+            <span className="archive-brand__lockup">
+              <span className="archive-brand__name">wuwaid</span>
+              <span className="archive-brand__meta">resonance atlas</span>
+            </span>
           </Link>
 
           <nav className="archive-browse" aria-label="Browse archive">
