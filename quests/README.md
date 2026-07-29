@@ -1,7 +1,7 @@
 # wuwaid-quests
 
 Web viewer for Wuthering Waves quest dialogue exported by
-[`WuwaID/export_text_grouped.py`](../WuwaID).
+[`WuwaID/scripts/export_text_grouped.py`](../WuwaID/scripts/export_text_grouped.py).
 
 - **Frontend**: React 18 + Vite + TypeScript + Tailwind
 - **Backend**: FastAPI + SQLite FTS5 (search)
@@ -14,7 +14,7 @@ Web viewer for Wuthering Waves quest dialogue exported by
 ```
 wuwaid-quests/
 ├── scripts/
-│   ├── build_index.py       # rebuilds data/ from ../WuwaID/export_text_grouped/export_quest_ordered
+│   ├── build_index.py       # rebuilds data/ from ../WuwaID/scripts/export_text_grouped/export_quest_ordered
 │   ├── dev-check.js         # fails fast if :5173/:8000 busy
 │   └── serve-check.js       # fails fast if :8000 busy
 ├── app/                     # FastAPI backend
@@ -67,7 +67,7 @@ verify the build before pushing, or to share on your LAN.
 ## Which command when?
 
 | You're doing… | Run this |
-|---|---|
+| --- | --- |
 | Editing React/components/CSS | `bun run dev` |
 | Editing FastAPI/Python | `bun run dev` (uvicorn auto-reloads) |
 | Verifying the production bundle | `bun run build && bun run serve` |
@@ -106,7 +106,7 @@ uv run python scripts/version_texts.py snapshot --tag v3.4 --source data
 
 # Save a new WuwaID export before reindexing the WebUI.
 uv run python scripts/version_texts.py snapshot \
-  --tag v3.5 --source ../WuwaID/export_text_grouped
+  --tag v3.5 --source ../WuwaID/scripts/export_text_grouped
 
 # Compare or export added/changed source text for translation.
 uv run python scripts/version_texts.py diff --base v3.4 --target v3.5 --lang en
@@ -141,7 +141,7 @@ Setup (one time):
 ```sh
 # 1. Make sure data/quests/ is populated (see "Reindexing" above).
 # 2. Copy the glossary draft into the data dir.
-cp ../WuwaID/glossary_draft.json data/glossary.json
+cp ../WuwaID/data/glossary/glossary_draft.json data/glossary.json
 # 3. Start a llama-server on http://localhost:8080.
 #    Example for Gemma 4 12B (Q4_K_XL, 30 GPU layers, 64K context, 1 slot):
 llama-server \
@@ -208,7 +208,7 @@ uv run python scripts/translate_id.py --chapter 1
 Useful flags:
 
 | Flag | Effect |
-|---|---|
+| --- | --- |
 | `--dry-run` | Print the quest order; no LLM calls |
 | `--verbose` | Per-state timing + retry info |
 | `--no-cache` | Bypass translation-memory cache; force LLM for every line |
@@ -222,7 +222,7 @@ Useful flags:
 | `--top-p F` | Nucleus sampling (default 0.95, matches model card) |
 | `--top-k N` | Top-k sampling (default 64, matches model card) |
 | `--timeout F` | HTTP request timeout in seconds (default 300s) |
-| `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `<|think|>` token (default ON). Parser extracts the final-answer channel automatically. |
+| `--enable-thinking` / `--no-enable-thinking` | Enable Gemma 4 thinking mode via `< | think | >` token (default ON). Parser extracts the final-answer channel automatically. |
 | `--no-progress` | Disable the tqdm progress bar (default: bar shown). Useful for log files / CI. |
 | `--flush-every N` | Flush `<qid>.json` + `_memory.json` after every N states in a quest (default 0 = end-of-quest only). Set to 1 for crash-safe, real-time progress. |
 | `--mode {quests,categories,all}` | Pipeline mode (default `quests`) |

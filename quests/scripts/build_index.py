@@ -2,7 +2,7 @@
 """Rebuild the wuwaid-quests data layer from the exporter output.
 
 Inputs (read-only):
-  ../WuwaID/export_text_grouped/export_quest_ordered/
+  ../WuwaID/scripts/export_text_grouped/export_quest_ordered/
     Chapter_<N>_<name>/<idx>_<quest_name>/dialogue.json
     side_quests/<qid>_<quest_name>/dialogue.json
 
@@ -14,8 +14,8 @@ Outputs (written to ./data/, gitignored):
 
 Path resolution order for the exporter root:
   1. --source CLI arg
-  2. ../WuwaID/export_text_grouped/export_quest_ordered (sibling repo)
-  3. ./WuwaID/export_text_grouped/export_quest_ordered
+  2. ../WuwaID/scripts/export_text_grouped/export_quest_ordered (sibling repo)
+  3. ./WuwaID/scripts/export_text_grouped/export_quest_ordered
   4. ./export_text_grouped/export_quest_ordered
 """
 from __future__ import annotations
@@ -37,8 +37,8 @@ DB_PATH = DATA_DIR / "index.db"
 EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session", "category_edits", "category_drafts")
 
 DEFAULT_CANDIDATES = [
-    REPO_ROOT.parent / "WuwaID" / "export_text_grouped" / "export_quest_ordered",
-    REPO_ROOT / "WuwaID" / "export_text_grouped" / "export_quest_ordered",
+    REPO_ROOT.parent / "WuwaID" / "scripts" / "export_text_grouped" / "export_quest_ordered",
+    REPO_ROOT / "WuwaID" / "scripts" / "export_text_grouped" / "export_quest_ordered",
     REPO_ROOT / "export_text_grouped" / "export_quest_ordered",
 ]
 
