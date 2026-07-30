@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       font_url:
-        description: 'Direct download link to the TTF font file'
+        description: "Direct download link to the TTF font file"
         required: true
         type: string
       output_name:
-        description: 'Output .pak file name (without extension)'
+        description: "Output .pak file name (without extension)"
         required: false
-        default: 'VongXuyen_100_P'
+        default: "VongXuyen_100_P"
         type: string
 
 jobs:
@@ -21,8 +21,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download repak
+        shell: pwsh
+        run: |
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/trumank/repak/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -eq "repak_cli-x86_64-pc-windows-msvc.zip" }
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "repak.zip"
+          Expand-Archive -Path "repak.zip" -DestinationPath "repak" -Force
+
       - name: Download font and prepare files
         shell: pwsh
+        env:
+          FONT_URL: ${{ inputs.font_url }}
         run: |
           $fontDir = "Fonts\Fonts\Client\Content\Aki\UI\Framework\LGUI\Font"
 
@@ -30,9 +40,8 @@ jobs:
           New-Item -ItemType Directory -Path $fontDir -Force | Out-Null
 
           # Download font
-          $fontUrl = "${{ inputs.font_url }}"
-          Write-Host "Downloading font from: $fontUrl"
-          Invoke-WebRequest -Uri $fontUrl -OutFile "$fontDir\LaguSansBold.ufont"
+          Write-Host "Downloading font from: $env:FONT_URL"
+          Invoke-WebRequest -Uri $env:FONT_URL -OutFile "$fontDir\LaguSansBold.ufont"
 
           # Verify download
           $fileSize = (Get-Item "$fontDir\LaguSansBold.ufont").Length
@@ -49,10 +58,16 @@ jobs:
 
       - name: Pack into .pak
         shell: pwsh
+        env:
+          OUTPUT_NAME: ${{ inputs.output_name }}
         run: |
-          $repak = ".\Fonts\repak.exe"
+          if ($env:OUTPUT_NAME -notmatch '^[A-Za-z0-9._-]+$') {
+            throw "output_name may only contain letters, numbers, dots, underscores, and hyphens"
+          }
+
+          $repak = ".\repak\repak.exe"
           $inputFolder = "Fonts\Fonts"
-          $outputPak = "Fonts\${{ inputs.output_name }}.pak"
+          $outputPak = "Fonts\$env:OUTPUT_NAME.pak"
 
           Write-Host "Packing $inputFolder -> $outputPak"
           & $repak pack -v --version V12 $inputFolder -- $outputPak
@@ -68,6 +83,7 @@ jobs:
       - name: Upload .pak artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.output_name }}
-          path: Fonts/${{ inputs.output_name }}.pak
+          name: packed-font
+          path: Fonts/*.pak
+          if-no-files-found: error
           retention-days: 30

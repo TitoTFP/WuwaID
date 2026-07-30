@@ -18,19 +18,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
-    - name: Build project
-      working-directory: pakbypass
-      run: msbuild pakbypass.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+      - name: Build project
+        shell: cmd
+        run: msbuild src\pakbypass\pakbypass.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: winhttp.dll
-        path: pakbypass/x64/Release/winhttp.dll
-        if-no-files-found: error
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winhttp.dll
+          path: src/pakbypass/x64/Release/winhttp.dll
+          if-no-files-found: error

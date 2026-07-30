@@ -21,82 +21,23 @@ jobs:
         shell: cmd
         run: msbuild -version
 
-      - name: Patch vcxproj paths and toolset
+      - name: Patch toolset
         shell: pwsh
         run: |
-          $proj = "export_localization_db/export_localization_db.vcxproj"
-
+          $proj = "src/export_localization_db/export_localization_db.vcxproj"
           [xml]$xml = Get-Content $proj
           $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
           $ns.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003")
-
-          # Force MSVC 2022 toolset
-          $toolsets = $xml.SelectNodes("//msb:PlatformToolset", $ns)
-          foreach ($node in $toolsets) {
+          foreach ($node in $xml.SelectNodes("//msb:PlatformToolset", $ns)) {
             $node.InnerText = "v143"
           }
-
-          # Add include dirs
-          $clSettings = $xml.SelectNodes("//msb:ItemDefinitionGroup/msb:ClCompile", $ns)
-          foreach ($cl in $clSettings) {
-            $inc = $cl.SelectSingleNode("msb:AdditionalIncludeDirectories", $ns)
-
-            if ($null -eq $inc) {
-              $inc = $xml.CreateElement("AdditionalIncludeDirectories", "http://schemas.microsoft.com/developer/msbuild/2003")
-              [void]$cl.AppendChild($inc)
-            }
-
-            $inc.InnerText = "..;..\SDK;.;%(AdditionalIncludeDirectories)"
-          }
-
-          function Fix-SdkPath($path) {
-            if ([string]::IsNullOrWhiteSpace($path)) {
-              return $path
-            }
-
-            $p = $path.Replace("/", "\")
-
-            if ($p -like "SDK\*") {
-              return "..\" + $p
-            }
-
-            if ($p -like "`$(SolutionDir)SDK\*") {
-              return $p.Replace("`$(SolutionDir)SDK\", "..\SDK\")
-            }
-
-            if ($p -like "*\export_localization_db\SDK\*") {
-              $file = Split-Path $p -Leaf
-              return "..\SDK\$file"
-            }
-
-            return $p
-          }
-
-          # Fix C++ source paths
-          $compileItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClCompile", $ns)
-          foreach ($item in $compileItems) {
-            $include = $item.GetAttribute("Include")
-            $fixed = Fix-SdkPath $include
-            $item.SetAttribute("Include", $fixed)
-          }
-
-          # Fix header paths
-          $includeItems = $xml.SelectNodes("//msb:ItemGroup/msb:ClInclude", $ns)
-          foreach ($item in $includeItems) {
-            $include = $item.GetAttribute("Include")
-            $fixed = Fix-SdkPath $include
-            $item.SetAttribute("Include", $fixed)
-          }
-
           $xml.Save($proj)
-
-          Write-Host "Patched project file:"
-          Select-String -Path $proj -Pattern "PlatformToolset|AdditionalIncludeDirectories|ClCompile Include|ClInclude Include"
 
       - name: Build export_localization_db
         shell: cmd
         run: |
-          msbuild export_localization_db\export_localization_db.vcxproj ^
+          msbuild src\export_localization_db\export_localization_db.vcxproj ^
+            /p:SolutionDir=%CD%\ ^
             /p:Configuration=Release ^
             /p:Platform=x64 ^
             /p:WindowsTargetPlatformVersion=10.0 ^

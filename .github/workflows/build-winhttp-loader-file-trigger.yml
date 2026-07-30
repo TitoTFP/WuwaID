@@ -19,9 +19,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path winhttp_loader_file | Out-Null
 
-          Copy-Item pakbypass/WinhttpProxy.hpp winhttp_loader_file/WinhttpProxy.hpp
-          Copy-Item pakbypass/Logger.hpp winhttp_loader_file/Logger.hpp
-          Copy-Item pakbypass/winhttp.def winhttp_loader_file/winhttp.def
+          Copy-Item src/pakbypass/WinhttpProxy.hpp winhttp_loader_file/WinhttpProxy.hpp
+          Copy-Item src/pakbypass/Logger.hpp winhttp_loader_file/Logger.hpp
+          Copy-Item src/pakbypass/winhttp.def winhttp_loader_file/winhttp.def
 
           @'
           #include <windows.h>
