@@ -81,7 +81,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 ## Steps
 
 - [x] **Test first:** add the characterization tests listed above in the current source repositories, run them clean, and record the baseline before any history rewrite, source move, auth, or UI change.
-- [ ] Create a reversible import branch and Git bundle backups; preserve current WuwaID tags, namespace imported tags, and do not alter WuwaID's public release location.
+- [x] Create a reversible import branch and Git bundle backups; preserve current WuwaID tags, namespace imported tags, and do not alter WuwaID's public release location.
 - [ ] Rewrite/import `wuwaid-quests` history beneath `quests/`, then update only repository-root/export-path assumptions and prove its existing build/tests still pass.
 - [ ] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
 - [ ] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
@@ -101,6 +101,13 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - `npm test` in `wuwaid-log-server`: **11 passed, 0 failed, 1 todo** for the later unset-token fail-closed change; existing multipart upload and heartbeat coverage remained green.
 - `npm run build` in `wuwaid-log-server`: succeeded. `git diff --check` is clean; the generated untracked `dist/src/tests/admin-auth.test.js` artifact was removed.
 - The current empty-`WUWAID_ADMIN_TOKEN` fail-open behavior remains intentionally unmodified and is recorded by the TODO; Step 7 will replace it with a passing fail-closed assertion before changing production code.
+
+### Step 2 — reversible import setup (2026-08-02)
+
+- Created and verified complete `git bundle --all` backups at `/home/nozomi/.local/share/wuwaid-migration-backups/20260802T131749Z/` for WuwaID, quests, and log-server before creating migration branches.
+- Created local-only `WuwaID` branch `monorepo/unified-web-ui` from `5ee8cf7`; committed this plan as `540d0e8` without changing `origin` (`https://github.com/TitoTFP/WuwaID.git`) or any public tag.
+- Current WuwaID has 58 tags; the tag refs exactly match the verified backup and the original main commit remains an ancestor of the migration branch.
+- Created source branches `monorepo/pre-import-tests` at `3350602` (quests) and `6d284a3` (log-server) so the baseline tests are committed and will be included in the history imports. No branch was pushed.
 
 ## Verification
 
