@@ -83,7 +83,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - [x] **Test first:** add the characterization tests listed above in the current source repositories, run them clean, and record the baseline before any history rewrite, source move, auth, or UI change.
 - [x] Create a reversible import branch and Git bundle backups; preserve current WuwaID tags, namespace imported tags, and do not alter WuwaID's public release location.
 - [x] Rewrite/import `wuwaid-quests` history beneath `quests/`, then update only repository-root/export-path assumptions and prove its existing build/tests still pass.
-- [ ] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
+- [x] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
 - [ ] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
 - [ ] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
 - [ ] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
@@ -117,6 +117,13 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Updated only the exporter-root candidates, source-resolver test, and current README examples for the new `../scripts/export_text_grouped` monorepo location; legacy sibling candidates remain as fallback.
 - Installed the lockfile-resolved Bun dependencies in the new `quests/` checkout, then verified `uv run pytest -q app` (**288 passed**) and `bun run test:web && bun run build` (**6 passed**, build succeeded).
 - A bare `pytest` also collects `scripts/__manual__/test_mcp_server.py`, which requires generated `data/glossary.json` and is not part of the supported app suite; it remains unmodified and is documented as a manual-data residual rather than changing test collection outside this path-migration scope.
+
+### Step 4 — log-server history import (2026-08-02)
+
+- Used a second disposable `filter-branch --index-filter` clone to rewrite all 13 log-server commits beneath `log-server/` while removing 1,531 tracked `node_modules` paths and 11 tracked `dist` paths from retained history. The filtered HEAD has no path outside `log-server/`; log-server had no tags to namespace.
+- Merged the filtered history as `1353cb1` and removed the temporary `log-server-import` remote. The source repo and the verified pre-import bundle remain intact.
+- Added `log-server/.gitignore` for dependencies, build output, env files, and logs. npm 12 recorded allowlisted lifecycle scripts for existing `better-sqlite3` and `esbuild` in `package.json`, making the lockfile install reproducible after tracked dependencies were removed.
+- Compared imported `src/server.ts` and `src/config.ts` byte-for-byte with the legacy checkout: both are unchanged. `npm test` passed (**11 passed, 1 planned todo**) and `npm run build` passed after the approved native dependency rebuild; the existing multipart upload and heartbeat tests passed unchanged.
 
 ## Verification
 

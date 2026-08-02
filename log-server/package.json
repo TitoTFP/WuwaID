@@ -29,5 +29,9 @@
     "@types/node": "^20.12.12",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5"
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true,
+    "esbuild@0.28.0": true
   }
 }
