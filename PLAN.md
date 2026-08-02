@@ -82,7 +82,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 
 - [x] **Test first:** add the characterization tests listed above in the current source repositories, run them clean, and record the baseline before any history rewrite, source move, auth, or UI change.
 - [x] Create a reversible import branch and Git bundle backups; preserve current WuwaID tags, namespace imported tags, and do not alter WuwaID's public release location.
-- [ ] Rewrite/import `wuwaid-quests` history beneath `quests/`, then update only repository-root/export-path assumptions and prove its existing build/tests still pass.
+- [x] Rewrite/import `wuwaid-quests` history beneath `quests/`, then update only repository-root/export-path assumptions and prove its existing build/tests still pass.
 - [ ] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
 - [ ] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
 - [ ] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
@@ -108,6 +108,15 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Created local-only `WuwaID` branch `monorepo/unified-web-ui` from `5ee8cf7`; committed this plan as `540d0e8` without changing `origin` (`https://github.com/TitoTFP/WuwaID.git`) or any public tag.
 - Current WuwaID has 58 tags; the tag refs exactly match the verified backup and the original main commit remains an ancestor of the migration branch.
 - Created source branches `monorepo/pre-import-tests` at `3350602` (quests) and `6d284a3` (log-server) so the baseline tests are committed and will be included in the history imports. No branch was pushed.
+
+### Step 3 — quests history import (2026-08-02)
+
+- `git filter-repo` was unavailable, so a disposable clone under `~/.local/share/wuwaid-migration-work/20260802T131749Z/quests` used Git's built-in `filter-branch --index-filter`; the original source repository and verified bundles remain untouched.
+- Rewrote all 155 quests commits beneath `quests/`; the filtered HEAD has no tracked path outside that prefix and retains the Step 1 tests. Quests had no tags to namespace.
+- Merged the rewritten branch into `monorepo/unified-web-ui` as `ccfbfea` and removed the temporary `quests-import` remote.
+- Updated only the exporter-root candidates, source-resolver test, and current README examples for the new `../scripts/export_text_grouped` monorepo location; legacy sibling candidates remain as fallback.
+- Installed the lockfile-resolved Bun dependencies in the new `quests/` checkout, then verified `uv run pytest -q app` (**288 passed**) and `bun run test:web && bun run build` (**6 passed**, build succeeded).
+- A bare `pytest` also collects `scripts/__manual__/test_mcp_server.py`, which requires generated `data/glossary.json` and is not part of the supported app suite; it remains unmodified and is documented as a manual-data residual rather than changing test collection outside this path-migration scope.
 
 ## Verification
 

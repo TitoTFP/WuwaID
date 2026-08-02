@@ -1,7 +1,7 @@
 # wuwaid-quests
 
 Web viewer for Wuthering Waves quest dialogue exported by
-[`WuwaID/scripts/export_text_grouped.py`](../WuwaID/scripts/export_text_grouped.py).
+[`scripts/export_text_grouped.py`](../scripts/export_text_grouped.py).
 
 - **Frontend**: React 18 + Vite + TypeScript + Tailwind
 - **Backend**: FastAPI + SQLite FTS5 (search)
@@ -14,7 +14,7 @@ Web viewer for Wuthering Waves quest dialogue exported by
 ```
 wuwaid-quests/
 ├── scripts/
-│   ├── build_index.py       # rebuilds data/ from ../WuwaID/scripts/export_text_grouped/export_quest_ordered
+│   ├── build_index.py       # rebuilds data/ from ../scripts/export_text_grouped/export_quest_ordered
 │   ├── dev-check.js         # fails fast if :5173/:8000 busy
 │   └── serve-check.js       # fails fast if :8000 busy
 ├── app/                     # FastAPI backend
@@ -106,7 +106,7 @@ uv run python scripts/version_texts.py snapshot --tag v3.4 --source data
 
 # Save a new WuwaID export before reindexing the WebUI.
 uv run python scripts/version_texts.py snapshot \
-  --tag v3.5 --source ../WuwaID/scripts/export_text_grouped
+  --tag v3.5 --source ../scripts/export_text_grouped
 
 # Compare or export added/changed source text for translation.
 uv run python scripts/version_texts.py diff --base v3.4 --target v3.5 --lang en
@@ -141,7 +141,7 @@ Setup (one time):
 ```sh
 # 1. Make sure data/quests/ is populated (see "Reindexing" above).
 # 2. Copy the glossary draft into the data dir.
-cp ../WuwaID/data/glossary/glossary_draft.json data/glossary.json
+cp ../data/glossary/glossary_draft.json data/glossary.json
 # 3. Start a llama-server on http://localhost:8080.
 #    Example for Gemma 4 12B (Q4_K_XL, 30 GPU layers, 64K context, 1 slot):
 llama-server \

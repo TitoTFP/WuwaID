@@ -24,6 +24,15 @@ def test_resolve_source_uses_first_existing_default_candidate(tmp_path: Path, mo
     assert build_index.resolve_source(None) == source.resolve()
 
 
+def test_default_source_starts_at_monorepo_exporter() -> None:
+    assert build_index.DEFAULT_CANDIDATES[0] == (
+        build_index.REPO_ROOT.parent
+        / "scripts"
+        / "export_text_grouped"
+        / "export_quest_ordered"
+    )
+
+
 def test_resolve_source_reports_missing_explicit_directory(tmp_path: Path) -> None:
     missing = tmp_path / "missing"
 
