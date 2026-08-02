@@ -1,6 +1,6 @@
-"""Editor-role auth: single shared password + signed cookie session.
+"""Role-based auth: separate editor/admin passwords + signed cookie sessions.
 
-- `EDITOR_PASSWORD` env var (required for approval; if unset, login returns 503)
+- `EDITOR_PASSWORD` and `ADMIN_PASSWORD` env vars (required for their login routes)
 - `SESSION_SECRET` env var (used to sign the session cookie; random fallback
   generated at startup and logged once)
 - `SESSION_DAYS` env var, default 7
@@ -46,6 +46,13 @@ def _serializer() -> URLSafeTimedSerializer:
 
 def check_password(submitted: str) -> bool:
     expected = os.environ.get("EDITOR_PASSWORD", "")
+    if not expected:
+        return False
+    return hmac.compare_digest(submitted.encode("utf-8"), expected.encode("utf-8"))
+
+
+def check_admin_password(submitted: str) -> bool:
+    expected = os.environ.get("ADMIN_PASSWORD", "")
     if not expected:
         return False
     return hmac.compare_digest(submitted.encode("utf-8"), expected.encode("utf-8"))
@@ -102,6 +109,12 @@ def get_role(cookie: str | None = Cookie(default=None, alias=SESSION_COOKIE)) ->
 def require_editor(role: str = Depends(get_role)) -> str:
     if role != "editor":
         raise HTTPException(401, "editor login required")
+    return role
+
+
+def require_admin(role: str = Depends(get_role)) -> str:
+    if role != "admin":
+        raise HTTPException(401, "admin login required")
     return role
 
 

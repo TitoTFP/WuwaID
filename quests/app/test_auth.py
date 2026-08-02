@@ -4,14 +4,17 @@ from __future__ import annotations
 import sqlite3
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app import auth, db
 from app.auth import (
     SESSION_COOKIE,
+    check_admin_password,
     check_password,
     make_session_token,
     read_session_cookie,
+    require_admin,
 )
 from app.main import app
 
@@ -32,6 +35,7 @@ def client(tmp_path, monkeypatch):
     con.close()
     db.set_db_path(db_path)
     monkeypatch.setenv("EDITOR_PASSWORD", "s3cr3t")
+    monkeypatch.setenv("ADMIN_PASSWORD", "admin-s3cr3t")
     monkeypatch.setenv("SESSION_SECRET", "test-secret-1234567890")
     yield TestClient(app)
     db.set_db_path(None)
@@ -46,6 +50,21 @@ def test_check_password_constant_time(monkeypatch):
 def test_check_password_unset_env(monkeypatch):
     monkeypatch.delenv("EDITOR_PASSWORD", raising=False)
     assert check_password("anything") is False
+
+
+def test_check_admin_password_is_separate(monkeypatch):
+    monkeypatch.setenv("EDITOR_PASSWORD", "editor-s3cr3t")
+    monkeypatch.setenv("ADMIN_PASSWORD", "admin-s3cr3t")
+    assert check_admin_password("admin-s3cr3t") is True
+    assert check_admin_password("editor-s3cr3t") is False
+
+
+def test_require_admin_rejects_anon_and_editor():
+    for role in ("anon", "editor"):
+        with pytest.raises(HTTPException, match="admin login required") as exc:
+            require_admin(role)
+        assert exc.value.status_code == 401
+    assert require_admin("admin") == "admin"
 
 
 def test_make_and_read_session_roundtrip(client):
@@ -67,6 +86,19 @@ def test_login_correct_password_sets_cookie(client):
     assert r.status_code == 200
     assert SESSION_COOKIE in r.cookies
     assert r.json()["role"] == "editor"
+
+
+def test_admin_login_wrong_password_returns_401(client):
+    r = client.post("/api/admin/login", json={"password": "wrong"})
+    assert r.status_code == 401
+
+
+def test_admin_login_sets_admin_session(client):
+    r = client.post("/api/admin/login", json={"password": "admin-s3cr3t"})
+    assert r.status_code == 200
+    assert SESSION_COOKIE in r.cookies
+    assert r.json()["role"] == "admin"
+    assert client.get("/api/me").json()["role"] == "admin"
 
 
 def test_logout_clears_session(client):

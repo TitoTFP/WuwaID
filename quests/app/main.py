@@ -20,9 +20,11 @@ from . import db
 from .auth import (
     SESSION_COOKIE,
     SESSION_MAX_AGE_DAYS,
+    check_admin_password,
     check_password,
     get_role,
     make_session_token,
+    require_admin,
     require_editor,  # noqa: F401 — wired to /api/drafts/{id}/approve in Task 7+
     revoke_session,
 )
@@ -474,21 +476,34 @@ def api_search(
 # ---------------------------------------------------------------------------
 
 
+def _set_session_cookie(response: Response, role: str) -> None:
+    response.set_cookie(
+        SESSION_COOKIE,
+        make_session_token(role),
+        max_age=SESSION_MAX_AGE_DAYS * 86400,
+        httponly=True,
+        samesite="lax",
+    )
+
+
 @app.post("/api/login")
 def api_login(payload: dict, response: Response):
     if not os.environ.get("EDITOR_PASSWORD"):
         raise HTTPException(503, "editor login not configured (EDITOR_PASSWORD unset)")
     if not check_password(str(payload.get("password", ""))):
         raise HTTPException(401, "wrong password")
-    token = make_session_token("editor")
-    response.set_cookie(
-        SESSION_COOKIE,
-        token,
-        max_age=SESSION_MAX_AGE_DAYS * 86400,
-        httponly=True,
-        samesite="lax",
-    )
+    _set_session_cookie(response, "editor")
     return {"role": "editor"}
+
+
+@app.post("/api/admin/login")
+def api_admin_login(payload: dict, response: Response):
+    if not os.environ.get("ADMIN_PASSWORD"):
+        raise HTTPException(503, "admin login not configured (ADMIN_PASSWORD unset)")
+    if not check_admin_password(str(payload.get("password", ""))):
+        raise HTTPException(401, "wrong password")
+    _set_session_cookie(response, "admin")
+    return {"role": "admin"}
 
 
 @app.post("/api/logout")
