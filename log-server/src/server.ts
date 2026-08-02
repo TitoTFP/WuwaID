@@ -34,13 +34,17 @@ const upload = multer({
 // Admin auth helper
 const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!cfg.adminToken) {
-    return next();
+    res.status(503).json({ error: 'admin auth not configured' });
+    return;
   }
-  const token = req.headers['x-admin-token'] || req.query['token'];
-  if (token === cfg.adminToken) {
-    return next();
+  const token = req.header('x-admin-token');
+  const expected = Buffer.from(cfg.adminToken);
+  const provided = token ? Buffer.from(token) : null;
+  if (!provided || provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
+    res.status(401).json({ error: 'unauthorized' });
+    return;
   }
-  res.status(401).json({ error: 'unauthorized' });
+  next();
 };
 
 // Health check

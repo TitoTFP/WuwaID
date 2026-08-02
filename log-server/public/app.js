@@ -97,6 +97,7 @@ function init() {
     });
     // Bind Log Copy Button
     btnCopyLog.addEventListener('click', copyLogContent);
+    btnDownloadZip.addEventListener('click', downloadZip);
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden && adminToken) {
             refreshAll();
@@ -348,7 +349,7 @@ function renderLogsTable(logs) {
         <td data-label="Action">
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary btn-sm" onclick="openInspector('${l.id}')">🔍 Inspect</button>
-            <a class="btn btn-primary btn-sm" href="/admin/api/logs/${l.id}/download?token=${adminToken}" target="_blank">📥 Download</a>
+            <button class="btn btn-primary btn-sm" onclick="downloadLog('${l.id}')">📥 Download</button>
           </div>
         </td>
       </tr>
@@ -517,7 +518,6 @@ function openInspector(uploadId) {
     viewerActiveFilename.textContent = 'Pilih file log di sebelah kiri';
     viewerCodeBlock.textContent = 'Silakan pilih berkas log untuk memeriksa isinya secara langsung.';
     btnCopyLog.style.display = 'none';
-    btnDownloadZip.href = `/admin/api/logs/${uploadId}/download?token=${adminToken}`;
     // Open Drawer
     inspectorDrawer.classList.add('active');
     // Fetch file list
@@ -555,6 +555,34 @@ function openInspector(uploadId) {
         inspectorFileList.innerHTML = `<li class="empty-file text-red">${esc(err.message)}</li>`;
     });
 }
+function downloadZip(event) {
+    event.preventDefault();
+    downloadLog(currentUploadId);
+}
+function downloadLog(uploadId) {
+    if (!uploadId)
+        return;
+    fetch(`/admin/api/logs/${uploadId}/download`, {
+        headers: { 'X-Admin-Token': adminToken }
+    })
+        .then(res => {
+        if (!res.ok)
+            throw new Error('Gagal mengunduh ZIP');
+        return res.blob();
+    })
+        .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `logs_${uploadId}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+    })
+        .catch(() => showToast('Gagal mengunduh ZIP', 'error'));
+}
+window.downloadLog = downloadLog;
 function selectFile(filename) {
     // Mark active file in sidebar list
     const listItems = inspectorFileList.querySelectorAll('li');

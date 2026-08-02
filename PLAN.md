@@ -87,7 +87,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - [x] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
 - [x] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
 - [x] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
-- [ ] Make log-server admin authorization fail closed, remove query-token dependence for the new UI path, and preserve `POST /api/logs` plus `POST /api/active/heartbeat` unchanged.
+- [x] Make log-server admin authorization fail closed, remove query-token dependence for the new UI path, and preserve `POST /api/logs` plus `POST /api/active/heartbeat` unchanged.
 - [ ] Add React `/admin/logs` navigation and dashboard components by porting current active-player, upload, history, inspector, download, and refresh behaviors from the legacy dashboard.
 - [ ] Deploy the unified UI while retaining the old `/admin` dashboard for 14 days; verify feature parity and operations before redirecting/removing that legacy frontend.
 
@@ -142,6 +142,12 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Added a narrow GET-only FastAPI proxy surface for active summaries, players, history, uploads, file lists/content, and downloads. It maps only to log-server `/admin/api/*` paths; no generic target URL, browser token, or query-token forwarding exists.
 - The proxy requires the admin cookie, injects `WUWAID_ADMIN_TOKEN` server-side, disables environment proxy inheritance, filters response headers, and returns a generic 502 without leaking upstream connection details.
 - Added respx/TestClient coverage for anonymous/editor denial, admin forwarding/token injection, missing server credential, bounded routes, download headers, and upstream failure. The new suite failed before implementation then passed (**6 passed**); the full quests app suite reached **298 passed** and web tests/build remained green.
+
+### Step 8 — fail-closed log admin auth (2026-08-02)
+
+- Replaced log-server's empty-token bypass with a 503 fail-closed response; only a constant-time checked `X-Admin-Token` header authorizes admin routes. Query tokens are rejected.
+- Replaced both legacy dashboard download URLs that embedded the token with header-authenticated Blob downloads, including the compiled `public/app.js`; production source has no query-token dependence.
+- The new tests failed before the change then passed. `npm test` now reports **12 passed, 0 todo**; backend/frontend builds pass, and existing multipart upload plus heartbeat tests remain green.
 
 ## Verification
 

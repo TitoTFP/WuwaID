@@ -30,6 +30,11 @@ test('admin API requires the configured header token', async () => {
       assert.strictEqual(response.status, 401);
     }
 
+    const queryToken = await fetch(
+      `${baseUrl}/admin/api/logs?token=${encodeURIComponent(cfg.adminToken)}`,
+    );
+    assert.strictEqual(queryToken.status, 401);
+
     const logs = await fetch(`${baseUrl}/admin/api/logs`, {
       headers: { 'X-Admin-Token': cfg.adminToken },
     });
@@ -49,4 +54,17 @@ test('admin API requires the configured header token', async () => {
   }
 });
 
-test.todo('admin API denies access when WUWAID_ADMIN_TOKEN is unset');
+test('admin API fails closed when WUWAID_ADMIN_TOKEN is unset', async () => {
+  const originalToken = cfg.adminToken;
+  cfg.adminToken = '';
+  const server = app.listen(0);
+  const { port } = server.address() as { port: number };
+
+  try {
+    const response = await fetch(`http://localhost:${port}/admin/api/logs`);
+    assert.strictEqual(response.status, 503);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    cfg.adminToken = originalToken;
+  }
+});

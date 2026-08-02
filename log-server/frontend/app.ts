@@ -114,6 +114,7 @@ function init() {
 
   // Bind Log Copy Button
   btnCopyLog.addEventListener('click', copyLogContent);
+  btnDownloadZip.addEventListener('click', downloadZip);
 
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && adminToken) {
@@ -389,7 +390,7 @@ function renderLogsTable(logs: any[]) {
         <td data-label="Action">
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary btn-sm" onclick="openInspector('${l.id}')">🔍 Inspect</button>
-            <a class="btn btn-primary btn-sm" href="/admin/api/logs/${l.id}/download?token=${adminToken}" target="_blank">📥 Download</a>
+            <button class="btn btn-primary btn-sm" onclick="downloadLog('${l.id}')">📥 Download</button>
           </div>
         </td>
       </tr>
@@ -574,8 +575,6 @@ function openInspector(uploadId: string) {
   viewerCodeBlock.textContent = 'Silakan pilih berkas log untuk memeriksa isinya secara langsung.';
   btnCopyLog.style.display = 'none';
 
-  btnDownloadZip.href = `/admin/api/logs/${uploadId}/download?token=${adminToken}`;
-
   // Open Drawer
   inspectorDrawer.classList.add('active');
 
@@ -615,6 +614,36 @@ function openInspector(uploadId: string) {
     inspectorFileList.innerHTML = `<li class="empty-file text-red">${esc(err.message)}</li>`;
   });
 }
+
+function downloadZip(event: MouseEvent) {
+  event.preventDefault();
+  downloadLog(currentUploadId);
+}
+
+function downloadLog(uploadId: string) {
+  if (!uploadId) return;
+
+  fetch(`/admin/api/logs/${uploadId}/download`, {
+    headers: { 'X-Admin-Token': adminToken }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Gagal mengunduh ZIP');
+    return res.blob();
+  })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `logs_${uploadId}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  })
+  .catch(() => showToast('Gagal mengunduh ZIP', 'error'));
+}
+
+(window as any).downloadLog = downloadLog;
 
 function selectFile(filename: string) {
   // Mark active file in sidebar list
