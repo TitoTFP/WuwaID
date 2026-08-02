@@ -177,3 +177,9 @@ def test_ensure_editor_schema_migrates_legacy_session_table(tmp_path, monkeypatc
         assert auth.read_session_cookie(tok) == "editor"
     finally:
         db.set_db_path(None)
+
+
+def test_make_and_read_admin_session_roundtrip(client):
+    """Roles are persisted generically before the admin UI is introduced."""
+    tok = make_session_token("admin")
+    assert read_session_cookie(tok) == "admin"
