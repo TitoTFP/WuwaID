@@ -1,0 +1,33 @@
+{
+  "name": "wuwaid-log-server",
+  "version": "2.5.0",
+  "description": "TypeScript & SQLite rewrite of the WuwaID log server",
+  "main": "dist/src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build:backend": "tsc",
+    "build:frontend": "tsc -p frontend/tsconfig.json",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start": "node dist/src/server.js",
+    "test": "tsx --test src/tests/**/*.test.ts"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.12",
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/better-sqlite3": "^7.6.10",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.12.12",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5"
+  }
+}
