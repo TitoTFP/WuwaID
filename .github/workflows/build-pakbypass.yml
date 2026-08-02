@@ -1,17 +1,15 @@
 name: Build PakBypass
 
 on:
-  # push:
-  #   branches: [ main, master ]
-  #   paths:
-  #     - 'pakbypass/**'
-  #     - '.github/workflows/build-pakbypass.yml'
-  # pull_request:
-  #   branches: [ main, master ]
-  #   paths:
-  #     - 'pakbypass/**'
-  #     - '.github/workflows/build-pakbypass.yml'
   workflow_dispatch:
+  push:
+    paths:
+      - 'src/pakbypass/**'
+      - '.github/workflows/build-pakbypass.yml'
+  pull_request:
+    paths:
+      - 'src/pakbypass/**'
+      - '.github/workflows/build-pakbypass.yml'
 
 jobs:
   build:

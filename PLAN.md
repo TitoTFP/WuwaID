@@ -84,7 +84,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - [x] Create a reversible import branch and Git bundle backups; preserve current WuwaID tags, namespace imported tags, and do not alter WuwaID's public release location.
 - [x] Rewrite/import `wuwaid-quests` history beneath `quests/`, then update only repository-root/export-path assumptions and prove its existing build/tests still pass.
 - [x] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
-- [ ] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
+- [x] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
 - [ ] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
 - [ ] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
 - [ ] Make log-server admin authorization fail closed, remove query-token dependence for the new UI path, and preserve `POST /api/logs` plus `POST /api/active/heartbeat` unchanged.
@@ -124,6 +124,12 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Merged the filtered history as `1353cb1` and removed the temporary `log-server-import` remote. The source repo and the verified pre-import bundle remain intact.
 - Added `log-server/.gitignore` for dependencies, build output, env files, and logs. npm 12 recorded allowlisted lifecycle scripts for existing `better-sqlite3` and `esbuild` in `package.json`, making the lockfile install reproducible after tracked dependencies were removed.
 - Compared imported `src/server.ts` and `src/config.ts` byte-for-byte with the legacy checkout: both are unchanged. `npm test` passed (**11 passed, 1 planned todo**) and `npm run build` passed after the approved native dependency rebuild; the existing multipart upload and heartbeat tests passed unchanged.
+
+### Step 5 — independent root CI (2026-08-02)
+
+- Added root `.github/workflows/quests.yml` (Python app tests, Bun web tests/build) and `log-server.yml` (npm test/build), each filtered to its own subtree and workflow file.
+- Enabled the existing Windows export, PakBypass, and file-trigger workflows only for their respective `src/**` paths plus their workflow definitions; the input-dependent font packaging workflow remains manual-only.
+- Confirmed all workflow definitions live under root `.github/workflows/` and have the intended trigger shape. `actionlint` is unavailable locally, so GitHub Actions syntax validation remains a CI-side check.
 
 ## Verification
 

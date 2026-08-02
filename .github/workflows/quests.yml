@@ -1,0 +1,31 @@
+name: Quests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'quests/**'
+      - '.github/workflows/quests.yml'
+  pull_request:
+    paths:
+      - 'quests/**'
+      - '.github/workflows/quests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v5
+      - uses: oven-sh/setup-bun@v2
+      - run: uv sync --locked --group dev
+      - run: uv run pytest -q app
+      - run: bun install --frozen-lockfile
+      - run: bun run test:web
+      - run: bun run build
