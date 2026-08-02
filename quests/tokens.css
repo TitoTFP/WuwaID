@@ -1,0 +1,118 @@
+/* Impeccable · Resonance Atlas · designed for WuwaID Quests */
+:root {
+  color-scheme: dark;
+
+  /* Resonance Atlas palette */
+  --color-ink-navy-channels: 11% 0.035 285;
+  --color-brass-channels: 87% 0.19 112;
+  --color-signal-teal-channels: 78% 0.14 184;
+  --color-ink-navy: oklch(var(--color-ink-navy-channels));
+  --color-brass: oklch(var(--color-brass-channels));
+  --color-signal-teal: oklch(var(--color-signal-teal-channels));
+
+  --color-paper-2-channels: 15% 0.04 283;
+  --color-paper-3-channels: 19% 0.045 280;
+  --color-paper-4-channels: 24% 0.05 276;
+  --color-rule-channels: 34% 0.055 278;
+  --color-rule-strong-channels: 48% 0.07 275;
+  --color-ink-channels: 96% 0.018 105;
+  --color-ink-2-channels: 84% 0.025 100;
+  --color-ink-3-channels: 67% 0.028 290;
+  --color-ink-4-channels: 53% 0.03 288;
+  --color-paper: var(--color-ink-navy);
+  --color-paper-2: oklch(var(--color-paper-2-channels));
+  --color-paper-3: oklch(var(--color-paper-3-channels));
+  --color-paper-4: oklch(var(--color-paper-4-channels));
+  --color-rule: oklch(var(--color-rule-channels));
+  --color-rule-strong: oklch(var(--color-rule-strong-channels));
+  --color-ink: oklch(var(--color-ink-channels));
+  --color-ink-2: oklch(var(--color-ink-2-channels));
+  --color-ink-3: oklch(var(--color-ink-3-channels));
+  --color-muted: var(--color-ink-3);
+
+  --color-success-channels: 77% 0.17 150;
+  --color-warning-channels: 84% 0.16 78;
+  --color-error-channels: 72% 0.2 24;
+  --color-info-channels: 76% 0.14 230;
+  --color-violet-channels: 74% 0.18 315;
+  --color-success: oklch(var(--color-success-channels));
+  --color-warning: oklch(var(--color-warning-channels));
+  --color-error: oklch(var(--color-error-channels));
+  --color-error-decoration: color-mix(in oklch, var(--color-error) 70%, transparent);
+  --color-info: oklch(var(--color-info-channels));
+  --color-violet: oklch(var(--color-violet-channels));
+
+  --color-accent: var(--color-brass);
+  --color-link: var(--color-signal-teal);
+  --color-focus: var(--color-brass);
+  --color-accent-surface: color-mix(in oklch, var(--color-accent) 13%, transparent);
+  --color-accent-rule: color-mix(in oklch, var(--color-accent) 48%, var(--color-rule));
+  --color-accent-rule-strong: color-mix(in oklch, var(--color-accent) 72%, var(--color-rule));
+  --color-accent-surface-faint: color-mix(in oklch, var(--color-accent) 5%, transparent);
+  --color-accent-surface-subtle: color-mix(in oklch, var(--color-accent) 8%, transparent);
+  --color-accent-selection: color-mix(in oklch, var(--color-accent) 34%, transparent);
+  --color-link-decoration: color-mix(in oklch, var(--color-link) 58%, transparent);
+  --color-success-surface: color-mix(in oklch, var(--color-success) 13%, transparent);
+  --color-warning-surface: color-mix(in oklch, var(--color-warning) 13%, transparent);
+  --color-error-surface: color-mix(in oklch, var(--color-error) 13%, transparent);
+  --color-info-surface: color-mix(in oklch, var(--color-info) 13%, transparent);
+
+  --color-neutral-50-channels: 96% 0.018 105;
+  --color-neutral-100-channels: 92% 0.02 105;
+  --color-neutral-200-channels: 84% 0.025 100;
+  --color-neutral-300-channels: 75% 0.026 295;
+  --color-neutral-400-channels: 67% 0.028 290;
+  --color-neutral-500-channels: 57% 0.03 288;
+  --color-neutral-600-channels: 47% 0.035 285;
+  --color-neutral-700-channels: 35% 0.045 282;
+  --color-neutral-800-channels: 24% 0.05 278;
+  --color-neutral-900-channels: 16% 0.04 283;
+
+  --font-display: "Syne", "Arial Black", sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: clamp(2rem, 4vw, 3.5rem);
+  --leading-tight: 1.02;
+  --leading-body: 1.62;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 8rem;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1.25rem;
+  --radius-card: 0.875rem;
+  --radius-input: 0.5rem;
+  --radius-chip: 0.375rem;
+  --radius-pill: 999px;
+  --rule-hairline: 1px;
+  --control-height: 2.75rem;
+  --header-height: 4.5rem;
+
+  --shadow-raised: 0 18px 55px oklch(4% 0.03 285 / 0.42);
+  --shadow-modal: 0 28px 90px oklch(3% 0.04 285 / 0.65);
+  --dur-fast: 120ms;
+  --dur-base: 190ms;
+  --dur-slow: 360ms;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --z-raised: 20;
+  --z-dropdown: 40;
+  --z-sticky: 30;
+  --z-modal: 50;
+}
