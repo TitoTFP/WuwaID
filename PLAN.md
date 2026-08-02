@@ -86,7 +86,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - [x] Rewrite/import `wuwaid-log-server` history beneath `log-server/`, excluding tracked `node_modules` and `dist`; add an appropriate `.gitignore` without changing the deployed API host, methods, paths, or multipart fields.
 - [x] Move/add all CI definitions under root `.github/workflows/`; apply path filters so WuwaID Windows builds, quests checks, and log-server checks remain independent.
 - [x] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
-- [ ] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
+- [x] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
 - [ ] Make log-server admin authorization fail closed, remove query-token dependence for the new UI path, and preserve `POST /api/logs` plus `POST /api/active/heartbeat` unchanged.
 - [ ] Add React `/admin/logs` navigation and dashboard components by porting current active-player, upload, history, inspector, download, and refresh behaviors from the legacy dashboard.
 - [ ] Deploy the unified UI while retaining the old `/admin` dashboard for 14 days; verify feature parity and operations before redirecting/removing that legacy frontend.
@@ -136,6 +136,12 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Added `ADMIN_PASSWORD` verification, `require_admin`, and `POST /api/admin/login`; the existing signed cookie/session table stores the `admin` role without a schema migration.
 - Kept editor login and `require_editor` editor-only, so an editor credential/session cannot implicitly access future log administration.
 - Added server-side tests for the separate credential, anonymous/editor rejection, and admin session endpoint. The new tests failed before the implementation and then passed: `app/test_auth.py` **16 passed**, full quests app suite **292 passed**, web tests/build still passed.
+
+### Step 7 — admin-only log proxy (2026-08-02)
+
+- Added a narrow GET-only FastAPI proxy surface for active summaries, players, history, uploads, file lists/content, and downloads. It maps only to log-server `/admin/api/*` paths; no generic target URL, browser token, or query-token forwarding exists.
+- The proxy requires the admin cookie, injects `WUWAID_ADMIN_TOKEN` server-side, disables environment proxy inheritance, filters response headers, and returns a generic 502 without leaking upstream connection details.
+- Added respx/TestClient coverage for anonymous/editor denial, admin forwarding/token injection, missing server credential, bounded routes, download headers, and upstream failure. The new suite failed before implementation then passed (**6 passed**); the full quests app suite reached **298 passed** and web tests/build remained green.
 
 ## Verification
 

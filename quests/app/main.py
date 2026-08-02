@@ -6,7 +6,9 @@ import os
 import re
 import tempfile
 from pathlib import Path
+from urllib.parse import quote
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -517,6 +519,98 @@ def api_logout(request: Request, response: Response):
 @app.get("/api/me")
 def api_me(role: str = Depends(get_role)):
     return {"role": role}
+
+
+# ---------------------------------------------------------------------------
+# Admin log proxy
+# ---------------------------------------------------------------------------
+
+
+def _log_service_config() -> tuple[str, str]:
+    base_url = os.environ.get("WUWAID_LOG_SERVER_URL", "").rstrip("/")
+    token = os.environ.get("WUWAID_ADMIN_TOKEN", "")
+    if not base_url.startswith(("http://", "https://")):
+        raise HTTPException(503, "log service not configured")
+    if not token:
+        raise HTTPException(503, "log admin token not configured")
+    return base_url, token
+
+
+async def _proxy_log_admin(path: str, params: dict[str, str] | None = None) -> Response:
+    base_url, token = _log_service_config()
+    try:
+        async with httpx.AsyncClient(timeout=20.0, trust_env=False) as client:
+            upstream = await client.get(
+                f"{base_url}/admin/api/{path}",
+                params=params,
+                headers={"X-Admin-Token": token},
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, "log service unavailable") from exc
+
+    headers = {
+        name: value
+        for name in ("content-type", "content-disposition")
+        if (value := upstream.headers.get(name))
+    }
+    return Response(content=upstream.content, status_code=upstream.status_code, headers=headers)
+
+
+def _log_upload_id(upload_id: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", upload_id):
+        raise HTTPException(404, "not found")
+    return upload_id
+
+
+def _log_filename(filename: str) -> str:
+    parts = filename.split("/")
+    if not filename or "\\" in filename or any(part in ("", ".", "..") for part in parts):
+        raise HTTPException(404, "not found")
+    return "/".join(quote(part, safe="") for part in parts)
+
+
+@app.get("/api/admin/logs/active")
+async def api_admin_logs_active(role: str = Depends(require_admin)):
+    return await _proxy_log_admin("active")
+
+
+@app.get("/api/admin/logs/players")
+async def api_admin_logs_players(role: str = Depends(require_admin)):
+    return await _proxy_log_admin("active/players")
+
+
+@app.get("/api/admin/logs/history")
+async def api_admin_logs_history(
+    range: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    role: str = Depends(require_admin),
+):
+    return await _proxy_log_admin("active/history", {"range": range})
+
+
+@app.get("/api/admin/logs/uploads")
+async def api_admin_logs_uploads(role: str = Depends(require_admin)):
+    return await _proxy_log_admin("logs")
+
+
+@app.get("/api/admin/logs/uploads/{upload_id}/download")
+async def api_admin_logs_download(upload_id: str, role: str = Depends(require_admin)):
+    return await _proxy_log_admin(f"logs/{_log_upload_id(upload_id)}/download")
+
+
+@app.get("/api/admin/logs/uploads/{upload_id}/files")
+async def api_admin_logs_files(upload_id: str, role: str = Depends(require_admin)):
+    return await _proxy_log_admin(f"logs/{_log_upload_id(upload_id)}/files")
+
+
+@app.get("/api/admin/logs/uploads/{upload_id}/files/{filename:path}")
+async def api_admin_logs_file(
+    upload_id: str,
+    filename: str,
+    role: str = Depends(require_admin),
+):
+    return await _proxy_log_admin(
+        f"logs/{_log_upload_id(upload_id)}/files/{_log_filename(filename)}"
+    )
 
 
 # ---------------------------------------------------------------------------
