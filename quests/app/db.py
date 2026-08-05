@@ -462,19 +462,6 @@ def list_speakers() -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def get_quest(qid: int) -> dict | None:
-    con = connect()
-    try:
-        row = con.execute(
-            "SELECT * FROM quests WHERE qid = ?", (qid,)
-        ).fetchone()
-    finally:
-        con.close()
-    if row is None:
-        return None
-    return dict(row)
-
-
 # ---------------------------------------------------------------------------
 # Editor: overlay merge
 # ---------------------------------------------------------------------------

@@ -135,19 +135,6 @@ export interface QuestListResponse {
 
 export type DraftStatus = "pending" | "applied" | "rejected" | "withdrawn";
 
-export type EditableField =
-  | "type"
-  | "state_key"
-  | "speaker_en"
-  | "speaker_zh-Hans"
-  | "speaker_ja"
-  | "text_en"
-  | "text_zh-Hans"
-  | "text_ja"
-  | "speaker_id"
-  | "text_id"
-  | "options";
-
 export type DraftPatch = Partial<{
   type: string;
   state_key: string;

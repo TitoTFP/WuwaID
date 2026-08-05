@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Iterable
 
 
 SYSTEM_PROMPT = """You are a professional translator localizing a video game's dialogue from English to Indonesian (Bahasa Indonesia). The game is "Wuthering Waves", a Chinese open-world action RPG with anime aesthetics.

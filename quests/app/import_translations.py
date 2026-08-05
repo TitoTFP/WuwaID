@@ -395,12 +395,3 @@ def import_translation_map(
         "skipped_keys": skipped_count
     }
 
-
-def import_translations_from_db(
-    repo_root: Path,
-    db_path: Path,
-    rebuild_index: bool = True,
-    context: ImportContext | None = None,
-) -> dict:
-    db_translations = load_translations_from_db(db_path)
-    return import_translation_map(repo_root, db_translations, rebuild_index=rebuild_index, context=context)

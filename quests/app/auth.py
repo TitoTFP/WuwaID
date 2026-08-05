@@ -13,7 +13,7 @@ import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Cookie, Depends, HTTPException, Response
+from fastapi import Cookie, Depends, HTTPException
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from . import db

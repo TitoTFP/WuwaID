@@ -204,6 +204,7 @@ export_quest_raw_all/
 experiments/
 build-artifacts/
 .codegraph/
+.pi-subagents/
 
 # Python caches
 __pycache__/

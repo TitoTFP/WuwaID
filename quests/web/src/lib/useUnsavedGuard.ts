@@ -16,7 +16,3 @@ export function useUnsavedGuard(dirty: boolean, message: string = "You have unsa
   }, [message]);
 }
 
-export function confirmIfDirty(dirty: boolean, message: string = "You have unsaved changes. Leave anyway?"): boolean {
-  if (!dirty) return true;
-  return window.confirm(message);
-}

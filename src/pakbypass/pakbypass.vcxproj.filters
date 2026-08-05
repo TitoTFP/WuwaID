@@ -24,16 +24,7 @@
     <ClInclude Include="Logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PatternScanner.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EventRecorder.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DynamicResolver.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PakBypass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinhttpProxy.hpp">
@@ -48,6 +39,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
     <None Include="winhttp.def">
       <Filter>Source Files</Filter>
     </None>

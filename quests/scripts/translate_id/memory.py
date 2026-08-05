@@ -10,7 +10,6 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any
 
 from .atomic import atomic_write_json
 

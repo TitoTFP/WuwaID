@@ -112,10 +112,6 @@ export function useLocalDraft<T>(qid: number, lineId: number, debounceMs: number
   return { restored, save, clear, flush, status };
 }
 
-export function hasLocalDraft(qid: number, lineId: number): boolean {
-  return readLocal(keyFor(qid, lineId)) !== null;
-}
-
 export function listLocalDraftLineIds(qid: number): Set<number> {
   const ids = new Set<number>();
   if (typeof window === "undefined") return ids;
