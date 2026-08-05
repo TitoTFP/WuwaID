@@ -43,17 +43,17 @@ export default function Layout() {
 
   return (
     <div className="app-shell min-h-screen flex flex-col">
-      <header className="archive-masthead">
-        <div className="archive-masthead__inner container-wide">
-          <Link to="/" className="archive-brand" aria-label="WuwaID Quests home">
-            <span className="archive-brand__mark" aria-hidden="true">W</span>
-            <span className="archive-brand__lockup">
-              <span className="archive-brand__name">wuwaid</span>
-              <span className="archive-brand__meta">resonance atlas</span>
+      <header className="sn-masthead">
+        <div className="sn-masthead__inner container-wide">
+          <Link to="/" className="sn-brand" aria-label="WuwaID Quests home">
+            <span className="sn-brand__mark" aria-hidden="true">W</span>
+            <span className="sn-brand__lockup">
+              <span className="sn-brand__name">wuwaid</span>
+              <span className="sn-brand__meta">resonance atlas</span>
             </span>
           </Link>
 
-          <nav className="archive-browse" aria-label="Browse archive">
+          <nav className="sn-browse" aria-label="Browse archive">
             <NavLink to="/" end className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
               Home
             </NavLink>
@@ -67,7 +67,7 @@ export default function Layout() {
 
           <form
             onSubmit={onSubmit}
-            className="archive-search"
+            className="sn-search"
             role="search"
             aria-label="Search quests and grouped texts"
           >
@@ -79,9 +79,9 @@ export default function Layout() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search quests and grouped texts…"
-              className="input archive-search__input"
+              className="input sn-search__input"
             />
-            <button type="submit" className="archive-search__submit" aria-label="Search">
+            <button type="submit" className="sn-search__submit" aria-label="Search">
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -95,7 +95,7 @@ export default function Layout() {
             </button>
           </form>
 
-          <div className="archive-tools">
+          <div className="sn-tools">
             <NavLink
               to="/drafts"
               className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}
@@ -103,7 +103,7 @@ export default function Layout() {
             >
               <span>Drafts</span>
               {pendingCount > 0 && (
-                <span className="archive-count">
+                <span className="sn-count">
                   {pendingCount > 99 ? "99+" : pendingCount}
                 </span>
               )}
@@ -137,7 +137,7 @@ export default function Layout() {
           </div>
 
           <details
-            className="archive-menu"
+            className="sn-menu"
             onKeyDown={(event) => {
               if (event.key !== "Escape") return;
               event.currentTarget.open = false;
@@ -149,56 +149,56 @@ export default function Layout() {
               }
             }}
           >
-            <summary className="archive-menu__toggle">
+            <summary className="sn-menu__toggle">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M4 7h16M4 12h16M4 17h16" />
               </svg>
               <span>Menu</span>
             </summary>
-            <div className="archive-menu__panel">
-              <nav className="archive-menu__nav" aria-label="Mobile navigation">
-                <NavLink to="/" end className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+            <div className="sn-menu__panel">
+              <nav className="sn-menu__nav" aria-label="Mobile navigation">
+                <NavLink to="/" end className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}>
                   Home
                 </NavLink>
-                <NavLink to="/side-quests" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                <NavLink to="/side-quests" className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}>
                   Side Quests
                 </NavLink>
-                <NavLink to="/categories" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                <NavLink to="/categories" className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}>
                   Grouped Texts
                 </NavLink>
                 <NavLink
                   to="/drafts"
-                  className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}
+                  className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}
                   aria-label={`Drafts (${pendingCount} pending)`}
                 >
                   <span>Drafts</span>
                   {pendingCount > 0 && (
-                    <span className="archive-count">
+                    <span className="sn-count">
                       {pendingCount > 99 ? "99+" : pendingCount}
                     </span>
                   )}
                 </NavLink>
                 {canEdit(role) && (
                   <>
-                    <NavLink to="/versions" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                    <NavLink to="/versions" className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}>
                       Versions
                     </NavLink>
                     <button
                       type="button"
                       onClick={() => setShowImport(true)}
-                      className="archive-menu__link"
+                      className="sn-menu__link"
                     >
                       Import
                     </button>
                   </>
                 )}
                 {role === "admin" && (
-                  <NavLink to="/admin/logs" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                  <NavLink to="/admin/logs" className={({ isActive }) => `sn-menu__link ${isActive ? "is-active" : ""}`}>
                     Logs
                   </NavLink>
                 )}
               </nav>
-              <div className="archive-menu__language">
+              <div className="sn-menu__language">
                 <span>Language</span>
                 <LangSwitcher />
               </div>
@@ -211,7 +211,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="archive-footer">
+      <footer className="sn-footer">
         <span>Data source</span>
         <span aria-hidden="true">·</span>
         <a className="link" href="https://github.com/TitoTFP/WuwaID" target="_blank" rel="noreferrer">
