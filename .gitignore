@@ -209,3 +209,7 @@ build-artifacts/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Agent workspace files
+CLAUDE.md
+docs/agents/
