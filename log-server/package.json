@@ -7,8 +7,7 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "build:backend": "tsc",
-    "build:frontend": "tsc -p frontend/tsconfig.json",
-    "build": "npm run build:backend && npm run build:frontend",
+    "build": "npm run build:backend",
     "start": "node dist/src/server.js",
     "test": "tsx --test src/tests/**/*.test.ts"
   },
