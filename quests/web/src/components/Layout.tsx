@@ -49,7 +49,7 @@ export default function Layout() {
             <span className="sn-brand__mark" aria-hidden="true">W</span>
             <span className="sn-brand__lockup">
               <span className="sn-brand__name">wuwaid</span>
-              <span className="sn-brand__meta">resonance atlas</span>
+              <span className="sn-brand__meta">quest archive · wuthering waves</span>
             </span>
           </Link>
 
