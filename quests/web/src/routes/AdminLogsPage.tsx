@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useMe } from "../lib/auth";
 import { filenameFromDisposition, formatAdminLogBytes } from "../lib/adminLogs";
+import HistoryChart from "../components/editor/HistoryChart";
 import type { AdminLogUpload } from "../lib/types";
 
 type Tab = "active" | "uploads" | "history";
@@ -161,6 +162,7 @@ export default function AdminLogsPage() {
       {tab === "history" && (
         <section className="space-y-4 border border-white/10 p-4">
           <div className="flex flex-wrap gap-2">{(["1h", "24h", "7d", "30d"] as const).map((value) => <button key={value} className={`btn ${range === value ? "btn-active" : ""}`} onClick={() => setRange(value)}>{value}</button>)}</div>
+          {historyQ.data && <HistoryChart data={historyQ.data} />}
           <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-xs text-slate-400"><tr><th className="p-2">Time</th><th className="p-2">Total</th><th className="p-2">Events</th></tr></thead><tbody>{(historyQ.data?.points ?? []).map((point) => <tr key={point.timestamp} className="border-t border-white/10"><td className="p-2">{formatTime(point.timestamp)}</td><td className="p-2">{point.total}</td><td className="p-2">{Object.entries(point.events).map(([event, count]) => `${event}: ${count}`).join(" · ") || "—"}</td></tr>)}</tbody></table></div>
         </section>
       )}
