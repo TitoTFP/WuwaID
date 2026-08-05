@@ -88,7 +88,7 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - [x] Extend the existing quests session model with a separate `admin` role and credential; add server-side authorization tests for anonymous, editor, and admin access.
 - [x] Add FastAPI `/api/admin/logs/*` proxy endpoints that check the admin session and inject `WUWAID_ADMIN_TOKEN` while forwarding only to log-server `/admin/api/*` endpoints.
 - [x] Make log-server admin authorization fail closed, remove query-token dependence for the new UI path, and preserve `POST /api/logs` plus `POST /api/active/heartbeat` unchanged.
-- [ ] Add React `/admin/logs` navigation and dashboard components by porting current active-player, upload, history, inspector, download, and refresh behaviors from the legacy dashboard.
+- [x] Add React `/admin/logs` navigation and dashboard components by porting current active-player, upload, history, inspector, download, and refresh behaviors from the legacy dashboard.
 - [ ] Deploy the unified UI while retaining the old `/admin` dashboard for 14 days; verify feature parity and operations before redirecting/removing that legacy frontend.
 
 ## Execution log
@@ -148,6 +148,13 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Replaced log-server's empty-token bypass with a 503 fail-closed response; only a constant-time checked `X-Admin-Token` header authorizes admin routes. Query tokens are rejected.
 - Replaced both legacy dashboard download URLs that embedded the token with header-authenticated Blob downloads, including the compiled `public/app.js`; production source has no query-token dependence.
 - The new tests failed before the change then passed. `npm test` now reports **12 passed, 0 todo**; backend/frontend builds pass, and existing multipart upload plus heartbeat tests remain green.
+
+### Step 9 — React admin log dashboard (2026-08-05)
+
+- Added `quests/web/src/routes/AdminLoginPage.tsx` (`/admin/login`) using the separate admin credential and `useAdminLogin`, and `AdminLogsPage.tsx` (`/admin/logs`) with active-player, uploads (inspect/download), history tabs, search filters, 30s auto-refresh, and Blob download with `Content-Disposition` filename parsing.
+- Added `quests/web/src/lib/adminLogs.ts` pure helpers plus `adminLogsWorkflow.test.ts`; wired routes in `App.tsx` and admin-only Logs nav links in `Layout.tsx`; extended `api.ts` and `types.ts` for the proxy endpoints.
+- The admin-log client calls match the Step 7 proxy paths exactly. `uv run pytest -q app` (**298 passed**), `bun run test:web` (**7 passed**), `bun run build` (succeeded), and `npm test` in log-server (**12 passed**) are all green.
+- **Remaining:** the 14-day parallel-window deploy and legacy-dashboard retirement (Step 10) still need a production environment with configured `ADMIN_PASSWORD`, `WUWAID_LOG_SERVER_URL`, and `WUWAID_ADMIN_TOKEN`.
 
 ## Verification
 
