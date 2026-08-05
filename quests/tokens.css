@@ -1,76 +1,73 @@
-/* Impeccable · Resonance Atlas · designed for WuwaID Quests */
+/* Sentinel · dark · minimalist · Wuthering Waves · anti-AI-slop (ADR-0002, ADR-0003) */
 :root {
   color-scheme: dark;
 
-  /* Resonance Atlas palette */
-  --color-ink-navy-channels: 11% 0.035 285;
-  --color-brass-channels: 87% 0.19 112;
-  --color-signal-teal-channels: 78% 0.14 184;
-  --color-ink-navy: oklch(var(--color-ink-navy-channels));
-  --color-brass: oklch(var(--color-brass-channels));
-  --color-signal-teal: oklch(var(--color-signal-teal-channels));
+  /* ── Sentinel palette (oklch channels) ──
+     One cyan signal accent; everything else monochrome. No decorative
+     gradients, no glassmorphism, no emoji, no looping animation. */
+  --sentinel-ground-channels: 7.6% 0.012 250;        /* #0A0E14 */
+  --sentinel-panel-channels: 11% 0.016 250;          /* #121722 */
+  --sentinel-panel-2-channels: 15.5% 0.02 250;       /* #1A212E */
+  --sentinel-ink-channels: 90% 0.012 250;            /* #E6EAF0 */
+  --sentinel-ink-2-channels: 72% 0.018 250;          /* #A0AABB */
+  --sentinel-ink-3-channels: 50% 0.02 250;           /* #6B7686 */
+  --sentinel-rule-channels: 22% 0.022 250;           /* hairline rules */
+  --sentinel-rule-strong-channels: 32% 0.028 250;
+  --sentinel-signal-channels: 80% 0.12 210;          /* cyan #22D3EE */
+  --sentinel-success-channels: 72% 0.15 165;         /* #34D399 */
+  --sentinel-error-channels: 68% 0.2 25;             /* #F87171 */
+  --sentinel-warning-channels: 80% 0.15 85;          /* #FBBF24 */
 
-  --color-paper-2-channels: 15% 0.04 283;
-  --color-paper-3-channels: 19% 0.045 280;
-  --color-paper-4-channels: 24% 0.05 276;
-  --color-rule-channels: 34% 0.055 278;
-  --color-rule-strong-channels: 48% 0.07 275;
-  --color-ink-channels: 96% 0.018 105;
-  --color-ink-2-channels: 84% 0.025 100;
-  --color-ink-3-channels: 67% 0.028 290;
-  --color-ink-4-channels: 53% 0.03 288;
-  --color-paper: var(--color-ink-navy);
-  --color-paper-2: oklch(var(--color-paper-2-channels));
-  --color-paper-3: oklch(var(--color-paper-3-channels));
-  --color-paper-4: oklch(var(--color-paper-4-channels));
-  --color-rule: oklch(var(--color-rule-channels));
-  --color-rule-strong: oklch(var(--color-rule-strong-channels));
-  --color-ink: oklch(var(--color-ink-channels));
-  --color-ink-2: oklch(var(--color-ink-2-channels));
-  --color-ink-3: oklch(var(--color-ink-3-channels));
-  --color-muted: var(--color-ink-3);
+  --sentinel-ground: oklch(var(--sentinel-ground-channels));
+  --sentinel-panel: oklch(var(--sentinel-panel-channels));
+  --sentinel-panel-2: oklch(var(--sentinel-panel-2-channels));
+  --sentinel-ink: oklch(var(--sentinel-ink-channels));
+  --sentinel-ink-2: oklch(var(--sentinel-ink-2-channels));
+  --sentinel-ink-3: oklch(var(--sentinel-ink-3-channels));
+  --sentinel-rule: oklch(var(--sentinel-rule-channels));
+  --sentinel-rule-strong: oklch(var(--sentinel-rule-strong-channels));
+  --sentinel-signal: oklch(var(--sentinel-signal-channels));
+  --sentinel-success: oklch(var(--sentinel-success-channels));
+  --sentinel-error: oklch(var(--sentinel-error-channels));
+  --sentinel-warning: oklch(var(--sentinel-warning-channels));
 
-  --color-success-channels: 77% 0.17 150;
-  --color-warning-channels: 84% 0.16 78;
-  --color-error-channels: 72% 0.2 24;
-  --color-info-channels: 76% 0.14 230;
-  --color-violet-channels: 74% 0.18 315;
-  --color-success: oklch(var(--color-success-channels));
-  --color-warning: oklch(var(--color-warning-channels));
-  --color-error: oklch(var(--color-error-channels));
-  --color-error-decoration: color-mix(in oklch, var(--color-error) 70%, transparent);
-  --color-info: oklch(var(--color-info-channels));
-  --color-violet: oklch(var(--color-violet-channels));
+  /* ── Derived Sentinel surfaces ── */
+  --sentinel-signal-surface: color-mix(in oklch, var(--sentinel-signal) 13%, transparent);
+  --sentinel-signal-rule: color-mix(in oklch, var(--sentinel-signal) 48%, var(--sentinel-rule));
+  --sentinel-signal-rule-strong: color-mix(in oklch, var(--sentinel-signal) 72%, var(--sentinel-rule));
+  --sentinel-signal-selection: color-mix(in oklch, var(--sentinel-signal) 34%, transparent);
+  --sentinel-success-surface: color-mix(in oklch, var(--sentinel-success) 13%, transparent);
+  --sentinel-error-surface: color-mix(in oklch, var(--sentinel-error) 13%, transparent);
+  --sentinel-warning-surface: color-mix(in oklch, var(--sentinel-warning) 13%, transparent);
+  --sentinel-error-decoration: color-mix(in oklch, var(--sentinel-error) 70%, transparent);
 
-  --color-accent: var(--color-brass);
-  --color-link: var(--color-signal-teal);
-  --color-focus: var(--color-brass);
-  --color-accent-surface: color-mix(in oklch, var(--color-accent) 13%, transparent);
-  --color-accent-rule: color-mix(in oklch, var(--color-accent) 48%, var(--color-rule));
-  --color-accent-rule-strong: color-mix(in oklch, var(--color-accent) 72%, var(--color-rule));
-  --color-accent-surface-faint: color-mix(in oklch, var(--color-accent) 5%, transparent);
-  --color-accent-surface-subtle: color-mix(in oklch, var(--color-accent) 8%, transparent);
-  --color-accent-selection: color-mix(in oklch, var(--color-accent) 34%, transparent);
-  --color-link-decoration: color-mix(in oklch, var(--color-link) 58%, transparent);
-  --color-success-surface: color-mix(in oklch, var(--color-success) 13%, transparent);
-  --color-warning-surface: color-mix(in oklch, var(--color-warning) 13%, transparent);
-  --color-error-surface: color-mix(in oklch, var(--color-error) 13%, transparent);
-  --color-info-surface: color-mix(in oklch, var(--color-info) 13%, transparent);
-
-  --color-neutral-50-channels: 96% 0.018 105;
-  --color-neutral-100-channels: 92% 0.02 105;
-  --color-neutral-200-channels: 84% 0.025 100;
-  --color-neutral-300-channels: 75% 0.026 295;
-  --color-neutral-400-channels: 67% 0.028 290;
-  --color-neutral-500-channels: 57% 0.03 288;
-  --color-neutral-600-channels: 47% 0.035 285;
-  --color-neutral-700-channels: 35% 0.045 282;
-  --color-neutral-800-channels: 24% 0.05 278;
-  --color-neutral-900-channels: 16% 0.04 283;
-
-  --font-display: "Syne", "Arial Black", sans-serif;
+  /* ── Type: Manrope UI + JetBrains Mono data ──
+     No display font; headings use Manrope bold + tracking (ADR-0003). */
+  --font-display: "Manrope", "Arial Black", sans-serif;
   --font-body: "Manrope", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Motion: signal only, 120–190ms, ease-out (ADR-0003) ── */
+  --dur-fast: 120ms;
+  --dur-base: 190ms;
+  --dur-slow: 360ms;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Shape: small radii, angular, hairline rules ── */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-card: 0.375rem;
+  --radius-input: 0.25rem;
+  --radius-chip: 0.25rem;
+  --radius-pill: 999px;
+  --rule-hairline: 1px;
+  --control-height: 2.75rem;
+  --header-height: 4.5rem;
+
+  /* ── Type scale ── */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -81,6 +78,7 @@
   --leading-tight: 1.02;
   --leading-body: 1.62;
 
+  /* ── Space ── */
   --space-3xs: 0.25rem;
   --space-2xs: 0.5rem;
   --space-xs: 0.75rem;
@@ -92,27 +90,77 @@
   --space-3xl: 6rem;
   --space-4xl: 8rem;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 1.25rem;
-  --radius-card: 0.875rem;
-  --radius-input: 0.5rem;
-  --radius-chip: 0.375rem;
-  --radius-pill: 999px;
-  --rule-hairline: 1px;
-  --control-height: 2.75rem;
-  --header-height: 4.5rem;
+  /* ── Elevation (flat, minimal — shadow only for modal/dropdown) ── */
+  --shadow-raised: 0 18px 55px oklch(4% 0.02 250 / 0.42);
+  --shadow-modal: 0 28px 90px oklch(3% 0.03 250 / 0.65);
 
-  --shadow-raised: 0 18px 55px oklch(4% 0.03 285 / 0.42);
-  --shadow-modal: 0 28px 90px oklch(3% 0.04 285 / 0.65);
-  --dur-fast: 120ms;
-  --dur-base: 190ms;
-  --dur-slow: 360ms;
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* ── z-index ── */
   --z-raised: 20;
   --z-dropdown: 40;
   --z-sticky: 30;
   --z-modal: 50;
+
+  /* ══ Legacy Resonance Atlas tokens ══
+     KEEP ALIVE during T1 (expand phase) so existing component classes and
+     tailwind.config.js keep resolving. Values are aliased to Sentinel so the
+     app already renders in the new palette before T2 migrates the names.
+     REMOVE in T2 (contract phase). */
+  --color-ink-navy-channels: var(--sentinel-ground-channels);
+  --color-paper-2-channels: var(--sentinel-panel-channels);
+  --color-paper-3-channels: var(--sentinel-panel-2-channels);
+  --color-paper-4-channels: var(--sentinel-panel-2-channels);
+  --color-brass-channels: var(--sentinel-signal-channels);
+  --color-signal-teal-channels: var(--sentinel-signal-channels);
+  --color-violet-channels: var(--sentinel-ink-2-channels);
+  --color-rule-channels: var(--sentinel-rule-channels);
+  --color-rule-strong-channels: var(--sentinel-rule-strong-channels);
+  --color-ink-channels: var(--sentinel-ink-channels);
+  --color-ink-2-channels: var(--sentinel-ink-2-channels);
+  --color-ink-3-channels: var(--sentinel-ink-3-channels);
+  --color-ink-4-channels: var(--sentinel-ink-3-channels);
+  --color-neutral-50-channels: var(--sentinel-ink-channels);
+  --color-neutral-100-channels: var(--sentinel-ink-channels);
+  --color-neutral-200-channels: var(--sentinel-ink-2-channels);
+  --color-neutral-300-channels: var(--sentinel-ink-2-channels);
+  --color-neutral-400-channels: var(--sentinel-ink-3-channels);
+  --color-neutral-500-channels: var(--sentinel-ink-3-channels);
+  --color-neutral-600-channels: var(--sentinel-panel-2-channels);
+  --color-neutral-700-channels: var(--sentinel-panel-channels);
+  --color-neutral-800-channels: var(--sentinel-panel-channels);
+  --color-neutral-900-channels: var(--sentinel-ground-channels);
+  --color-neutral-950-channels: var(--sentinel-ground-channels);
+  --color-paper: var(--sentinel-ground);
+  --color-paper-2: var(--sentinel-panel);
+  --color-paper-3: var(--sentinel-panel-2);
+  --color-paper-4: var(--sentinel-panel-2);
+  --color-rule: var(--sentinel-rule);
+  --color-rule-strong: var(--sentinel-rule-strong);
+  --color-ink: var(--sentinel-ink);
+  --color-ink-2: var(--sentinel-ink-2);
+  --color-ink-3: var(--sentinel-ink-3);
+  --color-muted: var(--sentinel-ink-3);
+
+  /* Legacy accent/link/status → Sentinel */
+  --color-accent: var(--sentinel-signal);
+  --color-link: var(--sentinel-signal);
+  --color-focus: var(--sentinel-signal);
+  --color-brass: var(--sentinel-signal);            /* legacy name → cyan */
+  --color-signal-teal: var(--sentinel-signal);      /* legacy name → cyan */
+  --color-violet: var(--sentinel-ink-2);            /* legacy editorial → monochrome */
+  --color-success: var(--sentinel-success);
+  --color-warning: var(--sentinel-warning);
+  --color-error: var(--sentinel-error);
+  --color-info: var(--sentinel-signal);
+  --color-error-decoration: var(--sentinel-error-decoration);
+  --color-accent-surface: var(--sentinel-signal-surface);
+  --color-accent-rule: var(--sentinel-signal-rule);
+  --color-accent-rule-strong: var(--sentinel-signal-rule-strong);
+  --color-accent-surface-faint: color-mix(in oklch, var(--sentinel-signal) 5%, transparent);
+  --color-accent-surface-subtle: color-mix(in oklch, var(--sentinel-signal) 8%, transparent);
+  --color-accent-selection: var(--sentinel-signal-selection);
+  --color-link-decoration: color-mix(in oklch, var(--sentinel-signal) 58%, transparent);
+  --color-success-surface: var(--sentinel-success-surface);
+  --color-warning-surface: var(--sentinel-warning-surface);
+  --color-error-surface: var(--sentinel-error-surface);
+  --color-info-surface: var(--sentinel-signal-surface);
 }
