@@ -36,10 +36,19 @@ DATA_DIR = REPO_ROOT / "data"
 QUESTS_DIR = DATA_DIR / "quests"
 DIST_DIR = REPO_ROOT / "web" / "dist"
 
+
+def _allowed_origins() -> list[str]:
+    """CORS origins from WUWAID_ORIGINS (comma-separated), defaulting to local dev."""
+    raw = os.environ.get("WUWAID_ORIGINS", "").strip()
+    if not raw:
+        return ["http://localhost:5173", "http://127.0.0.1:5173"]
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
 app = FastAPI(title="wuwaid-quests", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

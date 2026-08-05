@@ -154,7 +154,18 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Added `quests/web/src/routes/AdminLoginPage.tsx` (`/admin/login`) using the separate admin credential and `useAdminLogin`, and `AdminLogsPage.tsx` (`/admin/logs`) with active-player, uploads (inspect/download), history tabs, search filters, 30s auto-refresh, and Blob download with `Content-Disposition` filename parsing.
 - Added `quests/web/src/lib/adminLogs.ts` pure helpers plus `adminLogsWorkflow.test.ts`; wired routes in `App.tsx` and admin-only Logs nav links in `Layout.tsx`; extended `api.ts` and `types.ts` for the proxy endpoints.
 - The admin-log client calls match the Step 7 proxy paths exactly. `uv run pytest -q app` (**298 passed**), `bun run test:web` (**7 passed**), `bun run build` (succeeded), and `npm test` in log-server (**12 passed**) are all green.
-- **Remaining:** the 14-day parallel-window deploy and legacy-dashboard retirement (Step 10) still need a production environment with configured `ADMIN_PASSWORD`, `WUWAID_LOG_SERVER_URL`, and `WUWAID_ADMIN_TOKEN`.
+- End-to-end browser verification against a live local stack (quests API :8000 + Vite :5173 + log-server :8001): public quest viewer/search/translator, anonymous denial on `/admin/logs`, admin login, upload listing, log inspect, and zip download all pass through the cookie-only proxy (token never in browser).
+
+### Step 10 — deploy prep (2026-08-05)
+
+- Decided target: WebUI on `wuwaid.titotfp.my.id` (new hostname on the existing `logs-tunnel` Cloudflare tunnel); log-server stays on `logs.titotfp.my.id` unchanged, because `POST /api/logs` + heartbeat URLs are hardcoded in released Launcher/Mobile clients.
+- Recommendation accepted: **14-day parallel window** (WebUI live alongside legacy `/admin`), with the legacy dashboard kept alive on `logs.titotfp.my.id` and retired only after parity is proven.
+- Repo deploy-readiness changes (this commit):
+  - `quests/app/main.py`: CORS origins from `WUWAID_ORIGINS` env (comma-separated), localhost defaults preserved.
+  - `quests/.env.example`: documents `WUWAID_ORIGINS`, `WUWAID_LOG_SERVER_URL`, `WUWAID_ADMIN_TOKEN`, `ADMIN_PASSWORD`.
+  - `deploy/wuwaid-quests.service`: systemd user unit (uvicorn on 127.0.0.1:8000).
+  - `deploy/README.md`: server setup, build/reindex, tunnel hostname addition, rollback.
+- **Remaining for production go-live:** server-side steps in `deploy/README.md` (install uv/bun, sync deps, build index, start unit, add tunnel hostname) + a fresh end-to-end check against the live domains.
 
 ## Verification
 

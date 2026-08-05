@@ -109,3 +109,14 @@ def test_log_proxy_hides_upstream_connection_details(client: TestClient) -> None
 
     assert response.status_code == 502
     assert "private upstream details" not in response.text
+
+
+def test_cors_origins_from_env(monkeypatch):
+    """WUWAID_ORIGINS drives CORS; localhost defaults otherwise."""
+    from app.main import _allowed_origins
+
+    monkeypatch.setenv("WUWAID_ORIGINS", "https://wuwaid.titotfp.my.id, https://alt.example")
+    assert _allowed_origins() == ["https://wuwaid.titotfp.my.id", "https://alt.example"]
+
+    monkeypatch.delenv("WUWAID_ORIGINS", raising=False)
+    assert _allowed_origins() == ["http://localhost:5173", "http://127.0.0.1:5173"]
