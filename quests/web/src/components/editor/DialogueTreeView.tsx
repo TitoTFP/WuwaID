@@ -24,12 +24,12 @@ const PREVIEW_HEIGHT = 16;
 const ROW_GAP = 8;
 
 const LINE_TYPE_TAG: Record<string, { tag: string; rail: string; tagClass: string }> = {
-  Talk:         { tag: "TALK",   rail: "bg-accent-teal",   tagClass: "bg-accent-teal/15 text-accent-teal" },
-  Option:       { tag: "OPTION", rail: "bg-accent-gold",   tagClass: "bg-accent-gold/15 text-accent-gold" },
-  CenterText:   { tag: "CENTER", rail: "bg-accent-violet", tagClass: "bg-accent-violet/15 text-accent-violet" },
-  PhoneMessage: { tag: "PHONE",  rail: "bg-accent-amber",  tagClass: "bg-accent-amber/20 text-accent-amber" },
-  NoTextItem:   { tag: "MARKER", rail: "bg-accent-slate",  tagClass: "bg-accent-slate/20 text-accent-slate" },
-  SystemOption: { tag: "SYSOPT", rail: "bg-accent-blue",   tagClass: "bg-accent-blue/15 text-accent-blue" },
+  Talk:         { tag: "TALK",   rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
+  Option:       { tag: "OPTION", rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
+  CenterText:   { tag: "CENTER", rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
+  PhoneMessage: { tag: "PHONE",  rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
+  NoTextItem:   { tag: "MARKER", rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
+  SystemOption: { tag: "SYSOPT", rail: "bg-slate-500/60",  tagClass: "bg-white/10 text-slate-300" },
 };
 const FALLBACK_TYPE = { tag: "?? TYPE", rail: "bg-slate-500", tagClass: "bg-white/10 text-slate-300" };
 const PLOT_MODE_CINE = /^(BlackScreen|Level[A-Z])$/;
