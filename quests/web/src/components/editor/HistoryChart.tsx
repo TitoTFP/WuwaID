@@ -1,17 +1,9 @@
 import { useMemo } from "react";
-import type { AdminLogHistoryResponse } from "../lib/types";
+import type { AdminLogHistoryResponse } from "../../lib/types";
 
 const WIDTH = 720;
 const HEIGHT = 220;
 const PAD = { top: 12, right: 12, bottom: 24, left: 36 };
-const EVENT_COLORS = [
-  "var(--sentinel-signal)",
-  "var(--sentinel-ink-2)",
-  "var(--sentinel-ink-3)",
-  "var(--sentinel-success)",
-  "var(--sentinel-warning)",
-  "var(--sentinel-error)",
-];
 
 function buildPath(values: number[], width: number, height: number, max: number): string {
   const n = values.length;
