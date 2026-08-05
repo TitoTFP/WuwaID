@@ -38,10 +38,10 @@ DB_PATH = DATA_DIR / "index.db"
 EDITOR_TABLES = ("edits", "inserted_lines", "line_order", "drafts", "editor_session", "category_edits", "category_drafts")
 
 DEFAULT_CANDIDATES = [
+    # canonical: WuwaID monorepo root scripts/
     REPO_ROOT.parent / "scripts" / "export_text_grouped" / "export_quest_ordered",
-    REPO_ROOT.parent / "WuwaID" / "scripts" / "export_text_grouped" / "export_quest_ordered",
-    REPO_ROOT / "WuwaID" / "scripts" / "export_text_grouped" / "export_quest_ordered",
-    REPO_ROOT / "export_text_grouped" / "export_quest_ordered",
+    # standalone quests checkout inside the monorepo
+    REPO_ROOT / "scripts" / "export_text_grouped" / "export_quest_ordered",
 ]
 
 

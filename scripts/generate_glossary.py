@@ -15,8 +15,8 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 
-CATEGORIES_DIR = REPO_ROOT / "export_text_grouped" / "categories"
-QUESTS_DIR = REPO_ROOT / "export_text_grouped" / "export_quest_ordered"
+CATEGORIES_DIR = SCRIPT_DIR / "export_text_grouped" / "categories"
+QUESTS_DIR = SCRIPT_DIR / "export_text_grouped" / "export_quest_ordered"
 OUTPUT_PATH = REPO_ROOT / "data" / "glossary" / "glossary_draft.json"
 
 glossary = {}

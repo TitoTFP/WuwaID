@@ -167,6 +167,14 @@ Before moving source or changing runtime behavior, add and run the smallest miss
   - `deploy/README.md`: server setup, build/reindex, tunnel hostname addition, rollback.
 - **Remaining for production go-live:** server-side steps in `deploy/README.md` (install uv/bun, sync deps, build index, start unit, add tunnel hostname) + a fresh end-to-end check against the live domains.
 
+### Structure cleanup (2026-08-05)
+
+- Removed duplicated root `export_text_grouped/` (506 MB, identical to `scripts/export_text_grouped/`). Canonical export output is now only `scripts/export_text_grouped/`.
+- Fixed `scripts/generate_glossary.py` and `scripts/scrape_wiki.py` to read from `scripts/export_text_grouped/` instead of the removed root path.
+- Cleaned `quests/scripts/build_index.py` `DEFAULT_CANDIDATES`: dropped self-nested `WuwaID/…` and legacy root candidates; canonical remains `scripts/export_text_grouped/export_quest_ordered`. `test_build_index_source.py` still passes.
+- Documented `tools/Dumper-7` as frozen vendored code in `VENDORED.md` (upstream `CallMeDangDev/WuwaVH` is deleted, cannot be a submodule).
+- `Web/` (launcher bgm/video assets) is intentionally kept: `Web/assets.json` URLs are hardcoded in released Launcher/Mobile clients (`.../main/Web/Audio/bgm.mp3`), so the path must not move.
+
 ## Verification
 
 - Before migration, run the new characterization suite plus all existing tests to record a green baseline; rerun the same suite after every milestone.
