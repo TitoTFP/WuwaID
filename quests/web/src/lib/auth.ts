@@ -19,6 +19,14 @@ export function useLogin() {
   };
 }
 
+export function useAdminLogin() {
+  const qc = useQueryClient();
+  return async (password: string) => {
+    await api.adminLogin(password);
+    await qc.invalidateQueries({ queryKey: ME_KEY });
+  };
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return async () => {

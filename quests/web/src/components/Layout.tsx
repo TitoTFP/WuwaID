@@ -127,6 +127,11 @@ export default function Layout() {
                 </button>
               </>
             )}
+            {role === "admin" && (
+              <NavLink to="/admin/logs" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
+                Logs
+              </NavLink>
+            )}
 
             <LangSwitcher />
           </div>
@@ -186,6 +191,11 @@ export default function Layout() {
                       Import
                     </button>
                   </>
+                )}
+                {role === "admin" && (
+                  <NavLink to="/admin/logs" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
+                    Logs
+                  </NavLink>
                 )}
               </nav>
               <div className="archive-menu__language">

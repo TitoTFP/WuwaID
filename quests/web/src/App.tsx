@@ -12,6 +12,8 @@ import DraftsPage from "./routes/DraftsPage";
 import LoginPage from "./routes/LoginPage";
 import CategoriesPage from "./routes/CategoriesPage";
 import VersionsPage from "./routes/VersionsPage";
+import AdminLoginPage from "./routes/AdminLoginPage";
+import AdminLogsPage from "./routes/AdminLogsPage";
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
         <Route path="/drafts/:draftId" element={<DraftsPage />} />
         <Route path="/versions" element={<VersionsPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/logs" element={<AdminLogsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

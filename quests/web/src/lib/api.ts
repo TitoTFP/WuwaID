@@ -16,6 +16,11 @@ import type {
   TextDiffGroupsResponse,
   TextDiffStatus,
   TextVersion,
+  AdminActivePlayer,
+  AdminActiveSummary,
+  AdminLogFilesResponse,
+  AdminLogHistoryResponse,
+  AdminLogUpload,
 } from "./types";
 
 const BASE = "/api";
@@ -66,6 +71,18 @@ async function downloadPost(path: string, body: unknown): Promise<{ blob: Blob; 
     blob: await r.blob(),
     filename: encoded ? decodeURIComponent(encoded) : plain || "structured-diff.zip",
   };
+}
+
+async function getText(path: string): Promise<string> {
+  const r = await fetch(BASE + path, { credentials: "include" });
+  if (!r.ok) throw new Error(`${r.status} ${path}`);
+  return r.text();
+}
+
+async function downloadGet(path: string): Promise<{ blob: Blob; disposition: string | null }> {
+  const r = await fetch(BASE + path, { credentials: "include" });
+  if (!r.ok) throw new Error(`${r.status} ${path} ${await r.text()}`);
+  return { blob: await r.blob(), disposition: r.headers.get("Content-Disposition") };
 }
 
 export const api = {
@@ -138,8 +155,21 @@ export const api = {
     send<{ ok: true }>("POST", `/drafts/${id}/reject`),
   login: (password: string) =>
     send<{ role: "editor" }>("POST", "/login", { password }),
+  adminLogin: (password: string) =>
+    send<{ role: "admin" }>("POST", "/admin/login", { password }),
   logout: () => send<{ role: "anon" }>("POST", "/logout"),
   me: () => get<MeResponse>(`/me`),
+  adminLogsActive: () => get<AdminActiveSummary>("/admin/logs/active"),
+  adminLogPlayers: () => get<AdminActivePlayer[]>("/admin/logs/players"),
+  adminLogHistory: (range: "1h" | "24h" | "7d" | "30d") =>
+    get<AdminLogHistoryResponse>(`/admin/logs/history?range=${range}`),
+  adminLogUploads: () => get<AdminLogUpload[]>("/admin/logs/uploads"),
+  adminLogFiles: (uploadId: string) =>
+    get<AdminLogFilesResponse>(`/admin/logs/uploads/${encodeURIComponent(uploadId)}/files`),
+  adminLogFile: (uploadId: string, filename: string) =>
+    getText(`/admin/logs/uploads/${encodeURIComponent(uploadId)}/files/${filename.split("/").map(encodeURIComponent).join("/")}`),
+  downloadAdminLog: (uploadId: string) =>
+    downloadGet(`/admin/logs/uploads/${encodeURIComponent(uploadId)}/download`),
   exportTranslations: (payload?: {
     quest_ids?: number[];
     category_names?: string[];

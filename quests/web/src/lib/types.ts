@@ -230,7 +230,7 @@ export interface DialogueTreeNode {
 }
 
 export interface MeResponse {
-  role: "anon" | "editor";
+  role: "anon" | "editor" | "admin";
 }
 
 export interface TextVersion {
@@ -329,4 +329,46 @@ export interface CategoryEditorEntry {
   ja: string;
   id: string | null;
   is_edited: boolean;
+}
+
+export interface AdminActiveSummary {
+  active: number;
+  window_seconds: number;
+  total_30d?: number;
+}
+
+export interface AdminActivePlayer {
+  client_id: string;
+  launcher_version: string;
+  install_method: string;
+  event: string;
+  last_seen: string;
+}
+
+export interface AdminLogUpload {
+  id: string;
+  app_version: string;
+  timestamp: string;
+  os: string;
+  file_count: number;
+  total_bytes: number;
+  created_at: string;
+}
+
+export interface AdminLogHistoryPoint {
+  timestamp: string;
+  events: Record<string, number>;
+  total: number;
+}
+
+export interface AdminLogHistoryResponse {
+  points: AdminLogHistoryPoint[];
+  window: string;
+  interval: string;
+  event_keys: string[];
+}
+
+export interface AdminLogFilesResponse {
+  id: string;
+  files: Array<{ name: string; size: number }>;
 }
