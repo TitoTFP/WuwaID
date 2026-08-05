@@ -300,7 +300,7 @@ export default function QuestPage() {
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-slate-500 tabular-nums sm:text-xs">
               <span>#{quest.quest_id}</span>
               {quest.chapter_name && quest.side === 0 && (
-                <span className="text-accent-teal">{quest.chapter_name}</span>
+                <span className="text-accent-signal">{quest.chapter_name}</span>
               )}
               <span>{quest.total_lines} lines</span>
             </div>
@@ -332,7 +332,7 @@ export default function QuestPage() {
             )}
             <Link
               to={`/translator/${quest.quest_id}`}
-              className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
+              className="btn whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal hover:bg-accent-signal/5"
               title="Translate dialogue to Indonesian"
             >
               Translate

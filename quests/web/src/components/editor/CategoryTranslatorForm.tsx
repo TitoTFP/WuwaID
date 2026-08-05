@@ -129,7 +129,7 @@ export default function CategoryTranslatorForm({
             <div className="text-[10px] font-mono text-slate-500">
               CATEGORY: <span className="text-slate-400 font-semibold">{category}</span>
             </div>
-        <div className="mt-1 font-mono text-sm text-accent-gold">
+        <div className="mt-1 font-mono text-sm text-accent-signal">
               {entry.key}
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function CategoryTranslatorForm({
 
         {/* Restore draft indicator */}
         {showRestore && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-2 text-xs text-slate-200">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-signal/30 bg-accent-signal/5 p-2 text-xs text-slate-200">
             <span>Restored unsaved translation edits from your last session.</span>
             <div className="flex gap-2">
               <button type="button" className="btn text-[11px]" onClick={discardLocal}>
@@ -190,7 +190,7 @@ export default function CategoryTranslatorForm({
 
         {/* Translation workspace */}
         <div className="space-y-4 border-t border-white/5 pt-4">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-accent-gold">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-accent-signal">
             Indonesian Translation
           </div>
 
@@ -199,7 +199,7 @@ export default function CategoryTranslatorForm({
             <div className="flex justify-end">
               <button
                 type="button"
-                className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-teal/80 transition-colors hover:text-accent-teal"
+                className="min-h-11 whitespace-nowrap px-2 text-[10px] text-accent-signal/80 transition-colors hover:text-accent-signal"
                 onClick={() => handleTranslationChange(entry.en ?? "")}
               >
                 Copy English
@@ -240,7 +240,7 @@ export default function CategoryTranslatorForm({
           </button>
           <button
             type="button"
-            className="btn border-accent-gold/45 text-accent-gold hover:bg-accent-gold/5"
+            className="btn border-accent-signal/45 text-accent-signal hover:bg-accent-signal/5"
             disabled={!canSave}
             onClick={() => submit(1)}
             title="Save draft then jump to next entry"

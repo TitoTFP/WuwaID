@@ -49,10 +49,10 @@ function PatchDiff({ field, before, after }: { field: string; before: unknown; a
             )}
         </pre>
       </div>
-      <div className="bg-accent-gold/5 p-3">
-        <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-accent-gold">
+      <div className="bg-accent-signal/5 p-3">
+        <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-accent-signal">
           <span>draft {field}</span>
-          <span className="text-accent-teal/70">+{afterStr.length}</span>
+          <span className="text-accent-signal/70">+{afterStr.length}</span>
         </div>
         <pre className={["whitespace-pre-wrap break-words font-sans text-slate-200", isStruct ? "text-[11px]" : ""].join(" ")}>
           {spans
@@ -101,7 +101,7 @@ function PatchSummary({ draft }: { draft: Draft }) {
         const isStruct = typeof value !== "string";
         return (
           <div key={key} className="border-t border-white/10 py-2 first:border-t-0">
-            <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-accent-teal">
+            <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-accent-signal">
               {key}
             </div>
             <pre className="whitespace-pre-wrap break-words font-sans text-slate-300">
@@ -368,7 +368,7 @@ function QueueView() {
       <FilterBar filters={filters} onChange={setFilters} qids={qids} authors={authors} />
 
       {canEdit(role) && selectedDrafts.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-accent-gold/30 bg-accent-gold/5 px-3 py-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-accent-signal/30 bg-accent-signal/5 px-3 py-2 text-xs">
           <span className="text-slate-200">{selectedDrafts.length} pending selected</span>
           <div className="flex flex-wrap gap-2">
             <button
@@ -424,14 +424,14 @@ function QueueView() {
               key={draft.id}
               className={[
                 "flex items-start gap-3 p-3 transition-colors hover:bg-white/[0.03] sm:p-4",
-                isSelected ? "bg-accent-gold/5" : "",
+                isSelected ? "bg-accent-signal/5" : "",
               ].join(" ")}
             >
               {selectable && (
                 <label className="grid min-h-11 min-w-11 place-items-center" aria-label={`Select draft ${draft.id}`}>
                   <input
                     type="checkbox"
-                    className="h-4 w-4 accent-accent-gold"
+                    className="h-4 w-4 accent-accent-signal"
                     checked={isSelected}
                     onChange={() => toggleSelect(draft.id)}
                     aria-label={`Select draft ${draft.id}`}
@@ -460,7 +460,7 @@ function QueueView() {
                       draft.status === "pending"
                         ? "border-violet-400/30 bg-violet-500/10 text-violet-200"
                         : draft.status === "applied"
-                          ? "border-accent-teal/30 bg-accent-teal/10 text-accent-teal"
+                          ? "border-accent-signal/30 bg-accent-signal/10 text-accent-signal"
                           : draft.status === "rejected"
                             ? "border-rose-400/30 bg-rose-500/10 text-rose-200"
                             : "border-white/10 bg-white/5 text-slate-400",
@@ -590,7 +590,7 @@ function DetailView({ draftId }: { draftId: number }) {
               draft.status === "pending"
                 ? "border-violet-400/30 bg-violet-500/10 text-violet-200"
                 : draft.status === "applied"
-                  ? "border-accent-teal/30 bg-accent-teal/10 text-accent-teal"
+                  ? "border-accent-signal/30 bg-accent-signal/10 text-accent-signal"
                   : "border-white/10 bg-white/5 text-slate-400",
             ].join(" ")}
           >

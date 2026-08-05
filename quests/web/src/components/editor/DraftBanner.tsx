@@ -20,7 +20,7 @@ export default function DraftBanner({ qid }: { qid: number }) {
   if (count === 0) return null;
 
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-accent-gold/25 bg-accent-gold/5 px-3 py-2 text-sm">
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-accent-signal/25 bg-accent-signal/5 px-3 py-2 text-sm">
       <span className="text-slate-300">
         {count} pending {count === 1 ? "draft" : "drafts"} for this quest
       </span>

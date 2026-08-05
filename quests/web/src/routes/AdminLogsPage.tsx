@@ -113,7 +113,7 @@ export default function AdminLogsPage() {
     <div className="container-wide space-y-6 pb-8">
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <div className="font-mono text-xs text-accent-gold">Restricted operations</div>
+          <div className="font-mono text-xs text-accent-signal">Restricted operations</div>
           <h1 className="font-serif text-3xl text-slate-100">Log dashboard</h1>
           <p className="mt-1 text-sm text-slate-400">Active players, uploads, history, and log inspection.</p>
         </div>
@@ -166,9 +166,9 @@ export default function AdminLogsPage() {
       )}
 
       {selectedUpload && (
-        <section className="space-y-4 border border-accent-gold/30 bg-bg-2/40 p-4">
+        <section className="space-y-4 border border-accent-signal/30 bg-bg-2/40 p-4">
           <header className="flex items-start justify-between gap-3"><div><h2 className="font-serif text-xl text-slate-100">Inspect {selectedUpload.id}</h2><p className="text-sm text-slate-400">{selectedUpload.os} · {selectedUpload.app_version} · {selectedUpload.file_count} files</p></div><button className="btn" onClick={() => { setSelectedUpload(null); setSelectedFile(null); }}>Close</button></header>
-          <div className="grid gap-4 lg:grid-cols-[minmax(14rem,0.4fr)_minmax(0,1fr)]"><div><h3 className="mb-2 text-sm text-slate-300">Files</h3><div className="space-y-1">{(filesQ.data?.files ?? []).map((file) => <button key={file.name} className={`block w-full border p-2 text-left text-sm ${selectedFile === file.name ? "border-accent-gold bg-accent-gold/10" : "border-white/10"}`} onClick={() => setSelectedFile(file.name)}>{file.name} <span className="float-right text-slate-500">{formatAdminLogBytes(file.size)}</span></button>)}{filesQ.isLoading && <p className="text-sm text-slate-500">Loading files…</p>}</div></div><div><h3 className="mb-2 text-sm text-slate-300">Content</h3><pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap border border-white/10 bg-black/20 p-3 text-xs text-slate-300">{selectedFile ? contentQ.data ?? (contentQ.isLoading ? "Loading…" : "Unable to load file.") : "Select a file."}</pre></div></div>
+          <div className="grid gap-4 lg:grid-cols-[minmax(14rem,0.4fr)_minmax(0,1fr)]"><div><h3 className="mb-2 text-sm text-slate-300">Files</h3><div className="space-y-1">{(filesQ.data?.files ?? []).map((file) => <button key={file.name} className={`block w-full border p-2 text-left text-sm ${selectedFile === file.name ? "border-accent-signal bg-accent-signal/10" : "border-white/10"}`} onClick={() => setSelectedFile(file.name)}>{file.name} <span className="float-right text-slate-500">{formatAdminLogBytes(file.size)}</span></button>)}{filesQ.isLoading && <p className="text-sm text-slate-500">Loading files…</p>}</div></div><div><h3 className="mb-2 text-sm text-slate-300">Content</h3><pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap border border-white/10 bg-black/20 p-3 text-xs text-slate-300">{selectedFile ? contentQ.data ?? (contentQ.isLoading ? "Loading…" : "Unable to load file.") : "Select a file."}</pre></div></div>
         </section>
       )}
     </div>

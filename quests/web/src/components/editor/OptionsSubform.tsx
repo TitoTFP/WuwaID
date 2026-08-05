@@ -127,7 +127,7 @@ function LineCombobox({
         onKeyDown={onKeyDown}
       />
       {isId && (
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-accent-teal">
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-accent-signal">
           id
         </span>
       )}
@@ -149,7 +149,7 @@ function LineCombobox({
               }}
               className={[
                 "min-h-11 cursor-pointer px-2 py-2 text-xs",
-                idx === highlight ? "bg-accent-gold/10 text-accent-gold" : "text-slate-200 hover:bg-white/5",
+                idx === highlight ? "bg-accent-signal/10 text-accent-signal" : "text-slate-200 hover:bg-white/5",
               ].join(" ")}
             >
               <div className="flex items-center gap-2 font-mono">
@@ -220,7 +220,7 @@ export default function OptionsSubform({
           {options.map((option, index) => {
             const original = originals?.[index];
             return (
-              <div key={index} className="space-y-3 border border-accent-gold/25 bg-bg-2/30 p-3">
+              <div key={index} className="space-y-3 border border-accent-signal/25 bg-bg-2/30 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs font-semibold text-slate-400">
                     Option {index + 1}

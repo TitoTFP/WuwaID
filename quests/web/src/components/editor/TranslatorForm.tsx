@@ -252,7 +252,7 @@ export default function TranslatorForm({
             <span>LINE #{line.id}</span>
             <span className="border border-white/10 bg-bg-2 px-1.5 py-0.5 text-slate-400">{line.type}</span>
           </div>
-          <div className="mt-1 truncate font-mono text-xs text-accent-gold">
+          <div className="mt-1 truncate font-mono text-xs text-accent-signal">
             {line.text_key || <span className="text-slate-600">No text key</span>}
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function TranslatorForm({
       <div className="flex-1 pb-36 lg:pb-24">
         <div className="px-4 pt-4">
         {showRestore && (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-3 text-xs text-slate-200">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-signal/30 bg-accent-signal/5 p-3 text-xs text-slate-200">
             <span>Restored unsaved translation edits from your last session.</span>
             <button type="button" className="btn text-[11px]" onClick={discardLocal}>Discard local</button>
           </div>
@@ -307,8 +307,8 @@ export default function TranslatorForm({
                 <h2 id="source-language-heading" className="font-sans text-sm font-semibold text-slate-300">Source</h2>
                 <span className="font-mono text-[10px] text-slate-600">EN · ZH-HANS · JA</span>
               </div>
-              <div className="border-l-2 border-accent-gold/50 pl-4">
-                <div className="mb-2 text-sm font-semibold text-accent-gold">
+              <div className="border-l-2 border-accent-signal/50 pl-4">
+                <div className="mb-2 text-sm font-semibold text-accent-signal">
                   {line.speaker_en || <span className="text-slate-600">Unknown speaker</span>}
                 </div>
                 <div className="whitespace-pre-wrap text-base leading-relaxed text-slate-100">
@@ -324,12 +324,12 @@ export default function TranslatorForm({
                 <div className="grid gap-4 border-t border-white/5 pt-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   <div className="space-y-2">
                     <div className="font-mono text-[10px] uppercase text-slate-500">Chinese (Simplified)</div>
-                    {line["speaker_zh-Hans"] && <div className="font-semibold text-accent-teal">{line["speaker_zh-Hans"]}</div>}
+                    {line["speaker_zh-Hans"] && <div className="font-semibold text-accent-signal">{line["speaker_zh-Hans"]}</div>}
                     <div className="whitespace-pre-wrap leading-relaxed text-slate-300">{line["text_zh-Hans"] || <span className="text-slate-600">No Chinese text</span>}</div>
                   </div>
                   <div className="space-y-2">
                     <div className="font-mono text-[10px] uppercase text-slate-500">Japanese</div>
-                    {line.speaker_ja && <div className="font-semibold text-accent-violet">{line.speaker_ja}</div>}
+                    {line.speaker_ja && <div className="font-semibold text-accent-slate">{line.speaker_ja}</div>}
                     <div className="whitespace-pre-wrap leading-relaxed text-slate-300">{line.text_ja || <span className="text-slate-600">No Japanese text</span>}</div>
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export default function TranslatorForm({
                 <h2 id="target-language-heading" className="font-sans text-sm font-semibold text-slate-100">Bahasa Indonesia</h2>
                 <button
                   type="button"
-                  className="btn border-accent-teal/30 bg-transparent text-xs text-accent-teal"
+                  className="btn border-accent-signal/30 bg-transparent text-xs text-accent-signal"
                   onClick={() => updateField("text_id", line.text_en ?? "")}
                 >
                   Copy English source
@@ -425,7 +425,7 @@ export default function TranslatorForm({
                       <span key={match.term} className="chip" title={match.category}>
                         <span className="text-slate-500">{match.term}</span>
                         <span aria-hidden="true">/</span>
-                        <span className="text-accent-teal">{match.indonesian_translation || "—"}</span>
+                        <span className="text-accent-signal">{match.indonesian_translation || "—"}</span>
                       </span>
                     ))}
                   </div>
@@ -470,7 +470,7 @@ export default function TranslatorForm({
                         <div className="mb-2 flex justify-end">
                         <button
                           type="button"
-                          className="min-h-11 whitespace-nowrap px-2 text-xs text-accent-teal"
+                          className="min-h-11 whitespace-nowrap px-2 text-xs text-accent-signal"
                           onClick={() => updateOptionText(idx, opt.text_en ?? "")}
                         >
                           Copy English source
@@ -538,9 +538,9 @@ export default function TranslatorForm({
             ) : localDraft.status === "saving" ? (
               <span className="text-slate-400">Saving locally…</span>
             ) : dirty && localDraft.status === "saved" ? (
-              <span className="text-accent-teal">Saved locally</span>
+              <span className="text-accent-signal">Saved locally</span>
             ) : hasPatch(patch) ? (
-              <span className="text-accent-gold">Unsaved translation changes</span>
+              <span className="text-accent-signal">Unsaved translation changes</span>
             ) : dirty ? (
               <span className="text-slate-400">Note needs a translation change before saving</span>
             ) : (

@@ -186,7 +186,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           )}
           <Link
             to={`/translator/category/${category}`}
-            className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
+            className="btn whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal hover:bg-accent-signal/5"
             title="Translate category entries to Indonesian"
           >
             Translate
@@ -222,7 +222,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
               aria-pressed={selectedPrefixes.length === 0}
               className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                 selectedPrefixes.length === 0
-                  ? "border-accent-gold text-accent-gold"
+                  ? "border-accent-signal text-accent-signal"
                   : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
               }`}
             >
@@ -245,7 +245,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                   aria-pressed={isSelected}
                   className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                     isSelected
-                      ? "border-accent-gold text-accent-gold"
+                      ? "border-accent-signal text-accent-signal"
                       : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
                   }`}
                 >
@@ -268,7 +268,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
               aria-pressed={selectedTypes.length === 0}
               className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                 selectedTypes.length === 0
-                  ? "border-accent-gold text-accent-gold"
+                  ? "border-accent-signal text-accent-signal"
                   : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
               }`}
             >
@@ -291,7 +291,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                   aria-pressed={isSelected}
                   className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-b px-2 text-xs whitespace-nowrap transition-colors ${
                     isSelected
-                      ? "border-accent-gold text-accent-gold"
+                      ? "border-accent-signal text-accent-signal"
                       : "border-transparent text-slate-400 hover:border-white/20 hover:text-slate-200"
                   }`}
                 >
@@ -307,7 +307,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
         {pageEntries.map((entry) => (
           <article key={entry.key} className="space-y-3 py-4">
             <div className="flex min-w-0 items-start justify-between gap-3">
-              <code className="min-w-0 [overflow-wrap:anywhere] font-mono text-[10px] text-accent-gold select-all">
+              <code className="min-w-0 [overflow-wrap:anywhere] font-mono text-[10px] text-accent-signal select-all">
                 {entry.key}
               </code>
               <span className="shrink-0 font-mono text-[10px] text-slate-500">{entry.prefix}</span>
@@ -318,7 +318,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                 <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-300">{entry["zh-Hans"] || "—"}</dd>
               </div>
               <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
-                <dt className="font-mono text-[10px] text-accent-gold">EN</dt>
+                <dt className="font-mono text-[10px] text-accent-signal">EN</dt>
                 <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-100">{entry.en || "—"}</dd>
               </div>
               <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
@@ -327,7 +327,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
               </div>
               {showIdColumn && (
                 <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2">
-                  <dt className="font-mono text-[10px] text-accent-teal">ID</dt>
+                  <dt className="font-mono text-[10px] text-accent-signal">ID</dt>
                   <dd className="min-w-0 [overflow-wrap:anywhere] text-slate-200">{entry.id || "—"}</dd>
                 </div>
               )}
@@ -356,7 +356,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           <tbody>
             {pageEntries.map((entry) => (
               <tr key={entry.key} className="border-b border-white/10 transition-colors hover:bg-bg-2">
-                <td className="px-4 py-2 font-mono text-[10px] text-accent-gold select-all">{entry.key}</td>
+                <td className="px-4 py-2 font-mono text-[10px] text-accent-signal select-all">{entry.key}</td>
                 <td className="px-4 py-2 text-xs text-slate-500 font-mono">{entry.prefix}</td>
                 <td className="px-4 py-2 text-slate-300 font-sans leading-relaxed">{entry["zh-Hans"]}</td>
                 <td className="px-4 py-2 text-slate-200 font-sans leading-relaxed">{entry.en}</td>
@@ -364,7 +364,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
                 {showIdColumn && (
                   <td className="px-4 py-2 font-sans leading-relaxed">
                     {entry.id ? (
-                      <span className="text-accent-teal font-medium">{entry.id}</span>
+                      <span className="text-accent-signal font-medium">{entry.id}</span>
                     ) : (
                       <span className="text-slate-600 select-none">&mdash;</span>
                     )}

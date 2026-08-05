@@ -538,7 +538,7 @@ export default function EditorPage() {
             </div>
             <Link
               to={`/translator/${qidN}`}
-              className="btn whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold hover:bg-accent-gold/5"
+              className="btn whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal hover:bg-accent-signal/5"
               title="Translate dialogue to Indonesian"
             >
               Translation
@@ -547,7 +547,7 @@ export default function EditorPage() {
         </div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
-            Structure Editor <span className="font-mono text-sm text-accent-gold">Q{qidN}</span>
+            Structure Editor <span className="font-mono text-sm text-accent-signal">Q{qidN}</span>
             <span className="mt-1 block [overflow-wrap:anywhere] font-sans text-sm font-normal text-slate-400">{questQ.data?.quest_name ?? "…"}</span>
           </h1>
           <button
@@ -572,7 +572,7 @@ export default function EditorPage() {
           </div>
         )}
         {reorderPreview.length > 0 && (
-          <div className="card mt-3 flex flex-col gap-3 border-accent-gold/20 bg-accent-gold/5 p-3 text-sm">
+          <div className="card mt-3 flex flex-col gap-3 border-accent-signal/20 bg-accent-signal/5 p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-slate-200">
@@ -627,7 +627,7 @@ export default function EditorPage() {
         )}
         <DraftBanner qid={qidN} />
         {selectedIds.size > 1 && (
-          <div className="card mt-3 flex flex-wrap items-center justify-between gap-2 border-accent-teal/30 bg-accent-teal/5 p-2 text-xs text-slate-200">
+          <div className="card mt-3 flex flex-wrap items-center justify-between gap-2 border-accent-signal/30 bg-accent-signal/5 p-2 text-xs text-slate-200">
             <span>
               {selectedIds.size} lines selected
             </span>
@@ -656,7 +656,7 @@ export default function EditorPage() {
           type="button"
           aria-pressed={mobilePane === "lines"}
           aria-controls="editor-lines-panel"
-          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           onClick={() => setMobilePane("lines")}
         >
           Lines
@@ -667,7 +667,7 @@ export default function EditorPage() {
           type="button"
           aria-pressed={mobilePane === "editor"}
           aria-controls="editor-detail-panel"
-          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "editor" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "editor" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           disabled={selectedId === null}
           onClick={() => setMobilePane("editor")}
         >

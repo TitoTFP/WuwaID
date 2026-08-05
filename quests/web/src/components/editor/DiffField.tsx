@@ -53,7 +53,7 @@ export default function DiffField({
               className={[
             "border px-2 py-1 text-[10px]",
                 changed
-                  ? "border-accent-gold/30 bg-accent-gold/10 text-accent-gold"
+                  ? "border-accent-signal/30 bg-accent-signal/10 text-accent-signal"
                   : "border-white/10 bg-white/5 text-slate-500",
               ].join(" ")}
             >

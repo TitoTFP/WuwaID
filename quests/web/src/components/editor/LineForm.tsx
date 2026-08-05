@@ -244,7 +244,7 @@ export default function LineForm({
         </div>
 
         {showRestore && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-gold/30 bg-accent-gold/5 p-2 text-xs text-slate-200">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent-signal/30 bg-accent-signal/5 p-2 text-xs text-slate-200">
             <span>Restored unsaved edits from your last session.</span>
             <div className="flex gap-2">
               <button type="button" className="btn text-[11px]" onClick={discardLocal}>
@@ -258,14 +258,14 @@ export default function LineForm({
           <div className="mb-1 border-y border-white/10 bg-bg-2/30 px-3 py-4 text-xs">
           <div className="text-[10px] font-mono text-slate-500 mb-1 uppercase">English Source Context</div>
           {line.speaker_en && (
-          <div className="mb-1 font-semibold text-accent-gold">{line.speaker_en}</div>
+          <div className="mb-1 font-semibold text-accent-signal">{line.speaker_en}</div>
           )}
           <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">{line.text_en || <em className="text-slate-500">no source text</em>}</div>
         </div>
 
         {/* Quick Move Section */}
         {line.state_key && (
-          <div className="space-y-3 border border-accent-gold/30 bg-bg-2/50 p-3">
+          <div className="space-y-3 border border-accent-signal/30 bg-bg-2/50 p-3">
             <div className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Quick Move State</div>
         <div className="space-y-2">
               <label className="block text-xs font-medium text-slate-300">

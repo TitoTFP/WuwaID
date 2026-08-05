@@ -27,7 +27,7 @@ export default function LangTabs({
           className={[
             "border-b-2 px-1 pb-2 transition-colors",
             active === tab.value
-              ? "border-accent-gold text-accent-gold"
+              ? "border-accent-signal text-accent-signal"
               : "border-transparent hover:text-slate-200",
           ].join(" ")}
         >

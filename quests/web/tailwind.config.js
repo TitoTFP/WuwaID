@@ -39,13 +39,14 @@ export default {
           3: tokenColor("--color-paper-4-channels"),
         },
         accent: {
-          gold: tokenColor("--color-brass-channels"),
-          teal: tokenColor("--color-signal-teal-channels"),
+          signal: tokenColor("--sentinel-signal-channels"),
+          gold: tokenColor("--sentinel-signal-channels"),
+          teal: tokenColor("--sentinel-signal-channels"),
           ember: tokenColor("--color-error-channels"),
-          violet: tokenColor("--color-violet-channels"),
+          violet: tokenColor("--sentinel-ink-2-channels"),
           amber: tokenColor("--color-warning-channels"),
           blue: tokenColor("--color-info-channels"),
-          slate: tokenColor("--color-ink-2-channels"),
+          slate: tokenColor("--sentinel-ink-2-channels"),
           emerald: tokenColor("--color-success-channels"),
         },
         slate: {

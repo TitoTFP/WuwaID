@@ -78,7 +78,7 @@ export default function ImportModal({ onClose }: ImportModalProps) {
         {stats ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center border border-accent-teal/30 text-accent-teal">
+              <div className="grid h-10 w-10 place-items-center border border-accent-signal/30 text-accent-signal">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -94,7 +94,7 @@ export default function ImportModal({ onClose }: ImportModalProps) {
             <div className="space-y-2 border-y border-white/10 bg-bg-2/50 p-4 text-sm">
               <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-slate-400">Total keys imported</span>
-                <span className="font-mono text-accent-gold font-semibold">{stats.total_keys_imported}</span>
+                <span className="font-mono text-accent-signal font-semibold">{stats.total_keys_imported}</span>
               </div>
               <div className="flex justify-between border-b border-white/5 py-1">
                 <span className="text-slate-400">Quests updated</span>
@@ -118,7 +118,7 @@ export default function ImportModal({ onClose }: ImportModalProps) {
 
             <button
               onClick={handleSuccessClose}
-              className="btn w-full justify-center border-accent-gold/60 bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20"
+              className="btn w-full justify-center border-accent-signal/60 bg-accent-signal/10 text-accent-signal hover:bg-accent-signal/20"
             >
               Done & Reload Page
             </button>
@@ -127,7 +127,7 @@ export default function ImportModal({ onClose }: ImportModalProps) {
           <form onSubmit={handleImport} className="space-y-4">
             <div>
               <h2 id="import-modal-title" className="font-serif text-xl text-slate-100 flex items-center gap-2">
-                <svg className="h-5 w-5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <svg className="h-5 w-5 text-accent-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
                 Import from SQLite DB(s)
@@ -178,12 +178,12 @@ export default function ImportModal({ onClose }: ImportModalProps) {
               </button>
               <button
                 type="submit"
-                className="btn border-accent-gold/60 bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 flex items-center gap-2"
+                className="btn border-accent-signal/60 bg-accent-signal/10 text-accent-signal hover:bg-accent-signal/20 flex items-center gap-2"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin h-4 w-4 text-accent-gold" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="animate-spin h-4 w-4 text-accent-signal" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>

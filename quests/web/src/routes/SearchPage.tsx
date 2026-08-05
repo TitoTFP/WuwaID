@@ -117,7 +117,7 @@ export default function SearchPage() {
                 onClick={() => setParams({ q, lang: l })}
                 aria-pressed={lang === l}
                 className={`min-h-11 min-w-11 px-2 text-sm transition-colors ${
-                  lang === l ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400 hover:bg-bg-2 hover:text-slate-200"
+                  lang === l ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400 hover:bg-bg-2 hover:text-slate-200"
                 }`}
               >
                 {LANG_LABEL[l]}
@@ -136,7 +136,7 @@ export default function SearchPage() {
             aria-pressed={activeTab === "quests"}
             className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "quests"
-                ? "border-accent-gold text-accent-gold"
+                ? "border-accent-signal text-accent-signal"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -151,7 +151,7 @@ export default function SearchPage() {
             aria-pressed={activeTab === "categories"}
             className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "categories"
-                ? "border-accent-gold text-accent-gold"
+                ? "border-accent-signal text-accent-signal"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -189,11 +189,11 @@ export default function SearchPage() {
               <section key={qid} className="py-4">
                 <div className="flex min-w-0 items-center justify-between gap-3 px-1 sm:px-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="min-h-11 min-w-0 truncate inline-flex items-center font-serif text-lg text-slate-100 hover:text-accent-gold">
+                    <Link to={`/quests/${qid}?q=${encodeURIComponent(q)}&lang=${lang}`} className="min-h-11 min-w-0 truncate inline-flex items-center font-serif text-lg text-slate-100 hover:text-accent-signal">
                       {name}
                     </Link>
                     {isDup && (
-                      <span className="shrink-0 font-mono text-[10px] text-accent-gold">
+                      <span className="shrink-0 font-mono text-[10px] text-accent-signal">
                         record {dupIndex}/{dupTotal}
                       </span>
                     )}
@@ -230,7 +230,7 @@ export default function SearchPage() {
               <div className="flex min-w-0 items-center justify-between gap-3 px-1 sm:px-3">
                 <Link
                   to={`/categories/${categoryName}`}
-                  className="inline-flex min-h-11 min-w-0 items-center truncate font-serif text-lg text-slate-100 hover:text-accent-gold"
+                  className="inline-flex min-h-11 min-w-0 items-center truncate font-serif text-lg text-slate-100 hover:text-accent-signal"
                 >
                   {categoryName}
                 </Link>
@@ -246,7 +246,7 @@ export default function SearchPage() {
                     className="block min-w-0 px-1 py-3 transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:px-3"
                   >
                     <div className="mb-1 flex min-w-0 justify-between text-[10px] text-slate-500">
-                      <span className="min-w-0 [overflow-wrap:anywhere] font-mono text-accent-gold select-all">{h.key}</span>
+                      <span className="min-w-0 [overflow-wrap:anywhere] font-mono text-accent-signal select-all">{h.key}</span>
                     </div>
                     <div className="min-w-0 [overflow-wrap:anywhere] font-sans text-base leading-relaxed text-slate-200">
                       {h.text}

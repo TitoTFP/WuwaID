@@ -80,7 +80,7 @@ function highlight(value: string, query: string) {
   return (
     <>
       {value.slice(0, index)}
-      <mark className="bg-transparent text-accent-gold underline decoration-1 decoration-accent-gold underline-offset-2">
+      <mark className="bg-transparent text-accent-signal underline decoration-1 decoration-accent-signal underline-offset-2">
         {value.slice(index, index + q.length)}
       </mark>
       {value.slice(index + q.length)}
@@ -526,7 +526,7 @@ export default function DialogueTreeView({
         <div className="text-[11px] tabular-nums text-slate-500">
           {searchQ.trim() ? (
             <span>
-              <span className="text-accent-gold">{searchMatchCount}</span>
+              <span className="text-accent-signal">{searchMatchCount}</span>
               <span className="text-slate-600"> / {totalLineCount} match</span>
             </span>
           ) : (
@@ -585,7 +585,7 @@ export default function DialogueTreeView({
           {searchQ && (
             <button
               type="button"
-              className="mt-2 min-h-11 whitespace-nowrap px-3 text-[10px] text-accent-teal hover:text-accent-gold"
+              className="mt-2 min-h-11 whitespace-nowrap px-3 text-[10px] text-accent-signal hover:text-accent-signal"
               onClick={() => onSearchChange("")}
             >
               clear search
@@ -656,7 +656,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
       className={[
         "min-h-11 border px-2 text-[10px] font-medium transition-colors",
         active
-          ? "border-accent-gold/60 bg-accent-gold/10 text-accent-gold"
+          ? "border-accent-signal/60 bg-accent-signal/10 text-accent-signal"
           : "border-white/10 bg-bg-2 text-slate-400 hover:border-white/20 hover:text-slate-200",
       ].join(" ")}
     >
@@ -684,7 +684,7 @@ function DropBar({
       className={[
         "h-2",
         active
-          ? "bg-accent-gold"
+          ? "bg-accent-signal"
           : "bg-transparent",
       ].join(" ")}
     />
@@ -842,13 +842,13 @@ function Row({
         className={[
           "group flex h-12 items-center gap-2 border px-2 text-xs transition-colors",
           selected
-            ? "border-accent-gold/50 bg-accent-gold/10"
+            ? "border-accent-signal/50 bg-accent-signal/10"
             : multiSelected
-              ? "border-accent-teal/50 bg-accent-teal/10"
+              ? "border-accent-signal/50 bg-accent-signal/10"
               : activeInside
-                ? "border-accent-teal/40 bg-accent-teal/5"
+                ? "border-accent-signal/40 bg-accent-signal/5"
                 : activeBefore || activeAfter
-                  ? "border-accent-gold/40 opacity-40 translate-x-1.5"
+                  ? "border-accent-signal/40 opacity-40 translate-x-1.5"
                   : isMarked
                     ? "border-accent-emerald/30 bg-accent-emerald/10"
                     : "border-transparent hover:border-white/10 hover:bg-white/[0.03]",
@@ -876,17 +876,17 @@ function Row({
             )}
             <div className="ml-auto flex items-center gap-1">
               {activeInside && (
-                <span className="inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
+                <span className="inline-flex items-center rounded-sm border border-accent-signal/60 bg-accent-signal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-signal">
                   ↳ inside
                 </span>
               )}
               {(() => {
                 const pills: { label: string; cls: string; title: string }[] = [];
-                if (localDraft) pills.push({ label: "LOCAL", cls: "bg-accent-violet/15 text-accent-violet", title: "Has unsaved local translation" });
-                if (row.line?.is_edited) pills.push({ label: "EDITED", cls: "bg-accent-gold/15 text-accent-gold", title: "Has approved edits" });
+                if (localDraft) pills.push({ label: "LOCAL", cls: "bg-accent-slate/15 text-accent-slate", title: "Has unsaved local translation" });
+                if (row.line?.is_edited) pills.push({ label: "EDITED", cls: "bg-accent-signal/15 text-accent-signal", title: "Has approved edits" });
                 if (pending > 0) pills.push({ label: `${pending} ${pending === 1 ? "DRAFT" : "DRAFTS"}`, cls: "bg-accent-ember/15 text-accent-ember", title: `${pending} pending draft(s)` });
                 const optCount = row.line?.options?.length ?? 0;
-                if (optCount > 0) pills.push({ label: `${optCount} opts`, cls: "bg-accent-teal/15 text-accent-teal", title: `${optCount} option(s)` });
+                if (optCount > 0) pills.push({ label: `${optCount} opts`, cls: "bg-accent-signal/15 text-accent-signal", title: `${optCount} option(s)` });
                 const visible = pills.slice(0, 2);
                 const overflow = pills.length - visible.length;
                 return (
@@ -917,10 +917,10 @@ function Row({
             </span>
             {row.kind === "flow" ? (
               <>
-                <span className="inline-block rounded-sm bg-accent-teal px-2 py-1 text-[10px] font-bold tracking-wider text-bg-0">FLOW</span>
+                <span className="inline-block rounded-sm bg-accent-signal px-2 py-1 text-[10px] font-bold tracking-wider text-bg-0">FLOW</span>
                 <span className="truncate text-[12px] font-semibold text-slate-100">{row.label}</span>
                 {activeInside ? (
-                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-signal/60 bg-accent-signal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-signal">
                     ↳ inside
                   </span>
                 ) : (
@@ -929,15 +929,15 @@ function Row({
               </>
             ) : (
               <>
-                <span className="inline-block rounded-sm border border-accent-gold/60 bg-transparent px-2 py-1 text-[10px] font-bold tracking-wider text-accent-gold">STATE</span>
+                <span className="inline-block rounded-sm border border-accent-signal/60 bg-transparent px-2 py-1 text-[10px] font-bold tracking-wider text-accent-signal">STATE</span>
                 <span className="truncate text-[11px] font-medium text-slate-300">{row.label}</span>
                 {row.localIndex !== undefined && (
-                  <span className="ml-1 inline-block rounded-sm bg-accent-violet/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-accent-violet">
+                  <span className="ml-1 inline-block rounded-sm bg-accent-slate/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-accent-slate">
                     [{row.localIndex}]
                   </span>
                 )}
                 {activeInside ? (
-                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-teal/60 bg-accent-teal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-teal">
+                  <span className="ml-auto inline-flex items-center rounded-sm border border-accent-signal/60 bg-accent-signal/10 px-2 py-1 text-[10px] font-semibold tracking-wider text-accent-signal">
                     ↳ inside
                   </span>
                 ) : (

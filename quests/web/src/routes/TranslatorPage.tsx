@@ -473,7 +473,7 @@ export default function TranslatorPage() {
             <h1 className="truncate font-serif text-xl text-slate-100 sm:text-2xl">
               Indonesian translator
             </h1>
-            <span className="shrink-0 font-mono text-[11px] text-accent-gold">Q{qidN}</span>
+            <span className="shrink-0 font-mono text-[11px] text-accent-signal">Q{qidN}</span>
             <span className="hidden truncate text-xs text-slate-500 md:inline">
               {questQ.data?.quest_name ?? "Loading quest…"}
             </span>
@@ -486,7 +486,7 @@ export default function TranslatorPage() {
             >
               Structure
             </Link>
-            <span className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold" aria-current="page">
+            <span className="btn btn-active whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal" aria-current="page">
               Translation
             </span>
           </nav>
@@ -514,12 +514,12 @@ export default function TranslatorPage() {
                 aria-valuenow={stats.percentage}
               >
               <div
-                className="h-full bg-accent-gold"
+                className="h-full bg-accent-signal"
                 style={{ width: `${stats.percentage}%` }}
               />
               </div>
               <span className="shrink-0 select-none font-mono text-slate-500">
-                <strong className="font-semibold text-accent-gold">{stats.percentage}%</strong>
+                <strong className="font-semibold text-accent-signal">{stats.percentage}%</strong>
                 <span className="hidden sm:inline"> · {stats.count}/{stats.total}</span>
               </span>
             </div>
@@ -545,7 +545,7 @@ export default function TranslatorPage() {
           type="button"
           aria-pressed={mobilePane === "lines"}
           aria-controls="translator-lines-panel"
-          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           onClick={() => setMobilePane("lines")}
         >
           Lines
@@ -556,7 +556,7 @@ export default function TranslatorPage() {
           type="button"
           aria-pressed={mobilePane === "translation"}
           aria-controls="translator-detail-panel"
-          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           disabled={selectedId === null}
           onClick={() => setMobilePane("translation")}
         >

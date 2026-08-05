@@ -139,8 +139,8 @@ export default function ResizeHandle({
       onMouseDown={onMouseDown}
       onKeyDown={onKeyDown}
       className={[
-        "group relative hidden w-1 shrink-0 cursor-col-resize transition-colors focus-visible:bg-accent-gold/60 lg:block",
-        dragging ? "bg-accent-gold/60" : "bg-transparent hover:bg-accent-gold/30",
+        "group relative hidden w-1 shrink-0 cursor-col-resize transition-colors focus-visible:bg-accent-signal/60 lg:block",
+        dragging ? "bg-accent-signal/60" : "bg-transparent hover:bg-accent-signal/30",
       ].join(" ")}
       title="Drag to resize"
     >

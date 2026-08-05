@@ -65,7 +65,7 @@ export default function ExportDialog({
               name="export-option"
               checked={option === "full"}
               onChange={() => setOption("full")}
-              className="h-4 w-4 accent-accent-gold"
+              className="h-4 w-4 accent-accent-signal"
             />
             <div className="flex flex-col">
               <span className="font-medium">Full export</span>
@@ -79,7 +79,7 @@ export default function ExportDialog({
               name="export-option"
               checked={option === "untranslated"}
               onChange={() => setOption("untranslated")}
-              className="h-4 w-4 accent-accent-gold"
+              className="h-4 w-4 accent-accent-signal"
             />
             <div className="flex flex-col">
               <span className="font-medium">Only untranslated</span>
@@ -93,7 +93,7 @@ export default function ExportDialog({
               name="export-option"
               checked={option === "english_full"}
               onChange={() => setOption("english_full")}
-              className="h-4 w-4 accent-accent-gold"
+              className="h-4 w-4 accent-accent-signal"
             />
             <div className="flex flex-col">
               <span className="font-medium">Full English export</span>

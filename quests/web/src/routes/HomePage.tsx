@@ -23,15 +23,15 @@ export default function HomePage() {
 		<div className="container-narrow gap-10 pb-8 sm:gap-12">
 			<header className="home-hero">
 				<div className="home-hero__copy">
-					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent-gold">
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent-signal">
 						Quest archive · Wuthering Waves dialogue
 					</p>
 					<h1 className="mt-3 min-w-0 max-w-3xl [overflow-wrap:anywhere] font-serif text-3xl leading-tight text-slate-100 sm:text-4xl">
 						Find any line in Wuthering Waves.
 					</h1>
 					<p className="mt-3 max-w-prose text-base leading-relaxed text-slate-400">
-						Read quests in <span className="text-accent-gold">中文</span>,
-						<span className="text-accent-gold"> English</span>, and
+						Read quests in <span className="text-accent-signal">中文</span>,
+						<span className="text-accent-signal"> English</span>, and
 						<span className="text-slate-300"> 日本語</span>. Compare
 						translations, trace speakers, and jump straight to choice points.
 					</p>
@@ -99,7 +99,7 @@ export default function HomePage() {
 									Chapter {c.id || "—"}
 								</div>
 								<div
-									className="mt-1 truncate font-serif text-lg text-slate-100 transition-colors group-hover:text-accent-gold"
+									className="mt-1 truncate font-serif text-lg text-slate-100 transition-colors group-hover:text-accent-signal"
 									title={c.name}
 								>
 									{c.name}
@@ -142,7 +142,7 @@ export default function HomePage() {
 						<Link
 							key={s.name}
 							to={`/search?q=${encodeURIComponent(s.name)}&lang=en`}
-							className="group flex min-h-11 min-w-0 items-center justify-between gap-4 border-b border-white/10 px-1 py-3 text-sm text-slate-300 transition-colors hover:bg-bg-2 hover:text-accent-teal focus-visible:bg-bg-2 sm:px-2"
+							className="group flex min-h-11 min-w-0 items-center justify-between gap-4 border-b border-white/10 px-1 py-3 text-sm text-slate-300 transition-colors hover:bg-bg-2 hover:text-accent-signal focus-visible:bg-bg-2 sm:px-2"
 							title={`${s.line_count} lines in ${s.quest_count} quests`}
 						>
 							<span className="min-w-0 truncate">{s.name}</span>

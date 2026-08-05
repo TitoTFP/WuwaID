@@ -36,10 +36,10 @@ export default function QuestCard({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] text-slate-500">
           <span>#{q.qid}</span>
           <span>{TYPE_LABEL[q.quest_type] ?? `type ${q.quest_type}`}</span>
-          {isDup && <span className="text-accent-gold">record {dupIndex}/{dupTotal}</span>}
-          {q.side === 1 && <span className="text-accent-teal">side quest</span>}
+          {isDup && <span className="text-accent-signal">record {dupIndex}/{dupTotal}</span>}
+          {q.side === 1 && <span className="text-accent-signal">side quest</span>}
         </div>
-        <div className="mt-1 min-w-0 truncate text-sm font-medium text-slate-100 transition-colors group-hover:text-accent-gold sm:text-base">
+        <div className="mt-1 min-w-0 truncate text-sm font-medium text-slate-100 transition-colors group-hover:text-accent-signal sm:text-base">
           {q.quest_name}
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function QuestCard({
           aria-valuenow={Math.round(pct)}
         >
           <div
-            className={`h-px ${isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"}`}
+            className={`h-px ${isFullyTranslated ? "bg-accent-signal" : "bg-accent-signal"}`}
             style={{ width: `${pct}%` }}
           />
         </div>

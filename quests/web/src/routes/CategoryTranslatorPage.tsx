@@ -193,7 +193,7 @@ export default function CategoryTranslatorPage() {
             ← back to category table
           </Link>
           <div className="flex gap-2">
-            <div className="btn btn-active whitespace-nowrap border-accent-gold/45 text-xs text-accent-gold">
+            <div className="btn btn-active whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal">
               Category translation
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function CategoryTranslatorPage() {
 
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">
-            Category Translator <span className="block font-mono text-sm text-accent-gold">{categoryName}</span>
+            Category Translator <span className="block font-mono text-sm text-accent-signal">{categoryName}</span>
           </h1>
         </div>
 
@@ -211,12 +211,12 @@ export default function CategoryTranslatorPage() {
             <div className="shrink-0 font-semibold text-slate-300">Translation progress</div>
             <div className="relative h-1.5 w-full shrink-0 overflow-hidden bg-slate-800 sm:w-auto sm:flex-1">
               <div
-                className="h-full bg-accent-gold"
+                className="h-full bg-accent-signal"
                 style={{ width: `${stats.percentage}%` }}
               />
             </div>
             <div className="font-mono text-slate-400 shrink-0 select-none">
-              <span className="text-accent-gold font-bold">{stats.percentage}%</span> ({stats.count} / {stats.total} entries translated)
+              <span className="text-accent-signal font-bold">{stats.percentage}%</span> ({stats.count} / {stats.total} entries translated)
             </div>
           </div>
         )}
@@ -228,7 +228,7 @@ export default function CategoryTranslatorPage() {
           type="button"
           aria-pressed={mobilePane === "keys"}
           aria-controls="category-keys-panel"
-          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "keys" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "keys" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           onClick={() => setMobilePane("keys")}
         >
           Keys
@@ -239,7 +239,7 @@ export default function CategoryTranslatorPage() {
           type="button"
           aria-pressed={mobilePane === "translation"}
           aria-controls="category-detail-panel"
-          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-gold/10 text-accent-gold" : "text-slate-400"].join(" ")}
+          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
           disabled={selectedKey === null}
           onClick={() => setMobilePane("translation")}
         >
@@ -343,7 +343,7 @@ export default function CategoryTranslatorPage() {
                                   className={[
                                     "flex min-h-11 w-full items-center justify-between border p-2 text-left font-mono text-xs transition-colors",
                                     isSelected
-                                      ? "bg-accent-gold/15 text-accent-gold border-accent-gold/30 font-semibold"
+                                      ? "bg-accent-signal/15 text-accent-signal border-accent-signal/30 font-semibold"
                                       : "bg-transparent text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200",
                                   ].join(" ")}
                                   onClick={() => {
@@ -355,13 +355,13 @@ export default function CategoryTranslatorPage() {
                                   <div className="flex items-center gap-1 shrink-0">
                                     {item.is_edited && (
                                       <span
-                                        className="h-1.5 w-1.5 rounded-sm bg-accent-teal"
+                                        className="h-1.5 w-1.5 rounded-sm bg-accent-signal"
                                         title="Approved editor edits"
                                       />
                                     )}
                                     {pendingDrafts > 0 && (
                                       <span
-                                        className="h-1.5 w-1.5 rounded-sm bg-accent-gold"
+                                        className="h-1.5 w-1.5 rounded-sm bg-accent-signal"
                                         title="Pending draft review"
                                       />
                                     )}

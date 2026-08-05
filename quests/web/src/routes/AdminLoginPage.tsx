@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
     <div className="container-narrow max-w-3xl">
       <section className="grid border-y border-white/15 bg-bg-1/40 md:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]">
         <div className="p-5 sm:p-8">
-          <div className="font-mono text-xs text-accent-gold">Restricted operations</div>
+          <div className="font-mono text-xs text-accent-signal">Restricted operations</div>
           <h1 className="mt-2 font-serif text-3xl text-slate-100 sm:text-4xl">Admin login</h1>
           <p className="mt-3 max-w-md text-base leading-relaxed text-slate-400">
             Log uploads and active-player data are available only to administrators.

@@ -92,7 +92,7 @@ export function CategoriesPage() {
                 className="group grid min-h-20 min-w-0 grid-cols-[minmax(0,1fr)_7rem] items-center gap-4 px-1 py-3 text-left transition-colors hover:bg-bg-2 focus-visible:bg-bg-2 sm:grid-cols-[minmax(0,1fr)_10rem] sm:px-3"
               >
                 <div className="min-w-0">
-                  <div className="min-w-0 truncate font-serif text-lg text-slate-100 transition-colors group-hover:text-accent-gold">
+                  <div className="min-w-0 truncate font-serif text-lg text-slate-100 transition-colors group-hover:text-accent-signal">
                     {c.name}
                   </div>
                   <div className="mt-1 font-mono text-[10px] text-slate-500 tabular-nums">
@@ -112,7 +112,7 @@ export function CategoriesPage() {
                     aria-valuenow={Math.round(pct)}
                   >
                     <div
-                      className={`h-px ${isFullyTranslated ? "bg-accent-teal" : "bg-accent-gold"}`}
+                      className={`h-px ${isFullyTranslated ? "bg-accent-signal" : "bg-accent-signal"}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

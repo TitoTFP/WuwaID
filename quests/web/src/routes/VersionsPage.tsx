@@ -7,9 +7,9 @@ import type { TextDiffGroup, TextDiffStatus } from "../lib/types";
 
 const PAGE_SIZE = 100;
 const STATUS_STYLE: Record<TextDiffStatus, string> = {
-  added: "border-accent-teal/30 bg-accent-teal/10 text-accent-teal",
+  added: "border-accent-signal/30 bg-accent-signal/10 text-accent-signal",
   removed: "border-rose-400/30 bg-rose-500/10 text-rose-200",
-  changed: "border-accent-gold/30 bg-accent-gold/10 text-accent-gold",
+  changed: "border-accent-signal/30 bg-accent-signal/10 text-accent-signal",
 };
 
 export default function VersionsPage() {
@@ -131,7 +131,7 @@ export default function VersionsPage() {
     <div className="versions-page container-wide overflow-y-auto pb-12">
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
         <div>
-          <div className="font-mono text-xs text-accent-gold">Official MultiText history</div>
+          <div className="font-mono text-xs text-accent-signal">Official MultiText history</div>
           <h1 className="mt-1 min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Text Versions</h1>
           <p className="mt-1 text-base text-slate-400">Immutable EN, ZH-Hans, and JA snapshots. Indonesian/editor overlays are excluded.</p>
         </div>
@@ -143,7 +143,7 @@ export default function VersionsPage() {
           <div className="max-h-64 overflow-y-auto">
             {versions.map((version) => (
               <div key={version.id} className="grid gap-2 border-b border-white/5 px-4 py-3 text-xs md:grid-cols-[8rem_1fr_auto]">
-                <div className="font-mono text-accent-gold">{version.tag}</div>
+                <div className="font-mono text-accent-signal">{version.tag}</div>
                 <div>
                   <div className="text-slate-300">{version.note || "No note"}</div>
                   <div className="mt-1 font-mono text-[10px] text-slate-500">{version.dataset_hash.slice(0, 16)} · {new Date(version.created_at).toLocaleString()}</div>
@@ -261,13 +261,13 @@ export default function VersionsPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-xs text-slate-200">{group.source_ref}</span>
-                    {group.is_new_group && <span className="border border-accent-teal/30 bg-accent-teal/10 px-2 py-1 text-[10px] uppercase tracking-wider text-accent-teal">new group</span>}
+                    {group.is_new_group && <span className="border border-accent-signal/30 bg-accent-signal/10 px-2 py-1 text-[10px] uppercase tracking-wider text-accent-signal">new group</span>}
                   </div>
                   <div className="mt-1 truncate font-mono text-[10px] text-slate-500" title={group.db_path}>{group.db_path}</div>
                 </div>
                 <div className="text-right text-[10px] text-slate-400">
                   <div className="text-sm font-semibold text-slate-200">{group.total.toLocaleString()}</div>
-                  <div><span className="text-accent-teal">+{group.added.toLocaleString()}</span> · <span className="text-accent-gold">~{group.changed.toLocaleString()}</span></div>
+                  <div><span className="text-accent-signal">+{group.added.toLocaleString()}</span> · <span className="text-accent-signal">~{group.changed.toLocaleString()}</span></div>
                 </div>
               </label>
             ))}
@@ -295,7 +295,7 @@ export default function VersionsPage() {
                 <pre className="whitespace-pre-wrap break-words font-sans text-xs text-slate-400">{item.old_content ?? "∅"}</pre>
               </div>
               <div className="bg-bg-2 p-3">
-                <div className="mb-1 text-[10px] uppercase tracking-widest text-accent-teal/70">{target}</div>
+                <div className="mb-1 text-[10px] uppercase tracking-widest text-accent-signal/70">{target}</div>
                 <pre className="whitespace-pre-wrap break-words font-sans text-xs text-slate-200">{item.new_content ?? "∅"}</pre>
               </div>
             </div>

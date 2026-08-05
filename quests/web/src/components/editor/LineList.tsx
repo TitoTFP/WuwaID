@@ -30,7 +30,7 @@ export default function LineList({
               className={[
                 "w-full text-left px-2 py-1.5 rounded text-xs font-mono transition-colors",
                 isSelected
-                  ? "bg-accent-gold/10 text-accent-gold"
+                  ? "bg-accent-signal/10 text-accent-signal"
                   : "text-slate-300 hover:bg-white/5",
               ].join(" ")}
             >
@@ -42,7 +42,7 @@ export default function LineList({
                 )}
                 {l.is_edited && (
                   <span
-                    className="text-[9px] px-1 py-0.5 rounded bg-accent-gold/20 text-accent-gold"
+                    className="text-[9px] px-1 py-0.5 rounded bg-accent-signal/20 text-accent-signal"
                     title="Has approved edits"
                   >
                     edited

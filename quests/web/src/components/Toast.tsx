@@ -88,11 +88,11 @@ function ToastViewport({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss: 
 function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const variantClass =
     toast.variant === "success"
-      ? "border-accent-teal/40 bg-accent-teal/10 text-slate-100"
+      ? "border-accent-signal/40 bg-accent-signal/10 text-slate-100"
       : toast.variant === "error"
         ? "border-rose-400/40 bg-rose-500/10 text-rose-100"
         : toast.variant === "undo"
-          ? "border-accent-gold/40 bg-accent-gold/10 text-slate-100"
+          ? "border-accent-signal/40 bg-accent-signal/10 text-slate-100"
           : "border-white/10 bg-bg-2 text-slate-100";
 
   return (
@@ -108,7 +108,7 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
       {toast.action && (
         <button
           type="button"
-          className="min-h-11 whitespace-nowrap border border-accent-gold/40 px-3 text-xs text-accent-gold hover:bg-accent-gold/10"
+          className="min-h-11 whitespace-nowrap border border-accent-signal/40 px-3 text-xs text-accent-signal hover:bg-accent-signal/10"
           onClick={() => {
             toast.action?.onClick();
             onDismiss();

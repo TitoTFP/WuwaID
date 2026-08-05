@@ -40,7 +40,7 @@ function highlight(text: string, q: string | null): React.ReactNode {
   return (
     <>
       {text.slice(0, i)}
-      <mark className="bg-transparent text-accent-gold underline decoration-1 decoration-accent-gold underline-offset-2">
+      <mark className="bg-transparent text-accent-signal underline decoration-1 decoration-accent-signal underline-offset-2">
         {text.slice(i, i + lq.length)}
       </mark>
       {text.slice(i + lq.length)}
@@ -159,7 +159,7 @@ export default memo(function DialogueLine({
                 <span className={`min-w-0 [overflow-wrap:anywhere] text-right text-base leading-relaxed ${isPrimary ? "text-slate-100" : "text-slate-300"}`}>
                   {highlight(text || "", highlightQ ?? null)}
                 </span>
-                <span className={`shrink-0 font-mono text-[10px] ${isPrimary ? "text-accent-gold" : "text-slate-500"}`}>
+                <span className={`shrink-0 font-mono text-[10px] ${isPrimary ? "text-accent-signal" : "text-slate-500"}`}>
                   {LANG_LABEL[l]}
                 </span>
               </div>
@@ -172,7 +172,7 @@ export default memo(function DialogueLine({
                 isPrimary ? "" : "opacity-60 transition-opacity hover:opacity-100"
               }`}
             >
-              <span className={`pt-1 font-mono text-[10px] ${isPrimary ? "text-accent-gold" : "text-slate-500"}`}>
+              <span className={`pt-1 font-mono text-[10px] ${isPrimary ? "text-accent-signal" : "text-slate-500"}`}>
                 {LANG_LABEL[l]}
               </span>
               <div className="min-w-0">
@@ -190,7 +190,7 @@ export default memo(function DialogueLine({
 
       {line.options && line.options.length > 0 && (
         <section className="mt-4 border-t border-white/10 pt-3">
-          <h3 className="font-mono text-[10px] text-accent-teal">Player choices</h3>
+          <h3 className="font-mono text-[10px] text-accent-signal">Player choices</h3>
           <ul className="mt-1 divide-y divide-white/5">
           {line.options.map((opt, i) => {
             const optText = (opt as any)[`text_${primary}`] || opt.text_en || "";
@@ -199,7 +199,7 @@ export default memo(function DialogueLine({
             return (
               <li key={i} className="min-w-0 py-2 text-base text-slate-300">
                 <div className="flex min-w-0 gap-2">
-                  <span className="shrink-0 text-accent-teal" aria-hidden="true">→</span>
+                  <span className="shrink-0 text-accent-signal" aria-hidden="true">→</span>
                   <span className="min-w-0 [overflow-wrap:anywhere]">{optText}</span>
                 </div>
                 <div className="ml-5 mt-1 flex min-w-0 flex-wrap items-center gap-x-3">

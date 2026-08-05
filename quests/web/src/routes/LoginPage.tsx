@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="container-narrow max-w-3xl">
       <section className="grid border-y border-white/15 bg-bg-1/40 md:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]">
         <div className="p-5 sm:p-8">
-          <div className="font-mono text-xs text-accent-gold">Restricted workbench</div>
+          <div className="font-mono text-xs text-accent-signal">Restricted workbench</div>
           <h1 className="mt-2 min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Editor login</h1>
           <p className="mt-3 max-w-md text-base leading-relaxed text-slate-400">
             Editors can approve or reject draft edits. Anonymous contributors do not need to log in.
