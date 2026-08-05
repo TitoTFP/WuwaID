@@ -152,6 +152,10 @@
   --color-error: var(--sentinel-error);
   --color-info: var(--sentinel-signal);
   --color-error-decoration: var(--sentinel-error-decoration);
+  --color-success-channels: var(--sentinel-success-channels);
+  --color-warning-channels: var(--sentinel-warning-channels);
+  --color-error-channels: var(--sentinel-error-channels);
+  --color-info-channels: var(--sentinel-signal-channels);
   --color-accent-surface: var(--sentinel-signal-surface);
   --color-accent-rule: var(--sentinel-signal-rule);
   --color-accent-rule-strong: var(--sentinel-signal-rule-strong);
