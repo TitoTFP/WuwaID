@@ -24,13 +24,13 @@ export default function HomePage() {
 			<header className="home-hero">
 				<div className="home-hero__copy">
 					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent-gold">
-						Resonance atlas · dialogue archive
+						Quest archive · Wuthering Waves dialogue
 					</p>
 					<h1 className="mt-3 min-w-0 max-w-3xl [overflow-wrap:anywhere] font-serif text-3xl leading-tight text-slate-100 sm:text-4xl">
 						Find any line in Wuthering Waves.
 					</h1>
 					<p className="mt-3 max-w-prose text-base leading-relaxed text-slate-400">
-						Read quests in <span className="text-accent-teal">中文</span>,
+						Read quests in <span className="text-accent-gold">中文</span>,
 						<span className="text-accent-gold"> English</span>, and
 						<span className="text-slate-300"> 日本語</span>. Compare
 						translations, trace speakers, and jump straight to choice points.

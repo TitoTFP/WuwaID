@@ -156,6 +156,11 @@
   --color-warning-channels: var(--sentinel-warning-channels);
   --color-error-channels: var(--sentinel-error-channels);
   --color-info-channels: var(--sentinel-signal-channels);
+  --color-error-100-channels: color-mix(in oklch, var(--sentinel-error-channels) 25%, var(--sentinel-ink-channels));
+  --color-error-200-channels: color-mix(in oklch, var(--sentinel-error-channels) 40%, var(--sentinel-ink-channels));
+  --color-error-300-channels: color-mix(in oklch, var(--sentinel-error-channels) 60%, var(--sentinel-ink-channels));
+  --color-error-400-channels: var(--sentinel-error-channels);
+  --color-error-500-channels: color-mix(in oklch, var(--sentinel-error-channels) 85%, var(--sentinel-ground-channels));
   --color-accent-surface: var(--sentinel-signal-surface);
   --color-accent-rule: var(--sentinel-signal-rule);
   --color-accent-rule-strong: var(--sentinel-signal-rule-strong);
