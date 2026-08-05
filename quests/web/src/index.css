@@ -109,6 +109,81 @@
 		padding-inline: clamp(var(--space-sm), 3vw, var(--space-md));
 	}
 
+	/* ── Home hero (restored, Sentinel) ── */
+	.home-hero {
+		position: relative;
+		display: grid;
+		gap: var(--space-lg);
+		overflow: hidden;
+		border-block: var(--rule-hairline) solid var(--sentinel-rule);
+		padding-block: clamp(var(--space-lg), 6vw, var(--space-2xl));
+	}
+	.home-hero::after {
+		position: absolute;
+		inset-block: 12%;
+		inset-inline-end: -8rem;
+		width: 22rem;
+		border: var(--rule-hairline) solid var(--sentinel-signal-rule);
+		border-radius: 50%;
+		content: "";
+		opacity: 0.45;
+		pointer-events: none;
+	}
+	.home-hero__copy {
+		position: relative;
+		z-index: 1;
+	}
+	.home-stats {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		margin: 0;
+		border-block: var(--rule-hairline) solid var(--sentinel-rule);
+	}
+	.home-stats > div {
+		min-width: 0;
+		padding: var(--space-sm) var(--space-xs);
+	}
+	.home-stats > div + div {
+		border-inline-start: var(--rule-hairline) solid var(--sentinel-rule);
+	}
+	.home-stats dt {
+		color: var(--sentinel-ink-3);
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	.home-stats dd {
+		margin-block-start: var(--space-3xs);
+		overflow-wrap: anywhere;
+		color: var(--sentinel-ink);
+		font-family: var(--font-display);
+		font-size: clamp(1.35rem, 4vw, 2rem);
+		font-variant-numeric: tabular-nums;
+		font-weight: 700;
+		line-height: 1;
+	}
+	@media (min-width: 48rem) {
+		.home-hero {
+			grid-template-columns: minmax(0, 1.55fr) minmax(16rem, 0.65fr);
+			align-items: end;
+		}
+		.home-stats {
+			grid-template-columns: 1fr;
+			border-block: 0;
+			border-inline-start: var(--rule-hairline) solid var(--sentinel-rule);
+		}
+		.home-stats > div {
+			padding: var(--space-xs) var(--space-md);
+		}
+		.home-stats > div + div {
+			border-block-start: var(--rule-hairline) solid var(--sentinel-rule);
+			border-inline-start: 0;
+		}
+	}
+
 	/* ── Card: flat panel, hairline rule, no gradient, no blur ── */
 	.card {
 		border: var(--rule-hairline) solid var(--sentinel-rule);
@@ -117,7 +192,7 @@
 		color: var(--sentinel-ink);
 	}
 
-	/* ── Button: dark glass control with map-line border ── */
+	/* ── Button: dark panel control with hairline border ── */
 	.btn {
 		position: relative;
 		display: inline-flex;

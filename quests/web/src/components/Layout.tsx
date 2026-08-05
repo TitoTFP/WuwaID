@@ -207,7 +207,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="flex-1 py-6">
+      <main className="sn-main flex-1 py-6">
         <Outlet />
       </main>
 
