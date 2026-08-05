@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { api } from "../lib/api";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
 import type { CategoryEditorEntry } from "../lib/types";
 import CategoryTranslatorForm from "../components/editor/CategoryTranslatorForm";
@@ -41,8 +41,8 @@ export default function CategoryTranslatorPage() {
   });
 
   const draftsQ = useQuery({
-    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel],
-    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    queryKey: ["drafts", canEdit(role) ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(canEdit(role) ? null : authorLabel),
     enabled: !!meQ.data,
   });
 

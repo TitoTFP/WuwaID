@@ -215,3 +215,28 @@ def test_make_and_read_admin_session_roundtrip(client):
     """Roles are persisted generically before the admin UI is introduced."""
     tok = make_session_token("admin")
     assert read_session_cookie(tok) == "admin"
+
+
+def test_require_editor_accepts_admin():
+    """Admin sessions can do everything an editor can."""
+    from app.auth import require_editor
+    assert require_editor("editor") == "editor"
+    assert require_editor("admin") == "admin"
+    with pytest.raises(HTTPException, match="editor login required") as exc:
+        require_editor("anon")
+    assert exc.value.status_code == 401
+
+
+def test_admin_session_can_access_editor_routes(client, monkeypatch):
+    """An admin login grants editor capabilities (require_editor routes)."""
+    monkeypatch.setenv("ADMIN_PASSWORD", "admin-s3cr3t")
+    client.post("/api/admin/login", json={"password": "admin-s3cr3t"})
+    r = client.get("/api/editor/versions")
+    assert r.status_code == 200
+
+def test_editor_session_can_access_editor_routes(client, monkeypatch):
+    """Editor login also works for require_editor routes."""
+    monkeypatch.setenv("EDITOR_PASSWORD", "s3cr3t")
+    client.post("/api/login", json={"password": "s3cr3t"})
+    r = client.get("/api/editor/versions")
+    assert r.status_code == 200

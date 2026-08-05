@@ -907,10 +907,15 @@ def api_create_draft(payload: dict, request: Request):
     return {"id": did}
 
 
+def _can_edit(role: str) -> bool:
+    """Editor access; admin sessions also pass (admin can do everything an editor can)."""
+    return role in ("editor", "admin")
+
+
 @app.put("/api/editor/drafts/{draft_id}")
 def api_update_draft(draft_id: int, payload: dict, request: Request, role: str = Depends(get_role)):
-    author_label = None if role == "editor" else _author_label(request)
-    if role != "editor" and author_label is None:
+    author_label = None if _can_edit(role) else _author_label(request)
+    if not _can_edit(role) and author_label is None:
         raise HTTPException(403, "author label required")
     try:
         update_args = {
@@ -954,8 +959,8 @@ def api_glossary_matches(payload: dict):
 
 @app.delete("/api/editor/drafts/{draft_id}")
 def api_delete_draft(draft_id: int, request: Request, role: str = Depends(get_role)):
-    author_label = None if role == "editor" else _author_label(request)
-    if role != "editor" and author_label is None:
+    author_label = None if _can_edit(role) else _author_label(request)
+    if not _can_edit(role) and author_label is None:
         raise HTTPException(403, "author label required")
     try:
         db.delete_draft(draft_id, author_label=author_label)
@@ -968,7 +973,7 @@ def api_delete_draft(draft_id: int, request: Request, role: str = Depends(get_ro
 
 @app.get("/api/drafts")
 def api_list_drafts(request: Request, role: str = Depends(get_role)):
-    if role == "editor":
+    if _can_edit(role):
         return _json(db.list_drafts(scope="all", author_label=None))
     return _json(
         db.list_drafts(scope="mine", author_label=_author_label(request))
@@ -980,7 +985,7 @@ def api_get_draft(draft_id: int, request: Request, role: str = Depends(get_role)
     d = db.get_draft_with_diff(draft_id)
     if d is None:
         raise HTTPException(404, "draft not found")
-    if role != "editor" and d["author_label"] != _author_label(request):
+    if not _can_edit(role) and d["author_label"] != _author_label(request):
         raise HTTPException(403, "not your draft")
     return _json(d)
 
@@ -1003,7 +1008,7 @@ def api_approve_draft(draft_id: int, role: str = Depends(require_editor)):
 
 @app.post("/api/editor/export")
 def api_export_translations(payload: dict | None = None, role: str = Depends(get_role)):
-    if role != "editor":
+    if not _can_edit(role):
         raise HTTPException(403, "editor role required to export")
     try:
         quest_ids = payload.get("quest_ids") if payload else None
@@ -1166,7 +1171,7 @@ def api_delete_category_translation(name: str, role: str = Depends(require_edito
 
 @app.post("/api/editor/import")
 def api_import_translations(payload: dict, role: str = Depends(get_role)):
-    if role != "editor":
+    if not _can_edit(role):
         raise HTTPException(403, "editor role required to import")
     db_path_str = payload.get("db_path")
     if not db_path_str:

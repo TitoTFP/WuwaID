@@ -3,6 +3,11 @@ import { api } from "./api";
 
 const ME_KEY = ["me"] as const;
 
+export function canEdit(role: string | undefined): boolean {
+  // Admin sessions can also do everything an editor can.
+  return role === "editor" || role === "admin";
+}
+
 export function useMe() {
   return useQuery({
     queryKey: ME_KEY,

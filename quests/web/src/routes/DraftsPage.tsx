@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { useLogout, useMe } from "../lib/auth";
+import { canEdit, useLogout, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
 import type { Draft, DraftPatch, DraftStatus } from "../lib/types";
 import { diffWords } from "../lib/diff";
@@ -222,8 +222,8 @@ function QueueView() {
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const draftsQ = useQuery({
-    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel],
-    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    queryKey: ["drafts", canEdit(role) ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(canEdit(role) ? null : authorLabel),
     enabled: !!meQ.data,
   });
   const queryClient = useQueryClient();
@@ -334,7 +334,7 @@ function QueueView() {
           <div className="mt-1 font-mono text-xs text-slate-500">access · {role}</div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {role === "editor" && (
+          {canEdit(role) && (
             <>
               <button
                 type="button"
@@ -353,7 +353,7 @@ function QueueView() {
               </button>
             </>
           )}
-          {role === "editor" ? (
+          {canEdit(role) ? (
             <button type="button" className="btn" onClick={() => void logout()}>
               Log out
             </button>
@@ -367,7 +367,7 @@ function QueueView() {
 
       <FilterBar filters={filters} onChange={setFilters} qids={qids} authors={authors} />
 
-      {role === "editor" && selectedDrafts.length > 0 && (
+      {canEdit(role) && selectedDrafts.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-y border-accent-gold/30 bg-accent-gold/5 px-3 py-2 text-xs">
           <span className="text-slate-200">{selectedDrafts.length} pending selected</span>
           <div className="flex flex-wrap gap-2">
@@ -409,7 +409,7 @@ function QueueView() {
         {filtered.length > 0 && (
           <div className="flex items-center justify-between border-b border-white/5 px-4 py-2 text-[10px] uppercase tracking-widest text-slate-500">
             <span>{filtered.length} draft(s)</span>
-            {role === "editor" && (
+            {canEdit(role) && (
               <button type="button" className="btn px-2 py-1 text-[10px]" onClick={selectAllVisible}>
                 select all pending
               </button>
@@ -418,7 +418,7 @@ function QueueView() {
         )}
         {filtered.map((draft) => {
           const isSelected = selected.has(draft.id);
-          const selectable = role === "editor" && draft.status === "pending";
+          const selectable = canEdit(role) && draft.status === "pending";
           return (
             <div
               key={draft.id}
@@ -524,8 +524,8 @@ function DetailView({ draftId }: { draftId: number }) {
   const queryClient = useQueryClient();
   const role = meQ.data?.role ?? "anon";
   const draftQ = useQuery({
-    queryKey: ["draft", draftId, role === "editor" ? "editor" : getAuthorLabel()],
-    queryFn: () => api.getDraft(draftId, role === "editor" ? null : getAuthorLabel()),
+    queryKey: ["draft", draftId, canEdit(role) ? "editor" : getAuthorLabel()],
+    queryFn: () => api.getDraft(draftId, canEdit(role) ? null : getAuthorLabel()),
     enabled: !!draftId && !!meQ.data,
   });
   const [note, setNote] = useState("");
@@ -556,7 +556,7 @@ function DetailView({ draftId }: { draftId: number }) {
     onError: () => toast.error("Failed to reject"),
   });
   const draft = draftQ.data;
-  const canReview = role === "editor" && draft?.status === "pending";
+  const canReview = canEdit(role) && draft?.status === "pending";
   const busy = approveQ.isPending || rejectQ.isPending;
 
   if (draftQ.isLoading) {
@@ -608,7 +608,7 @@ function DetailView({ draftId }: { draftId: number }) {
         ) : (
           <div className="text-sm text-slate-500">No note.</div>
         )}
-        {role === "editor" && draft.status === "pending" && (
+        {canEdit(role) && draft.status === "pending" && (
           <div className="mt-2 space-y-2">
             <textarea
               className="input min-h-20 resize-y text-xs"

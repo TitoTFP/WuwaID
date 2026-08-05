@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../components/Toast";
 import ExportDialog, { type ExportMode } from "../components/editor/ExportDialog";
 import ConfirmDialog from "../components/editor/ConfirmDialog";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
 import DialogueLine, { type LineIndex } from "../components/DialogueLine";
@@ -320,7 +320,7 @@ export default function QuestPage() {
             >
               Edit Flow
             </Link>
-            {role === "editor" && (
+            {canEdit(role) && (
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}

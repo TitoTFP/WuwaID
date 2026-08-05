@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import LangSwitcher from "./LangSwitcher";
 import { api } from "../lib/api";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
 import ImportModal from "./editor/ImportModal";
 
@@ -25,8 +25,8 @@ export default function Layout() {
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const draftsQ = useQuery({
-    queryKey: ["drafts", "header", role === "editor" ? "editor" : authorLabel],
-    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    queryKey: ["drafts", "header", canEdit(role) ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(canEdit(role) ? null : authorLabel),
     enabled: !!meQ.data,
     staleTime: 15_000,
   });
@@ -109,7 +109,7 @@ export default function Layout() {
               )}
             </NavLink>
 
-            {role === "editor" && (
+            {canEdit(role) && (
               <>
                 <NavLink to="/versions" className={({ isActive }) => `btn ${isActive ? "btn-active" : ""}`}>
                   Versions
@@ -178,7 +178,7 @@ export default function Layout() {
                     </span>
                   )}
                 </NavLink>
-                {role === "editor" && (
+                {canEdit(role) && (
                   <>
                     <NavLink to="/versions" className={({ isActive }) => `archive-menu__link ${isActive ? "is-active" : ""}`}>
                       Versions

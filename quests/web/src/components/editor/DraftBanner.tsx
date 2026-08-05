@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
-import { useMe } from "../../lib/auth";
+import { canEdit, useMe } from "../../lib/auth";
 import { getAuthorLabel } from "../../lib/session";
 
 export default function DraftBanner({ qid }: { qid: number }) {
@@ -9,8 +9,8 @@ export default function DraftBanner({ qid }: { qid: number }) {
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const draftsQ = useQuery({
-    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel, qid],
-    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    queryKey: ["drafts", canEdit(role) ? "editor" : authorLabel, qid],
+    queryFn: () => api.listDrafts(canEdit(role) ? null : authorLabel),
     enabled: !!meQ.data,
   });
   const count = (draftsQ.data ?? []).filter(

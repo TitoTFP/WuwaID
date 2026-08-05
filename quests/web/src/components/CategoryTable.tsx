@@ -5,7 +5,7 @@ import { useToast } from "./Toast";
 import { api } from "../lib/api";
 import ExportDialog, { type ExportMode } from "./editor/ExportDialog";
 import ConfirmDialog from "./editor/ConfirmDialog";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 
 export interface CategoryEntry {
   key: string;
@@ -174,7 +174,7 @@ export function CategoryTable({ category, entries, showIdColumn }: CategoryTable
           >
             Export SQLite
           </button>
-          {role === "editor" && (
+          {canEdit(role) && (
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 import type { TextDiffGroup, TextDiffStatus } from "../lib/types";
 
 const PAGE_SIZE = 100;
@@ -18,7 +18,7 @@ export default function VersionsPage() {
   const versionsQ = useQuery({
     queryKey: ["text-versions"],
     queryFn: api.textVersions,
-    enabled: meQ.data?.role === "editor",
+    enabled: canEdit(meQ.data?.role),
   });
   const versions = versionsQ.data ?? [];
   const [base, setBase] = useState("");
@@ -48,13 +48,13 @@ export default function VersionsPage() {
       base, target, lang, status: status || undefined, q: search || undefined,
       page, page_size: PAGE_SIZE,
     }),
-    enabled: meQ.data?.role === "editor" && !!base && !!target && base !== target,
+    enabled: canEdit(meQ.data?.role) && !!base && !!target && base !== target,
   });
 
   const groupsQ = useQuery({
     queryKey: ["text-version-groups", base, target, lang],
     queryFn: () => api.textVersionGroups({ base, target, lang }),
-    enabled: meQ.data?.role === "editor" && !!base && !!target && base !== target,
+    enabled: canEdit(meQ.data?.role) && !!base && !!target && base !== target,
     staleTime: Infinity,
   });
 
@@ -102,7 +102,7 @@ export default function VersionsPage() {
   }
 
   if (meQ.isLoading) return <div className="container-narrow"><div className="border-y border-white/10 p-6">Loading…</div></div>;
-  if (meQ.data?.role !== "editor") {
+  if (!canEdit(meQ.data?.role)) {
     return (
       <div className="container-narrow">
         <div className="border-y border-white/10 p-6 text-center">

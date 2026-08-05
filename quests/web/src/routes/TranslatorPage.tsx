@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { useMe } from "../lib/auth";
+import { canEdit, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
 import type { DialogueLine, DialogueTreeNode, Draft, DraftPatch, LineSummary } from "../lib/types";
 import DialogueTreeView, { applyFilters, type TreeFilters } from "../components/editor/DialogueTreeView";
@@ -230,7 +230,7 @@ export default function TranslatorPage() {
   const submitQ = useMutation({
     mutationFn: async (params: { patch: DraftPatch; note: string; draftId?: number }) => {
       if (params.draftId) {
-        await api.updateDraft(params.draftId, params.patch, params.note || null, role === "editor" ? null : authorLabel);
+        await api.updateDraft(params.draftId, params.patch, params.note || null, canEdit(role) ? null : authorLabel);
       } else {
         await api.createDraft(
           { qid: qidN, line_id: selectedId!, patch: params.patch, note: params.note || undefined },
@@ -246,8 +246,8 @@ export default function TranslatorPage() {
   });
 
   const draftsQ = useQuery({
-    queryKey: ["drafts", role === "editor" ? "editor" : authorLabel],
-    queryFn: () => api.listDrafts(role === "editor" ? null : authorLabel),
+    queryKey: ["drafts", canEdit(role) ? "editor" : authorLabel],
+    queryFn: () => api.listDrafts(canEdit(role) ? null : authorLabel),
     enabled: !!meQ.data,
   });
 

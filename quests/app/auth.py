@@ -107,7 +107,8 @@ def get_role(cookie: str | None = Cookie(default=None, alias=SESSION_COOKIE)) ->
 
 
 def require_editor(role: str = Depends(get_role)) -> str:
-    if role != "editor":
+    """Editor access; admin sessions also pass (admin can do everything an editor can)."""
+    if role not in ("editor", "admin"):
         raise HTTPException(401, "editor login required")
     return role
 
