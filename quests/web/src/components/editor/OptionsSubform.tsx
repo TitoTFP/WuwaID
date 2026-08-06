@@ -199,7 +199,7 @@ export default function OptionsSubform({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-slate-200">Options</h3>
+          <h2 className="text-sm font-medium text-slate-200">Options</h2>
           <p className="text-xs text-slate-500">Player choice text and jump target.</p>
         </div>
         <button

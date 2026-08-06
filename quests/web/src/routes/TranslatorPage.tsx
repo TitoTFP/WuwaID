@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { canEdit, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
@@ -13,7 +13,7 @@ import ResizeHandle from "../components/editor/ResizeHandle";
 import Skeleton from "../components/editor/Skeleton";
 import { useGlobalHotkeys } from "../lib/keyboard";
 import { useToast } from "../components/Toast";
-import { useUnsavedGuard } from "../lib/useUnsavedGuard";
+import WorkbenchLayout, { type WorkbenchPane } from "../components/WorkbenchLayout";
 import { listLocalDraftLineIds, LOCAL_DRAFT_EVENT } from "../lib/useLocalDraft";
 import {
   applyDraftPatch,
@@ -200,20 +200,13 @@ export default function TranslatorPage() {
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);
-  const [mobilePane, setMobilePane] = useState<"lines" | "translation">("lines");
+  const [mobilePane, setMobilePane] = useState<WorkbenchPane>("navigation");
   const [localDraftIds, setLocalDraftIds] = useState<Set<number>>(() => listLocalDraftLineIds(qidN));
-  const detailTabRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const toast = useToast();
-
-  useEffect(() => {
-    if (mobilePane !== "translation" || !window.matchMedia("(max-width: 1023px)").matches) return;
-    const frame = requestAnimationFrame(() => detailTabRef.current?.focus({ preventScroll: true }));
-    return () => cancelAnimationFrame(frame);
-  }, [mobilePane]);
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -255,7 +248,7 @@ export default function TranslatorPage() {
     setPreviewLines(questQ.data?.all_lines ?? []);
     setSelectedId(null);
     setSearchQ("");
-    setMobilePane("lines");
+    setMobilePane("navigation");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   useEffect(() => {
@@ -384,7 +377,7 @@ export default function TranslatorPage() {
   const selectById = useCallback(
     (id: number) => {
       setSelectedId(id);
-      setMobilePane("translation");
+      setMobilePane("detail");
     },
     [],
   );
@@ -440,9 +433,6 @@ export default function TranslatorPage() {
 
   const stats = useMemo(() => translationStats(questQ.data?.all_lines ?? []), [questQ.data]);
 
-  const dirty = submitQ.isPending;
-  useUnsavedGuard(dirty);
-
   useGlobalHotkeys([
     { key: "j", handler: () => selectRelative(1) },
     { key: "k", handler: () => selectRelative(-1) },
@@ -459,7 +449,7 @@ export default function TranslatorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
+    <div className="translator-page container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
       <header className="mb-3 border-b border-white/10 pb-3">
         <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-2">
           <Link
@@ -486,7 +476,7 @@ export default function TranslatorPage() {
             >
               Structure
             </Link>
-            <span className="btn btn-active whitespace-nowrap border-accent-signal/45 text-xs text-accent-signal" aria-current="page">
+            <span className="btn btn-active whitespace-nowrap border-accent-signal/45 text-xs" aria-current="page">
               Translation
             </span>
           </nav>
@@ -539,109 +529,83 @@ export default function TranslatorPage() {
         <div className="mt-2"><DraftBanner qid={qidN} /></div>
       </header>
 
-      <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Translator workspace panes">
-        <button
-          id="translator-lines-tab"
-          type="button"
-          aria-pressed={mobilePane === "lines"}
-          aria-controls="translator-lines-panel"
-          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
-          onClick={() => setMobilePane("lines")}
-        >
-          Lines
-        </button>
-        <button
-          ref={detailTabRef}
-          id="translator-detail-tab"
-          type="button"
-          aria-pressed={mobilePane === "translation"}
-          aria-controls="translator-detail-panel"
-          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "translation" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
-          disabled={selectedId === null}
-          onClick={() => setMobilePane("translation")}
-        >
-          Translation
-        </button>
-      </div>
-
-      <div className="flex min-h-0 flex-1 gap-0 lg:gap-3">
-        {/* Dialogue line tree sidebar */}
-        <div
-          id="translator-lines-panel"
-          className={["relative w-full max-w-full shrink-0 lg:w-[23rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
-        >
-          <aside className="card flex-1 flex flex-col overflow-hidden p-2">
-            {linesQ.isLoading && questQ.isLoading && (
-              <div className="p-2">
-                <Skeleton lines={6} />
+      <WorkbenchLayout
+        idPrefix="translator"
+        pane={mobilePane}
+        onPaneChange={setMobilePane}
+        detailDisabled={selectedId === null}
+        navigation={(
+          <div className="relative h-full w-full">
+            <aside className="card flex h-full flex-col overflow-hidden p-2">
+              {linesQ.isLoading && questQ.isLoading && (
+                <div className="p-2">
+                  <Skeleton lines={6} />
+                </div>
+              )}
+              {tree.length > 0 && (
+                <DialogueTreeView
+                  nodes={filteredTree}
+                  selectedId={selectedId}
+                  onSelect={selectById}
+                  pendingCounts={pendingCountsById}
+                  searchQ={searchQ}
+                  onSearchChange={setSearchQ}
+                  searchMatchCount={searchMatchCount}
+                  totalLineCount={previewLines.length || lines.length}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  types={typesInQuest}
+                  onJumpToLine={jumpToLine}
+                  activeLang="id"
+                  storageKeyOpen={`translator:open:${qidN}`}
+                  storageKeyReview={`translator:review:${qidN}`}
+                  localDraftIds={localDraftIds}
+                />
+              )}
+            </aside>
+            <ResizeHandle storageKey={`translator:tree-width:${qidN}`} min={240} max={960} />
+          </div>
+        )}
+        detail={(
+          <div className="card flex h-full min-h-0 min-w-0 flex-col overflow-y-auto">
+            {selectedId === null ? (
+              <div className="flex h-full flex-col items-center justify-center px-6 text-center text-sm text-slate-500">
+                <p className="font-serif text-xl text-slate-300">Choose a line to translate</p>
+                <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-600">Use dialogue navigator, press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">/</kbd> to search, or navigate with <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">J</kbd> and <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">K</kbd>.</p>
+              </div>
+            ) : questQ.isLoading ? (
+              <Skeleton variant="form" />
+            ) : questQ.error ? (
+              <div className="text-sm text-rose-400">Failed to load quest.</div>
+            ) : selectedLine ? (
+              <div className="flex h-full flex-col gap-3">
+                <TranslatorForm
+                  key={selectedLine.id}
+                  line={selectedLine}
+                  originalLine={originalSelectedLine ?? selectedLine}
+                  qid={qidN}
+                  busy={submitQ.isPending}
+                  pendingDraft={selectedPendingDraft}
+                  context={selectedContext}
+                  actionableRemaining={actionableRemaining}
+                  onPreview={previewLineEdit}
+                  onSubmit={(patch, note) => submitQ.mutateAsync({ patch, note, draftId: selectedPendingDraft?.id }).then(() => undefined)}
+                  onSelectLine={selectById}
+                  onSelectActionable={selectNextActionable}
+                  onSelectNext={(dir) => {
+                    selectRelative(dir);
+                  }}
+                  allLines={previewLines}
+                />
+              </div>
+            ) : (
+              <div className="text-sm text-slate-500">
+                Line #{selectedId} was not found in this quest.
               </div>
             )}
-            {tree.length > 0 && (
-              <DialogueTreeView
-                nodes={filteredTree}
-                selectedId={selectedId}
-                onSelect={selectById}
-                pendingCounts={pendingCountsById}
-                searchQ={searchQ}
-                onSearchChange={setSearchQ}
-                searchMatchCount={searchMatchCount}
-                totalLineCount={previewLines.length || lines.length}
-                filters={filters}
-                onFiltersChange={setFilters}
-                types={typesInQuest}
-                onJumpToLine={jumpToLine}
-                activeLang="id"
-                storageKeyOpen={`translator:open:${qidN}`}
-                storageKeyReview={`translator:review:${qidN}`}
-                localDraftIds={localDraftIds}
-              />
-            )}
-          </aside>
-          <ResizeHandle storageKey={`translator:tree-width:${qidN}`} min={240} max={960} />
-        </div>
-
-        {/* Translation Workbench panel */}
-        <section
-          id="translator-detail-panel"
-          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto", mobilePane === "translation" ? "flex" : "hidden", "lg:flex"].join(" ")}
-        >
-          {selectedId === null ? (
-            <div className="flex h-full flex-col items-center justify-center px-6 text-center text-sm text-slate-500">
-              <p className="font-serif text-xl text-slate-300">Choose a line to translate</p>
-              <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-600">Use dialogue navigator, press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">/</kbd> to search, or navigate with <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">J</kbd> and <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1.5 py-0.5 text-[10px] text-slate-300">K</kbd>.</p>
-            </div>
-          ) : questQ.isLoading ? (
-            <Skeleton variant="form" />
-          ) : questQ.error ? (
-            <div className="text-sm text-rose-400">Failed to load quest.</div>
-          ) : selectedLine ? (
-            <div className="flex h-full flex-col gap-3">
-              <TranslatorForm
-                key={selectedLine.id}
-                line={selectedLine}
-                originalLine={originalSelectedLine ?? selectedLine}
-                qid={qidN}
-                busy={submitQ.isPending}
-                pendingDraft={selectedPendingDraft}
-                context={selectedContext}
-                actionableRemaining={actionableRemaining}
-                onPreview={previewLineEdit}
-                onSubmit={(patch, note) => submitQ.mutateAsync({ patch, note, draftId: selectedPendingDraft?.id }).then(() => undefined)}
-                onSelectLine={selectById}
-                onSelectActionable={selectNextActionable}
-                onSelectNext={(dir) => {
-                  selectRelative(dir);
-                }}
-                allLines={previewLines}
-              />
-            </div>
-          ) : (
-            <div className="text-sm text-slate-500">
-              Line #{selectedId} was not found in this quest.
-            </div>
-          )}
-        </section>
-      </div>
+          </div>
+        )}
+      />
       <ShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );

@@ -508,6 +508,7 @@ export default function DialogueTreeView({
           />
           {types.length > 0 && (
             <select
+              aria-label="Filter by line type"
               value={filters.type ?? ""}
               onChange={(e) => updateFilter("type", e.target.value || null)}
               className="min-h-11 border border-white/10 bg-bg-2 px-2 text-[10px] font-medium text-slate-300 transition-colors hover:border-white/20"

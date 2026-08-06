@@ -32,13 +32,13 @@ export default function SearchPage() {
     setActiveTab("quests");
   }, [q]);
 
-  const { data: questHits = [], isLoading: isQuestLoading } = useQuery<SearchHit[]>({
+  const { data: questHits = [], isLoading: isQuestLoading, isError: isQuestError, refetch: refetchQuest } = useQuery<SearchHit[]>({
     queryKey: ["search", "quest", q, lang],
     queryFn: () => api.search({ q, lang, scope: "quest" }),
     enabled: q.length > 0,
   });
 
-  const { data: categoryData, isLoading: isCategoryLoading } = useQuery<{ results: CategorySearchHit[]; total: number }>({
+  const { data: categoryData, isLoading: isCategoryLoading, isError: isCategoryError, refetch: refetchCategories } = useQuery<{ results: CategorySearchHit[]; total: number }>({
     queryKey: ["search", "category", q, lang],
     queryFn: () => api.search({ q, lang, scope: "category" }),
     enabled: q.length > 0,
@@ -81,9 +81,9 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container-narrow gap-6 pb-8">
+    <div className="container-narrow gap-6 pb-8" aria-labelledby="search-heading">
       <header className="border-b border-white/10 pb-5">
-        <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">Search</h1>
+        <h1 id="search-heading" className="min-w-0 [overflow-wrap:anywhere] font-serif text-2xl text-slate-100 sm:text-3xl">Search</h1>
         <p className="mt-1 text-xs text-slate-500">
           FTS5 over 71,469 dialogue lines & static categories · bigram tokenized for CJK
         </p>
@@ -98,7 +98,7 @@ export default function SearchPage() {
         className="grid grid-cols-1 gap-3 border-y border-white/10 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end"
       >
         <label className="min-w-0">
-          <span className="mb-1 block text-[10px] text-slate-500">Archive query</span>
+          <span className="mb-1 block text-[10px] text-slate-400">Archive query</span>
           <input
             autoFocus
             className="input"
@@ -108,7 +108,7 @@ export default function SearchPage() {
           />
         </label>
         <div>
-          <span className="mb-1 block text-[10px] text-slate-500">Language</span>
+          <span className="mb-1 block text-[10px] text-slate-400">Language</span>
           <div className="flex min-h-11 items-center border border-white/10 bg-bg-1" role="group" aria-label="Search language">
             {(["en", "zh", "ja", "id"] as const).map((l) => (
               <button
@@ -117,7 +117,7 @@ export default function SearchPage() {
                 onClick={() => setParams({ q, lang: l })}
                 aria-pressed={lang === l}
                 className={`min-h-11 min-w-11 px-2 text-sm transition-colors ${
-                  lang === l ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400 hover:bg-bg-2 hover:text-slate-200"
+                  lang === l ? "bg-accent-signal/10 text-accent-signal" : "text-slate-300 hover:bg-bg-2 hover:text-slate-200"
                 }`}
               >
                 {LANG_LABEL[l]}
@@ -129,11 +129,13 @@ export default function SearchPage() {
       </form>
 
       {q && (
-        <div className="flex items-center gap-5 border-b border-white/10" role="group" aria-label="Search result types">
+        <div className="flex items-center gap-5 border-b border-white/10" role="tablist" aria-label="Search result types">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === "quests"}
+            aria-controls="quest-search-results"
             onClick={() => setActiveTab("quests")}
-            aria-pressed={activeTab === "quests"}
             className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "quests"
                 ? "border-accent-signal text-accent-signal"
@@ -147,8 +149,10 @@ export default function SearchPage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === "categories"}
+            aria-controls="category-search-results"
             onClick={() => setActiveTab("categories")}
-            aria-pressed={activeTab === "categories"}
             className={`relative min-h-11 whitespace-nowrap border-b text-sm font-medium transition-colors ${
               activeTab === "categories"
                 ? "border-accent-signal text-accent-signal"
@@ -164,23 +168,37 @@ export default function SearchPage() {
       )}
 
       {(activeTab === "quests" ? isQuestLoading : isCategoryLoading) && (
-        <div className="text-sm text-slate-500">Searching…</div>
+        <div className="text-sm text-slate-400" role="status" aria-live="polite">Searching…</div>
       )}
 
-      {activeTab === "quests" && !isQuestLoading && q && questHits.length === 0 && (
-        <div className="text-sm text-slate-500">
+      {activeTab === "quests" && isQuestError && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-rose-300" role="alert">
+          <span>Quest search is unavailable.</span>
+          <button type="button" className="btn text-xs" onClick={() => void refetchQuest()}>Retry</button>
+        </div>
+      )}
+
+      {activeTab === "categories" && isCategoryError && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-rose-300" role="alert">
+          <span>Grouped-text search is unavailable.</span>
+          <button type="button" className="btn text-xs" onClick={() => void refetchCategories()}>Retry</button>
+        </div>
+      )}
+
+      {activeTab === "quests" && !isQuestLoading && !isQuestError && q && questHits.length === 0 && (
+        <div className="text-sm text-slate-400" role="status" aria-live="polite">
           No quest hits for <span className="text-slate-300">{q}</span>.
         </div>
       )}
 
-      {activeTab === "categories" && !isCategoryLoading && q && categoryHits.length === 0 && (
-        <div className="text-sm text-slate-500">
+      {activeTab === "categories" && !isCategoryLoading && !isCategoryError && q && categoryHits.length === 0 && (
+        <div className="text-sm text-slate-400" role="status" aria-live="polite">
           No category hits for <span className="text-slate-300">{q}</span>.
         </div>
       )}
 
-      {activeTab === "quests" && !isQuestLoading && (
-        <div id="quest-search-results" className="divide-y divide-white/10 border-y border-white/10">
+      {activeTab === "quests" && !isQuestLoading && !isQuestError && (
+        <div id="quest-search-results" role="tabpanel" aria-label="Dialogue search results" className="divide-y divide-white/10 border-y border-white/10">
           {Object.entries(groupedQuests).map(([qid, items]) => {
             const name = items[0]?.quest_name ?? "";
             const { dupIndex, dupTotal } = dupFor(Number(qid), name);
@@ -223,8 +241,8 @@ export default function SearchPage() {
         </div>
       )}
 
-      {activeTab === "categories" && !isCategoryLoading && (
-        <div id="category-search-results" className="divide-y divide-white/10 border-y border-white/10">
+      {activeTab === "categories" && !isCategoryLoading && !isCategoryError && (
+        <div id="category-search-results" role="tabpanel" aria-label="Grouped-text search results" className="divide-y divide-white/10 border-y border-white/10">
           {Object.entries(groupedCategories).map(([categoryName, items]) => (
             <section key={categoryName} className="py-4">
               <div className="flex min-w-0 items-center justify-between gap-3 px-1 sm:px-3">

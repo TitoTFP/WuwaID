@@ -327,10 +327,10 @@ function QueueView() {
   }
 
   return (
-    <div className="container-wide space-y-5 pb-8">
+    <div className="container-wide space-y-5 pb-8" aria-labelledby="draft-queue-title">
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
         <div>
-          <h1 className="min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Draft review queue</h1>
+          <h1 id="draft-queue-title" className="min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Draft review queue</h1>
           <div className="mt-1 font-mono text-xs text-slate-500">access · {role}</div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -365,6 +365,13 @@ function QueueView() {
         </div>
       </header>
 
+      {meQ.isError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 border border-rose-400/40 bg-rose-500/5 p-3 text-sm text-rose-300">
+          <span>Unable to check the current session.</span>
+          <button type="button" className="btn text-xs" onClick={() => void meQ.refetch()}>Retry</button>
+        </div>
+      )}
+
       <FilterBar filters={filters} onChange={setFilters} qids={qids} authors={authors} />
 
       {canEdit(role) && selectedDrafts.length > 0 && (
@@ -394,17 +401,21 @@ function QueueView() {
         </div>
       )}
 
-      <section className="divide-y divide-white/10 border-y border-white/15 bg-bg-1/40">
+      <section className="divide-y divide-white/10 border-y border-white/15 bg-bg-1/40" aria-busy={draftsQ.isFetching}>
         {draftsQ.isLoading && (
-          <div className="p-4">
+          <div className="p-4" role="status" aria-live="polite">
+            <span className="sr-only">Loading drafts…</span>
             <Skeleton lines={5} />
           </div>
         )}
-        {draftsQ.error && (
-          <div className="p-4 text-sm text-rose-400">Failed to load drafts.</div>
+        {draftsQ.isError && (
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm text-rose-300">
+            <span>Unable to load drafts.</span>
+            <button type="button" className="btn text-xs" onClick={() => void draftsQ.refetch()}>Retry</button>
+          </div>
         )}
-        {!draftsQ.isLoading && !draftsQ.error && filtered.length === 0 && (
-          <div className="p-4 text-sm text-slate-500">No drafts match these filters.</div>
+        {!draftsQ.isLoading && !draftsQ.isError && filtered.length === 0 && (
+          <div className="p-4 text-sm text-slate-400" role="status" aria-live="polite">No drafts match these filters.</div>
         )}
         {filtered.length > 0 && (
           <div className="flex items-center justify-between border-b border-white/5 px-4 py-2 text-[10px] uppercase tracking-widest text-slate-500">
@@ -567,7 +578,12 @@ function DetailView({ draftId }: { draftId: number }) {
     );
   }
   if (draftQ.error || !draft) {
-    return <div className="container-narrow text-sm text-rose-400">Draft {draftId} not found.</div>;
+    return (
+      <div className="container-narrow space-y-3 text-sm text-rose-300" role="alert">
+        <p>Draft {draftId} not found or could not be loaded.</p>
+        <Link to="/drafts" className="link inline-flex min-h-11 items-center">Back to drafts</Link>
+      </div>
+    );
   }
 
   return (
@@ -610,7 +626,9 @@ function DetailView({ draftId }: { draftId: number }) {
         )}
         {canEdit(role) && draft.status === "pending" && (
           <div className="mt-2 space-y-2">
+            <label htmlFor="review-note" className="text-[10px] uppercase tracking-widest text-slate-500">Reviewer note</label>
             <textarea
+              id="review-note"
               className="input min-h-20 resize-y text-xs"
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -667,7 +685,7 @@ function DetailView({ draftId }: { draftId: number }) {
         </div>
       )}
       {(approveQ.error || rejectQ.error) && (
-        <div className="text-sm text-rose-400">Failed to update draft.</div>
+        <div role="alert" className="text-sm text-rose-300">Unable to update this draft. It remains available for review; retry when the service is ready.</div>
       )}
     </div>
   );

@@ -101,7 +101,15 @@ export default function VersionsPage() {
     }
   }
 
-  if (meQ.isLoading) return <div className="container-narrow"><div className="border-y border-white/10 p-6">Loading…</div></div>;
+  if (meQ.isLoading) return <div className="container-narrow" role="status" aria-live="polite"><div className="border-y border-white/10 p-6">Loading…</div></div>;
+  if (meQ.isError) {
+    return (
+      <div className="container-narrow space-y-3" role="alert">
+        <p className="text-sm text-rose-300">Unable to check editor access.</p>
+        <button type="button" className="btn" onClick={() => void meQ.refetch()}>Retry</button>
+      </div>
+    );
+  }
   if (!canEdit(meQ.data?.role)) {
     return (
       <div className="container-narrow">
@@ -110,6 +118,15 @@ export default function VersionsPage() {
           <p className="mt-2 text-base text-slate-400">Editor login is required to view official-text history.</p>
           <Link className="btn mt-4" to="/login">Login</Link>
         </div>
+      </div>
+    );
+  }
+
+  if (versionsQ.isError) {
+    return (
+      <div className="container-narrow space-y-3" role="alert">
+        <p className="text-sm text-rose-300">Unable to load text versions.</p>
+        <button type="button" className="btn" onClick={() => void versionsQ.refetch()}>Retry</button>
       </div>
     );
   }
@@ -128,11 +145,11 @@ export default function VersionsPage() {
     .filter((group) => selectedGroups.has(group.group_id))
     .reduce((total, group) => total + group.total, 0);
   return (
-    <div className="versions-page container-wide overflow-y-auto pb-12">
+    <div className="versions-page container-wide overflow-y-auto pb-12" aria-labelledby="versions-heading">
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
         <div>
           <div className="font-mono text-xs text-accent-signal">Official MultiText history</div>
-          <h1 className="mt-1 min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Text Versions</h1>
+          <h1 id="versions-heading" className="mt-1 min-w-0 [overflow-wrap:anywhere] font-serif text-3xl text-slate-100 sm:text-4xl">Text Versions</h1>
           <p className="mt-1 text-base text-slate-400">Immutable EN, ZH-Hans, and JA snapshots. Indonesian/editor overlays are excluded.</p>
         </div>
       </header>
@@ -140,7 +157,8 @@ export default function VersionsPage() {
       <section className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="overflow-hidden border-y border-white/15 bg-bg-1/40">
           <div className="border-b border-white/5 px-4 py-3 text-xs uppercase tracking-widest text-slate-500">Saved tags</div>
-          <div className="max-h-64 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto" tabIndex={0} aria-label="Saved text versions">
+            {versionsQ.isPending && <p className="p-5 text-sm text-slate-400" role="status" aria-live="polite">Loading versions…</p>}
             {versions.map((version) => (
               <div key={version.id} className="grid gap-2 border-b border-white/5 px-4 py-3 text-xs md:grid-cols-[8rem_1fr_auto]">
                 <div className="font-mono text-accent-signal">{version.tag}</div>
@@ -154,42 +172,42 @@ export default function VersionsPage() {
                 </div>
               </div>
             ))}
-            {!versions.length && <div className="p-5 text-sm text-slate-500">No saved versions yet.</div>}
+            {!versionsQ.isPending && !versions.length && <div className="p-5 text-sm text-slate-400" role="status" aria-live="polite">No saved versions yet.</div>}
           </div>
         </div>
 
         <form className="border-y border-white/15 bg-bg-2/30 p-4" onSubmit={(event) => { event.preventDefault(); if (tag.trim()) createM.mutate(); }}>
           <h2 className="font-serif text-xl text-slate-100">Tag working tree</h2>
-          <label className="mt-3 block text-xs text-slate-400">Tag</label>
-          <input className="input mt-1" value={tag} onChange={(event) => setTag(event.target.value)} placeholder="v3.6" />
-          <label className="mt-3 block text-xs text-slate-400">Note</label>
-          <textarea className="input mt-1 min-h-20 resize-y" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Official game update" />
-          <button className="btn btn-active mt-3" disabled={!tag.trim() || createM.isPending}>
+          <label htmlFor="version-tag" className="mt-3 block text-xs text-slate-400">Tag</label>
+          <input id="version-tag" className="input mt-1" value={tag} onChange={(event) => setTag(event.target.value)} placeholder="v3.6" />
+          <label htmlFor="version-note" className="mt-3 block text-xs text-slate-400">Note</label>
+          <textarea id="version-note" className="input mt-1 min-h-20 resize-y" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Official game update" />
+          <button type="submit" className="btn btn-active mt-3" disabled={!tag.trim() || createM.isPending}>
             {createM.isPending ? "Creating snapshot…" : "Create immutable tag"}
           </button>
-          {createM.error && <div className="mt-2 text-xs text-rose-300">{String(createM.error)}</div>}
+          {createM.error && <div role="alert" className="mt-2 text-xs text-rose-300">Unable to create this snapshot. Check the tag and retry.</div>}
         </form>
       </section>
 
       <section className="mb-4 border-y border-white/15 bg-bg-2/30 p-4">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_10rem_1fr_auto]">
-          <label className="text-xs text-slate-400">Base
-            <select className="input mt-1" value={base} onChange={(event) => setBase(event.target.value)}>
+          <label htmlFor="version-base" className="text-xs text-slate-400">Base
+            <select id="version-base" className="input mt-1" value={base} onChange={(event) => setBase(event.target.value)}>
               <option value="">Select version</option>{choices.map((value) => <option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <label className="text-xs text-slate-400">Target
-            <select className="input mt-1" value={target} onChange={(event) => setTarget(event.target.value)}>
+          <label htmlFor="version-target" className="text-xs text-slate-400">Target
+            <select id="version-target" className="input mt-1" value={target} onChange={(event) => setTarget(event.target.value)}>
               <option value="">Select version</option>{choices.map((value) => <option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <label className="text-xs text-slate-400">Language
-            <select className="input mt-1" value={lang} onChange={(event) => setLang(event.target.value as typeof lang)}>
+          <label htmlFor="version-language" className="text-xs text-slate-400">Language
+            <select id="version-language" className="input mt-1" value={lang} onChange={(event) => setLang(event.target.value as typeof lang)}>
               <option value="en">English</option><option value="zh-Hans">ZH-Hans</option><option value="ja">Japanese</option>
             </select>
           </label>
-          <label className="text-xs text-slate-400">Search Id or Content
-            <input className="input mt-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Quest_…" />
+          <label htmlFor="version-search" className="text-xs text-slate-400">Search Id or Content
+            <input id="version-search" className="input mt-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Quest_…" />
           </label>
           <div className="flex items-end gap-2">
             {base && target && base !== target && <>
@@ -198,13 +216,13 @@ export default function VersionsPage() {
             </>}
           </div>
         </div>
-        {base === target && base && <div className="mt-2 text-xs text-rose-300">Base and target must be different.</div>}
+        {base === target && base && <div className="mt-2 text-xs text-rose-300" role="alert">Base and target must be different.</div>}
       </section>
 
       {diffQ.data && (
         <div className="mb-4 grid grid-cols-3 divide-x divide-white/10 border-y border-white/15">
           {(["added", "removed", "changed"] as TextDiffStatus[]).map((value) => (
-            <button key={value} onClick={() => setStatus(status === value ? "" : value)} className={`min-w-0 border-0 p-3 text-left ${STATUS_STYLE[value]} ${status && status !== value ? "opacity-40" : ""}`}>
+            <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(status === value ? "" : value)} className={`min-w-0 border-0 p-3 text-left ${STATUS_STYLE[value]} ${status && status !== value ? "opacity-40" : ""}`}>
               <div className="text-[10px] uppercase tracking-widest">{value}</div>
               <div className="mt-1 truncate font-mono text-xl font-semibold sm:text-2xl">{diffQ.data.summary[value].toLocaleString()}</div>
             </button>
@@ -231,21 +249,24 @@ export default function VersionsPage() {
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 border-b border-white/5 p-3">
+          <div className="flex flex-wrap items-center gap-2 border-b border-white/5 p-3" role="tablist" aria-label="Version diff groups">
             {(["category", "quest"] as const).map((kind) => {
               const count = (groupsQ.data?.groups ?? []).filter((group) => group.source_kind === kind).length;
               return (
-                <button key={kind} type="button" onClick={() => setGroupTab(kind)} className={`btn ${groupTab === kind ? "btn-active" : ""}`}>
+                <button key={kind} type="button" role="tab" aria-selected={groupTab === kind} onClick={() => setGroupTab(kind)} className={`btn ${groupTab === kind ? "btn-active" : ""}`}>
                   {kind === "category" ? "Categories" : "Quests"} ({count})
                 </button>
               );
             })}
-            <input className="input ml-auto max-w-sm" value={groupSearch} onChange={(event) => setGroupSearch(event.target.value)} placeholder="Search group name or QID…" />
+            <label className="ml-auto block max-w-sm">
+              <span className="sr-only">Search groups</span>
+              <input className="input w-full" value={groupSearch} onChange={(event) => setGroupSearch(event.target.value)} placeholder="Search group name or QID…" />
+            </label>
           </div>
-          {groupsQ.isFetching && <div className="p-5 text-sm text-slate-500">Grouping diff rows…</div>}
-          {groupsQ.error && <div className="p-5 text-sm text-rose-300">{String(groupsQ.error)}</div>}
-          {downloadError && <div className="border-b border-rose-400/20 bg-rose-500/5 p-3 text-xs text-rose-300">{downloadError}</div>}
-          <div className="max-h-96 overflow-y-auto">
+          {groupsQ.isFetching && <div className="p-5 text-sm text-slate-400" role="status" aria-live="polite">Grouping diff rows…</div>}
+          {groupsQ.error && <div className="flex flex-wrap items-center justify-between gap-3 p-5 text-sm text-rose-300" role="alert"><span>Unable to load diff groups.</span><button type="button" className="btn text-xs" onClick={() => void groupsQ.refetch()}>Retry</button></div>}
+          {downloadError && <div role="alert" className="border-b border-rose-400/20 bg-rose-500/5 p-3 text-xs text-rose-300">{downloadError}</div>}
+          <div className="max-h-96 overflow-y-auto" tabIndex={0} aria-label="Diff groups">
             {visibleGroups.map((group: TextDiffGroup) => (
               <label key={group.group_id} className="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 px-4 py-3 hover:bg-white/[0.02]">
                 <input
@@ -257,6 +278,7 @@ export default function VersionsPage() {
                     return next;
                   })}
                   className="h-4 w-4 accent-amber-400"
+                  aria-label={`Select ${group.source_ref}`}
                 />
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -271,17 +293,17 @@ export default function VersionsPage() {
                 </div>
               </label>
             ))}
-            {!groupsQ.isFetching && groupsQ.data && !visibleGroups.length && <div className="p-5 text-sm text-slate-500">No groups match this view.</div>}
+            {!groupsQ.isFetching && !groupsQ.error && groupsQ.data && !visibleGroups.length && <div className="p-5 text-sm text-slate-400" role="status" aria-live="polite">No groups match this view.</div>}
           </div>
         </section>
       )}
 
       <section className="overflow-hidden border-y border-white/15 bg-bg-1/40">
-        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 text-xs text-slate-500">
+        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 text-xs text-slate-500" aria-busy={diffQ.isFetching}>
           <span>{diffQ.isFetching ? "Comparing…" : `${(diffQ.data?.total ?? 0).toLocaleString()} matching rows`}</span>
           <span>Page {page} / {totalPages}</span>
         </div>
-        {diffQ.error && <div className="p-5 text-sm text-rose-300">{String(diffQ.error)}</div>}
+        {diffQ.error && <div className="flex flex-wrap items-center justify-between gap-3 p-5 text-sm text-rose-300" role="alert"><span>Unable to load this version diff.</span><button type="button" className="btn text-xs" onClick={() => void diffQ.refetch()}>Retry</button></div>}
         {diffQ.data?.items.map((item) => (
           <article key={item.text_id} className="border-b border-white/5 p-4">
             <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -301,10 +323,10 @@ export default function VersionsPage() {
             </div>
           </article>
         ))}
-        {!diffQ.isFetching && diffQ.data && !diffQ.data.items.length && <div className="p-6 text-center text-sm text-slate-500">No differences match these filters.</div>}
+        {!diffQ.isFetching && !diffQ.error && diffQ.data && !diffQ.data.items.length && <div className="p-6 text-center text-sm text-slate-400" role="status" aria-live="polite">No differences match these filters.</div>}
         <div className="flex justify-end gap-2 p-3">
-          <button className="btn" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>Previous</button>
-          <button className="btn" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)}>Next</button>
+          <button type="button" className="btn" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>Previous</button>
+          <button type="button" className="btn" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)}>Next</button>
         </div>
       </section>
     </div>

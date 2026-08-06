@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { canEdit, useMe } from "../lib/auth";
 import { getAuthorLabel } from "../lib/session";
@@ -10,6 +10,7 @@ import LineForm from "../components/editor/LineForm";
 import DraftBanner from "../components/editor/DraftBanner";
 import ShortcutsHelp from "../components/editor/ShortcutsHelp";
 import ResizeHandle from "../components/editor/ResizeHandle";
+import WorkbenchLayout, { type WorkbenchPane } from "../components/WorkbenchLayout";
 import Skeleton from "../components/editor/Skeleton";
 import { useGlobalHotkeys } from "../lib/keyboard";
 import { useToast } from "../components/Toast";
@@ -194,19 +195,12 @@ export default function EditorPage() {
     type: null,
   });
   const [showHelp, setShowHelp] = useState(false);
-  const [mobilePane, setMobilePane] = useState<"lines" | "editor">("lines");
-  const detailTabRef = useRef<HTMLButtonElement>(null);
+  const [mobilePane, setMobilePane] = useState<WorkbenchPane>("navigation");
   const queryClient = useQueryClient();
   const meQ = useMe();
   const role = meQ.data?.role ?? "anon";
   const authorLabel = getAuthorLabel();
   const toast = useToast();
-
-  useEffect(() => {
-    if (mobilePane !== "editor" || !window.matchMedia("(max-width: 1023px)").matches) return;
-    const frame = requestAnimationFrame(() => detailTabRef.current?.focus({ preventScroll: true }));
-    return () => cancelAnimationFrame(frame);
-  }, [mobilePane]);
 
   const linesQ = useQuery({
     queryKey: ["editor", "lines", qidN],
@@ -266,7 +260,7 @@ export default function EditorPage() {
     setSelectedId(null);
     setSelectedIds(new Set());
     setSearchQ("");
-    setMobilePane("lines");
+    setMobilePane("navigation");
   }, [qidN, questQ.data?.quest_id, questQ.data?.all_lines]);
 
   const lines = linesQ.data ?? [];
@@ -437,7 +431,7 @@ export default function EditorPage() {
     (id: number) => {
       setSelectedId(id);
       setSelectedIds(new Set());
-      setMobilePane("editor");
+      setMobilePane("detail");
     },
     [],
   );
@@ -523,7 +517,7 @@ export default function EditorPage() {
   }, [selectedLine]);
 
   return (
-    <div className="container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
+    <div className="editor-page container-wide flex min-h-0 flex-1 flex-col overflow-hidden pb-2">
       <header className="mb-3 space-y-2 border-b border-white/10 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Link
@@ -650,136 +644,112 @@ export default function EditorPage() {
           </div>
         )}
       </header>
-      <div className="mb-2 grid grid-cols-2 border border-white/10 lg:hidden" role="group" aria-label="Editor workspace panes">
-        <button
-          id="editor-lines-tab"
-          type="button"
-          aria-pressed={mobilePane === "lines"}
-          aria-controls="editor-lines-panel"
-          className={["min-h-11 border-r border-white/10 px-3 text-xs font-semibold", mobilePane === "lines" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
-          onClick={() => setMobilePane("lines")}
-        >
-          Lines
-        </button>
-        <button
-          ref={detailTabRef}
-          id="editor-detail-tab"
-          type="button"
-          aria-pressed={mobilePane === "editor"}
-          aria-controls="editor-detail-panel"
-          className={["min-h-11 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40", mobilePane === "editor" ? "bg-accent-signal/10 text-accent-signal" : "text-slate-400"].join(" ")}
-          disabled={selectedId === null}
-          onClick={() => setMobilePane("editor")}
-        >
-          Editor
-        </button>
-      </div>
-      <div className="flex min-h-0 flex-1 gap-0 lg:gap-4">
-        <div
-          id="editor-lines-panel"
-          className={["relative w-full max-w-full shrink-0 lg:w-[22rem]", mobilePane === "lines" ? "flex" : "hidden", "lg:flex"].join(" ")}
-        >
-          <aside className="card flex-1 flex flex-col overflow-hidden p-2">
-            {linesQ.isLoading && questQ.isLoading && (
-              <div className="p-2">
-                <Skeleton lines={6} />
-              </div>
-            )}
-            {tree.length > 0 && (
-              <DialogueTreeView
-                nodes={filteredTree}
-                selectedId={selectedId}
-                onSelect={selectById}
-                pendingCounts={pendingCountsById}
-                searchQ={searchQ}
-                onSearchChange={setSearchQ}
-                searchMatchCount={searchMatchCount}
-                totalLineCount={previewLines.length || lines.length}
-                filters={filters}
-                onFiltersChange={setFilters}
-                types={typesInQuest}
-                onMoveBlock={moveBlock}
-                onJumpToLine={jumpToLine}
-                activeLang="en"
-                selectedIds={selectedIds}
-                onSelectMany={onSelectMany}
-                storageKeyOpen={`editor:open:${qidN}`}
-                storageKeyReview={`editor:review:${qidN}`}
-              />
-            )}
-            {saveReorderQ.error && (
-              <div className="text-xs text-rose-400 p-2">Failed to save structure draft.</div>
-            )}
-          </aside>
-          <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
-        </div>
-        <section
-          id="editor-detail-panel"
-          className={["card min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4", mobilePane === "editor" ? "flex" : "hidden", "lg:flex"].join(" ")}
-        >
-          {selectedId === null ? (
-            <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
-              <p>Select a line on the left, or press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
-              <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
-            </div>
-          ) : questQ.isLoading ? (
-            <Skeleton variant="form" />
-          ) : questQ.error ? (
-            <div className="text-sm text-rose-400">Failed to load quest.</div>
-          ) : selectedLine ? (
-            <div className="flex h-full flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] uppercase tracking-widest text-slate-500">Edit Dialogue Line Structure</div>
-              </div>
-              <LineForm
-                line={selectedLine}
-                originalLine={originalSelectedLine ?? selectedLine}
-                qid={qidN}
-                busy={submitQ.isPending}
-                onPreview={previewLineEdit}
-                onSubmit={(patch, note) => submitQ.mutate({ patch, note })}
-                onSelectNext={(dir) => {
-                  selectRelative(dir);
-                }}
-                allLines={previewLines}
-                linesByState={linesByState}
-                stateOrderByFlow={stateOrderByFlow}
-                onMoveBlock={moveBlock}
-              />
-              {backlinks.length > 0 && (
-                <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
-                  <summary className="flex min-h-11 cursor-pointer items-center text-slate-300">
-                    Backlinks · {backlinks.length} line(s) jump here
-                  </summary>
-                  <ul className="mt-2 space-y-1">
-                    {backlinks.map((link) => (
-                      <li
-                        key={link.fromId}
-                        className="flex items-center gap-2"
-                      >
-                        <button
-                          type="button"
-                          className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
-                          onClick={() => selectById(link.fromId)}
-                        >
-                          #{link.fromId} · {link.fromType}
-                        </button>
-                        {link.snippet && (
-                          <span className="truncate text-slate-500">— {link.snippet}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
+      <WorkbenchLayout
+        idPrefix="editor"
+        pane={mobilePane}
+        onPaneChange={setMobilePane}
+        detailLabel="Editor"
+        detailDisabled={selectedId === null}
+        navigation={(
+          <div className="relative h-full w-full">
+            <aside className="card flex h-full flex-col overflow-hidden p-2">
+              {linesQ.isLoading && questQ.isLoading && (
+                <div className="p-2">
+                  <Skeleton lines={6} />
+                </div>
               )}
-            </div>
-          ) : (
-            <div className="text-sm text-slate-500">
-              Line #{selectedId} was not found in this quest.
-            </div>
-          )}
-        </section>
-      </div>
+              {tree.length > 0 && (
+                <DialogueTreeView
+                  nodes={filteredTree}
+                  selectedId={selectedId}
+                  onSelect={selectById}
+                  pendingCounts={pendingCountsById}
+                  searchQ={searchQ}
+                  onSearchChange={setSearchQ}
+                  searchMatchCount={searchMatchCount}
+                  totalLineCount={previewLines.length || lines.length}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  types={typesInQuest}
+                  onMoveBlock={moveBlock}
+                  onJumpToLine={jumpToLine}
+                  activeLang="en"
+                  selectedIds={selectedIds}
+                  onSelectMany={onSelectMany}
+                  storageKeyOpen={`editor:open:${qidN}`}
+                  storageKeyReview={`editor:review:${qidN}`}
+                />
+              )}
+              {saveReorderQ.error && (
+                <div className="p-2 text-xs text-rose-400">Failed to save structure draft.</div>
+              )}
+            </aside>
+            <ResizeHandle storageKey={`editor:tree-width:${qidN}`} min={240} max={960} />
+          </div>
+        )}
+        detail={(
+          <div className="card flex h-full min-h-0 min-w-0 flex-col overflow-y-auto p-4">
+            {selectedId === null ? (
+              <div className="flex h-full flex-col items-center justify-center text-sm text-slate-500">
+                <p>Select a line on the left, or press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">/</kbd> to focus search.</p>
+                <p className="mt-1 text-[11px] text-slate-600">Press <kbd className="rounded-sm border border-white/10 bg-bg-2 px-1 text-[10px] text-slate-300">?</kbd> for shortcuts.</p>
+              </div>
+            ) : questQ.isLoading ? (
+              <Skeleton variant="form" />
+            ) : questQ.error ? (
+              <div className="text-sm text-rose-400">Failed to load quest.</div>
+            ) : selectedLine ? (
+              <div className="flex h-full flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-500">Edit Dialogue Line Structure</div>
+                </div>
+                <LineForm
+                  line={selectedLine}
+                  originalLine={originalSelectedLine ?? selectedLine}
+                  qid={qidN}
+                  busy={submitQ.isPending}
+                  onPreview={previewLineEdit}
+                  onSubmit={(patch, note) => submitQ.mutate({ patch, note })}
+                  onSelectNext={(dir) => {
+                    selectRelative(dir);
+                  }}
+                  allLines={previewLines}
+                  linesByState={linesByState}
+                  stateOrderByFlow={stateOrderByFlow}
+                  onMoveBlock={moveBlock}
+                />
+                {backlinks.length > 0 && (
+                  <details className="rounded-md border border-white/10 bg-bg-1/40 p-2 text-xs">
+                    <summary className="flex min-h-11 cursor-pointer items-center text-slate-300">
+                      Backlinks · {backlinks.length} line(s) jump here
+                    </summary>
+                    <ul className="mt-2 space-y-1">
+                      {backlinks.map((link) => (
+                        <li key={link.fromId} className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="link inline-flex min-h-11 items-center whitespace-nowrap text-xs"
+                            onClick={() => selectById(link.fromId)}
+                          >
+                            #{link.fromId} · {link.fromType}
+                          </button>
+                          {link.snippet && (
+                            <span className="truncate text-slate-500">— {link.snippet}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm text-slate-500">
+                Line #{selectedId} was not found in this quest.
+              </div>
+            )}
+          </div>
+        )}
+      />
       <ShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );

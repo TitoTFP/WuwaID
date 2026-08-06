@@ -1,119 +1,24 @@
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../components/Toast";
 import ExportDialog, { type ExportMode } from "../components/editor/ExportDialog";
 import ConfirmDialog from "../components/editor/ConfirmDialog";
+import DialogueStream, { type QuestRow } from "../components/DialogueStream";
 import { canEdit, useMe } from "../lib/auth";
-import { VariableSizeList as List, type ListChildComponentProps } from "react-window";
 import { api } from "../lib/api";
-import DialogueLine, { type LineIndex } from "../components/DialogueLine";
-import ErrorBoundary from "../components/ErrorBoundary";
 import type { DialogueLine as DialogueLineT, Lang } from "../lib/types";
-
-type HeaderRow = {
-  kind: "header";
-  key: string;
-  flow_name: string;
-  state_id: number;
-  plot_mode: string;
-};
-
-type LineRow = {
-  kind: "line";
-  key: string;
-  line: DialogueLineT;
-  plot_mode: string;
-};
-
-type Row = HeaderRow | LineRow;
-
-const HEADER_HEIGHT = 40;
-const LINE_HEIGHT = 96;
-
-type RowData = {
-  rows: Row[];
-  primary: Lang;
-  highlightQ: string | null;
-  lineIndex: LineIndex;
-  setSize: (index: number, size: number) => void;
-};
-
-interface RowWrapperProps {
-  index: number;
-  style: React.CSSProperties;
-  setSize: (index: number, size: number) => void;
-  children: React.ReactNode;
-}
-
-function RowWrapper({ index, style, setSize, children }: RowWrapperProps) {
-  const rowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!rowRef.current) return;
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        const height = entry.target.getBoundingClientRect().height;
-        if (height > 0) {
-          setSize(index, height);
-        }
-      }
-    });
-
-    observer.observe(rowRef.current);
-    return () => {
-      observer.disconnect();
-    };
-  }, [index, setSize]);
-
-  return (
-    <div style={style}>
-      <div ref={rowRef} className="w-full">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Row({ index, style, data }: ListChildComponentProps<RowData>) {
-  const r = data.rows[index];
-  if (!r) return null;
-  if (r.kind === "header") {
-    return (
-      <RowWrapper index={index} style={style} setSize={data.setSize}>
-        <div className="flex min-h-10 items-center gap-3 px-1 pt-2 font-mono text-[10px] text-slate-500 sm:px-3">
-          <span className="shrink-0">{r.flow_name || "scene"} · state {r.state_id || "—"}</span>
-          {r.plot_mode && r.plot_mode !== "Normal" && (
-            <span className="shrink-0 text-slate-400">{r.plot_mode}</span>
-          )}
-          <span className="h-px min-w-4 flex-1 bg-white/10" aria-hidden="true" />
-        </div>
-      </RowWrapper>
-    );
-  }
-  return (
-    <RowWrapper index={index} style={style} setSize={data.setSize}>
-      <div>
-        <DialogueLine
-          line={r.line}
-          primary={data.primary}
-          highlightQ={data.highlightQ}
-          plotMode={r.plot_mode}
-          lineIndex={data.lineIndex}
-        />
-      </div>
-    </RowWrapper>
-  );
-}
-
 export default function QuestPage() {
   const { qid = "0" } = useParams();
   const qidN = Number(qid);
+  const location = useLocation();
   const [params] = useSearchParams();
   const primary = (params.get("lang") ?? "en") as Lang;
   const highlightQ = params.get("q");
+  const anchorLineId = useMemo(() => {
+    const match = location.hash.match(/^#L(\d+)$/);
+    return match ? Number(match[1]) : null;
+  }, [location.hash]);
 
   const toast = useToast();
   const [showExportModal, setShowExportModal] = useState(false);
@@ -154,25 +59,6 @@ export default function QuestPage() {
     }
   });
 
-  const listRef = useRef<List>(null);
-  const scrolledRef = useRef(false);
-  const sizeMap = useRef<Record<number, number>>({});
-  const [, forceUpdate] = useState(0);
-
-  const setSize = useCallback((index: number, size: number) => {
-    if (sizeMap.current[index] !== size) {
-      sizeMap.current[index] = size;
-      listRef.current?.resetAfterIndex(index, false);
-      forceUpdate((c) => c + 1);
-    }
-  }, []);
-
-  useEffect(() => {
-    scrolledRef.current = false;
-    sizeMap.current = {};
-    listRef.current?.resetAfterIndex(0, false);
-  }, [qid]);
-
   const { data: quest, isLoading, error } = useQuery({
     queryKey: ["quest", qidN],
     queryFn: () => api.quest(qidN),
@@ -200,8 +86,8 @@ export default function QuestPage() {
     return g;
   }, [quest]);
 
-  const rows = useMemo<Row[]>(() => {
-    const out: Row[] = [];
+  const rows = useMemo<QuestRow[]>(() => {
+    const out: QuestRow[] = [];
     for (const g of groups) {
       out.push({
         kind: "header",
@@ -228,60 +114,26 @@ export default function QuestPage() {
     return { byKey, byId };
   }, [quest]);
 
-  const rowData = useMemo<RowData>(
-    () => ({ rows, primary, highlightQ, lineIndex, setSize }),
-    [rows, primary, highlightQ, lineIndex, setSize],
-  );
 
-  const getItemSize = useCallback((idx: number) => {
-    return sizeMap.current[idx] || (rows[idx]?.kind === "header" ? HEADER_HEIGHT : LINE_HEIGHT);
-  }, [rows]);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [listHeight, setListHeight] = useState(600);
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const e of entries) setListHeight(e.contentRect.height);
-    });
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!quest || scrolledRef.current) return;
-    const m = window.location.hash.match(/^#L(\d+)$/);
-    if (!m) return;
-    const targetId = Number(m[1]);
-    const idx = rows.findIndex((r) => r.kind === "line" && r.line.id === targetId);
-    if (idx >= 0 && listRef.current) {
-      scrolledRef.current = true;
-      let settleTimer = 0;
-      let highlightTimer = 0;
-      let clearTimer = 0;
-      const initialTimer = window.setTimeout(() => {
-        listRef.current?.scrollToItem(idx, "center");
-        settleTimer = window.setTimeout(() => {
-          listRef.current?.scrollToItem(idx, "center");
-          highlightTimer = window.setTimeout(() => {
-            const el = document.getElementById(`L${targetId}`);
-            if (!el) return;
-            el.classList.add("is-highlighted");
-            clearTimer = window.setTimeout(() => el.classList.remove("is-highlighted"), 3000);
-          }, 50);
-        }, 100);
-      }, 100);
-      return () => {
-        window.clearTimeout(initialTimer);
-        window.clearTimeout(settleTimer);
-        window.clearTimeout(highlightTimer);
-        window.clearTimeout(clearTimer);
-      };
-    }
-  }, [quest, rows]);
-
-  if (isLoading) return <div className="container-narrow py-6 text-sm text-slate-500">Loading quest…</div>;
-  if (error || !quest) return <div className="container-narrow py-6 text-sm text-rose-400">Quest {qid} not found.</div>;
+  if (isLoading) {
+    return (
+      <div className="reader-state container-narrow py-6" role="status" aria-live="polite" aria-busy="true">
+        <span className="reader-state__label">Loading quest</span>
+        <span>Preparing dialogue stream…</span>
+      </div>
+    );
+  }
+  if (error || !quest) {
+    return (
+      <div className="reader-state container-narrow py-6" role="alert">
+        <span className="reader-state__label">Quest unavailable</span>
+        <span>Quest {qid} could not be loaded.</span>
+        <Link to="/" className="link inline-flex min-h-11 items-center">
+          Return to archive
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="container-narrow flex flex-1 flex-col gap-4 overflow-hidden pb-2">
@@ -341,26 +193,14 @@ export default function QuestPage() {
         </div>
       </header>
 
-      <div
-        ref={containerRef}
-        className="min-h-0 w-full flex-1 border-y border-white/10"
-      >
-        <ErrorBoundary>
-          <List
-            ref={listRef}
-            height={listHeight}
-            itemCount={rows.length}
-            itemSize={getItemSize}
-            width="100%"
-            overscanCount={4}
-            estimatedItemSize={LINE_HEIGHT}
-            itemData={rowData}
-            itemKey={(idx, d) => d.rows[idx]?.key ?? String(idx)}
-          >
-            {Row}
-          </List>
-        </ErrorBoundary>
-      </div>
+      <DialogueStream
+        rows={rows}
+        primary={primary}
+        highlightQ={highlightQ}
+        lineIndex={lineIndex}
+        resetKey={qid}
+        anchorLineId={anchorLineId}
+      />
       <ExportDialog
         open={showExportModal}
         title="Export Quest to SQLite"

@@ -37,6 +37,120 @@ Keep the FastAPI and Express processes, SQLite databases, deploy units, and secr
 - Keep the legacy log dashboard in parallel for 14 days after production parity is verified, then retire it.
 - Deliver sequential milestones: first a behavior-preserving Git/history import and CI baseline; then the unified UI, authorization, and proxy work. This keeps each rollback bounded.
 
+## UI decision record — complete frontend rebuild
+
+### Problem and desired outcome
+
+WuwaID Quests needs a complete visual and UX rebuild of its existing frontend so readers, translators, editors, and administrators can find, read, edit, review, and inspect information with stronger orientation, legibility, and trust. The rebuild must improve the experience without changing the product semantics or established workflows.
+
+Success is observable when:
+
+- readers can find and read multilingual quest content without losing context;
+- translators and editors can work through large quests, drafts, diffs, and review states without losing position or unsaved work;
+- administrators can inspect log activity through the restricted operations surface; and
+- every existing route, role boundary, API contract, and safeguard continues to work.
+
+### Affected users and surfaces
+
+Users are readers, translators, editors, and administrators. The affected surface is the complete React/Vite frontend under `quests/web/`, including:
+
+- browse and reading: home, chapters, side quests, categories, quests, search, and versions;
+- work: quest translation, category translation, structural editing, drafts, login, and review;
+- operations: admin login and admin logs.
+
+The URL contract remains unchanged. Navigation may regroup these routes into three visible modes: Browse, Work, and Operations.
+
+### Source evidence and authority
+
+Authority is ordered as follows:
+
+1. the current explicit user requirement;
+2. `quests/PRODUCT.md` for product behavior and constraints;
+3. `quests/design.md` for Sentinel visual and interaction direction;
+4. `quests/tokens.css`, `quests/web/src/index.css`, current route/component behavior, and manual verification documents for implementation evidence;
+5. this plan for repository-level runtime, release, and service-boundary constraints.
+
+The current quests React/Vite application remains the single UI shell. No new frontend runtime or second application shell is introduced.
+
+### Preservation constraints
+
+The rebuild must preserve:
+
+- existing routes, capabilities, API contracts, permissions, data flows, and session behavior;
+- anonymous drafts, editor approval/rejection, draft persistence, review status, and unsaved-change safeguards;
+- keyboard flows, existing shortcuts, focus behavior, and copyable technical IDs/source references;
+- multilingual wrapping, language identity, quest line anchors, search highlighting, and large-quest virtualization;
+- explicit separation between anonymous, editor, and admin access;
+- server-side handling of admin log credentials; the browser must not receive service tokens; and
+- existing backend, log-server upload/heartbeat, deployment, and release contracts.
+
+### Settled product and interaction decisions
+
+- Rebuild the complete frontend, not a partial route or component refresh.
+- Keep Sentinel as the visual identity and refine it rather than replacing it.
+- Keep the unified shell and existing URLs while allowing clearer navigation grouping.
+- Keep global search prominent and available on every viewport.
+- Preserve context when moving between reading, translation, editing, drafts, and review.
+- Keep reading surfaces calm and spacious, work surfaces compact and precise with sticky action regions, and admin logs dense and instrument-like.
+- Preserve explicit status, diff, confirmation, and recovery feedback; no silent mutation or data-loss behavior is introduced.
+
+### Relevant state matrix
+
+| State | Decision |
+|---|---|
+| Initial/loading | Preserve skeleton/loading conventions and avoid blank screens; keep the surrounding context visible where possible. |
+| Empty/no-results | Show explicit text and a recoverable next action; preserve active search/filter context. |
+| Partial/stale data | Make incomplete or stale content distinguishable from confirmed content; do not silently present it as final. |
+| Success/completion | Confirm completed mutations and refresh the affected view without losing the user's location. |
+| Validation/recoverable error | Use visible text plus retry, return, or correction actions; never rely on color alone. |
+| Permission/authentication | Preserve route guards and role-gated actions for anonymous, editor, and admin sessions. |
+| Unsaved/local draft | Warn before leaving, preserve local draft context, and keep pending state visible. |
+| Review/destructive action | Keep original-versus-draft context and explicit confirmation for approval, rejection, deletion, export, or other consequential actions. |
+| Unavailable dependency | Show an actionable unavailable/error state for API or log-service failure; never fall back to client-held admin credentials. |
+
+### Responsive and adaptive contract
+
+- No horizontal page overflow at 320px.
+- Global search remains first-class on mobile and desktop.
+- Desktop exposes Browse and Work controls in the masthead.
+- Mobile collapses navigation into the existing menu pattern while preserving every route and role-gated action.
+- Desktop workbenches may use multiple panes and sticky tools; narrow layouts may stack, collapse, or scroll panes internally, but actions cannot disappear.
+- Long multilingual strings wrap safely, and technical IDs remain selectable.
+- Primary touch targets remain at least 44px.
+
+### Accessibility and input contract
+
+- Meet WCAG AA contrast expectations.
+- Preserve semantic landmarks, labels, and existing accessible names.
+- Keep primary workflows and existing keyboard shortcuts operable.
+- Keep the cyan focus outline visible against every surface.
+- Express selected, loading, error, success, pending, approved, rejected, and disabled states with text or shape in addition to color.
+- Respect `prefers-reduced-motion`.
+
+### Explicit non-goals
+
+- No backend, API contract, data model, permission model, or role redesign.
+- No route migration or URL-breaking information architecture rewrite.
+- No new frontend runtime, separate role-specific shell, or replacement of the existing quests shell.
+- No rebuild of the log-server runtime or changes to Launcher/Mobile upload and heartbeat contracts.
+- No new visual authority, Figma dependency, or speculative component library.
+
+### Rejected alternatives
+
+- **New frontend application:** rejected because the existing quests React/Vite app is already the repository's unified UI shell and duplicating it would split behavior and routing.
+- **Route/API rewrite:** rejected because existing links, integrations, permissions, and release contracts are preservation constraints.
+- **Role-specific frontends:** rejected because the product must serve readers, translators, editors, and administrators through one coherent shell.
+- **Replacement visual identity:** rejected because Sentinel is the documented current authority and no new source was supplied.
+- **Backend or log-server redesign:** rejected because this decision is limited to the frontend experience and must keep service boundaries stable.
+
+### Implementation questions intentionally deferred
+
+Component decomposition, prop contracts, state-library details, CSS structure, exact token exceptions, test organization, rollout sequencing, and file placement are deferred to `/to-ui-spec` and subsequent implementation work.
+
+### Handoff
+
+The next handoff is `/to-ui-spec`. It must turn this record into screen-level UI specifications while preserving the contracts above and using the existing frontend quality gates and manual verification checklists.
+
 ## Files to modify
 
 Expected paths after import:
@@ -174,6 +288,23 @@ Before moving source or changing runtime behavior, add and run the smallest miss
 - Cleaned `quests/scripts/build_index.py` `DEFAULT_CANDIDATES`: dropped self-nested `WuwaID/…` and legacy root candidates; canonical remains `scripts/export_text_grouped/export_quest_ordered`. `test_build_index_source.py` still passes.
 - Documented `tools/Dumper-7` as frozen vendored code in `VENDORED.md` (upstream `CallMeDangDev/WuwaVH` is deleted, cannot be a submodule).
 - `Web/` (launcher bgm/video assets) is intentionally kept: `Web/assets.json` URLs are hardcoded in released Launcher/Mobile clients (`.../main/Web/Audio/bgm.mp3`), so the path must not move.
+
+### Step 11 — frontend rebuild slices (2026-08-05)
+
+- **S1 — Sentinel shell/search:** split global search and shell navigation into behavior-owning modules; added Browse/Work/Operations grouping, mobile disclosure focus restoration, first-class search labeling, and shell contrast fixes.
+- **S2 — Quest viewer:** extracted the virtualized dialogue stream; preserved line anchors, search highlighting, plot/state headers, option jumps, and large-quest behavior; added explicit loading/error recovery states and keyboard-focusable dialogue scrolling.
+- **S3 — Translator workbench:** added the shared responsive workbench layout; centralized mobile pane/focus behavior; preserved local draft, selection, navigation, and submit workflows; removed the duplicate route-level unsaved guard.
+- **S4 — Structural editor:** migrated the editor to the shared workbench; preserved reorder preview/reset/save, line selection, shortcuts, and unsaved protection; fixed line-type labeling and heading semantics.
+- **S5 — Draft review states:** hardened queue/detail loading, session-check, empty, mutation-error, retry, and reviewer-note semantics; preserved role-gated approve/reject, bulk actions, diff, export, and purge behavior.
+- **S6 — Admin operations:** hardened admin session recovery, tab/panel semantics, loading/error/empty states, retry paths, table headers, scroll focus, file inspection, and download behavior; fixed active Sentinel buttons and table-header contrast.
+- **S7 — Browse/search/versions:** added explicit query error/retry/empty states to home, grouped texts, and search; added category-entry loading/error recovery; added editor-session/version query recovery, labeled version controls, keyboard-focusable long lists, and semantic diff/group controls.
+- Browser checks exercised `/`, `/search?q=Jinzhou&lang=en`, `/categories`, `/categories/34NPCTHST`, `/versions`, `/quests/1`, `/quests/1#L5000`, `/translator/1`, `/editor/1`, `/drafts`, `/drafts/999999`, and authenticated `/admin/login` → `/admin/logs` at 320px and 1280px. A disposable admin credential and disposable log-server fixture verified active-player data, upload listing, file inspection, and download without exposing the service token to the browser.
+- `bun run test:web`: **7 passed**. `uv run pytest -q app`: **302 passed** with 3 existing warnings. `bun run build`: succeeded. Targeted LSP diagnostics were clean for changed TypeScript; targeted axe checks reported 0 violations for Home, Search, Categories, Versions, Draft Review, and authenticated Admin Logs after the contrast/focus fixes, with remaining incomplete checks requiring manual review.
+- Deployed over `ssh nozomi@tito-thinkpad` using remote `.env` injection: created rollback backup `/home/nozomi/deploy-backups/wuwaid-quests/quests-20260806T024212Z.tar.gz`, rsynced current `quests/` source while preserving `.env`, `data/`, `.venv`, and `node_modules`, replaced `web/dist`, and restarted `wuwaid-quests`.
+- Deployment verification passed: local service `active`, local HTTP `200`, `cloudflared-tunnel` `active`, transferred source/dist hashes match the local build, and the backup contains no `.env`, `data/`, or `.venv` paths.
+- Production asset parity now matches: `assets/index-B1A4SQHP.css` and `assets/index-DXKLp_lP.js` are served by both local and `wuwaid.titotfp.my.id`.
+- Authenticated production API smoke passed using secrets only on the target host: admin login `200`, `/api/me` role `admin`, active players, players, uploads, history, file inspection, and ZIP download all returned successfully; 38 uploads were available and one file was inspected. The service token was not printed or sent to the browser.
+- Post-deploy production browser QA passed for home, search, grouped texts, editor-only versions, admin login, and anonymous admin denial with no reported console/network/page errors. The existing 14-day parallel rollout and legacy dashboard retirement remain operational follow-up, not deployment blockers.
 
 ## Verification
 

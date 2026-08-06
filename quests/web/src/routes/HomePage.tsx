@@ -20,13 +20,13 @@ export default function HomePage() {
 	);
 
 	return (
-		<div className="container-narrow gap-10 pb-8 sm:gap-12">
+		<div className="container-narrow gap-10 pb-8 sm:gap-12" aria-labelledby="home-heading">
 			<header className="home-hero">
 				<div className="home-hero__copy">
 					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent-signal">
 						Quest archive · Wuthering Waves dialogue
 					</p>
-					<h1 className="mt-3 min-w-0 max-w-3xl [overflow-wrap:anywhere] font-serif text-3xl leading-tight text-slate-100 sm:text-4xl">
+					<h1 id="home-heading" className="mt-3 min-w-0 max-w-3xl [overflow-wrap:anywhere] font-serif text-3xl leading-tight text-slate-100 sm:text-4xl">
 						Find any line in Wuthering Waves.
 					</h1>
 					<p className="mt-3 max-w-prose text-base leading-relaxed text-slate-400">
@@ -51,15 +51,15 @@ export default function HomePage() {
 				<dl className="home-stats" aria-label="Archive summary">
 					<div>
 						<dt>Chapters</dt>
-						<dd>{chaptersQ.isPending ? "—" : chapters.length}</dd>
+						<dd>{chaptersQ.isPending || chaptersQ.isError ? "—" : chapters.length}</dd>
 					</div>
 					<div>
 						<dt>Quests</dt>
-						<dd>{chaptersQ.isPending ? "—" : questCount.toLocaleString()}</dd>
+						<dd>{chaptersQ.isPending || chaptersQ.isError ? "—" : questCount.toLocaleString()}</dd>
 					</div>
 					<div>
 						<dt>Lines</dt>
-						<dd>{chaptersQ.isPending ? "—" : lineCount.toLocaleString()}</dd>
+						<dd>{chaptersQ.isPending || chaptersQ.isError ? "—" : lineCount.toLocaleString()}</dd>
 					</div>
 				</dl>
 			</header>
@@ -81,10 +81,16 @@ export default function HomePage() {
 					aria-busy={chaptersQ.isPending}
 				>
 					{chaptersQ.isPending && (
-						<p className="py-6 text-sm text-slate-500">Loading chapters…</p>
+						<p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">Loading chapters…</p>
 					)}
-					{!chaptersQ.isPending && chapters.length === 0 && (
-						<p className="py-6 text-sm text-slate-500">
+					{chaptersQ.isError && (
+						<div className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm text-rose-300" role="alert">
+							<span>Unable to load chapters.</span>
+							<button type="button" className="btn text-xs" onClick={() => void chaptersQ.refetch()}>Retry</button>
+						</div>
+					)}
+					{!chaptersQ.isPending && !chaptersQ.isError && chapters.length === 0 && (
+						<p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">
 							No chapters available.
 						</p>
 					)}
@@ -131,10 +137,16 @@ export default function HomePage() {
 					aria-busy={speakersQ.isPending}
 				>
 					{speakersQ.isPending && (
-						<p className="py-6 text-sm text-slate-500">Loading speakers…</p>
+						<p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">Loading speakers…</p>
 					)}
-					{!speakersQ.isPending && speakers.length === 0 && (
-						<p className="py-6 text-sm text-slate-500">
+					{speakersQ.isError && (
+						<div className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm text-rose-300" role="alert">
+							<span>Unable to load speakers.</span>
+							<button type="button" className="btn text-xs" onClick={() => void speakersQ.refetch()}>Retry</button>
+						</div>
+					)}
+					{!speakersQ.isPending && !speakersQ.isError && speakers.length === 0 && (
+						<p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">
 							No speakers available.
 						</p>
 					)}

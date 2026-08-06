@@ -12,32 +12,54 @@ export function CategoriesPage() {
   const [entries, setEntries] = useState<CategoryEntry[]>([]);
   const [showIdColumn, setShowIdColumn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [entriesLoading, setEntriesLoading] = useState(false);
+  const [entriesError, setEntriesError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
 
 
   // Set page title and load categories list on mount
   useEffect(() => {
+    let active = true;
     document.title = "Grouped Texts - wuwaid-quests";
+    setLoading(true);
+    setError(false);
     api.categories()
       .then((data) => {
+        if (!active) return;
         setCategories(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, []);
+      .catch(() => {
+        if (!active) return;
+        setCategories([]);
+        setError(true);
+        setLoading(false);
+      });
+    return () => { active = false; };
+  }, [reloadKey]);
 
   // Update title when selected category changes
   useEffect(() => {
     if (!selected) {
       document.title = "Grouped Texts - wuwaid-quests";
       setEntries([]);
+      setShowIdColumn(false);
+      setEntriesLoading(false);
+      setEntriesError(false);
       return;
     }
-    
+
+    let active = true;
     document.title = `${selected} - Grouped Texts - wuwaid-quests`;
+    setEntries([]);
+    setEntriesLoading(true);
+    setEntriesError(false);
 
     api.categorySingle(selected)
       .then((data) => {
+        if (!active) return;
         const list: CategoryEntry[] = (data.entries || []).map(
           (e) => ({
             key: e.key,
@@ -50,16 +72,30 @@ export function CategoriesPage() {
         );
         setEntries(list);
         setShowIdColumn(list.some((e) => e.id !== null));
+        setEntriesLoading(false);
       })
-      .catch((err) => {
-        console.error("Error loading category entries:", err);
+      .catch(() => {
+        if (!active) return;
+        setEntries([]);
+        setEntriesError(true);
+        setEntriesLoading(false);
       });
-  }, [selected]);
+    return () => { active = false; };
+  }, [selected, reloadKey]);
 
   if (loading) {
     return (
-      <div className="container-narrow py-10 text-center">
-        <div className="text-sm text-slate-500">Loading categories…</div>
+      <div className="container-narrow py-10 text-center" role="status" aria-live="polite">
+        <div className="text-sm text-slate-400">Loading categories…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-narrow space-y-3 py-10" role="alert">
+        <p className="text-sm text-rose-300">Unable to load grouped texts.</p>
+        <button type="button" className="btn" onClick={() => setReloadKey((value) => value + 1)}>Retry</button>
       </div>
     );
   }
@@ -76,10 +112,14 @@ export function CategoriesPage() {
           </p>
         </header>
 
-        <div 
+        <div
           className="divide-y divide-white/10 border-y border-white/10"
           aria-labelledby="categories-heading"
+          aria-busy={loading}
         >
+          {categories.length === 0 && (
+            <p className="p-5 text-sm text-slate-400" role="status" aria-live="polite">No grouped texts available.</p>
+          )}
           {categories.map((c) => {
             const pct =
               c.key_count > 0 ? (c.translated_count / c.key_count) * 100 : 0;
@@ -137,11 +177,23 @@ export function CategoriesPage() {
         </Link>
       </header>
       
-      <CategoryTable
-        category={selected}
-        entries={entries}
-        showIdColumn={showIdColumn}
-      />
+      {entriesLoading && <p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">Loading {selected}…</p>}
+      {entriesError && (
+        <div className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm text-rose-300" role="alert">
+          <span>Unable to load {selected}.</span>
+          <button type="button" className="btn text-xs" onClick={() => setReloadKey((value) => value + 1)}>Retry</button>
+        </div>
+      )}
+      {!entriesLoading && !entriesError && entries.length === 0 && (
+        <p className="py-6 text-sm text-slate-400" role="status" aria-live="polite">No entries available in {selected}.</p>
+      )}
+      {!entriesLoading && !entriesError && entries.length > 0 && (
+        <CategoryTable
+          category={selected}
+          entries={entries}
+          showIdColumn={showIdColumn}
+        />
+      )}
     </div>
   );
 }
