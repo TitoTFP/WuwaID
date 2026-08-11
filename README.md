@@ -76,33 +76,75 @@ Release baru hanya memuat satu file patch `pakchunk0-ID-WindowsNoEditor_1000_P.p
 - Setelah game mendapatkan update, kamu mungkin perlu mengunduh ulang patch terjemahan terbaru dari halaman Releases.
 - Gunakan patch ini dengan risiko masing-masing.
 
-## Pengembangan & Ekspor Data (Developer)
+---
+
+## Struktur Repositori (Monorepo)
+
+Repositori **WuwaID** mengintegrasikan komponen proxy loader, backend quest, web UI, log server, dan perkakas ekspor data:
+
+```text
+WuwaID/
+├── src/ & sdk/           # C++ WinHTTP proxy loader & PakBypass DLL loader (Visual Studio / MSBuild)
+├── quests/               # Server Quest & Admin (FastAPI backend + React/Vite web viewer & editor)
+├── log-server/           # Node.js/Express service untuk mengumpulkan crash log & status launcher
+├── webui/                # Modern Unified Web Application (Vite + React + Express dashboard)
+├── scripts/              # Skrip Python untuk ekspor & manipulasi database lokalisasi game
+├── deploy/               # Configuration deployment (Docker & systemd service)
+└── release/              # Release packaging & validation scripts
+```
+
+---
+
+## Pengembangan & Kontribusi (Developer)
+
+### 1. Ekspor Data Lokalisasi
 
 Repositori ini menyediakan skrip Python untuk mengekstrak teks lokalisasi dari database game Wuthering Waves (`ConfigDB` atau `WuwaDBExport`).
 
-### Persiapan
+#### Persiapan
+Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai atau tentukan path secara manual saat menjalankan skrip.
 
-Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai (misal: sejajar dengan skrip ini) atau tentukan path secara manual saat menjalankan skrip.
-
-### 1. Ekspor Dialog Quest Terurut
-
-Skrip `scripts/export_quest_ordered.py` mengekstrak dialog quest yang diorganisasikan berdasarkan chapter cerita utama dan side quest.
-
+#### Ekspor Dialog Quest Terurut
 ```sh
 python scripts/export_quest_ordered.py [path_ke_ConfigDB]
 ```
+Output disimpan di `export_quest_ordered/`.
 
-Output akan disimpan di folder `export_quest_ordered/`.
-
-### 2. Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
-
-Skrip `scripts/export_text_grouped.py` mengekstrak dan mengelompokkan semua teks lokalisasi (item, skill, dialog quest, UI, dll.) berdasarkan kategori ke dalam file JSON. Skrip ini menghasilkan format data yang dibutuhkan oleh aplikasi web [wuwaid-quests](../wuwaid-quests).
-
+#### Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
 ```sh
 python scripts/export_text_grouped.py [path_ke_ConfigDB]
 ```
+Output disimpan di `export_text_grouped/`.
 
-Output akan disimpan di folder `export_text_grouped/`.
+---
+
+### 2. Layanan Web & Dashboard (`webui/`, `quests/`, `log-server/`)
+
+#### WebUI (Unified Dashboard & Reader)
+```sh
+cd webui
+npm install
+npm run dev        # Menjalankan Vite dev server + Express backend
+npm run build      # Melakukan typecheck & build bundel produksi
+```
+
+#### Quests Server (FastAPI + React Frontend)
+```sh
+cd quests
+uv sync            # Setup Python virtual environment
+npm --prefix web install
+npm --prefix web run dev   # Frontend React
+python -m app.main         # FastAPI Backend Server
+```
+
+#### Log Server (Express Log Collector)
+```sh
+cd log-server
+npm install
+npm run dev        # Development mode
+```
+
+---
 
 ## Credits
 

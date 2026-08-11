@@ -142,9 +142,31 @@ _ReSharper*/
 *.VC.nativecodeanalysis.all.xml
 
 # ============================================================
-# Python compiled files
+# Python compiled files & virtual environments
 # ============================================================
 __pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============================================================
+# Node / Web / JS dependencies & builds
+# ============================================================
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.vite/
+**/.vite/
+.env
+.env.*
+!.env.example
 
 # ============================================================
 # CMake
@@ -205,11 +227,6 @@ experiments/
 build-artifacts/
 .codegraph/
 .pi-subagents/
-
-# Python caches
-__pycache__/
-*.py[cod]
-*$py.class
 
 # Agent workspace files
 CLAUDE.md
