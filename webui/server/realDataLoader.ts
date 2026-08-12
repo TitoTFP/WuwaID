@@ -150,19 +150,22 @@ export class RealDataLoader {
 		const byQuest = new Map<string, TranslationStats>();
 
 		if (fs.existsSync(QUESTS_JSON_DIR)) {
-			for (const file of fs
-				.readdirSync(QUESTS_JSON_DIR)
-				.filter((f) => f.endsWith(".json"))) {
+			const questFiles = Array.from(
+				new Set(this.getQuestFileMap().values()),
+			);
+			for (const file of questFiles) {
 				try {
 					const data = JSON.parse(
-						fs.readFileSync(path.join(QUESTS_JSON_DIR, file), "utf-8"),
+						fs.readFileSync(file, "utf-8"),
 					);
-					const questId = String(data.quest_id || file.replace(".json", ""));
+					const questId = String(data.quest_id || "");
 					const chapterId = Number(data.chapter_id ?? 0);
 					const stats = this.getLineTranslationStats(
 						this.getDialogueRows(data),
 					);
-					byQuest.set(questId, stats);
+					if (questId) {
+						byQuest.set(questId, stats);
+					}
 
 					overall.total += stats.total;
 					overall.translated += stats.translated;
