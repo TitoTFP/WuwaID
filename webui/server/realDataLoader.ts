@@ -889,7 +889,7 @@ export class RealDataLoader {
 						: 0;
 
 				categories.push({
-					id: `cat_${catName.toLowerCase()}`,
+					id: `cat_${catName.replaceAll("/", "_")}`,
 					name: catName,
 					description: `Kategori teks resmi game: ${catName} (${Math.round(fileStats.size / 1024)} KB)`,
 					totalItems,

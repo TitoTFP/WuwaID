@@ -41,7 +41,7 @@ export const CategoriesView: React.FC = () => {
 		>();
 
 		for (const cat of categories) {
-			const rootName = cat.name.split("/")[0] || "Other";
+			const rootName = cat.name.split("/")[0]?.trim() || "Other";
 			const existing = groupsMap.get(rootName) || {
 				name: rootName,
 				count: 0,
@@ -78,8 +78,10 @@ export const CategoriesView: React.FC = () => {
 	// Categories matching current selection & search
 	const visibleCategories = useMemo(() => {
 		return categories.filter((cat) => {
+			const catRoot = cat.name.split("/")[0]?.trim() || "";
 			const matchesRoot =
-				selectedRoot === "ALL" || cat.name.split("/")[0] === selectedRoot;
+				selectedRoot === "ALL" ||
+				catRoot.toLowerCase() === selectedRoot.toLowerCase();
 			const matchesSearch =
 				!globalSearch.trim() ||
 				cat.name.toLowerCase().includes(globalSearch.trim().toLowerCase());
@@ -110,7 +112,9 @@ export const CategoriesView: React.FC = () => {
 			};
 		}
 		return (
-			rootGroups.find((g) => g.name === selectedRoot) || {
+			rootGroups.find(
+				(g) => g.name.toLowerCase() === selectedRoot.toLowerCase(),
+			) || {
 				name: selectedRoot,
 				count: visibleCategories.length,
 				totalItems: 0,
@@ -283,10 +287,13 @@ export const CategoriesView: React.FC = () => {
 								Tidak ada kategori yang cocok dengan filter.
 							</div>
 						) : (
-							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-								{visibleCategories.map((category: TextCategory) => (
+							<div
+								key={`grid-${selectedRoot}`}
+								className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"
+							>
+								{visibleCategories.map((category: TextCategory, idx: number) => (
 									<button
-										key={category.id}
+										key={`${selectedRoot}-${category.id}-${idx}`}
 										type="button"
 										onClick={() => navigate(`/categories/${category.name}`)}
 										className="text-left cyber-card p-4 space-y-3 bg-obsidian-900/90 border-obsidian-800 hover:border-cyber-gold/50 transition-all group cursor-pointer flex flex-col justify-between"
