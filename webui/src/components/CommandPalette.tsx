@@ -286,7 +286,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 			);
 		}
 
-		const categoryName = result.categoryName || "";
+		const categoryName = (result.categoryName || "")
+			.replace(/^cat_/, "")
+			.split("/")
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join("/");
 		const encodedCategory = categoryName
 			.split("/")
 			.map(encodeURIComponent)

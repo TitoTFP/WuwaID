@@ -537,9 +537,9 @@ export const ReaderView: React.FC = () => {
 										.toLowerCase()
 										.includes(categorySearchQuery.toLowerCase()),
 							)
-							.map((cat) => (
+							.map((cat, idx) => (
 								<div
-									key={cat.id}
+									key={cat.id ? `${cat.id}-${idx}` : `${cat.name}-${idx}`}
 									onClick={() => navigate(`/reader/category/${cat.name}`)}
 									className="cyber-card p-3 space-y-2 bg-obsidian-950/60 hover:border-cyber-gold/50 cursor-pointer group transition-all"
 								>
