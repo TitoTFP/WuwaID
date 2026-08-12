@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MOCK_APPLIED_VERSIONS } from '../mockData/draftsAndVersions';
 import { Sparkles, GitCommit, Calendar, User, FileDiff, ChevronDown, ChevronUp } from 'lucide-react';
+import { fetchVersions } from '../lib/api';
 
 export const VersionsHistory: React.FC = () => {
-  const [expandedTag, setExpandedTag] = useState<string | null>(MOCK_APPLIED_VERSIONS[0].versionTag);
+  const { data: versionsData } = useQuery({
+    queryKey: ['versions'],
+    queryFn: () => fetchVersions(),
+  });
+
+  const versions = versionsData?.versions || MOCK_APPLIED_VERSIONS;
+  const [expandedTag, setExpandedTag] = useState<string | null>(versions[0]?.versionTag || null);
 
   return (
     <div className="h-full flex flex-col space-y-3 overflow-hidden animate-fade-in">
@@ -18,9 +26,9 @@ export const VersionsHistory: React.FC = () => {
         </p>
       </div>
 
-      {/* Internal Scrollable Stream (Above the Fold) */}
+      {/* Internal Scrollable Stream */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-        {MOCK_APPLIED_VERSIONS.map((ver) => {
+        {versions.map((ver) => {
           const isExpanded = ver.versionTag === expandedTag;
 
           return (

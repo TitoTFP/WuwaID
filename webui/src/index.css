@@ -15,6 +15,24 @@
       linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 32px 32px, 32px 32px;
   }
+
+  select {
+    color-scheme: dark;
+  }
+
+  select option {
+    background-color: #0c0f17 !important;
+    color: #f1f5f9 !important;
+    padding: 8px 12px;
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:active,
+  select option:checked {
+    background-color: #1e293b !important;
+    color: #00f0ff !important;
+  }
 }
 
 /* Custom Scrollbar */
@@ -47,6 +65,18 @@
 
 .cyber-badge {
   @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium tracking-wide border;
+}
+
+.palette-heading {
+	@apply text-[11px] font-mono font-bold text-slate-300 px-3 py-1.5 uppercase tracking-wider;
+}
+
+.palette-item {
+	@apply flex items-center px-3 py-2.5 rounded-lg text-sm text-slate-200 hover:bg-obsidian-800 hover:text-cyber-cyan cursor-pointer transition-colors;
+}
+
+.palette-icon {
+	@apply w-4 h-4 mr-3 shrink-0;
 }
 
 /* Glass paneling */

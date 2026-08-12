@@ -222,6 +222,9 @@ export_text_grouped/
 Javascript/*
 WuwaDBExport*/
 data/db_exports/
+data/quests/
+webui/data/db_uploads/
+scripts/export_quest_ordered/
 export_quest_raw_all/
 experiments/
 build-artifacts/

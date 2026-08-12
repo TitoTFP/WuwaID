@@ -1,0 +1,71 @@
+[
+  {
+    "id": "draft_101",
+    "questId": "102000000",
+    "questTitle": "Starlights from Yesterdays",
+    "lineId": "line_1",
+    "lineNo": 1,
+    "speakerName": "Luuk Herssen",
+    "author": {
+      "name": "ResonatorTranslator_ID",
+      "role": "Translator"
+    },
+    "sourceText": "Hello, {Male=golden boy;Female=golden girl}.",
+    "previousText": "Hello, {Male=golden boy;Female=golden girl}.",
+    "proposedText": "Halo, {Male=pria emas;Female=gadis emas}. Selamat datang di Huanglong.",
+    "status": "pending",
+    "createdAt": "2026-08-12T12:59:21.516Z"
+  },
+  {
+    "id": "draft_102",
+    "questId": "121000040",
+    "questTitle": "Starlights from Yesterdays",
+    "lineId": "line_2",
+    "lineNo": 2,
+    "speakerName": "Luuk Herssen",
+    "author": {
+      "name": "MidnightEditor_S",
+      "role": "Editor"
+    },
+    "sourceText": "Now that the Dark Side incident is wrapped up, management work in the hospital has returned to normal.",
+    "previousText": "Sekarang insiden Sisi Gelap telah usai, pekerjaan manajemen di rumah sakit telah kembali normal.",
+    "proposedText": "Setelah insiden Sisi Gelap terselesaikan, pengelolaan di rumah sakit kini kembali berjalan normal.",
+    "status": "pending",
+    "createdAt": "2026-08-12T11:59:21.516Z"
+  },
+  {
+    "id": "draft_103",
+    "questId": "102000000",
+    "questTitle": "Jinzhou Main Quest",
+    "lineId": "line_3",
+    "lineNo": 3,
+    "speakerName": "Jiyan",
+    "author": {
+      "name": "HuanglongLinguist",
+      "role": "Senior Translator"
+    },
+    "sourceText": "Welcome to Jinzhou, Resonator. Your awakening heralds a shift in the tide.",
+    "previousText": "Selamat datang di Jinzhou, Resonator. Kebangkitanmu menandai perubahan pasang surut.",
+    "proposedText": "Selamat datang di Jinzhou, Resonator. Kebangkitanmu menandai perubahan arah angin gelombang.",
+    "status": "approved",
+    "createdAt": "2026-08-12T09:29:21.516Z"
+  },
+  {
+    "id": "draft_104",
+    "questId": "102000000",
+    "questTitle": "Jinzhou Main Quest",
+    "lineId": "line_5",
+    "lineNo": 5,
+    "speakerName": "Chixia",
+    "author": {
+      "name": "DraftUser99",
+      "role": "Contributor"
+    },
+    "sourceText": "Yangyang! Hey! Is our new friend awake now?",
+    "previousText": "Yangyang! Hei! Apakah teman baru kita sudah bangun?",
+    "proposedText": "Woy Yangyang! Teman baru bangun gak tuh?",
+    "status": "rejected",
+    "rejectionReason": "Gaya bahasa terlalu informal/gaul, tidak sesuai pedoman tata bahasa resmi game.",
+    "createdAt": "2026-08-12T05:29:21.516Z"
+  }
+]

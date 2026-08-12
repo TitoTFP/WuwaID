@@ -1,60 +1,48 @@
 import express from 'express';
 import cors from 'cors';
+import { db } from './db.js';
+import { readerRouter } from './routes/reader.js';
+import { workbenchRouter } from './routes/workbench.js';
+import { opsRouter } from './routes/ops.js';
+import { authRouter } from './routes/auth.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(cors());
 app.use(express.json());
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/api/reader/health', '/api/workbench/health', '/api/ops/health'], (_req, res) => {
   res.json({
     status: 'ok',
-    service: 'WuwaID Fullstack WebUI Server',
+    service: 'WuwaID Standalone Fullstack WebUI Server',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
 });
 
-// Quests Summary API
-app.get('/api/quests', (req, res) => {
-  res.json({
-    quests: [
-      {
-        id: 'quest_ch1_01',
-        chapterId: 'ch1',
-        title: { en: 'Utterance of Frost', id: 'Ucapan Es dan Halilintar', zh: '霜雷之言' },
-        type: 'main',
-        totalLines: 120,
-        translatedLines: { id: 120, zh: 120, ja: 120 },
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'quest_ch1_02',
-        chapterId: 'ch1',
-        title: { en: 'Echoes in the Valley', id: 'Gema di Lembah Huanglong', zh: '山谷回响' },
-        type: 'main',
-        totalLines: 85,
-        translatedLines: { id: 85, zh: 85, ja: 85 },
-        updatedAt: new Date().toISOString(),
-      },
-    ],
-  });
-});
-
 // System Telemetry Metrics API
-app.get('/api/metrics', (req, res) => {
-  res.json({
-    totalQuests: 1248,
-    totalDialogueLines: 42850,
-    translationCoverageId: 98.4,
-    activeTranslators: 12,
-    activePlayers24h: 3420,
-    serverStatus: 'online',
-  });
+app.get(['/api/metrics', '/api/reader/metrics'], (_req, res) => {
+  res.json(db.getSystemMetrics());
 });
 
-app.listen(PORT, () => {
-  console.log(`[WuwaID WebUI Server] Running on http://localhost:${PORT}`);
+// Tab-Specific Dedicated Routers
+app.use('/api/reader', readerRouter);
+app.use('/api/workbench', workbenchRouter);
+app.use('/api/ops', opsRouter);
+app.use('/api/auth', authRouter);
+
+// Flat Legacy Routers Mounting (backwards compatibility)
+app.use('/api', readerRouter);
+app.use('/api', workbenchRouter);
+app.use('/api', opsRouter);
+app.use('/api', authRouter);
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[WuwaID WebUI Server] Running on http://127.0.0.1:${PORT}`);
+  console.log(` - Reader Endpoints:    http://127.0.0.1:${PORT}/api/reader/*`);
+  console.log(` - Workbench Endpoints: http://127.0.0.1:${PORT}/api/workbench/*`);
+  console.log(` - Operations Endpoints:http://127.0.0.1:${PORT}/api/ops/*`);
+  console.log(` - Auth Endpoints:      http://127.0.0.1:${PORT}/api/auth/*`);
 });

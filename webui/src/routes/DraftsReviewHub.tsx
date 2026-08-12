@@ -1,30 +1,64 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MOCK_DRAFTS } from '../mockData/draftsAndVersions';
 import { DiffInspector } from '../components/review/DiffInspector';
 import { TranslationDraft } from '../types';
-import { FileText, CheckCircle, Clock, XCircle, Search, CheckCheck } from 'lucide-react';
+import { FileText, CheckCircle, Clock, XCircle, Search, CheckCheck, Send, Check } from 'lucide-react';
+import { fetchDrafts, approveDraft, rejectDraft, batchApproveDrafts, applyApprovedDrafts } from '../lib/api';
 
 export const DraftsReviewHub: React.FC = () => {
-  const [drafts, setDrafts] = useState<TranslationDraft[]>(MOCK_DRAFTS);
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [searchQuery, setSearchQuery] = useState('');
+  const [applySuccessMsg, setApplySuccessMsg] = useState<string | null>(null);
+
+  const { data: draftsData } = useQuery({
+    queryKey: ['drafts'],
+    queryFn: () => fetchDrafts(),
+  });
+
+  const drafts: TranslationDraft[] = draftsData?.drafts || MOCK_DRAFTS;
+
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => approveDraft(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['drafts'] }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => rejectDraft(id, reason),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['drafts'] }),
+  });
+
+  const batchApproveMutation = useMutation({
+    mutationFn: () => batchApproveDrafts(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['drafts'] }),
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: () => applyApprovedDrafts(),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['drafts'] });
+      queryClient.invalidateQueries({ queryKey: ['questDetail'] });
+      queryClient.invalidateQueries({ queryKey: ['chapterQuests'] });
+      setApplySuccessMsg(`Berhasil menerapkan ${res.appliedCount} draf ke berkas resmi quest (${res.versionTag})!`);
+      setTimeout(() => setApplySuccessMsg(null), 5000);
+    },
+  });
 
   const handleApprove = (id: string) => {
-    setDrafts((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: 'approved' } : d))
-    );
+    approveMutation.mutate(id);
   };
 
   const handleReject = (id: string, reason: string) => {
-    setDrafts((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: 'rejected', rejectionReason: reason } : d))
-    );
+    rejectMutation.mutate({ id, reason });
   };
 
   const handleBatchApproveAllPending = () => {
-    setDrafts((prev) =>
-      prev.map((d) => (d.status === 'pending' ? { ...d, status: 'approved' } : d))
-    );
+    batchApproveMutation.mutate();
+  };
+
+  const handleApplyApproved = () => {
+    applyMutation.mutate();
   };
 
   const filteredDrafts = drafts.filter((d) => {
@@ -47,27 +81,49 @@ export const DraftsReviewHub: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col space-y-3 overflow-hidden animate-fade-in">
+      {/* Toast Notification Banner */}
+      {applySuccessMsg && (
+        <div className="bg-cyber-emerald/10 border border-cyber-emerald/40 text-cyber-emerald px-4 py-2 rounded-lg text-xs font-mono flex items-center space-x-2 shrink-0 animate-bounce">
+          <Check className="w-4 h-4 shrink-0 text-cyber-emerald" />
+          <span>{applySuccessMsg}</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex items-center justify-between shrink-0 border-b border-obsidian-800 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-b border-obsidian-800 pb-2.5">
         <div>
           <h1 className="text-base sm:text-lg font-bold text-slate-100 flex items-center space-x-2 font-sans">
             <FileText className="w-5 h-5 text-cyber-gold" />
             <span>Drafts Review Hub & Visual Diff Inspector</span>
           </h1>
           <p className="text-xs text-slate-400 font-mono">
-            Peninjauan draf usulan terjemahan komunitas dengan pembanding diff visual.
+            Peninjauan draf usulan terjemahan komunitas dengan pembanding diff visual real data.
           </p>
         </div>
 
-        {pendingCount > 0 && (
-          <button
-            onClick={handleBatchApproveAllPending}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-cyber-emerald text-obsidian-950 hover:bg-cyber-emerald/90 text-xs font-mono font-bold shadow-cyber-glow transition-all"
-          >
-            <CheckCheck className="w-4 h-4" />
-            <span>Setujui Semua Draf Pending ({pendingCount})</span>
-          </button>
-        )}
+        <div className="flex items-center space-x-2">
+          {pendingCount > 0 && (
+            <button
+              onClick={handleBatchApproveAllPending}
+              disabled={batchApproveMutation.isPending}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyber-amber/20 hover:bg-cyber-amber/30 text-cyber-amber border border-cyber-amber/40 text-xs font-mono font-bold transition-all disabled:opacity-50"
+            >
+              <CheckCheck className="w-4 h-4" />
+              <span>Setujui Semua ({pendingCount})</span>
+            </button>
+          )}
+
+          {approvedCount > 0 && (
+            <button
+              onClick={handleApplyApproved}
+              disabled={applyMutation.isPending}
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-cyber-emerald text-obsidian-950 hover:bg-cyber-emerald/90 text-xs font-mono font-bold shadow-cyber-glow transition-all disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>Terapkan Draf Disetujui ({approvedCount})</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter Toolbar */}
@@ -123,16 +179,22 @@ export const DraftsReviewHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Internal Scrollable Draft List (Above the Fold) */}
+      {/* Internal Scrollable Draft List */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-        {filteredDrafts.map((draft) => (
-          <DiffInspector
-            key={draft.id}
-            draft={draft}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
-        ))}
+        {filteredDrafts.length === 0 ? (
+          <div className="py-16 text-center text-xs font-mono text-slate-400">
+            Tidak ada draf dengan status "{statusFilter}".
+          </div>
+        ) : (
+          filteredDrafts.map((draft) => (
+            <DiffInspector
+              key={draft.id}
+              draft={draft}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          ))
+        )}
       </div>
     </div>
   );

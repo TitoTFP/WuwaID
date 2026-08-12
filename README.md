@@ -80,18 +80,18 @@ Release baru hanya memuat satu file patch `pakchunk0-ID-WindowsNoEditor_1000_P.p
 
 ## Struktur Repositori (Monorepo)
 
-Repositori **WuwaID** mengintegrasikan komponen proxy loader, backend quest, web UI, log server, dan perkakas ekspor data:
+Repositori **WuwaID** mengintegrasikan loader game, data terjemahan, WebUI terpadu, dan perkakas ekspor data:
 
 ```text
 WuwaID/
-├── src/ & sdk/           # C++ WinHTTP proxy loader & PakBypass DLL loader (Visual Studio / MSBuild)
-├── quests/               # Server Quest & Admin (FastAPI backend + React/Vite web viewer & editor)
-├── log-server/           # Node.js/Express service untuk mengumpulkan crash log & status launcher
-├── webui/                # Modern Unified Web Application (Vite + React + Express dashboard)
-├── scripts/              # Skrip Python untuk ekspor & manipulasi database lokalisasi game
-├── deploy/               # Configuration deployment (Docker & systemd service)
-└── release/              # Release packaging & validation scripts
+├── src/ & sdk/           # C++ WinHTTP proxy loader & PakBypass DLL loader
+├── data/                 # Data lokal hasil ekspor (diabaikan Git)
+├── webui/                # Vite + React + Express reader, workbench, ops, dan database tools
+├── scripts/              # Skrip Python untuk ekspor database lokalisasi game
+└── release/              # Artefak packaging dan validasi release
 ```
+
+`webui/` adalah satu-satunya aplikasi web aktif di repository ini. Data runtime seperti `data/quests/` dan `webui/data/db_uploads/` sengaja tidak disimpan di Git.
 
 ---
 
@@ -102,47 +102,41 @@ WuwaID/
 Repositori ini menyediakan skrip Python untuk mengekstrak teks lokalisasi dari database game Wuthering Waves (`ConfigDB` atau `WuwaDBExport`).
 
 #### Persiapan
+
 Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai atau tentukan path secara manual saat menjalankan skrip.
 
 #### Ekspor Dialog Quest Terurut
+
 ```sh
 python scripts/export_quest_ordered.py [path_ke_ConfigDB]
 ```
-Output disimpan di `export_quest_ordered/`.
+
+Output disimpan di `scripts/export_quest_ordered/`.
 
 #### Ekspor Semua Teks Lokalisasi Terkelompok (Direkomendasikan)
+
 ```sh
 python scripts/export_text_grouped.py [path_ke_ConfigDB]
 ```
-Output disimpan di `export_text_grouped/`.
+
+Output disimpan di `data/quests/`.
 
 ---
 
-### 2. Layanan Web & Dashboard (`webui/`, `quests/`, `log-server/`)
+### 2. WebUI terpadu
 
-#### WebUI (Unified Dashboard & Reader)
+Generate data lokal terlebih dahulu jika diperlukan, lalu jalankan aplikasi:
+
 ```sh
+python scripts/export_text_grouped.py [path_ke_ConfigDB]
 cd webui
 npm install
-npm run dev        # Menjalankan Vite dev server + Express backend
-npm run build      # Melakukan typecheck & build bundel produksi
+npm run dev        # Vite :3000 + Express API :3001
+npm run build      # Typecheck dan production build
+npm start          # Menjalankan server hasil build
 ```
 
-#### Quests Server (FastAPI + React Frontend)
-```sh
-cd quests
-uv sync            # Setup Python virtual environment
-npm --prefix web install
-npm --prefix web run dev   # Frontend React
-python -m app.main         # FastAPI Backend Server
-```
-
-#### Log Server (Express Log Collector)
-```sh
-cd log-server
-npm install
-npm run dev        # Development mode
-```
+Halaman aktif: **Reader**, **Workbench**, **Operations**, **Databases**, **Drafts**, dan **Versions**.
 
 ---
 

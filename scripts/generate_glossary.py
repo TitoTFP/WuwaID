@@ -78,8 +78,9 @@ def main() -> int:
     # 2. Process Quest Names / Quest Chapter Names
     # These are proper titles and should stay in English for Indonesian output.
     quest_title_count = 0
-    quest_category_path = CATEGORIES_DIR / "Quest.json"
-    if quest_category_path.is_file():
+    quest_category_paths = list(CATEGORIES_DIR.rglob("Quest.json"))
+    if quest_category_paths:
+        quest_category_path = quest_category_paths[0]
         print(f"Scanning quest titles from {quest_category_path}...")
         try:
             with quest_category_path.open(encoding="utf-8") as f:
@@ -161,20 +162,19 @@ def main() -> int:
 
     print("Extracting terms from categories...")
     for target in targets:
-        file_path = CATEGORIES_DIR / target["file"]
-        if not file_path.is_file():
-            continue
-        try:
-            with file_path.open(encoding="utf-8") as f:
-                data = json.load(f)
-            for k, v in data.items():
-                if any(p.match(k) for p in target["patterns"]):
-                    en = v.get("en", "")
-                    zh = v.get("zh-Hans", "")
-                    if en:
-                        add_entry(en, zh, target["category"])
-        except Exception as e:
-            print(f"Error processing {target['file']}: {e}")
+        matching_files = list(CATEGORIES_DIR.rglob(target["file"]))
+        for file_path in matching_files:
+            try:
+                with file_path.open(encoding="utf-8") as f:
+                    data = json.load(f)
+                for k, v in data.items():
+                    if any(p.match(k) for p in target["patterns"]):
+                        en = v.get("en", "")
+                        zh = v.get("zh-Hans", "")
+                        if en:
+                            add_entry(en, zh, target["category"])
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
 
     # Write output
     try:
