@@ -42,6 +42,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 						{/* 2. Workbench Tab Routes */}
 						<Route path="/workbench" element={<WorkbenchView />} />
+						<Route path="/workbench/quest/:questId" element={<WorkbenchView />} />
+						<Route path="/workbench/category/*" element={<WorkbenchView />} />
 						<Route path="/workbench/drafts" element={<DraftsReviewHub />} />
 						<Route path="/workbench/versions" element={<VersionsHistory />} />
 						<Route path="/drafts" element={<DraftsReviewHub />} />

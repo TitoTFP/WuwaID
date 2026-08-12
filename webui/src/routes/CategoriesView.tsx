@@ -9,6 +9,7 @@ import {
 	FileText,
 	CheckCircle2,
 	Filter,
+	PenTool,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fetchCategories } from "../lib/api";
@@ -321,9 +322,25 @@ export const CategoriesView: React.FC = () => {
 												<span>
 													{(category.totalItems || 0).toLocaleString()} teks
 												</span>
-												<span className="text-cyber-emerald font-bold">
-													{category.progressPercentage ?? 0}% ID
-												</span>
+												<div className="flex items-center space-x-2">
+													<button
+														type="button"
+														onClick={(e) => {
+															e.stopPropagation();
+															navigate(
+																`/workbench?categoryName=${encodeURIComponent(category.name)}`,
+															);
+														}}
+														className="px-2 py-0.5 rounded bg-cyber-gold/15 hover:bg-cyber-gold/25 text-cyber-gold border border-cyber-gold/30 text-[10px] font-mono flex items-center space-x-1 transition-all"
+														title="Buka kategori di Workbench"
+													>
+														<PenTool className="w-3 h-3" />
+														<span>Workbench</span>
+													</button>
+													<span className="text-cyber-emerald font-bold">
+														{category.progressPercentage ?? 0}% ID
+													</span>
+												</div>
 											</div>
 											<div className="w-full bg-obsidian-950 rounded-full h-1 overflow-hidden border border-obsidian-800">
 												<div

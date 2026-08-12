@@ -10,6 +10,7 @@ import {
 	ChevronRight,
 	FileText,
 	CheckCircle2,
+	PenTool,
 } from "lucide-react";
 import {
 	downloadCategoryDb,
@@ -116,6 +117,20 @@ export const CategoryView: React.FC = () => {
 
 				{/* Toolbar Controls */}
 				<div className="flex flex-wrap items-center gap-2">
+					<button
+						type="button"
+						onClick={() =>
+							navigate(
+								`/workbench?categoryName=${encodeURIComponent(categoryName)}`,
+							)
+						}
+						className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyber-gold/15 text-cyber-gold border border-cyber-gold/40 hover:bg-cyber-gold/25 text-xs font-mono font-bold transition-all shadow-gold-glow cursor-pointer"
+						title="Buka kategori teks ini di Workbench untuk diedit/diterjemahkan"
+					>
+						<PenTool className="w-3.5 h-3.5" />
+						<span>Buka di Workbench</span>
+					</button>
+
 					<ExportDbMenu
 						onExport={(mode) => void handleExport(mode)}
 						exportingMode={exportingMode}
