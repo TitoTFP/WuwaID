@@ -141,7 +141,11 @@ export const ReaderView: React.FC = () => {
 		enabled: !!selectedChapterId && !selectedQuestId,
 	});
 
-	const { data: questDetailData } = useQuery({
+	const {
+		data: questDetailData,
+		isLoading: isLoadingQuestDetail,
+		isError: isQuestDetailError,
+	} = useQuery({
 		queryKey: ["questDetail", selectedQuestId],
 		queryFn: () => fetchQuestDetail(selectedQuestId!),
 		enabled: !!selectedQuestId,
@@ -203,27 +207,54 @@ export const ReaderView: React.FC = () => {
 		});
 
 	// State 3: Active Quest Dialogue Stream View (/reader/quest/:questId)
-	if (selectedQuestId && activeQuestDetail) {
-		const parentChapterNum = activeQuestDetail.chapterId
-			? activeQuestDetail.chapterId.replace("ch_", "")
-			: "1";
-		return (
-			<div className="h-full flex flex-col space-y-2 overflow-hidden animate-fade-in">
-				<div className="shrink-0 flex items-center justify-between pb-1">
+	if (selectedQuestId) {
+		if (isLoadingQuestDetail && !activeQuestDetail) {
+			return (
+				<div className="h-full flex flex-col items-center justify-center space-y-3 py-20 text-center font-mono text-slate-400">
+					<div className="w-6 h-6 border-2 border-cyber-cyan border-t-transparent rounded-full animate-spin" />
+					<p className="text-xs">Memuat dialog quest #{selectedQuestId}...</p>
+				</div>
+			);
+		}
+
+		if (activeQuestDetail) {
+			const parentChapterNum = activeQuestDetail.chapterId
+				? activeQuestDetail.chapterId.replace("ch_", "")
+				: "1";
+			return (
+				<div className="h-full flex flex-col space-y-2 overflow-hidden animate-fade-in">
+					<div className="shrink-0 flex items-center justify-between pb-1">
+						<button
+							onClick={() => navigate(`/reader/chapter/${parentChapterNum}`)}
+							className="flex items-center space-x-1 text-xs font-mono text-cyber-cyan hover:underline cursor-pointer"
+						>
+							<ArrowLeft className="w-3.5 h-3.5" />
+							<span>
+								Kembali ke Daftar Quest (
+								{activeQuestDetail.chapterTitle || "Chapter"})
+							</span>
+						</button>
+					</div>
+					<QuestStreamViewer quest={activeQuestDetail} />
+				</div>
+			);
+		}
+
+		if (isQuestDetailError || !activeQuestDetail) {
+			return (
+				<div className="h-full flex flex-col items-center justify-center space-y-4 py-20 text-center font-mono">
+					<p className="text-sm text-rose-400 font-bold">
+						Quest #{selectedQuestId} tidak ditemukan.
+					</p>
 					<button
-						onClick={() => navigate(`/reader/chapter/${parentChapterNum}`)}
-						className="flex items-center space-x-1 text-xs font-mono text-cyber-cyan hover:underline"
+						onClick={() => navigate("/reader")}
+						className="px-4 py-2 text-xs text-cyber-cyan border border-cyber-cyan/40 hover:bg-cyber-cyan/10 rounded-lg transition-all cursor-pointer"
 					>
-						<ArrowLeft className="w-3.5 h-3.5" />
-						<span>
-							Kembali ke Daftar Quest (
-							{activeQuestDetail.chapterTitle || "Chapter"})
-						</span>
+						Kembali ke Daftar Bab Cerita
 					</button>
 				</div>
-				<QuestStreamViewer quest={activeQuestDetail} />
-			</div>
-		);
+			);
+		}
 	}
 
 	// State 2: Selected Chapter Quest List View (/reader/chapter/:chapterId)

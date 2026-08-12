@@ -698,13 +698,61 @@ export class RealDataLoader {
 		return null;
 	}
 
+	private questFileMap: Map<string, string> | null = null;
+
+	private getQuestFileMap(): Map<string, string> {
+		if (this.questFileMap) return this.questFileMap;
+
+		const map = new Map<string, string>();
+		if (!fs.existsSync(QUESTS_JSON_DIR)) {
+			this.questFileMap = map;
+			return map;
+		}
+
+		const walk = (dir: string) => {
+			let entries: fs.Dirent[] = [];
+			try {
+				entries = fs.readdirSync(dir, { withFileTypes: true });
+			} catch {
+				return;
+			}
+			for (const entry of entries) {
+				const fullPath = path.join(dir, entry.name);
+				if (entry.isDirectory()) {
+					walk(fullPath);
+				} else if (entry.name === "dialogue.json") {
+					const dirName = path.basename(dir);
+					const match = dirName.match(/^(\d+)_/);
+					if (match) {
+						map.set(match[1], fullPath);
+					}
+					try {
+						const raw = fs.readFileSync(fullPath, "utf-8");
+						const data = JSON.parse(raw);
+						if (data.quest_id !== undefined) {
+							map.set(String(data.quest_id), fullPath);
+						}
+					} catch {
+						// Ignore JSON parse errors
+					}
+				}
+			}
+		};
+
+		walk(QUESTS_JSON_DIR);
+		this.questFileMap = map;
+		return map;
+	}
+
 	public getQuestDetail(id: string): QuestDetail | null {
 		if (this.questDetailCache.has(id)) {
 			return this.questDetailCache.get(id)!;
 		}
 
-		const filePath = path.join(QUESTS_JSON_DIR, `${id}.json`);
-		if (!fs.existsSync(filePath)) {
+		const map = this.getQuestFileMap();
+		const filePath =
+			map.get(id) || path.join(QUESTS_JSON_DIR, `${id}.json`);
+		if (!filePath || !fs.existsSync(filePath)) {
 			return null;
 		}
 
