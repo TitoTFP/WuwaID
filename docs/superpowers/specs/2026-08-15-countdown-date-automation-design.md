@@ -52,7 +52,8 @@ diuji tanpa memanggil situs eksternal.
 
 Workflow:
 
-- berjalan setiap enam jam dengan `schedule`;
+- berjalan satu kali per minggu dengan `schedule` (`0 0 * * 0`, setiap Minggu
+  pukul 00:00 UTC);
 - menyediakan `workflow_dispatch` untuk eksekusi manual;
 - menggunakan Python bawaan runner Ubuntu;
 - memiliki `permissions: contents: write`;
@@ -102,8 +103,8 @@ terhadap situs sumber.
 
 ## Kriteria keberhasilan
 
-- Tanggal baru pada situs masuk ke `Web/assets.json` maksimal enam jam setelah
-  situs diperbarui.
+- Tanggal baru pada situs masuk ke `Web/assets.json` maksimal tujuh hari setelah
+  situs diperbarui, atau segera melalui `workflow_dispatch`.
 - Commit hanya dibuat ketika `update_date` meningkat.
 - Kegagalan jaringan atau perubahan format sumber tidak merusak JSON dan tidak
   menghasilkan commit.
