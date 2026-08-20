@@ -105,6 +105,37 @@ Repositori ini menyediakan skrip Python untuk mengekstrak teks lokalisasi dari d
 
 Pastikan folder database game (`ConfigDB` atau `WuwaDBExport`) diletakkan di direktori yang sesuai atau tentukan path secara manual saat menjalankan skrip.
 
+#### Ekspor database langsung dari game
+
+Untuk mengambil database dari game yang sedang berjalan, jalankan workflow
+`Build Windows DLLs` secara manual dari GitHub Actions, lalu salin kedua DLL
+hasil build ke folder berikut:
+
+```text
+{Folder game}\Client\Binaries\Win64\
+├── winhttp.dll
+└── export_localization_db.dll
+```
+
+Mulai game dari kondisi tertutup. Setelah SDK siap, console exporter akan
+menampilkan pilihan ekspor. Pilih `[2] Export ConfigDB only` untuk mengambil
+database lokalisasi tanpa mengekspor dialog.
+
+Output disimpan ke:
+
+```text
+%USERPROFILE%\Desktop\WuwaDBExport\
+├── base\
+├── zh-Hans\
+├── en\
+└── ja\
+```
+
+Mode DB-only tidak memerlukan file `.pak` di folder `wuwaIndonesia`. Log loader
+berada di `pakbypass_logs`, sedangkan log exporter berada di
+`%USERPROFILE%\Desktop\WuwaDBExport\export_log.txt` atau di sebelah DLL sebagai
+`export_localization_db.log` jika folder Desktop tidak dapat ditulis.
+
 #### Ekspor Dialog Quest Terurut
 
 ```sh
@@ -121,9 +152,34 @@ python scripts/export_text_grouped.py [path_ke_ConfigDB]
 
 Output disimpan di `data/quests/`.
 
+### 2. Perbarui background launcher
+
+Background video launcher resmi dapat diperbarui tanpa reverse engineering ulang
+dengan downloader berikut:
+
+```sh
+python scripts/update_launcher_background.py
+```
+
+Script mengambil konfigurasi background dari CDN launcher Kuro, mencoba host CDN
+media alternatif jika diperlukan, lalu memperbarui:
+
+- `Web/Video/bg-video.mp4`
+- `Web/assets.json` hanya pada `sha256` entry `bg-video.mp4`
+
+Field `update_date` **tidak pernah diubah** oleh script ini karena field tersebut
+digunakan launcher untuk countdown jadwal update game berikutnya. Entry `bgm.mp3`
+dan URL publik asset juga dipertahankan.
+
+Untuk mengambil dan memvalidasi asset tanpa mengubah file repository:
+
+```sh
+python scripts/update_launcher_background.py --dry-run
+```
+
 ---
 
-### 2. WebUI terpadu
+### 3. WebUI terpadu
 
 Generate data lokal terlebih dahulu jika diperlukan, lalu jalankan aplikasi:
 

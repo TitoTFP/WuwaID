@@ -234,3 +234,4 @@ build-artifacts/
 # Agent workspace files
 CLAUDE.md
 docs/agents/
+.pi-glla/
