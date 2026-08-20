@@ -1,0 +1,79 @@
+name: Build Windows DLLs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-windows-dlls.yml'
+      - 'src/**'
+      - 'sdk/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2025
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build x64 Release DLLs
+        shell: pwsh
+        run: |
+          msbuild src/export_localization_db/export_localization_db.vcxproj `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:PlatformToolset=v143 `
+            /p:SolutionDir=$env:GITHUB_WORKSPACE\ `
+            /p:OutDir=$env:GITHUB_WORKSPACE\build-artifacts\export_localization_db\ `
+            /p:IntDir=$env:RUNNER_TEMP\export_localization_db\
+
+          msbuild src/pakbypass/pakbypass.vcxproj `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:PlatformToolset=v143 `
+            /p:SolutionDir=$env:GITHUB_WORKSPACE\ `
+            /p:OutDir=$env:GITHUB_WORKSPACE\build-artifacts\pakbypass\ `
+            /p:IntDir=$env:RUNNER_TEMP\pakbypass\
+
+      - name: Verify x64 PE outputs
+        shell: pwsh
+        run: |
+          $outputs = @(
+            "$env:GITHUB_WORKSPACE\build-artifacts\export_localization_db\export_localization_db.dll",
+            "$env:GITHUB_WORKSPACE\build-artifacts\pakbypass\winhttp.dll"
+          )
+
+          foreach ($output in $outputs) {
+            if (!(Test-Path $output)) {
+              throw "Missing build output: $output"
+            }
+            $bytes = [System.IO.File]::ReadAllBytes($output)
+            if ($bytes.Length -lt 0x40 -or $bytes[0] -ne 0x4d -or $bytes[1] -ne 0x5a) {
+              throw "Not a PE file: $output"
+            }
+            $peOffset = [System.BitConverter]::ToInt32($bytes, 0x3c)
+            if ($peOffset -lt 0 -or $peOffset + 6 -gt $bytes.Length -or
+                $bytes[$peOffset] -ne 0x50 -or $bytes[$peOffset + 1] -ne 0x45) {
+              throw "Invalid PE header: $output"
+            }
+            $machine = [System.BitConverter]::ToUInt16($bytes, $peOffset + 4)
+            if ($machine -ne 0x8664) {
+              throw "Expected x64 PE (0x8664), got 0x$('{0:x4}' -f $machine): $output"
+            }
+            Write-Host "$output ($($bytes.Length) bytes)"
+          }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wuwaid-windows-x64-dlls
+          path: build-artifacts/
+          if-no-files-found: error

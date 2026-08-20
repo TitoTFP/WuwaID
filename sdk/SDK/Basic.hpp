@@ -17,6 +17,7 @@
 
 #include "../PropertyFixup.hpp"
 #include "../UnrealContainers.hpp"
+#include "../NamePool.hpp"
 #include "../Assertions.inl"
 
 namespace SDK
@@ -28,7 +29,7 @@ using namespace UC;
 
 /*
 * Disclaimer:
-*	- The 'GNames' is only a fallback and null by default, FName::AppendString is used
+ *	- FNamePool is preferred when resolved; FName::AppendString remains the fallback
 *	- THe 'GWorld' offset is not used by the SDK, it's just there for "decoration", use the provided 'UWorld::GetWorld()' function instead
 */
 namespace Offsets
@@ -363,11 +364,15 @@ public:
 	
 	std::string GetRawString() const
 	{
+		std::string PoolString;
+		if (NamePool::GetString(ComparisonIndex, Number, PoolString))
+			return PoolString;
+
 		wchar_t buffer[1024];
 	    FString TempString(buffer, 0, 1024);
 	
 		if (!AppendString)
-			InitInternal();
+			return {};
 	
 		InSDKUtils::CallGameFunction(reinterpret_cast<void(*)(const FName*, FString&)>(AppendString), this, TempString);
 	
@@ -1260,4 +1265,3 @@ template<typename UnderlayingClassType, int32 Size, int32 Align = 0x8>
 using TActorBasedCycleFixup = CyclicDependencyFixupImpl::TCyclicClassFixup<UnderlayingClassType, Size, Align, class AActor>;
 
 }
-

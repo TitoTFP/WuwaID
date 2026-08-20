@@ -107,8 +107,9 @@ static void DoInit()
 
     LOG_INFO("Init", "Dang cho game khoi tao...");
 
-    // Phase 1: Dynamically resolve SDK offsets (GObjects, AppendString, ProcessEventIdx)
-    // Uses Dumper-7 strategies: .data section scanning, string XREF, VTable analysis
+    // Phase 1: Dynamically resolve SDK offsets (GObjects, FNamePool,
+    // AppendString fallback, ProcessEventIdx).
+    // Uses Dumper-7 strategies plus direct name-pool validation.
     if (!DynamicResolver::ResolveAndInitSDK(120, ResolverLog, SDK::UObject::GObjects, 2000))
     {
         LOG_ERROR("Init", "Khong the tim offset SDK!");

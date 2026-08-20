@@ -1,10 +1,12 @@
 #pragma once
 // DynamicResolver.hpp - Runtime SDK offset resolution via pattern scanning
-// Finds GObjects, FName::AppendString, and ProcessEvent VTable index dynamically
+// Finds GObjects, FNamePool, FName::AppendString fallback, and ProcessEvent
+// VTable index dynamically.
 // so the DLL survives game patches without recompilation.
 //
 // Uses the same strategies as Dumper-7:
 //   GObjects:        structural validation in .data section
+//   FNamePool:       constructor reference + validated pool/name entries
 //   AppendString:    string XREF "ForwardShadingQuality_" -> nearby CALL target
 //   ProcessEventIdx: VTable scan for TEST FunctionFlags with 0x400 and 0x4000
 
@@ -94,12 +96,40 @@ static Section GetSection(const char* name)
     auto* nt = (IMAGE_NT_HEADERS*)(m + ((IMAGE_DOS_HEADER*)m)->e_lfanew);
     auto* sect = IMAGE_FIRST_SECTION(nt);
     size_t nameLen = strlen(name);
+
+    // Recent game builds use an obfuscator that renames every PE section to
+    // the same value (currently ".std"). Resolve conventional SDK sections
+    // from their memory flags as a fallback.
+    Section semanticMatch{ 0, 0 };
     for (int i = 0; i < nt->FileHeader.NumberOfSections; i++)
     {
-        if (memcmp(sect[i].Name, name, nameLen) == 0)
+        const auto characteristics = sect[i].Characteristics;
+        const bool nameMatch = memcmp(sect[i].Name, name, nameLen) == 0;
+        if (nameMatch)
             return { (uintptr_t)m + sect[i].VirtualAddress, sect[i].Misc.VirtualSize };
+
+        const bool isExecutable =
+            (characteristics & IMAGE_SCN_MEM_EXECUTE) != 0;
+        const bool isWritable =
+            (characteristics & IMAGE_SCN_MEM_WRITE) != 0;
+        const bool isReadable =
+            (characteristics & IMAGE_SCN_MEM_READ) != 0;
+
+        if (strcmp(name, ".text") == 0 && isExecutable && isReadable)
+        {
+            if (!semanticMatch.base)
+                semanticMatch = { (uintptr_t)m + sect[i].VirtualAddress,
+                                   sect[i].Misc.VirtualSize };
+        }
+        else if (strcmp(name, ".data") == 0 && isWritable && isReadable &&
+                 !isExecutable)
+        {
+            if (!semanticMatch.base)
+                semanticMatch = { (uintptr_t)m + sect[i].VirtualAddress,
+                                   sect[i].Misc.VirtualSize };
+        }
     }
-    return { 0, 0 };
+    return semanticMatch;
 }
 
 // ========================================================================
@@ -188,6 +218,23 @@ static void IterateReadableSections(
     }
 }
 
+// Recent builds split executable code across multiple sections. Do not treat
+// the first executable section as the complete code range when resolving CALLs.
+static bool IsAddressInExecutableSection(uintptr_t address)
+{
+    bool found = false;
+    IterateReadableSections([&](uintptr_t secBase, size_t secSize, bool isExecutable) -> bool
+    {
+        if (isExecutable && address >= secBase && address < secBase + secSize)
+        {
+            found = true;
+            return true;
+        }
+        return false;
+    });
+    return found;
+}
+
 // Find a LEA rip-relative instruction pointing to a given ANSI string (searches all readable sections)
 static uintptr_t FindAnsiStringXRef(const char* target, void (*log)(const char*, ...) = nullptr)
 {
@@ -267,12 +314,12 @@ static uintptr_t FindWideStringXRef(const wchar_t* target, void (*log)(const cha
 }
 
 // Resolve E8 CALL: returns absolute target address or 0
-static uintptr_t ResolveE8Call(uintptr_t callAddr, uintptr_t textBase, size_t textSize)
+static uintptr_t ResolveE8Call(uintptr_t callAddr)
 {
     if (*(uint8_t*)callAddr != 0xE8) return 0;
     auto rel = *(int32_t*)(callAddr + 1);
     auto target = callAddr + 5 + rel;
-    if (target >= textBase && target < textBase + textSize)
+    if (IsAddressInExecutableSection(target))
         return target;
     return 0;
 }
@@ -325,7 +372,7 @@ static uintptr_t FindAppendString(void (*log)(const char*, ...) = nullptr)
             if (match)
             {
                 auto callAddr = match + parsed.size() - 1;
-                auto target = ResolveE8Call(callAddr, text.base, text.size);
+                auto target = ResolveE8Call(callAddr);
                 if (target)
                 {
                     if (log) log("  [Resolver] AppendString at 0x%p (primary pattern)", (void*)target);
@@ -344,7 +391,7 @@ static uintptr_t FindAppendString(void (*log)(const char*, ...) = nullptr)
             {
                 // The second E8 is at offset 0x10 from match start
                 auto callAddr = match + 0x10;
-                auto target = ResolveE8Call(callAddr, text.base, text.size);
+                auto target = ResolveE8Call(callAddr);
                 if (target)
                 {
                     if (log) log("  [Resolver] AppendString at 0x%p (inlined pattern)", (void*)target);
@@ -354,9 +401,9 @@ static uintptr_t FindAppendString(void (*log)(const char*, ...) = nullptr)
         }
 
         // Strategy 3: Brute-force scan region after XREF for any E8 CALL
-        for (uintptr_t a = xref; a < xref + 0x100 && a + 5 < text.base + text.size; a++)
+        for (uintptr_t a = xref; a < xref + 0x100 && a + 5 < modBase + modSize; a++)
         {
-            auto target = ResolveE8Call(a, text.base, text.size);
+            auto target = ResolveE8Call(a);
             if (target)
             {
                 auto b = *(uint8_t*)target;
@@ -390,7 +437,7 @@ static uintptr_t FindAppendString(void (*log)(const char*, ...) = nullptr)
             if (match)
             {
                 auto callAddr = match + parsed.size() - 1;
-                auto target = ResolveE8Call(callAddr, text.base, text.size);
+                auto target = ResolveE8Call(callAddr);
                 if (target)
                 {
                     if (log) log("  [Resolver] AppendString at 0x%p (Bone backup)", (void*)target);
@@ -413,9 +460,9 @@ static uintptr_t FindAppendString(void (*log)(const char*, ...) = nullptr)
 
 // Helper: check if a VTable function contains TEST [reg+disp], imm32 patterns
 // matching ProcessEvent's characteristic flag checks.
-static bool IsProcessEventCandidate(uintptr_t fn, uintptr_t textBase, size_t textSize)
+static bool IsProcessEventCandidate(uintptr_t fn)
 {
-    if (fn < textBase || fn >= textBase + textSize) return false;
+    if (!IsAddressInExecutableSection(fn)) return false;
 
     bool hasNative = false;      // TEST ..., 0x00000400  (FUNC_Native)
     bool hasOutParms = false;    // TEST ..., 0x00400000  (FUNC_HasOutParms)
@@ -512,7 +559,7 @@ static int32_t FindProcessEventIdx(uintptr_t gobjectsAddr, void (*log)(const cha
                 for (int j = 0; j < 5 && *(uint8_t*)fn == 0xE9; j++)
                     fn = fn + 5 + *(int32_t*)(fn + 1);
 
-                if (IsProcessEventCandidate(fn, text.base, text.size))
+                if (IsProcessEventCandidate(fn))
                 {
                     if (log) log("  [Resolver] ProcessEvent at VTable[0x%X] = 0x%p", idx, (void*)fn);
                     return idx;
@@ -528,7 +575,7 @@ static int32_t FindProcessEventIdx(uintptr_t gobjectsAddr, void (*log)(const cha
         {
             if (log) log("  [Resolver] 'Accessed None' XREF at 0x%p", (void*)accessedNoneXref);
             uintptr_t nextFunc = FindNextFunctionStart(accessedNoneXref);
-            if (nextFunc && nextFunc >= text.base && nextFunc < text.base + text.size)
+            if (nextFunc && IsAddressInExecutableSection(nextFunc))
             {
                 if (log) log("  [Resolver] Next function after 'Accessed None' at 0x%p", (void*)nextFunc);
                 // Find this address in the VTable
@@ -682,77 +729,92 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
     SDK::Offsets::GObjects = static_cast<int32_t>(gobjects - moduleBase);
     if (log) log("  GObjects resolved -> RVA 0x%08X", SDK::Offsets::GObjects);
 
-    // --- Phase 2: Find AppendString (game code is fully loaded now) ---
-    if (log) log("[Resolver] Phase 2: Scanning for FName::AppendString...");
-    uintptr_t appendStr = FindAppendString(log);
+    // --- Phase 2: Resolve FNamePool before using AppendString ---
+    if (log) log("[Resolver] Phase 2: Scanning for FNamePool...");
+    const bool namePoolReady = SDK::NamePool::Initialize(gobjects, log);
 
-    // Retry once after delay if not found
-    if (!appendStr)
+    // --- Phase 3: Resolve AppendString as a per-name fallback ---
+    // Keep this separate from pool initialization: GetRawString() can still
+    // use it when a pool entry is malformed or unsupported.
+    uintptr_t appendStr = 0;
     {
-        if (log) log("  First scan failed, retrying after 2s...");
-        Sleep(2000);
+        if (log) log("[Resolver] Phase 3: Scanning for FName::AppendString fallback...");
         appendStr = FindAppendString(log);
-    }
 
-    if (appendStr)
-    {
-        if (ValidateAppendString(appendStr, gobjects, log))
-        {
-            SDK::FName::InitManually(reinterpret_cast<void*>(appendStr));
-            SDK::Offsets::AppendString = static_cast<int32_t>(appendStr - moduleBase);
-            if (log) log("  AppendString resolved -> RVA 0x%08X", SDK::Offsets::AppendString);
-        }
-        else
-        {
-            if (log) log("  AppendString scan result failed validation, trying fallbacks...");
-            appendStr = 0;
-        }
-    }
-
-    if (!appendStr)
-    {
-        // Fallback A: estimate from GObjects offset shift
-        int32_t oldGObjectsRVA = 0x08EE2F98;
-        int32_t oldAppendStringRVA = 0x02A39360;
-        int32_t shift = SDK::Offsets::GObjects - oldGObjectsRVA;
-
-        if (shift != 0)
-        {
-            int32_t estimatedRVA = oldAppendStringRVA + shift;
-            uintptr_t estimatedAddr = moduleBase + estimatedRVA;
-            if (log) log("  Trying shift-estimated AppendString: RVA 0x%08X (shift=%+d)", estimatedRVA, shift);
-
-            if (ValidateAppendString(estimatedAddr, gobjects, log))
-            {
-                SDK::FName::InitManually(reinterpret_cast<void*>(estimatedAddr));
-                SDK::Offsets::AppendString = estimatedRVA;
-                appendStr = estimatedAddr;
-                if (log) log("  AppendString (shift-estimated) -> RVA 0x%08X", estimatedRVA);
-            }
-        }
-
-        // Fallback B: try raw hardcoded fallback with validation
+        // Retry once after delay if not found
         if (!appendStr)
         {
-            uintptr_t fallbackAddr = moduleBase + oldAppendStringRVA;
-            if (log) log("  Trying raw fallback AppendString: RVA 0x%08X", oldAppendStringRVA);
+            if (log) log("  First scan failed, retrying after 2s...");
+            Sleep(2000);
+            appendStr = FindAppendString(log);
+        }
 
-            if (ValidateAppendString(fallbackAddr, gobjects, log))
+        if (appendStr)
+        {
+            if (ValidateAppendString(appendStr, gobjects, log))
             {
-                SDK::FName::InitManually(reinterpret_cast<void*>(fallbackAddr));
-                SDK::Offsets::AppendString = oldAppendStringRVA;
-                appendStr = fallbackAddr;
-                if (log) log("  AppendString fallback accepted -> RVA 0x%08X", oldAppendStringRVA);
+                SDK::FName::InitManually(reinterpret_cast<void*>(appendStr));
+                SDK::Offsets::AppendString = static_cast<int32_t>(appendStr - moduleBase);
+                if (log) log("  AppendString resolved -> RVA 0x%08X", SDK::Offsets::AppendString);
             }
             else
             {
-                if (log) log("  ERROR: All AppendString strategies failed! SDK names will not work.");
+                if (log) log("  AppendString scan result failed validation, trying fallbacks...");
+                appendStr = 0;
+            }
+        }
+
+        if (!appendStr)
+        {
+            // Fallback A: estimate from GObjects offset shift
+            int32_t oldGObjectsRVA = 0x08EE2F98;
+            int32_t oldAppendStringRVA = 0x02A39360;
+            int32_t shift = SDK::Offsets::GObjects - oldGObjectsRVA;
+
+            if (shift != 0)
+            {
+                int32_t estimatedRVA = oldAppendStringRVA + shift;
+                uintptr_t estimatedAddr = moduleBase + estimatedRVA;
+                if (log) log("  Trying shift-estimated AppendString: RVA 0x%08X (shift=%+d)", estimatedRVA, shift);
+
+                if (ValidateAppendString(estimatedAddr, gobjects, log))
+                {
+                    SDK::FName::InitManually(reinterpret_cast<void*>(estimatedAddr));
+                    SDK::Offsets::AppendString = estimatedRVA;
+                    appendStr = estimatedAddr;
+                    if (log) log("  AppendString (shift-estimated) -> RVA 0x%08X", estimatedRVA);
+                }
+            }
+
+            // Fallback B: try raw hardcoded fallback with validation
+            if (!appendStr)
+            {
+                uintptr_t fallbackAddr = moduleBase + oldAppendStringRVA;
+                if (log) log("  Trying raw fallback AppendString: RVA 0x%08X", oldAppendStringRVA);
+
+                if (ValidateAppendString(fallbackAddr, gobjects, log))
+                {
+                    SDK::FName::InitManually(reinterpret_cast<void*>(fallbackAddr));
+                    SDK::Offsets::AppendString = oldAppendStringRVA;
+                    appendStr = fallbackAddr;
+                    if (log) log("  AppendString fallback accepted -> RVA 0x%08X", oldAppendStringRVA);
+                }
+                else
+                {
+                    if (log)
+                    {
+                        if (namePoolReady)
+                            log("  AppendString fallback unavailable; direct FNamePool decoding remains active.");
+                        else
+                            log("  ERROR: FNamePool and all AppendString strategies failed; names disabled.");
+                    }
+                }
             }
         }
     }
 
-    // --- Phase 3: Find ProcessEvent VTable index ---
-    if (log) log("[Resolver] Phase 3: Scanning for ProcessEvent VTable index...");
+    // --- Phase 4: Find ProcessEvent VTable index ---
+    if (log) log("[Resolver] Phase 4: Scanning for ProcessEvent VTable index...");
     auto peIdx = FindProcessEventIdx(gobjects, log);
     if (peIdx >= 0)
     {

@@ -164,6 +164,7 @@
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="DynamicResolver.hpp" />
     <ClInclude Include="WinhttpProxy.hpp" />
+    <ClInclude Include="$(SolutionDir)sdk\NamePool.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

@@ -274,7 +274,7 @@ static std::wstring GetOutputDir()
 }
 
 // Initialize SDK with dynamic offset resolution.
-// Scans for GObjects, AppendString, and ProcessEvent at runtime.
+// Scans for GObjects, FNamePool, AppendString fallback, and ProcessEvent at runtime.
 static bool InitializeSDK(int timeoutSeconds)
 {
     return DynamicResolver::ResolveAndInitSDK(timeoutSeconds, Log);
@@ -2220,4 +2220,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     }
     return TRUE;
 }
-
