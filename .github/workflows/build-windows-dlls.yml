@@ -2,11 +2,6 @@ name: Build Windows DLLs
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/build-windows-dlls.yml'
-      - 'src/**'
-      - 'sdk/**'
 
 permissions:
   contents: read
