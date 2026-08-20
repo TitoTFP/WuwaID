@@ -2,10 +2,6 @@ name: Build winhttp.dll file trigger loader
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'src/pakbypass/**'
-      - '.github/workflows/build-winhttp-loader-file-trigger.yml'
   pull_request:
     paths:
       - 'src/pakbypass/**'

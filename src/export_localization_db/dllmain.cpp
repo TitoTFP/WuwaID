@@ -36,6 +36,8 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <atomic>
+#include <cstdint>
 
 using namespace SDK;
 
@@ -199,6 +201,25 @@ bool FWeakObjectPtr::operator!=(const UObject* Other) const
 // Logging
 // ========================================================================
 static FILE* g_logFile = nullptr;
+static HMODULE g_hModule = nullptr;
+static std::wstring g_logPath;
+
+struct LoaderSdkState
+{
+    uintptr_t GObjectsAddress = 0;
+    uintptr_t NamePoolAddress = 0;
+    uint32_t NamePoolBlockOffsetBits = 0;
+    uint32_t NamePoolHeaderOffset = 0;
+    uint32_t NamePoolStringOffset = 0;
+    uint32_t NamePoolEntryStride = 0;
+    uint32_t NamePoolLengthShift = 0;
+    uintptr_t AppendStringAddress = 0;
+    int32_t ProcessEventIdx = -1;
+    int32_t ProcessEventRva = 0;
+};
+
+static LoaderSdkState g_loaderSdkState;
+static std::atomic<bool> g_loaderSdkStateReady{ false };
 
 static void Log(const char* fmt, ...)
 {
@@ -266,11 +287,51 @@ static void DeleteDirRecursive(const std::wstring& path)
 }
 
 // Get output directory on Desktop
+static std::wstring GetModuleDirectory()
+{
+    wchar_t modulePath[MAX_PATH] = {};
+    DWORD length = GetModuleFileNameW(g_hModule, modulePath, MAX_PATH);
+    if (length == 0 || length >= MAX_PATH)
+        return L".";
+
+    std::wstring path(modulePath, length);
+    const size_t separator = path.find_last_of(L"\\/");
+    return separator == std::wstring::npos ? L"." : path.substr(0, separator);
+}
+
 static std::wstring GetOutputDir()
 {
     wchar_t userProfile[MAX_PATH] = {};
-    GetEnvironmentVariableW(L"USERPROFILE", userProfile, MAX_PATH);
-    return std::wstring(userProfile) + L"\\Desktop\\WuwaDBExport";
+    const DWORD length = GetEnvironmentVariableW(L"USERPROFILE", userProfile, MAX_PATH);
+    if (length > 0 && length < MAX_PATH)
+        return std::wstring(userProfile) + L"\\Desktop\\WuwaDBExport";
+
+    return GetModuleDirectory() + L"\\WuwaDBExport";
+}
+
+static bool OpenLogFile()
+{
+    if (g_logFile)
+        return true;
+
+    const std::wstring outputLog = GetOutputDir() + L"\\export_log.txt";
+    CreateDirRecursive(GetOutputDir());
+    _wfopen_s(&g_logFile, outputLog.c_str(), L"a");
+    if (g_logFile)
+    {
+        g_logPath = outputLog;
+        return true;
+    }
+
+    // Keep a diagnostic beside the DLL if the Desktop is redirected or
+    // unavailable. This path is also useful when the game runs elevated.
+    const std::wstring fallbackLog = GetModuleDirectory() +
+        L"\\export_localization_db.log";
+    _wfopen_s(&g_logFile, fallbackLog.c_str(), L"a");
+    if (g_logFile)
+        g_logPath = fallbackLog;
+
+    return g_logFile != nullptr;
 }
 
 // Initialize SDK with dynamic offset resolution.
@@ -278,6 +339,68 @@ static std::wstring GetOutputDir()
 static bool InitializeSDK(int timeoutSeconds)
 {
     return DynamicResolver::ResolveAndInitSDK(timeoutSeconds, Log);
+}
+
+static bool ApplyLoaderSdkState()
+{
+    if (!g_loaderSdkStateReady.load(std::memory_order_acquire) ||
+        !g_loaderSdkState.GObjectsAddress)
+        return false;
+
+    const uintptr_t moduleBase = reinterpret_cast<uintptr_t>(GetModuleHandleW(NULL));
+    SDK::UObject::GObjects.InitManually(
+        reinterpret_cast<void*>(g_loaderSdkState.GObjectsAddress));
+    SDK::Offsets::GObjects = static_cast<int32>(
+        g_loaderSdkState.GObjectsAddress - moduleBase);
+    SDK::Offsets::ProcessEventIdx = g_loaderSdkState.ProcessEventIdx;
+    SDK::Offsets::ProcessEvent = g_loaderSdkState.ProcessEventRva;
+
+    if (g_loaderSdkState.NamePoolAddress)
+    {
+        SDK::NamePool::Layout layout{};
+        layout.PoolAddress = g_loaderSdkState.NamePoolAddress;
+        layout.HeaderOffset = g_loaderSdkState.NamePoolHeaderOffset;
+        layout.StringOffset = g_loaderSdkState.NamePoolStringOffset;
+        layout.EntryStride = g_loaderSdkState.NamePoolEntryStride;
+        layout.LengthShift = g_loaderSdkState.NamePoolLengthShift;
+
+        if (!SDK::NamePool::Configure(layout,
+                                      g_loaderSdkState.NamePoolBlockOffsetBits))
+            return false;
+    }
+
+    SDK::FName::InitManually(reinterpret_cast<void*>(
+        g_loaderSdkState.AppendStringAddress));
+    return true;
+}
+
+extern "C" __declspec(dllexport) BOOL WINAPI WuwaIDInitializeFromLoader(
+    uintptr_t gobjectsAddress,
+    uintptr_t namePoolAddress,
+    uint32_t namePoolBlockOffsetBits,
+    uint32_t namePoolHeaderOffset,
+    uint32_t namePoolStringOffset,
+    uint32_t namePoolEntryStride,
+    uint32_t namePoolLengthShift,
+    uintptr_t appendStringAddress,
+    int32_t processEventIdx,
+    int32_t processEventRva)
+{
+    if (!gobjectsAddress)
+        return FALSE;
+
+    g_loaderSdkState.GObjectsAddress = gobjectsAddress;
+    g_loaderSdkState.NamePoolAddress = namePoolAddress;
+    g_loaderSdkState.NamePoolBlockOffsetBits = namePoolBlockOffsetBits;
+    g_loaderSdkState.NamePoolHeaderOffset = namePoolHeaderOffset;
+    g_loaderSdkState.NamePoolStringOffset = namePoolStringOffset;
+    g_loaderSdkState.NamePoolEntryStride = namePoolEntryStride;
+    g_loaderSdkState.NamePoolLengthShift = namePoolLengthShift;
+    g_loaderSdkState.AppendStringAddress = appendStringAddress;
+    g_loaderSdkState.ProcessEventIdx = processEventIdx;
+    g_loaderSdkState.ProcessEventRva = processEventRva;
+    g_loaderSdkStateReady.store(true, std::memory_order_release);
+    return TRUE;
 }
 
 // ========================================================================
@@ -384,10 +507,8 @@ static void ExportAllDatabases()
     std::wstring outputDir = GetOutputDir();
     CreateDirRecursive(outputDir);
 
-    // Open log file
-    std::wstring logPath = outputDir + L"\\export_log.txt";
-    if (!g_logFile)
-        _wfopen_s(&g_logFile, logPath.c_str(), L"a");
+    // Reuse the worker's diagnostic log when available.
+    OpenLogFile();
 
     Log("===============================================");
     Log("  Wuthering Waves ConfigDB Export Tool");
@@ -2094,18 +2215,48 @@ static void ExportVFSTreeDB()
 // ========================================================================
 // Worker thread
 // ========================================================================
+static bool InitializeSDKForWorker()
+{
+    // winhttp.dll resolves the SDK before it loads this DLL. Wait briefly for
+    // that handoff so the exporter does not scan the game a second time.
+    for (int i = 0; i < 50; i++)
+    {
+        if (g_loaderSdkStateReady.load(std::memory_order_acquire))
+        {
+            if (ApplyLoaderSdkState())
+            {
+                Log("Using SDK state supplied by winhttp.dll; skipping duplicate scan.");
+                return true;
+            }
+
+            Log("ERROR: SDK state supplied by winhttp.dll was invalid.");
+            return false;
+        }
+        Sleep(100);
+    }
+
+    Log("No loader SDK handoff received; resolving SDK independently.");
+    return InitializeSDK(120);
+}
+
 static DWORD WINAPI WorkerThread(LPVOID)
 {
-    AllocConsole();
+    bool ownsConsole = false;
+    if (!GetConsoleWindow())
+        ownsConsole = AllocConsole() == TRUE;
+
     SetConsoleTitleW(L"WuwaVH - Wuthering Waves Export Toolkit");
     SetConsoleOutputCP(CP_UTF8);
 
     FILE* fOut = nullptr;
     FILE* fErr = nullptr;
     FILE* fIn  = nullptr;
-    freopen_s(&fOut, "CONOUT$", "w", stdout);
-    freopen_s(&fErr, "CONOUT$", "w", stderr);
-    freopen_s(&fIn,  "CONIN$",  "r", stdin);
+    if (ownsConsole)
+    {
+        freopen_s(&fOut, "CONOUT$", "w", stdout);
+        freopen_s(&fErr, "CONOUT$", "w", stderr);
+        freopen_s(&fIn,  "CONIN$",  "r", stdin);
+    }
 
     HWND consoleWnd = GetConsoleWindow();
     if (consoleWnd)
@@ -2114,18 +2265,17 @@ static DWORD WINAPI WorkerThread(LPVOID)
         SetForegroundWindow(consoleWnd);
     }
 
-    std::wstring outputDir = GetOutputDir();
-    CreateDirRecursive(outputDir);
-    std::wstring logPath = outputDir + L"\\export_log.txt";
-    _wfopen_s(&g_logFile, logPath.c_str(), L"a");
+    if (!OpenLogFile())
+        OutputDebugStringA("[WuwaExport] Failed to open export log file\n");
 
+    Log("Log file: %ls", g_logPath.c_str());
     Log("DLL loaded. Resolving SDK offsets dynamically...");
     Log("Module base: %p", GetModuleHandleW(NULL));
     Log("Exporter module: %p", GetModuleHandleW(L"export_localization_db.dll"));
 
-    if (!InitializeSDK(120))
+    if (!InitializeSDKForWorker())
     {
-        Log("ERROR: Failed to resolve SDK offsets (120s timeout)");
+        Log("ERROR: Failed to initialize SDK");
         MessageBoxW(NULL, L"Failed to resolve SDK offsets.\nPattern scanning could not find GObjects.\nMake sure the game is running.",
                     L"WuwaVH Error", MB_OK | MB_ICONERROR);
         if (g_logFile)
@@ -2133,7 +2283,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
             fclose(g_logFile);
             g_logFile = nullptr;
         }
-        FreeConsole();
+        if (ownsConsole)
+            FreeConsole();
         return 1;
     }
 
@@ -2208,10 +2359,14 @@ static DWORD WINAPI WorkerThread(LPVOID)
     printf("[WuwaVH] Press Enter to close console...\n");
     getchar(); getchar();
 
-    if (fOut) fclose(fOut);
-    if (fErr) fclose(fErr);
-    if (fIn)  fclose(fIn);
-    FreeConsole();
+    if (ownsConsole)
+    {
+        if (fOut) fclose(fOut);
+        if (fErr) fclose(fErr);
+        if (fIn)  fclose(fIn);
+    }
+    if (ownsConsole)
+        FreeConsole();
 
     return 0;
 }
@@ -2226,6 +2381,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     case DLL_PROCESS_ATTACH:
     {
         DisableThreadLibraryCalls(hModule);
+        g_hModule = hModule;
         HANDLE worker = CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
         if (worker)
             CloseHandle(worker);

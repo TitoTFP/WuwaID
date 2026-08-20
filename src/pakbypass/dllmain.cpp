@@ -90,6 +90,51 @@ static std::string GetDllDirectory(HMODULE hModule)
     return fs::path(buffer).parent_path().string();
 }
 
+using InitializeExporterFromLoaderFn = BOOL (WINAPI*) (
+    uintptr_t gobjectsAddress,
+    uintptr_t namePoolAddress,
+    uint32_t namePoolBlockOffsetBits,
+    uint32_t namePoolHeaderOffset,
+    uint32_t namePoolStringOffset,
+    uint32_t namePoolEntryStride,
+    uint32_t namePoolLengthShift,
+    uintptr_t appendStringAddress,
+    int32_t processEventIdx,
+    int32_t processEventRva);
+
+static bool InitializeExporterFromLoader(HMODULE exporter)
+{
+    auto initialize = reinterpret_cast<InitializeExporterFromLoaderFn>(
+        GetProcAddress(exporter, "WuwaIDInitializeFromLoader"));
+    if (!initialize)
+    {
+        LOG_ERROR("Init", "Exporter does not expose loader handoff (error: %lu)",
+            GetLastError());
+        return false;
+    }
+
+    const SDK::NamePool::Layout namePool = SDK::NamePool::GetLayout();
+    const uintptr_t gobjectsAddress = reinterpret_cast<uintptr_t>(
+        SDK::UObject::GObjects.GetTypedPtr());
+    const uintptr_t appendStringAddress = reinterpret_cast<uintptr_t>(
+        SDK::FName::AppendString);
+
+    const BOOL initialized = initialize(
+        gobjectsAddress,
+        namePool.PoolAddress,
+        namePool.BlockOffsetBits,
+        namePool.HeaderOffset,
+        namePool.StringOffset,
+        namePool.EntryStride,
+        namePool.LengthShift,
+        appendStringAddress,
+        SDK::Offsets::ProcessEventIdx,
+        SDK::Offsets::ProcessEvent);
+
+    LOG_INFO("Init", "Exporter loader handoff: %s", initialized ? "accepted" : "rejected");
+    return initialized == TRUE;
+}
+
 // Logging adapter for DynamicResolver
 static void ResolverLog(const char* fmt, ...)
 {
@@ -147,7 +192,10 @@ static void DoInit()
         LOG_INFO("Init", "Found exporter: %s", locDll.string().c_str());
         HMODULE hLoc = LoadLibraryW(locDll.wstring().c_str());
         if (hLoc)
+        {
+            InitializeExporterFromLoader(hLoc);
             LOG_INFO("Init", "Loaded: export_localization_db.dll");
+        }
         else
         {
             DWORD error = GetLastError();
@@ -179,7 +227,7 @@ static void DoInit()
 }
 
 // Thread pool callback — looks far more legitimate than raw CreateThread
-static VOID CALLBACK InitWorker(PTP_CALLBACK_INSTANCE /*Instance*/, PVOID /*Context*/, PTP_WORK Work)
+static VOID CALLBACK InitWorker(PTP_CALLBACK_INSTANCE /*Instance*/, PVOID /*Context*/, PTP_WORK /*Work*/)
 {
     try
     {
@@ -193,7 +241,6 @@ static VOID CALLBACK InitWorker(PTP_CALLBACK_INSTANCE /*Instance*/, PVOID /*Cont
     {
         LOG_ERROR("Init", "Unhandled exception in initialization worker");
     }
-    CloseThreadpoolWork(Work);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -214,7 +261,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         {
             PTP_WORK work = CreateThreadpoolWork(InitWorker, nullptr, nullptr);
             if (work)
+            {
                 SubmitThreadpoolWork(work);
+                CloseThreadpoolWork(work);
+            }
             else
                 OutputDebugStringA("[WuwaID] Failed to create initialization worker\n");
         }

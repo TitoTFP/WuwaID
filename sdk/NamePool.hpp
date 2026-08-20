@@ -376,52 +376,58 @@ inline uintptr_t FindPoolInModule()
 
         const uintptr_t sectionBase = moduleBase + sections[i].VirtualAddress;
         const size_t sectionSize = sections[i].Misc.VirtualSize;
-        for (size_t offset = 0; offset + 12 <= sectionSize; offset++)
+        // Validate the section once. Calling VirtualQuery for every byte made
+        // this startup scan needlessly expensive on large game binaries.
+        if (!sectionSize || !Detail::IsReadable(
+                reinterpret_cast<const void*>(sectionBase), sectionSize))
+            continue;
+
+        const auto* bytes = reinterpret_cast<const uint8_t*>(sectionBase);
+        __try
         {
-            const uintptr_t instruction = sectionBase + offset;
-            uint8_t bytes[8]{};
-            if (!Detail::ReadBytes(reinterpret_cast<const void*>(instruction), bytes, sizeof(bytes)) ||
-                bytes[0] != 0x48 || bytes[1] != 0x8D ||
-                (bytes[2] & 0xC7) != 0x05 || bytes[7] != 0xE8)
-                continue;
-
-            int32_t poolDisplacement = 0;
-            if (!Detail::ReadBytes(reinterpret_cast<const void*>(instruction + 3),
-                                    &poolDisplacement, sizeof(poolDisplacement)))
-                continue;
-
-            int32_t constructorDisplacement = 0;
-            if (!Detail::ReadBytes(reinterpret_cast<const void*>(instruction + 8),
-                                    &constructorDisplacement, sizeof(constructorDisplacement)))
-                continue;
-
-            const uintptr_t constructor = instruction + 12 + constructorDisplacement;
-            bool constructorIsExecutable = false;
-            for (int sectionIndex = 0; sectionIndex < nt->FileHeader.NumberOfSections;
-                 sectionIndex++)
+            for (size_t offset = 0; offset + 12 <= sectionSize; offset++)
             {
-                if (!(sections[sectionIndex].Characteristics & IMAGE_SCN_MEM_EXECUTE))
+                const uintptr_t instruction = sectionBase + offset;
+                const auto* current = bytes + offset;
+                if (current[0] != 0x48 || current[1] != 0x8D ||
+                    (current[2] & 0xC7) != 0x05 || current[7] != 0xE8)
                     continue;
 
-                const uintptr_t begin = moduleBase + sections[sectionIndex].VirtualAddress;
-                const uintptr_t end = begin + sections[sectionIndex].Misc.VirtualSize;
-                if (constructor >= begin && constructor < end)
+                int32_t poolDisplacement = 0;
+                int32_t constructorDisplacement = 0;
+                memcpy(&poolDisplacement, current + 3, sizeof(poolDisplacement));
+                memcpy(&constructorDisplacement, current + 8,
+                       sizeof(constructorDisplacement));
+
+                const uintptr_t constructor = instruction + 12 + constructorDisplacement;
+                bool constructorIsExecutable = false;
+                for (int sectionIndex = 0; sectionIndex < nt->FileHeader.NumberOfSections;
+                     sectionIndex++)
                 {
-                    constructorIsExecutable = true;
-                    break;
+                    if (!(sections[sectionIndex].Characteristics & IMAGE_SCN_MEM_EXECUTE))
+                        continue;
+
+                    const uintptr_t begin = moduleBase + sections[sectionIndex].VirtualAddress;
+                    const uintptr_t end = begin + sections[sectionIndex].Misc.VirtualSize;
+                    if (constructor >= begin && constructor < end)
+                    {
+                        constructorIsExecutable = true;
+                        break;
+                    }
                 }
+                if (!constructorIsExecutable)
+                    continue;
+
+                const uintptr_t poolAddress = instruction + 7 + poolDisplacement;
+                if (poolAddress < moduleBase || poolAddress >= moduleEnd)
+                    continue;
+
+                Layout layout{};
+                if (FindLayout(poolAddress, layout))
+                    return poolAddress;
             }
-            if (!constructorIsExecutable)
-                continue;
-
-            const uintptr_t poolAddress = instruction + 7 + poolDisplacement;
-            if (poolAddress < moduleBase || poolAddress >= moduleEnd)
-                continue;
-
-            Layout layout{};
-            if (FindLayout(poolAddress, layout))
-                return poolAddress;
         }
+        __except (EXCEPTION_EXECUTE_HANDLER) {}
     }
     return 0;
 }
@@ -585,6 +591,11 @@ inline uintptr_t GetPoolAddress()
 inline uint32_t GetBlockOffsetBits()
 {
     return Detail::CurrentLayout.BlockOffsetBits;
+}
+
+inline Layout GetLayout()
+{
+    return Detail::CurrentLayout;
 }
 
 inline bool GetString(int32_t comparisonIndex, uint32_t number, std::string& output)

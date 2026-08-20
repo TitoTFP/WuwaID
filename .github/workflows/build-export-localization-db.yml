@@ -2,11 +2,6 @@ name: Build export_localization_db
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'src/export_localization_db/**'
-      - 'sdk/**'
-      - '.github/workflows/build-export-localization-db.yml'
   pull_request:
     paths:
       - 'src/export_localization_db/**'

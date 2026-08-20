@@ -841,9 +841,10 @@ static bool ResolveAndInitSDK(int timeoutSeconds,
         if (log) log("  ProcessEventIdx not found, using fallback 0x%X", SDK::Offsets::ProcessEventIdx);
     }
 
-    // Let game stabilize after init
-    if (log) log("[Resolver] All offsets resolved. Waiting for game to stabilize...");
-    Sleep(15000);
+    // A short yield is enough once GObjects and ProcessEvent are valid. The
+    // old 15-second delay made standalone exporter startup look hung.
+    if (log) log("[Resolver] All offsets resolved. Waiting briefly for game stability...");
+    Sleep(1000);
 
     return true;
 }
