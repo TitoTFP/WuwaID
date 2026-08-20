@@ -386,7 +386,8 @@ static void ExportAllDatabases()
 
     // Open log file
     std::wstring logPath = outputDir + L"\\export_log.txt";
-    _wfopen_s(&g_logFile, logPath.c_str(), L"w");
+    if (!g_logFile)
+        _wfopen_s(&g_logFile, logPath.c_str(), L"a");
 
     Log("===============================================");
     Log("  Wuthering Waves ConfigDB Export Tool");
@@ -2113,17 +2114,30 @@ static DWORD WINAPI WorkerThread(LPVOID)
         SetForegroundWindow(consoleWnd);
     }
 
-    printf("[WuwaVH] DLL loaded. Resolving SDK offsets dynamically...\n");
+    std::wstring outputDir = GetOutputDir();
+    CreateDirRecursive(outputDir);
+    std::wstring logPath = outputDir + L"\\export_log.txt";
+    _wfopen_s(&g_logFile, logPath.c_str(), L"a");
+
+    Log("DLL loaded. Resolving SDK offsets dynamically...");
+    Log("Module base: %p", GetModuleHandleW(NULL));
+    Log("Exporter module: %p", GetModuleHandleW(L"export_localization_db.dll"));
 
     if (!InitializeSDK(120))
     {
-        printf("[WuwaVH] ERROR: Failed to resolve SDK offsets (120s timeout)\n");
+        Log("ERROR: Failed to resolve SDK offsets (120s timeout)");
         MessageBoxW(NULL, L"Failed to resolve SDK offsets.\nPattern scanning could not find GObjects.\nMake sure the game is running.",
                     L"WuwaVH Error", MB_OK | MB_ICONERROR);
+        if (g_logFile)
+        {
+            fclose(g_logFile);
+            g_logFile = nullptr;
+        }
         FreeConsole();
         return 1;
     }
 
+    Log("SDK initialized with dynamic offsets.");
     printf("[WuwaVH] SDK initialized with dynamic offsets.\n\n");
     printf("  ==========================================\n");
     printf("  [1] Export ConfigDB + Dialogue Flows (flat)\n");
@@ -2210,9 +2224,21 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+    {
         DisableThreadLibraryCalls(hModule);
-        CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
+        HANDLE worker = CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
+        if (worker)
+            CloseHandle(worker);
+        else
+        {
+            char message[128];
+            snprintf(message, sizeof(message),
+                "[WuwaExport] Failed to create worker thread (error: %lu)\n",
+                GetLastError());
+            OutputDebugStringA(message);
+        }
         break;
+    }
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:

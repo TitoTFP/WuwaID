@@ -1,8 +1,6 @@
 #pragma once
-// Logger.hpp - Console & file logging for WuWa Indonesia
-// Only active in Debug builds; completely stripped in Release.
-
-#ifdef _DEBUG
+// Logger.hpp - Console & file logging for WuWa Indonesia.
+// Keep this active in Release builds so loader failures are diagnosable.
 
 #include <windows.h>
 #include <string>
@@ -246,11 +244,3 @@ private:
 #define LOG_INFO(cat, fmt, ...)  Logger::Instance().Log(LogLevel::INFO,  cat, fmt, ##__VA_ARGS__)
 #define LOG_WARN(cat, fmt, ...)  Logger::Instance().Log(LogLevel::WARN,  cat, fmt, ##__VA_ARGS__)
 #define LOG_ERROR(cat, fmt, ...) Logger::Instance().Log(LogLevel::ERR,   cat, fmt, ##__VA_ARGS__)
-
-#else // Release build - strip all logging
-
-#define LOG_INFO(cat, fmt, ...)  ((void)0)
-#define LOG_WARN(cat, fmt, ...)  ((void)0)
-#define LOG_ERROR(cat, fmt, ...) ((void)0)
-
-#endif // _DEBUG
