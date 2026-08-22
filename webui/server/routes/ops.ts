@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 import express, { Router, type Request, type Response } from "express";
 import { db } from "../db.js";
 import { realDataLoader } from "../realDataLoader.js";
+import { invalidateTextVersionWorkingSet } from "../textVersions.js";
 import {
 	listCategoryFiles,
 	rebuildCategoryIndex,
 	readCategoryDocument,
 	resolveCategoryFile,
+	updateCategoryIndex,
 } from "../categoryStore.js";
 import type { LogEntry } from "../../src/types/index.js";
 
@@ -23,17 +25,15 @@ const REPO_ROOT = path.resolve(
 );
 const TEMP_DB_STORE = path.join(os.tmpdir(), "wuwaid-webui");
 const DB_EXPORT_TEMPLATE_DIR = path.join(REPO_ROOT, "data/db_exports/en");
-const EXPORT_DB_NAMES = [
-	"lang_multi_text.db",
-	"lang_multi_text_1sthalf.db",
-	"lang_multi_text_2ndhalf.db",
-];
+const EXPORT_DB_NAME_PATTERN = /^lang_multi_text(?:_[A-Za-z0-9-]+)*\.db$/i;
 const QUESTS_JSON_DIR = path.join(REPO_ROOT, "data/quests/quests");
 const INDEX_DB_FILE = path.join(REPO_ROOT, "data/quests/index.db");
 const SOURCE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_/-]*$/;
 
 function getExportDbName(value: unknown): string | null {
-	return typeof value === "string" && EXPORT_DB_NAMES.includes(value)
+	return typeof value === "string" &&
+		value === path.basename(value) &&
+		EXPORT_DB_NAME_PATTERN.test(value)
 		? value
 		: null;
 }
@@ -50,9 +50,12 @@ function getImportDbName(value: unknown): string | null {
 }
 
 function listExportDbs() {
-	return EXPORT_DB_NAMES.filter((name) =>
-		fs.existsSync(path.join(DB_EXPORT_TEMPLATE_DIR, name)),
-	);
+	if (!fs.existsSync(DB_EXPORT_TEMPLATE_DIR)) return [];
+	return fs
+		.readdirSync(DB_EXPORT_TEMPLATE_DIR, { withFileTypes: true })
+		.filter((entry) => entry.isFile() && EXPORT_DB_NAME_PATTERN.test(entry.name))
+		.map((entry) => entry.name)
+		.sort();
 }
 
 function readConfigDbTranslations(filePath: string): Map<string, string> {
@@ -100,6 +103,26 @@ function readDialogueRows(document: JsonRecord): JsonRecord[] {
 		) as JsonRecord[];
 	}
 	return [];
+}
+
+function listQuestJsonFiles(): string[] {
+	if (!fs.existsSync(QUESTS_JSON_DIR)) return [];
+	const directFiles = fs
+		.readdirSync(QUESTS_JSON_DIR, { withFileTypes: true })
+		.filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+		.map((entry) => path.join(QUESTS_JSON_DIR, entry.name));
+	if (directFiles.length > 0) return directFiles.sort();
+
+	const files: string[] = [];
+	const walk = (directory: string) => {
+		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+			const filePath = path.join(directory, entry.name);
+			if (entry.isDirectory()) walk(filePath);
+			else if (entry.isFile() && entry.name === "dialogue.json") files.push(filePath);
+		}
+	};
+	walk(QUESTS_JSON_DIR);
+	return files.sort();
 }
 
 function englishText(item: JsonRecord): string {
@@ -207,16 +230,17 @@ function loadCategoryExportTexts(
 
 function collectExportTexts(): Map<string, ExportText> {
 	const entries = new Map<string, ExportText>();
-	for (const name of fs.existsSync(QUESTS_JSON_DIR)
-		? fs.readdirSync(QUESTS_JSON_DIR).filter((file) => file.endsWith(".json"))
-		: []) {
+	for (const filePath of listQuestJsonFiles()) {
 		try {
 			addQuestExportTexts(
 				entries,
-				JSON.parse(fs.readFileSync(path.join(QUESTS_JSON_DIR, name), "utf-8")),
+				JSON.parse(fs.readFileSync(filePath, "utf-8")),
 			);
 		} catch (error) {
-			console.warn(`[ops] Skipping quest export source ${name}:`, error);
+			console.warn(
+				`[ops] Skipping quest export source ${path.relative(QUESTS_JSON_DIR, filePath)}:`,
+				error,
+			);
 		}
 	}
 	for (const file of listCategoryFiles()) {
@@ -264,19 +288,20 @@ function createIdDatabase(
 		const columns = database
 			.prepare('PRAGMA table_info("MultiText")')
 			.all() as Array<{
-			name?: string;
-		}>;
-		if (!columns.some((column) => column.name === "Name")) {
-			database.exec('ALTER TABLE "MultiText" ADD COLUMN "Name" TEXT');
-		}
+				name?: string;
+			}>;
+		const hasNameColumn = columns.some((column) => column.name === "Name");
 		const update = database.prepare(
-			'UPDATE "MultiText" SET "Content" = ?, "Name" = ? WHERE "Id" = ?',
+			hasNameColumn
+				? 'UPDATE "MultiText" SET "Content" = ?, "Name" = ? WHERE "Id" = ?'
+				: 'UPDATE "MultiText" SET "Content" = ? WHERE "Id" = ?',
 		);
 		database.exec("BEGIN");
 		for (const [id, text] of entries) {
 			const content =
 				mode === "en" ? text.en : text.id.trim() ? text.id : text.en;
-			update.run(content, text.name, id);
+			if (hasNameColumn) update.run(content, text.name, id);
+			else update.run(content, id);
 		}
 		if (restrictToEntries) {
 			database.exec('CREATE TEMP TABLE "ExportIds" ("Id" TEXT PRIMARY KEY)');
@@ -346,12 +371,12 @@ function applyIdTranslations(translations: Map<string, string>) {
 	let updatedQuestLines = 0;
 	let updatedCategoryFiles = 0;
 	let updatedCategoryItems = 0;
+	const updatedQuestIds = new Set<string>();
+	const updatedCategoryNames = new Set<string>();
 
 	if (fs.existsSync(QUESTS_JSON_DIR)) {
-		for (const name of fs
-			.readdirSync(QUESTS_JSON_DIR)
-			.filter((file) => file.endsWith(".json"))) {
-			const filePath = path.join(QUESTS_JSON_DIR, name);
+		for (const filePath of listQuestJsonFiles()) {
+			const name = path.relative(QUESTS_JSON_DIR, filePath).split(path.sep).join("/");
 			try {
 				const document = JSON.parse(
 					fs.readFileSync(filePath, "utf-8"),
@@ -384,6 +409,9 @@ function applyIdTranslations(translations: Map<string, string>) {
 					writeJson(filePath, document);
 					updatedQuestFiles++;
 					updatedQuestLines += changed;
+					if (document.quest_id !== undefined) {
+						updatedQuestIds.add(String(document.quest_id));
+					}
 				}
 			} catch (error) {
 				console.warn(
@@ -418,6 +446,7 @@ function applyIdTranslations(translations: Map<string, string>) {
 				writeJson(filePath, document);
 				updatedCategoryFiles++;
 				updatedCategoryItems += changed;
+				updatedCategoryNames.add(file.name);
 			}
 		} catch (error) {
 			console.warn(
@@ -432,7 +461,78 @@ function applyIdTranslations(translations: Map<string, string>) {
 		updatedQuestLines,
 		updatedCategoryFiles,
 		updatedCategoryItems,
+		updatedQuestIds: [...updatedQuestIds],
+		updatedCategoryNames: [...updatedCategoryNames],
 	};
+}
+
+function updateDialogueIndex(indexPath: string, questIds: string[]): number {
+	if (!questIds.length || !fs.existsSync(indexPath)) return 0;
+	const database = new DatabaseSync(indexPath, { timeout: 5000 });
+	try {
+		const hasDialogueIndex = (
+			database
+				.prepare("SELECT 1 AS present FROM sqlite_master WHERE type = ? AND name = ?")
+				.get("table", "dialogue_idx")
+		);
+		if (!hasDialogueIndex) return 0;
+
+		const deleteQuest = database.prepare("DELETE FROM dialogue_idx WHERE qid = ?");
+		const insertLine = database.prepare(
+			`INSERT INTO dialogue_idx
+			 (qid, line_id, side, chapter_id, chapter_name, quest_name, quest_type,
+			  line_type, has_options, speaker_en, text_en, text_zh, text_ja, text_id)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		);
+		const wantedIds = new Set(questIds);
+		const documents = new Map<string, JsonRecord>();
+		for (const filePath of listQuestJsonFiles()) {
+			try {
+				const document = JSON.parse(fs.readFileSync(filePath, "utf-8")) as JsonRecord;
+				const questId = String(document.quest_id ?? "");
+				if (wantedIds.has(questId)) documents.set(questId, document);
+			} catch {
+				// The import response already reports the changed files; skip invalid sources here.
+			}
+		}
+
+		let indexedRows = 0;
+		database.exec("BEGIN");
+		try {
+			for (const questId of wantedIds) {
+				const document = documents.get(questId);
+				if (!document) continue;
+				deleteQuest.run(Number(questId));
+				const chapterId = Number(document.chapter_id ?? 0);
+				for (const [index, row] of readDialogueRows(document).entries()) {
+					insertLine.run(
+						Number(document.quest_id ?? questId),
+						Number(row.id ?? index + 1),
+						chapterId === 0 ? 1 : 0,
+						chapterId,
+						String(document.chapter_name ?? ""),
+						String(document.quest_name ?? `Quest ${questId}`),
+						Number(document.quest_type ?? 0),
+						String(row.type ?? ""),
+						Array.isArray(row.options) ? 1 : 0,
+						String(row.speaker_en ?? ""),
+						String(row.text_en ?? ""),
+						String(row["text_zh-Hans"] ?? row.text_zh ?? ""),
+						String(row.text_ja ?? ""),
+						String(row.text_id ?? row.text_id_mt ?? ""),
+					);
+					indexedRows++;
+				}
+			}
+			database.exec("COMMIT");
+		} catch (error) {
+			database.exec("ROLLBACK");
+			throw error;
+		}
+		return indexedRows;
+	} finally {
+		database.close();
+	}
 }
 
 function clearIdTranslations() {
@@ -642,11 +742,21 @@ opsRouter.post(
 			fs.writeFileSync(temporary, req.body);
 			const translations = readConfigDbTranslations(temporary);
 			const updated = applyIdTranslations(translations);
-			rebuildCategoryIndex(INDEX_DB_FILE);
+			const indexedCategoryRows = updateCategoryIndex(
+				INDEX_DB_FILE,
+				updated.updatedCategoryNames,
+			);
+			const indexedDialogueRows = updateDialogueIndex(
+				INDEX_DB_FILE,
+				updated.updatedQuestIds,
+			);
 			realDataLoader.invalidateTranslationStats();
+			invalidateTextVersionWorkingSet();
 			res.status(200).json({
 				status: "imported",
 				file: { name, sizeBytes: req.body.length },
+				indexedCategoryRows,
+				indexedDialogueRows,
 				...updated,
 			});
 		} catch (error) {

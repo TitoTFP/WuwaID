@@ -1,0 +1,3263 @@
+{
+  "versionTag": "v3.5",
+  "capturedAt": "2026-08-20T19:09:44.974841Z",
+  "sourceDirectory": "data/db_exports",
+  "files": {
+    "base/Db_DetectionGear.db": {
+      "sha256": "545feff21d33dffe7c2948cacedf9f1c37697772d2a0c3ccf1f74fc688dcbbf4",
+      "bytes": 24576
+    },
+    "base/Db_ShootTarget.db": {
+      "sha256": "a4958c574016c5c5496aa506fc60e93461e2070849ee3d01fd9005a3d8913c82",
+      "bytes": 69632
+    },
+    "base/db.OnlineMotor.db": {
+      "sha256": "4dd132ee496b26bf856fd47f734f4ae94aa908078bf6d2a6a0aebcfc2213c9b9",
+      "bytes": 86016
+    },
+    "base/db_AbnormalDamage.db": {
+      "sha256": "fc6c3e6278f298707a8290fbfd054ff60f3b833d069ccbb169fb75372cc045ba",
+      "bytes": 20480
+    },
+    "base/db_AbpExtendConfigCsv.db": {
+      "sha256": "7f272ba5967c707fc5dc8127e56b38815c267ae677c74e090afbdcd5a8339bd2",
+      "bytes": 12288
+    },
+    "base/db_AbpMontageData.db": {
+      "sha256": "7447973e78c3d063e04078bccfce7e57d9b694ab5f278eda232921e01967ae54",
+      "bytes": 1056768
+    },
+    "base/db_AbpState.db": {
+      "sha256": "79faa6f685f5bb666550dabdff288bcb8d6f9220aa108b25b47aa608029a6184",
+      "bytes": 20480
+    },
+    "base/db_ActivityGamePlayPlot.db": {
+      "sha256": "b796efa7984c9471e3c8a17a59b98a5422f742e2bf42999b3992c7dcc71a8eff",
+      "bytes": 12288
+    },
+    "base/db_ActivityLinkage.db": {
+      "sha256": "829ef55c650516c4cb530dfde6117c78929ab241044b9b674b7e82970b2ee6e8",
+      "bytes": 45056
+    },
+    "base/db_ActivityMapTravel.db": {
+      "sha256": "388b884e0357fa6c5ae179e04593e848df8edd66d74629f057eb5af61f3682aa",
+      "bytes": 90112
+    },
+    "base/db_ActivityQuestConfig.db": {
+      "sha256": "0e73a840bfdc7b52f4f2299b60edbfe40ac6790b6d309ea8b735c32782216191",
+      "bytes": 24576
+    },
+    "base/db_ActivityRecommend.db": {
+      "sha256": "9d8630cc4dcb004161cc22648210a224acf7d6d42441ae42f00fe5af86a0e9a9",
+      "bytes": 24576
+    },
+    "base/db_AdvertisingPage.db": {
+      "sha256": "c47a0fc20b6cd628f79b04ee412c316d3477f5004e2f58e9bc5bcda058865897",
+      "bytes": 286720
+    },
+    "base/db_AiBehaviorTree.db": {
+      "sha256": "787d751fbda40ebadcaddaeb98a0b779fbfe3b82070ef6d1635f7ccb0ac666bf",
+      "bytes": 12288
+    },
+    "base/db_AiStateMachineConfig.db": {
+      "sha256": "db7436901867c24f7b8be8d764ca77bfd027b1bf7ba8afc26d9748b1f7abe815",
+      "bytes": 4206592
+    },
+    "base/db_AlertAreaConfig.db": {
+      "sha256": "5a395e21f3bda3a9dbc3f577979a97c2b3822056a2c5f4221e6d8b5b0544bf4d",
+      "bytes": 16384
+    },
+    "base/db_AnimalStandbyMotnageConfig.db": {
+      "sha256": "40266066170641778e04d7905814d8f83cc5c4ba0603a30acf55bfbcc83b1106",
+      "bytes": 24576
+    },
+    "base/db_Anniversaryt.db": {
+      "sha256": "dd3c7396b8a7782e88bc8d9ba176151ff80786c51cb4766844168e3e30730ddf",
+      "bytes": 32768
+    },
+    "base/db_AnsPerform.db": {
+      "sha256": "98ae531a4f713f7f7a2529a0602e0b45352dd2e91aad3ee59637f0396f3387cf",
+      "bytes": 12288
+    },
+    "base/db_AreaFunction.db": {
+      "sha256": "69ffb446153e5006869f08086792be7bab6f830f2660557d7eb3595513e15875",
+      "bytes": 12288
+    },
+    "base/db_AreaQuestTracking.db": {
+      "sha256": "6d86abb45a6400b63854a0f3437367c56cb72954e80035062ccaff90a40c9fd0",
+      "bytes": 323584
+    },
+    "base/db_AreaTerminal.db": {
+      "sha256": "a81fb4e2d3513211a173ce189a93e233bf8ac0c305b10574b433158048066d3d",
+      "bytes": 40960
+    },
+    "base/db_Artemis.db": {
+      "sha256": "4ccf543edbf801c1d38ea97c616d3e19bc598d8d4e2572ce1a0f807e29e0d0e3",
+      "bytes": 40960
+    },
+    "base/db_AutoPilotCircles.db": {
+      "sha256": "a7117d2479bc64e215825d9e0ed0a47fe88416264744d1780fef6867d36798bc",
+      "bytes": 16384
+    },
+    "base/db_AvgTalkerConfig.db": {
+      "sha256": "29739bafdc9e5b34b91064873af72295dfad662e530b02073173b58710668e5c",
+      "bytes": 20480
+    },
+    "base/db_Avignon.db": {
+      "sha256": "836de313147b2659e00498d38bf89d917963f47c5a694e376e66766d33a96d10",
+      "bytes": 24576
+    },
+    "base/db_AvoidBlock.db": {
+      "sha256": "acc3a6cd5bd4acf67cf67f54e8f6ee70945c632be9157b876aa9ab4112682b8e",
+      "bytes": 20480
+    },
+    "base/db_BabelTower.db": {
+      "sha256": "45f5de1291771147603a232fc2139787de6b0b61f55007ff544d9aba198ba102",
+      "bytes": 303104
+    },
+    "base/db_BattleHeadIcon.db": {
+      "sha256": "8cf47104afd0a694dbe6fd35c2bdc06b2f7a4d6258a58e9221e00809b097f043",
+      "bytes": 12288
+    },
+    "base/db_BattleScore.db": {
+      "sha256": "e8ee555b5565180b559aea635d90a954302b2f43d59002182758fe5e96417db8",
+      "bytes": 77824
+    },
+    "base/db_BattleScoreCalc.db": {
+      "sha256": "f98e87762a5463200b06d15a118ee0984cbfad1351fce43c3cc249b0ec5a2264",
+      "bytes": 36864
+    },
+    "base/db_BeginnerLogReport.db": {
+      "sha256": "035ff025135c455f7fb439d68c469e57b327b9e5eabba8bfecbe1a4c0fde6d8b",
+      "bytes": 12288
+    },
+    "base/db_Birthday.db": {
+      "sha256": "75f9db39d0031287850ad149fa4a56c608935edc17dde62f56cc0b75e5aa1ea3",
+      "bytes": 57344
+    },
+    "base/db_BlackCoastTheme.db": {
+      "sha256": "4cee4c2fbe8a191d26297d3f375d2f2c54ffa22fd8d04752a9fb5cd3b878bcb8",
+      "bytes": 49152
+    },
+    "base/db_BlackSwordChallenge.db": {
+      "sha256": "8808ddd223cb4914a9f9abb677912faea39b9b5ac25abe4e1f6b35e6fa446bd6",
+      "bytes": 28672
+    },
+    "base/db_BossPiling.db": {
+      "sha256": "d029f8fb2a63e66120357345a1970d4321d3dbcaa1eb3413fca4019d81cd96c6",
+      "bytes": 65536
+    },
+    "base/db_BossRushActivity.db": {
+      "sha256": "96eeb416697b73c1d0a6a7234a03c905ff5dbe2071b4e04467ea2c8771c1e7d7",
+      "bytes": 122880
+    },
+    "base/db_Brochure.db": {
+      "sha256": "d6eadb929e66a979bb07355ad8cb4e6ab56dd9e72c048ab82b18ea3a4f6dedf6",
+      "bytes": 45056
+    },
+    "base/db_BrokenRockConfig.db": {
+      "sha256": "14c7757c90a14d9b5406be87c74d8ebb66c2f1aa38837221183ca1cb78af6fb8",
+      "bytes": 32768
+    },
+    "base/db_BubbleData.db": {
+      "sha256": "0676c14bf0814c3e73205912f86b6e8c6b2f7acd3c6ee5770ae995187e72c76d",
+      "bytes": 155648
+    },
+    "base/db_BuffGroup.db": {
+      "sha256": "ac4d4a47628c182a661c7f8a16b5f4bc62c8a5ffb1278e2203fbbb6941d497aa",
+      "bytes": 12288
+    },
+    "base/db_CharacterDisplayStyle.db": {
+      "sha256": "e6811a1f7b464d48c40592c60acf6ad37f5f910b184fb652c3e94813f5e30286",
+      "bytes": 12288
+    },
+    "base/db_CiacconaGal.db": {
+      "sha256": "ea899714da8923dce13c935056197312e7478232269b9824b965fe17c0440f18",
+      "bytes": 94208
+    },
+    "base/db_CircumFluence.db": {
+      "sha256": "413eebead0a0ba3a349b513dfc29887e2746e8200512c1dea5ab5b3802551ed6",
+      "bytes": 90112
+    },
+    "base/db_CollectionActivity.db": {
+      "sha256": "8c009a5bbe6b5ed49bc649a4ddc31504c616d0e5ad93569f0c477a9ceef60b55",
+      "bytes": 12288
+    },
+    "base/db_Comic.db": {
+      "sha256": "5cd96efcc7709aee79f8218ce70c3e95c6d57fb976190a2b71ba0f16ccced7e2",
+      "bytes": 20480
+    },
+    "base/db_CommonBackground.db": {
+      "sha256": "30453f5012d1b44b0803dbaac3fb63d31c82d5cf5ad03ef3a7949b7dc92a373c",
+      "bytes": 45056
+    },
+    "base/db_CommonBtData.db": {
+      "sha256": "9d91b7d26be1f06c0787385047bc881db3399efcd2944a3f001841960f741131",
+      "bytes": 12288
+    },
+    "base/db_CommonTouchUiEdit.db": {
+      "sha256": "0f0118273e0949d000885a1f38ba77cf6ae9c58e622e6c8a04e6b9978014544d",
+      "bytes": 36864
+    },
+    "base/db_ConsumptiveActivity.db": {
+      "sha256": "9976ec232062e2168c3adc73443e632403daeeea3bd6760a27db26eb1f6af6c4",
+      "bytes": 28672
+    },
+    "base/db_ControlBody.db": {
+      "sha256": "29a612bdd0154e01c4170caf9b272ed23d3a21dc0f065ea292741ffc959255b4",
+      "bytes": 45056
+    },
+    "base/db_CoopRoleLevel.db": {
+      "sha256": "7ccbdd2d48ee07a64b516610e1be0da8132e7b4daaae009d4d6322d5c2e31e00",
+      "bytes": 69632
+    },
+    "base/db_CorniceChallenge.db": {
+      "sha256": "443bc7998482de000ab284a1ed0464bcc651695a6ddee048516351efea32be9a",
+      "bytes": 32768
+    },
+    "base/db_DaemonHackConfigCsv.db": {
+      "sha256": "700e34bb828274fd8d19e66badf0a6957460415342baa32e7fc0871458940389",
+      "bytes": 57344
+    },
+    "base/db_DailyAdventureActivity.db": {
+      "sha256": "41d22e4bb77abba25b24e5679c5281a3dd179f4d865b644a7dea4beb38aabb4e",
+      "bytes": 36864
+    },
+    "base/db_DamagePayload.db": {
+      "sha256": "f0d2ea0f5e11e645c8e168ace6587166c6f292431212c83288b47a7aa3bbd22d",
+      "bytes": 12288
+    },
+    "base/db_Dango.db": {
+      "sha256": "a01602c186fcfac503bc57a88d4665424479904024a98ba15bd25041fa615ab4",
+      "bytes": 110592
+    },
+    "base/db_DangoAbyss.db": {
+      "sha256": "636c545dbc6fb5c9b9e366aa9115bc998def57e5a785e2e1edf4e8f4c0fad0fd",
+      "bytes": 77824
+    },
+    "base/db_DangoAbyssSuit.db": {
+      "sha256": "f6be5187f47d89913c357d4d811809244a3f861c26770db1e3c5de3d394987db",
+      "bytes": 528384
+    },
+    "base/db_DangoMonopoly.db": {
+      "sha256": "5d088ae0dd42a6aaf5e9fcc5f6a70c64a58d019570cca1fb7f0e4fc2b91f8641",
+      "bytes": 106496
+    },
+    "base/db_DevicePlatform.db": {
+      "sha256": "3a979c90ae72951f3fe4eb60e1926098dc7658a04dcef045c5901291d8935d05",
+      "bytes": 16384
+    },
+    "base/db_DirectTrain.db": {
+      "sha256": "2456d016d37d6ad7acc3dc6b1c5ed5c2e18d7d2be3e60799e865daa23ea3a78e",
+      "bytes": 36864
+    },
+    "base/db_DollGrabItemComboCsv.db": {
+      "sha256": "26e86a4ffa1d991d75ed3b43ef991535539f0853cefbe4d8b3547f6ddcc7149e",
+      "bytes": 16384
+    },
+    "base/db_DollGrabItemsCsv.db": {
+      "sha256": "82c65e8bc5f53dd7ee41ae88da4a917c70c9e1ae41cd8261140ca6f0a0a02865",
+      "bytes": 40960
+    },
+    "base/db_DollGrabMachineHelpInfo.db": {
+      "sha256": "ad27d2c5a4c98cbb294a3d630257cd816cf56ae5789e61037d926f389ada8d55",
+      "bytes": 12288
+    },
+    "base/db_DoubleRewardActivity.db": {
+      "sha256": "7e75c3674ffb411a033696baca838ab7fabfaf8b61edbf0841b12427ecc4cd4d",
+      "bytes": 12288
+    },
+    "base/db_DownLoad.db": {
+      "sha256": "884f229c28ee2902243106df4575af4cf4cf840a566b3a5ebb775c9d2650c353",
+      "bytes": 122880
+    },
+    "base/db_DreamLink.db": {
+      "sha256": "cb42038f89f695ce238e51985fb1ed84f7de0f386d8132178c14e7c547a0245c",
+      "bytes": 94208
+    },
+    "base/db_Drinks.db": {
+      "sha256": "1d65d53797650436e019ff497d9c162c2c3a0e2afdb730eed7fbaabd11e38f25",
+      "bytes": 172032
+    },
+    "base/db_DropCatch.db": {
+      "sha256": "5f5aef61cdcb9f2a80ddfa05eef673fb762bd1efc97bd53ffb1526ca55f386b6",
+      "bytes": 139264
+    },
+    "base/db_DungeonPackInfo.db": {
+      "sha256": "a589e04a6ca256fb9f1d355501c4c49ea97dd0387ff300066b24bc61075f544b",
+      "bytes": 45056
+    },
+    "base/db_EasterEggConfig.db": {
+      "sha256": "ef3cd98f32038669541581cbd80a6839f6ee0cd90af7605e83bf607c49f77374",
+      "bytes": 12288
+    },
+    "base/db_EdgeRunner.db": {
+      "sha256": "c5856e26d1a0abe3d2d4700d188c2518547d23fb24342b3ce38aa3935fbf635d",
+      "bytes": 90112
+    },
+    "base/db_EffectCsvConfig.db": {
+      "sha256": "d129d21c9545874c5604e0cf39636fa3310389a2c3a274f62b31176912f8653f",
+      "bytes": 24576
+    },
+    "base/db_EffectSave.db": {
+      "sha256": "0810b77571a190959621f2f131b63aebcdc385925a463cc8cd894c7acb037d93",
+      "bytes": 16384
+    },
+    "base/db_Elevator.db": {
+      "sha256": "9751c251e95d8f106c14f971d7fc347763fb599fd4b033bebb289498ae5f7297",
+      "bytes": 16384
+    },
+    "base/db_EmotionBubbleAnimalConfig.db": {
+      "sha256": "e54bf4733d1bd74713a8a3d16a27ea69d7501ecba9dd80ee3f692a5157bda591",
+      "bytes": 16384
+    },
+    "base/db_EmotionBubbleConfig.db": {
+      "sha256": "a2a9c6c918184640850b3775c1df0dddc6de2ee9e5c82caf2685efca7f3d035a",
+      "bytes": 12288
+    },
+    "base/db_EmotionBubbleMonsterConfig.db": {
+      "sha256": "d7b6688bd267f9212f036018b753666c7da4f2fcfd12db9189496c7de3edffa2",
+      "bytes": 24576
+    },
+    "base/db_Encircle.db": {
+      "sha256": "99a0a1aaa109d77014f0ac5959e774ec8ba670265973d2b9c8026a94e4302470",
+      "bytes": 65536
+    },
+    "base/db_EntityGravity.db": {
+      "sha256": "575d8a5ef9e9d18eca61a8851f2c76347a7b83755d96668ec27ab26969840310",
+      "bytes": 69632
+    },
+    "base/db_EntityOwnerData.db": {
+      "sha256": "957b1290f882b8d690852301ed2d713363554b5ae194f5b198106efd5a1bf806",
+      "bytes": 11452416
+    },
+    "base/db_EntitySelfEventConfig.db": {
+      "sha256": "315d9cfdabfe3ee04a27d3866f5120bf9ccad6f1356072ca97937bb4074beaf9",
+      "bytes": 24576
+    },
+    "base/db_EntityVoxelInfo.db": {
+      "sha256": "ddafe539f8c44644c10a7aa7722b661ff83a3c1a3d059175975349449d37c191",
+      "bytes": 12730368
+    },
+    "base/db_ExploratoryTypeConfig.db": {
+      "sha256": "098a470f2d9153f1363f478970e3cdffb862df2310f47faae4776c8074b9669e",
+      "bytes": 24576
+    },
+    "base/db_ExploreActivity.db": {
+      "sha256": "44a0f4363f8d51d327c30a723646ef1dd7ffb646624b535f4f49db27b5dcecba",
+      "bytes": 32768
+    },
+    "base/db_ExploreSkillInteract.db": {
+      "sha256": "22391e1e392ad17e3543b8a659fb1722abc82f646a46e3387abf45dc1b73c65b",
+      "bytes": 12288
+    },
+    "base/db_FaceExpressionData.db": {
+      "sha256": "535d2984832d394618592d38a73d7ff96ed00b037b0102d44e2b20def67d35f7",
+      "bytes": 499712
+    },
+    "base/db_FarmGold.db": {
+      "sha256": "85bd77574c68a301489a7592af2bc28893ea2addd5c4a9e9af72d90bdcbdf6d2",
+      "bytes": 45056
+    },
+    "base/db_FeedBackReward.db": {
+      "sha256": "0cc4e39deb2fd18503ea237fb37c793cb4115c937e730e3ac17dafb404e53b9e",
+      "bytes": 28672
+    },
+    "base/db_FeedingAnimal.db": {
+      "sha256": "2fd07024a6d8c4421c42be32ed04b38752bd96ee4fe6fd426886cd0b75d160cf",
+      "bytes": 12288
+    },
+    "base/db_FeiXuePreheat_db.db": {
+      "sha256": "03729d7d804f049462ce3841766069e18555c24811b9da8621c357cf7bbc8ee8",
+      "bytes": 12288
+    },
+    "base/db_FightPhotoOption.db": {
+      "sha256": "76a2dde2b869b4da5cdfb2fa0c4f03cb1ad20478d57ba03b9ec683cc8f956ec2",
+      "bytes": 36864
+    },
+    "base/db_FightPhotograph.db": {
+      "sha256": "9b5e7de4e096ae7610a938d290efca502d4c11a33fbee5f445afaaa5df0f9f3d",
+      "bytes": 86016
+    },
+    "base/db_FindSunSpirit.db": {
+      "sha256": "f3b6166eb43afc5ab7504e6df0ecda349dd4b2ef9684cfd9c2fe82da5b834a7d",
+      "bytes": 53248
+    },
+    "base/db_FirstPersonParkour.db": {
+      "sha256": "533f615c50217346c7b45255c5cf8a4ff0f06b038a5072fb16a2581e3a5628b4",
+      "bytes": 24576
+    },
+    "base/db_Fishing.db": {
+      "sha256": "f62bd24ce794f6fae730688cc044836251a9920d59628c2d54b9f9735d5f5cb5",
+      "bytes": 446464
+    },
+    "base/db_FishingGridItemShape.db": {
+      "sha256": "b8432e4f1f102b88c3150fda56fa8742d2456e7e07d2989dc6474094a7ac77d2",
+      "bytes": 24576
+    },
+    "base/db_FishingQteConfig.db": {
+      "sha256": "a57bb4c8cde573f271bf5aa0142e59ac1af182cc2a9b2d524193b94c275094d9",
+      "bytes": 24576
+    },
+    "base/db_FlagChallenge.db": {
+      "sha256": "ae40e2750a30bb6e6c3c9753794aa7d0e7e4ed36ffc3c4a1d2a76ec247b2a3fc",
+      "bytes": 294912
+    },
+    "base/db_FloroRanch.db": {
+      "sha256": "76b67065b6a46618d06155a1c244660bb073c15d4933bc30f3280f89081911c8",
+      "bytes": 348160
+    },
+    "base/db_FloroRanchAction.db": {
+      "sha256": "c4f592c7fc2417f6d4a15fb2f5dbe9080186f18300da40c67c3ce3a9ac7da39d",
+      "bytes": 65536
+    },
+    "base/db_FloroRanchBuff.db": {
+      "sha256": "3241024b1ac3d41953c25cefb877a4c54ab16d9ac624d508b3cbb1139df31efc",
+      "bytes": 20480
+    },
+    "base/db_FloroRanchEvent.db": {
+      "sha256": "037c4749b798014bfb7fd3cc58fb2cecf7d7eecd452300334777b440bc2aedc3",
+      "bytes": 53248
+    },
+    "base/db_FloroRanchTag.db": {
+      "sha256": "b21142991c8d9da7826fd29e8f414440740d81dc093aa74d2478bfde68ce40f0",
+      "bytes": 32768
+    },
+    "base/db_FlowTemplateData.db": {
+      "sha256": "94b6d65209fcb61c0bb52535ed98e8a66470327326bd0157833b6e396cbc4a5c",
+      "bytes": 94208
+    },
+    "base/db_FormationProperty.db": {
+      "sha256": "2064d26d34f27e46b5a892a0529c21f77bb73023cf76ce93eca1f6c4fdf8cb6e",
+      "bytes": 20480
+    },
+    "base/db_FragmentMemory.db": {
+      "sha256": "619b09a0556b8abad0c2c86640b48cb9d70df8e532677563bdfb79bf2314e9b6",
+      "bytes": 86016
+    },
+    "base/db_Furniture.db": {
+      "sha256": "794e5214f6d4d3d80d3622f860c3b00192355672f0d63b5828c96230bb9835a3",
+      "bytes": 286720
+    },
+    "base/db_GachaAccumulate.db": {
+      "sha256": "d0e9ac4bf84bd00d1bad73322415cc1d518a8cbb791bd9d55bb2ec45cf848246",
+      "bytes": 20480
+    },
+    "base/db_GachaRoleDevelop.db": {
+      "sha256": "155508c9d62d284458618b3f6b6dc7ba61935ecdf3a571489180c6ed80de1b38",
+      "bytes": 28672
+    },
+    "base/db_GolemCrack.db": {
+      "sha256": "d09e996180090191802ca53b417026b7a34d3a972429b6e32f5d88bb74f987ce",
+      "bytes": 16384
+    },
+    "base/db_GongduolaPassengerVoiceConfig.db": {
+      "sha256": "0768dc4310bdb3be48a751935a32c22d890b535beaa2db25e16c40112e84e4f9",
+      "bytes": 61440
+    },
+    "base/db_GpuEntity.db": {
+      "sha256": "fc56f8cd9cebecafa1cf4155bbc0363007c7f7e08e4c7566de45a3876fedcdfa",
+      "bytes": 45056
+    },
+    "base/db_GuessJokerCard.db": {
+      "sha256": "aa591ea4129fed42ed5b8740b60e2652b0fbba8af221a2ec6ac4e09760adaa10",
+      "bytes": 110592
+    },
+    "base/db_H5Activity.db": {
+      "sha256": "d0a352adc66478d288c626f74aebed85c77ed5f1d0f1cf9f88f7b43fa1f77607",
+      "bytes": 12288
+    },
+    "base/db_H5Circum.db": {
+      "sha256": "94656593ae30d06a0483db6878de205e7a236901df806824ec118f19fca4df3b",
+      "bytes": 12288
+    },
+    "base/db_HomeBtnStyle.db": {
+      "sha256": "227c4c1e311b9e432b9dfa361cf7fe3ac00ecb8c5f5ad7d728646e18a84e7fcd",
+      "bytes": 12288
+    },
+    "base/db_HonamiStory.db": {
+      "sha256": "8eec2904a46d330c4f8a0f53186e2ec6045474a0f9c581dde241f2cbafffdb01",
+      "bytes": 1298432
+    },
+    "base/db_I18nResources.db": {
+      "sha256": "c01447736cd9161b9df6e174499c15746c52763d1a0109a679e48ed69109c8f2",
+      "bytes": 36864
+    },
+    "base/db_Infrastructure.db": {
+      "sha256": "364b3eae33d90a27e4fa2727d726e38e8f1512de187002c90fa4024c31a3114d",
+      "bytes": 139264
+    },
+    "base/db_InteractAudioMaterial.db": {
+      "sha256": "7c4a0c617b3e877fec05f059506dcbff2e346cee2addafa4282292d5e56e18e6",
+      "bytes": 12288
+    },
+    "base/db_InteractData.db": {
+      "sha256": "9a476bed94d11171ae5cb73cabb466d2f8d953b647fdf232152f9b98c9c07239",
+      "bytes": 2744320
+    },
+    "base/db_ItemAttributeReward.db": {
+      "sha256": "0e1112424dd667ad56c890938028ebd8a89496f48f98b430b5887b069ca3093b",
+      "bytes": 69632
+    },
+    "base/db_KSCDamage.db": {
+      "sha256": "dc72bac7a8ca410c03284e0ed01c2c267929f5246bc7333859ec828f7b203495",
+      "bytes": 40960
+    },
+    "base/db_KSCProperty.db": {
+      "sha256": "8788297391da142022591c415b92bd5532ee67ad9214e59237ddf6e15a696b90",
+      "bytes": 49152
+    },
+    "base/db_KingShip.db": {
+      "sha256": "98c3f514927b4be8f10022c0e09e9979214693c4c6897254b873208f4c27fce1",
+      "bytes": 77824
+    },
+    "base/db_Kurotato.db": {
+      "sha256": "d5099de6d0a9476b2d27ceb79b54bb020e4bbbd175164bb47b43e04b142621a3",
+      "bytes": 1179648
+    },
+    "base/db_LangImage.db": {
+      "sha256": "75992fb3422e468fb8f7968ea3c5c3fa55fc8191472c4f254502d4b27cf74369",
+      "bytes": 12288
+    },
+    "base/db_LevelCustomPrimitiveData.db": {
+      "sha256": "20929e6baf86cb4c9ea54ef414bd830bd86ad68b72c5b52992415d5a86c0175a",
+      "bytes": 12288
+    },
+    "base/db_LevelPlayData.db": {
+      "sha256": "47b4a2f29c4f63cd630526b34efe331c2cb7bc0a574f7a8401360ebe84388f86",
+      "bytes": 7245824
+    },
+    "base/db_LevelPlayInfoMappingConfig.db": {
+      "sha256": "dd712c026325e722d95139501eac599789e33d3e5660b7eacb636340cce85d36",
+      "bytes": 32768
+    },
+    "base/db_LevelPlayNodeData.db": {
+      "sha256": "b1c79799d99064c5d2bfcbcd03694a69d5d7861076aa1faaca445256e25e8f00",
+      "bytes": 56193024
+    },
+    "base/db_LifePoint.db": {
+      "sha256": "191645c426e0ac52bd7529947128ee4075232459828b58ebbbe6de7775e4cd8a",
+      "bytes": 53248
+    },
+    "base/db_LineCross.db": {
+      "sha256": "f6f1ba589e6de772508d8e39a1b7054cf247e41bd49c79b13862628df072d96c",
+      "bytes": 45056
+    },
+    "base/db_Link.db": {
+      "sha256": "73e2ac0a609653d0a6b530b515eae46ab1d1fd0d35f0f14c0eab2d952d46a987",
+      "bytes": 65536
+    },
+    "base/db_LinkageReward.db": {
+      "sha256": "1f568c8f5707b4400f05a2def3496a8bc05fd81c7a44c374fce69ca812b48a89",
+      "bytes": 16384
+    },
+    "base/db_LockOn.db": {
+      "sha256": "d233ab4c98a2c6ebcfa844cb5315ee138600d9f9e36705f5268daf33d4d6f13a",
+      "bytes": 12288
+    },
+    "base/db_LongShanActivity.db": {
+      "sha256": "5b588dd7d92add6e9ebe76eecf34e9980ae80f100e0f41d6b4d20bfabea8e8d9",
+      "bytes": 147456
+    },
+    "base/db_LordGym.db": {
+      "sha256": "4551b1b5e8f1bc75163e56a662a90431eccff0d02913eb51fd374ff5307700e0",
+      "bytes": 114688
+    },
+    "base/db_MonsterEcologyStateMachineMappingCsv.db": {
+      "sha256": "93a38b116aa665b0fe2653674e5eb956f8beb3ff1faf03eabaf56f8d1361d31c",
+      "bytes": 24576
+    },
+    "base/db_MontageData.db": {
+      "sha256": "d1ec236ae55bb7e47b6cb7f4e797d0f67c6477f670e2d5ccb284b81283894dde",
+      "bytes": 114688
+    },
+    "base/db_MoonChasing.db": {
+      "sha256": "3e09f021f9e102d2eed5cf39ae2512559b09082162b8f1bd59fb8a5b4ba4cc79",
+      "bytes": 311296
+    },
+    "base/db_MoonSignIn.db": {
+      "sha256": "6b4095d70f20910158f6eb78cdb0f93c3c99d08f73fc127d76d85a4096e0a473",
+      "bytes": 40960
+    },
+    "base/db_MoralePlay.db": {
+      "sha256": "e34c39f4c81fd50105346445410199de887766dafbe8816118e231f901ee6794",
+      "bytes": 589824
+    },
+    "base/db_Motor.db": {
+      "sha256": "7308905b67fb6e20748b58a1c0b22299665396128e846589f20f205f22212c0d",
+      "bytes": 155648
+    },
+    "base/db_MotorCommon.db": {
+      "sha256": "a6274dc058f1fabbd29d1a43b39432df189fb6a4d28338cb905b0a3c6029eb15",
+      "bytes": 12288
+    },
+    "base/db_MotorDIY.db": {
+      "sha256": "2f39ca89a78c4947f18e47c8cdb25de30809d35d523f6b671acceb6e04c7260f",
+      "bytes": 204800
+    },
+    "base/db_MotorDevelopTask.db": {
+      "sha256": "10e339946b2c15412d36a94dee44a68566ab96e2ccd177e14bb12b4db8f8908e",
+      "bytes": 20480
+    },
+    "base/db_MotorGeneralPreview.db": {
+      "sha256": "3bbc93388394d99b76ef85a5e152de51750e67275ade9bb4ee8d7417ea9fc7ee",
+      "bytes": 20480
+    },
+    "base/db_MotorLinkage.db": {
+      "sha256": "0c654b42a07b20399b9b9942bb76241e9b647f1a8edd9d23bdf068f242068f6f",
+      "bytes": 24576
+    },
+    "base/db_MotorParkour.db": {
+      "sha256": "56a2ed70740451cf68364c1ecb0d8d93e6de5c9edf841e46dfe0c66a03547a1c",
+      "bytes": 69632
+    },
+    "base/db_MotorSkin.db": {
+      "sha256": "8b9ef81ef98921b3040469b9eee590c617b1d2549f97991b21d634622d24ef59",
+      "bytes": 24576
+    },
+    "base/db_MotorStickerIp.db": {
+      "sha256": "a04e91b3edcfdec12d82a632dbf0f7db8dac82ac2a35023f9921eac9308f6bda",
+      "bytes": 36864
+    },
+    "base/db_MowTower.db": {
+      "sha256": "61bde0fc134a3de195dd8d23e7ad677a925dd475eebb7488c1fb1acb74103b6a",
+      "bytes": 57344
+    },
+    "base/db_MusicBeatType.db": {
+      "sha256": "823c76576761583a5e16b1653b473c0ace6311760b396db3821bf586795765be",
+      "bytes": 12288
+    },
+    "base/db_MusicGameConfig.db": {
+      "sha256": "44d52306e3a7e45ab8b1e50633cae952336100e5781bccb88356e7064004a62b",
+      "bytes": 2113536
+    },
+    "base/db_MusicSubTitle.db": {
+      "sha256": "340046fdd4f836239cb30f7dc45558d1c947c9627bbad3ae3225fb7390bd891e",
+      "bytes": 28672
+    },
+    "base/db_NetworkDetection.db": {
+      "sha256": "313c223a09870ab0f29ac69aeb29858297af26deddcd58a788752be6fe96f313",
+      "bytes": 24576
+    },
+    "base/db_NewPlayerSupport.db": {
+      "sha256": "f4b446808a643a82511d452d02b331dad1e2831a04d1dec06dba22567e9d92aa",
+      "bytes": 24576
+    },
+    "base/db_NewPlayerSupportActivityV2.db": {
+      "sha256": "4ea468564f825d89ce8ae4aeadd543066c977954e29a236f16f504f19a51c60b",
+      "bytes": 143360
+    },
+    "base/db_NewTower.db": {
+      "sha256": "22df25472debb1c2abdb6ff49483dda036d9f081c3a26ee95754fc2f311fc15b",
+      "bytes": 405504
+    },
+    "base/db_NewbieCarnival.db": {
+      "sha256": "57685c62bd856c6ab5b4209454de43cfd6ccbdf39fe1ebb9c76149e593b8bbda",
+      "bytes": 40960
+    },
+    "base/db_NewbieCourse.db": {
+      "sha256": "d9bdd3bc74c36e5116c353f0b2a0fa9158d1d17443b8eda5daa7850a32f46b91",
+      "bytes": 20480
+    },
+    "base/db_NpcGroupPerformConfig.db": {
+      "sha256": "208d7cba822d978d46057e49342281fdf72d2deed83c77ca30498ecb1e73759b",
+      "bytes": 16384
+    },
+    "base/db_Ornament.db": {
+      "sha256": "1da17ec0ab3a450dc296e3489936962347431c30d915571f032b4509bbaa6017",
+      "bytes": 32768
+    },
+    "base/db_OutAreaBorderConfig.db": {
+      "sha256": "51a76aa3e76d2dc5e990b73dee647d8a44e3bf6cf0f7fdc511cd5317f527db82",
+      "bytes": 12288
+    },
+    "base/db_OverlayAbpMontageData.db": {
+      "sha256": "9383bb89faa9d9f518447d30880cb1459bdf25d5f6cb7f5e31bb9f7840cdd1be",
+      "bytes": 32768
+    },
+    "base/db_PassiveSkill.db": {
+      "sha256": "d2cef7f113ff86f71458f17b2615312c6cd274667e5620ed6d5c553e30dc9765",
+      "bytes": 1118208
+    },
+    "base/db_PermanentRogue.db": {
+      "sha256": "93625297e47e5ea58a8ed31965d6bd60ad44fe3014b585bc04d544fdddb15efb",
+      "bytes": 2023424
+    },
+    "base/db_PersonalTitle.db": {
+      "sha256": "bc1d4065b5474582fddebc2e803ebb3e18ca8db57e59282d09c080a4bc6f04c3",
+      "bytes": 118784
+    },
+    "base/db_PhantomBattle.db": {
+      "sha256": "0653172d89dfe19065eabfb46ccc9e8ddbd696b6286671d1d4d361829a92283c",
+      "bytes": 1339392
+    },
+    "base/db_PhantomCollectActivity.db": {
+      "sha256": "a1ef1c6a132d369d66ded0ee1e45688201f8a1e6dc81944356aecdbb2e846e94",
+      "bytes": 20480
+    },
+    "base/db_PhantomManagePlan.db": {
+      "sha256": "1a2697a43e86bb809fe864880c9ad19f3addd14fc88eef273e09d156fefbb0c0",
+      "bytes": 45056
+    },
+    "base/db_PhoneMessageAttachment.db": {
+      "sha256": "096adc6269fa37507b560570598f87ca64ee8a7a652061c195d69b482c40d7aa",
+      "bytes": 24576
+    },
+    "base/db_PhoneMsg.db": {
+      "sha256": "1c85a74276fb48ec11fa6dfadb9a0fdccd6c23cf5af2228006c45e3589e05a9f",
+      "bytes": 188416
+    },
+    "base/db_Phonograph.db": {
+      "sha256": "872a21f556fc66ad1137dbe0e6fa530269dfedc98cbfde958ff6fc5fd5f4229a",
+      "bytes": 90112
+    },
+    "base/db_PhotoCollection.db": {
+      "sha256": "1eba540be6ba78881a546afcc81874e8b34d51298cd9b73b2cccc819073098fc",
+      "bytes": 12288
+    },
+    "base/db_PinballBattle.db": {
+      "sha256": "259c9146a9c3feadc9aa72f15b99a2601f368b0b9ff9dbfb227b8d51b1e2da17",
+      "bytes": 659456
+    },
+    "base/db_PlatformChannel.db": {
+      "sha256": "d8bf9a358cd7a0c1f35664edc6509c545538ee75d354b7380c08a5ea69a755e4",
+      "bytes": 61440
+    },
+    "base/db_PlatformIcon.db": {
+      "sha256": "546d4a193a028556cd44f2d6b5e82ca00ad20fec325a4683bfc294c7dbe4e119",
+      "bytes": 12288
+    },
+    "base/db_PlayerHead.db": {
+      "sha256": "65c1f6d987878d640c5021ed231c41045a41337e39a621bc65a184c20b1c502d",
+      "bytes": 69632
+    },
+    "base/db_PlotGuest.db": {
+      "sha256": "cac006d75d24541b3b4d76404359a99f004e005cfb25d5b058e782ba5aeb5a3d",
+      "bytes": 12288
+    },
+    "base/db_PlotHandBook.db": {
+      "sha256": "3121041660f95e0951b161f30d4965ecb0c8897ac68fa216aa26e686901b68f7",
+      "bytes": 884736
+    },
+    "base/db_PreHeatTaskActivity.db": {
+      "sha256": "569274a7870b61833de6cf155a91ca50756746e6a9f2b63db93683ad6526d27a",
+      "bytes": 24576
+    },
+    "base/db_Preheat.db": {
+      "sha256": "1e20ddc30254398b20f4014c602629dcb19cae5f468f7daad828c9d53c85414d",
+      "bytes": 36864
+    },
+    "base/db_ProjectorPattern.db": {
+      "sha256": "4679a92b335adf482829d9d2be8d88c93d28d1937016eabf8d0f69648812da67",
+      "bytes": 12288
+    },
+    "base/db_PunishReport.db": {
+      "sha256": "8128286e43218f4e6f9fdce6f7659f84701ac8e3d150a96530b708089d4b1262",
+      "bytes": 40960
+    },
+    "base/db_QuestData.db": {
+      "sha256": "f92745607d8230d058d69a62b5d402768b67e9e7c89f271dbd58dd5531992cf4",
+      "bytes": 1986560
+    },
+    "base/db_QuestMultiLine.db": {
+      "sha256": "389ab85ee94adff686773a856d90aceed3a1c56fe0fd2cbf55da4f18a70ecd7a",
+      "bytes": 122880
+    },
+    "base/db_QuestNodeData.db": {
+      "sha256": "50f4ef73d3aad05b013417c7ab44feb1e0c25dbc32ba90e1eecabf967977821e",
+      "bytes": 16875520
+    },
+    "base/db_QuestRecall.db": {
+      "sha256": "adf6f97b950b9b92372a0b2bc8da522f1cc42bc9059df67792f7ef4627bdb287",
+      "bytes": 20480
+    },
+    "base/db_QuestRefMapBlock.db": {
+      "sha256": "a1d0e3e893f1f6c03800a7f417b89855db45e4a7b80c8705de47afcb2ec6ad14",
+      "bytes": 12288
+    },
+    "base/db_QuestRefVideo.db": {
+      "sha256": "5472536a863d03c221e151c44f0c1735f22d16fcd4dcd1909c768deb08c98809",
+      "bytes": 49152
+    },
+    "base/db_QuestReview.db": {
+      "sha256": "f7fac0d8dea1cb6ea607269d12f902b199552205b5be536c65f6879e822dea36",
+      "bytes": 69632
+    },
+    "base/db_QuestTag.db": {
+      "sha256": "5af7d9ea8e2bbd024c2724acb9fe1676237c9d06972c0e879f28d973de4362a4",
+      "bytes": 12288
+    },
+    "base/db_QuestTrackingConfig.db": {
+      "sha256": "7811c03fdc5844730938d7d6e78820cc1e51f05037a86dca64651cca6e11fa7f",
+      "bytes": 12288
+    },
+    "base/db_QuestTree.db": {
+      "sha256": "51c6dea6dcbbe1fe1558f555b003246183ffefa60456e333e5a308d4c8bfb09f",
+      "bytes": 110592
+    },
+    "base/db_QuestTreeCustomJumpConfig.db": {
+      "sha256": "79ff30d3116649bb80a4a9194301c537aa998b452b3e5f49ffbb35ad251e98dd",
+      "bytes": 16384
+    },
+    "base/db_QuickHack.db": {
+      "sha256": "44a214f2c55749357c9bc5c9dc4cdd5972c0b9875a35dbc22c4bdd80e4fad243",
+      "bytes": 28672
+    },
+    "base/db_RacingBets.db": {
+      "sha256": "6214d6f994b7876ae4639f2f9f7f0c847f1487e20fd75288d76f2869775168c4",
+      "bytes": 438272
+    },
+    "base/db_RandomPlot.db": {
+      "sha256": "f88e2d24c5bd4955dccbc54f710f6299758c66be878496a978d2098bc17fdc9a",
+      "bytes": 40960
+    },
+    "base/db_RealmBetween.db": {
+      "sha256": "1053a43babced7b660104ce9356d451a48bc1fcdd39b84ed410895a84c4ec554",
+      "bytes": 77824
+    },
+    "base/db_RefResourceQuestList.db": {
+      "sha256": "805a10eb7d7a0e1ddd93afb3e454ce8a872b47b9434d51187bf9728a3b1bd1fb",
+      "bytes": 16384
+    },
+    "base/db_RegressActivity.db": {
+      "sha256": "05a6d96710e11e37ba137611b0a8b60026652e99a2a2fc5fc602738dc6567a5e",
+      "bytes": 172032
+    },
+    "base/db_Reigns.db": {
+      "sha256": "d2a3d32c5f564e9bac29481b4b59beaced2d3e36c75ec77dbd04b29c1f101c7d",
+      "bytes": 12288
+    },
+    "base/db_ReignsCard.db": {
+      "sha256": "d0b7f7c5f6fe036a51311515e86993b1c66ce9829cfc5b760c224f9410137767",
+      "bytes": 24576
+    },
+    "base/db_RewardUi.db": {
+      "sha256": "47806282739185c5145115eeccc8a08fb9c22d276af30f3e4f59cebda4c04601",
+      "bytes": 77824
+    },
+    "base/db_RhythmShip.db": {
+      "sha256": "c77dc9dcb62b1fe190b27f031f6b34e6a250c3a6b5d290bf55c5b57231c2ea2c",
+      "bytes": 131072
+    },
+    "base/db_RiskHarvest.db": {
+      "sha256": "cceeacde52587fdf2b9a6317587cc1c32acdb8e8fe0e9917dffa6a4e7a533e98",
+      "bytes": 118784
+    },
+    "base/db_RoadBook.db": {
+      "sha256": "891a0381c5bed57902093b1478a49e5ba6596b827d4fd0c43004eae88a7d15bc",
+      "bytes": 77824
+    },
+    "base/db_RoadZoneConfig.db": {
+      "sha256": "8e14340981684fcebddef980711727acf74079d763b60e9b36c76d8f7509eb90",
+      "bytes": 24576
+    },
+    "base/db_Rogue.db": {
+      "sha256": "24446553c643bd88c4a09a4657da3c6e382d3f2fa56e87fe97413924d9061a82",
+      "bytes": 1028096
+    },
+    "base/db_RogueActivity.db": {
+      "sha256": "020608dd3778a25dc2b858f213ffa2accf292b0717514e7efce7cb2fd16b9af2",
+      "bytes": 12288
+    },
+    "base/db_RoleBeHitMap.db": {
+      "sha256": "58a2fe94946b6dc3a11787c2d311a846490a5bac82c1a695c4433605d6200e15",
+      "bytes": 16384
+    },
+    "base/db_RoleDev.db": {
+      "sha256": "8cf5a5174ad1459af9eadbb1dbe8e53c4374af5d56b95cda426d2c7cff72ff7f",
+      "bytes": 151552
+    },
+    "base/db_RoleGift.db": {
+      "sha256": "82563b30ee61fd5635de1d74690b83f495e6856b12273dc2f6591cae6bd28865",
+      "bytes": 16384
+    },
+    "base/db_RoleGuideActivity.db": {
+      "sha256": "a036766bae4364799c0b60a2e67f2d0fd477b1ed08f0bceec680b9f407be119e",
+      "bytes": 12288
+    },
+    "base/db_RoleIdle.db": {
+      "sha256": "b9df2d4d42eba90c283560ba146857f87c8c9aacbb048c32fa14c9b654413919",
+      "bytes": 24576
+    },
+    "base/db_RoleSelectPerformance.db": {
+      "sha256": "8f5f533e8d948fd49e515d896ed511fff1b33a2cc454e604770fbcdb7beb33a4",
+      "bytes": 20480
+    },
+    "base/db_RoleSkinTrial.db": {
+      "sha256": "19696ffb944de3cbb9a52f90ba716c497c4e62967d6f6d4b48c62e143490ec26",
+      "bytes": 32768
+    },
+    "base/db_RoleTrial.db": {
+      "sha256": "e98a7ac728dafdfcb103f439cde5c17c1a7a0f1ad1dc57fda3455590dee3d775",
+      "bytes": 106496
+    },
+    "base/db_RollBlock.db": {
+      "sha256": "8f08c96dd0285bbed70add71f0fe2861bac3f15faf6da900a4e5d443ca0126d2",
+      "bytes": 180224
+    },
+    "base/db_RollBlockGroup.db": {
+      "sha256": "481bde7901fdba05300a2f1824378ae89ae43291d8bfb154aab08653ffd72b84",
+      "bytes": 12288
+    },
+    "base/db_RollBlockTemplate.db": {
+      "sha256": "b361bdaa01086db89004d9af936158fd5dfb595feb6e07fe90e002aac63a30c7",
+      "bytes": 16384
+    },
+    "base/db_Roulette.db": {
+      "sha256": "1bb3f7c82a6f1eafe1b986ed834485b52383a482d7ad16c38354b2a6f87458bf",
+      "bytes": 32768
+    },
+    "base/db_SceneItemAttribute.db": {
+      "sha256": "68c4a76cf420df6e8ebf1a354e19315ee091e61bd41a5d68a640d36d238dadc3",
+      "bytes": 12288
+    },
+    "base/db_ScratchCard.db": {
+      "sha256": "a910ffb398c96c4fd213bb8ac987526fd44f49e56551089dd3b89f636697e3d7",
+      "bytes": 135168
+    },
+    "base/db_ServerLimit.db": {
+      "sha256": "463a8c5f588750dde29b59fee5b35732f7de40b75dd5973421b7ff4393ff806c",
+      "bytes": 12288
+    },
+    "base/db_SevenDaySign.db": {
+      "sha256": "6ec6a36414a60631ed63ebf55e96d6cf5d388921a74bb39abf737deec9bd080b",
+      "bytes": 32768
+    },
+    "base/db_ShareInfo.db": {
+      "sha256": "bb7e5d4e97d106f0de2e8526497b7c31c2645e82d76b0b12ef007a651730c241",
+      "bytes": 36864
+    },
+    "base/db_Sheriff.db": {
+      "sha256": "80ab3ad050dd8e4d89150bf11e2ee5afbae5d2ae79a4df32ebbade2bf791d804",
+      "bytes": 122880
+    },
+    "base/db_SheriffQuestionCsv.db": {
+      "sha256": "f204100f40c9468972b06a68db1203d9729a3eaf770be122d33787d03053ff5b",
+      "bytes": 20480
+    },
+    "base/db_SheriffQuestionMainCsv.db": {
+      "sha256": "17bea140d0eeb5701a973dbf61ce86faad3ac6d8d2f894711e013fecd308c8a9",
+      "bytes": 20480
+    },
+    "base/db_ShipTower.db": {
+      "sha256": "eaef94df12103f65c365c94a43a7821dd694cbf0806424943e5475cc96b4b594",
+      "bytes": 172032
+    },
+    "base/db_ShippingHiddenMultiText.db": {
+      "sha256": "f196403236d5ab1c5c19ac027a06a051f63f7521ecf9ee041f742558ab334492",
+      "bytes": 286720
+    },
+    "base/db_SimpleCombatDetailConfig.db": {
+      "sha256": "af7f0f5b313c19ce3f65b28e8c1292566f335e0aa33dc86b097e544191e68456",
+      "bytes": 90112
+    },
+    "base/db_SkillAudioEvent.db": {
+      "sha256": "c14b7a2e6e229cd7bd6a02926a638271f0585b999b6b156c0a687476b0b9cfc6",
+      "bytes": 12288
+    },
+    "base/db_Skin.db": {
+      "sha256": "5f37553fce6e707aad3854ebe1feb01f3261a323ed8b9da8fbf4f9e5ac2e0d95",
+      "bytes": 36864
+    },
+    "base/db_SkinReward.db": {
+      "sha256": "19ad2626f7c4fc63adc8a1c395994527d098bbf4285fd98ee27e5e28bf897217",
+      "bytes": 16384
+    },
+    "base/db_Sneak.db": {
+      "sha256": "d81e79ea7938a0647d03173e362e0115cd54ea59753836bfc1726ba7df9d2262",
+      "bytes": 12288
+    },
+    "base/db_Soar.db": {
+      "sha256": "4a5c7ed3c0ef8b3ffaddde9d01fd2feeabda263084e900f23bbb2e15e7537013",
+      "bytes": 12288
+    },
+    "base/db_SoundAreaPlayInfo.db": {
+      "sha256": "7271cea829e68f8a339516a6f25fd147543b9852a76111134fa78c90e3edfc80",
+      "bytes": 28672
+    },
+    "base/db_SpecialHateAndSense.db": {
+      "sha256": "fb37516d421c105d26563f9508ba2b439e272d4aa0ba9707fe843c23dea5c7d6",
+      "bytes": 16384
+    },
+    "base/db_SpineBackground.db": {
+      "sha256": "eb6e0d74f1e6942d93244a271854f4ae028ac7709d625aa9413c36515e8ab43d",
+      "bytes": 20480
+    },
+    "base/db_SplashScreen.db": {
+      "sha256": "8203074262e5c9b923b88c06a281a1d36179a998aeeb6efa3bf65f6e85c9f503",
+      "bytes": 12288
+    },
+    "base/db_Spring26.db": {
+      "sha256": "84fe894016f794fbe8af13bec1e3ed23603e62c1e2d72288f547a0450c3b319d",
+      "bytes": 204800
+    },
+    "base/db_SprintSign.db": {
+      "sha256": "61d858cd4daa5b42107acfc8630897f39255d755389799bd6b4bdc771d750f85",
+      "bytes": 77824
+    },
+    "base/db_Summon.db": {
+      "sha256": "d122cc49e6c83096fe9212124f7ce6b042aeeb16517a923022784158c5ceef41",
+      "bytes": 86016
+    },
+    "base/db_Survivors.db": {
+      "sha256": "2b3210645e701a1b72e564568b22f9972102b9c9caaaff74ab83d222aa4761fe",
+      "bytes": 446464
+    },
+    "base/db_Swim.db": {
+      "sha256": "414d6e317427f1d2d321f519ad775445b5255a1bdde67ca3141b3c2474edb0fe",
+      "bytes": 20480
+    },
+    "base/db_TDBuff.db": {
+      "sha256": "1229f7191a6b3542c15f80be69702fa092b55c8a8e725ec71d533fd8d67c4cf7",
+      "bytes": 352256
+    },
+    "base/db_TakeWeeds.db": {
+      "sha256": "ac00daed12cf60acc97a365e4a5ca59604d0a471757f404ee1b73b0873b94ed2",
+      "bytes": 36864
+    },
+    "base/db_TeamParkour.db": {
+      "sha256": "640a783dcdd120022d24e6445725a3d0e62930fddc348277396680d98990e427",
+      "bytes": 28672
+    },
+    "base/db_TeleportTransitionConfig.db": {
+      "sha256": "35b28adac362b22b630d3166bec4f1d8386921d4b4b5f0493b657b633ac196e5",
+      "bytes": 12288
+    },
+    "base/db_Term.db": {
+      "sha256": "be2f29fd35dbf368c20f962bda34ea3befc5af708c9a623076b4109285056495",
+      "bytes": 118784
+    },
+    "base/db_TermExplanationViewStyle.db": {
+      "sha256": "8b5cf714dd9693f038d81a534d9a1888b274049e6b45df73bda1a1c66a756350",
+      "bytes": 12288
+    },
+    "base/db_Tetris.db": {
+      "sha256": "08b54092b9db59a72af677d3cb7985563b21ef0b1ce1e06413e651fe4a5e9b8a",
+      "bytes": 118784
+    },
+    "base/db_TetrisShapeConfig.db": {
+      "sha256": "ea9b921a50132231d715953edfcb36daeec91350372192630f66ba1380425e89",
+      "bytes": 28672
+    },
+    "base/db_TetrisStyleConfig.db": {
+      "sha256": "c692b48cc991e21455e34d0892fe2e5aae391dbde819c5a12314cf459d328098",
+      "bytes": 16384
+    },
+    "base/db_ThrowDamage.db": {
+      "sha256": "291385b659892ff058e80ea7101d493ff99ca3619dad779b0e97deddc681d57d",
+      "bytes": 20480
+    },
+    "base/db_TimePointRewardActivity.db": {
+      "sha256": "84b952520711202260ec3f42e8a13a89e8f90ce2b602b2958c3dafc0dac4874f",
+      "bytes": 24576
+    },
+    "base/db_TimeSchedule.db": {
+      "sha256": "a434d0db5a426acdef8436c43a6e6cdd4c5ffa0b825b9cee6a6faea52ece67a2",
+      "bytes": 16384
+    },
+    "base/db_TotalTopUp.db": {
+      "sha256": "3d074af36605fe300f21176269e8809438f49b09b3d50c07d0bd8814f9fc90ed",
+      "bytes": 36864
+    },
+    "base/db_TowerDefense.db": {
+      "sha256": "b4aca8fcaee1911c5e4bed9ef56423924bec121387c8ce4426701b635c586ad2",
+      "bytes": 118784
+    },
+    "base/db_TowerGuide.db": {
+      "sha256": "cd72a44686234e8236bf50c57f954a46dcdf960d02bb000c02f8436662370e3c",
+      "bytes": 12288
+    },
+    "base/db_TrackMoonActivity.db": {
+      "sha256": "0a8ec35f8d068363e3c1459899496e07bbebbe63c989f4b72c95c00fc7a795b5",
+      "bytes": 20480
+    },
+    "base/db_TrackMoonPhase.db": {
+      "sha256": "b8f56b21e5a42270a40c825b7b8d921a5bf6547caccb784a121e01573eb4e9ab",
+      "bytes": 12288
+    },
+    "base/db_TransitionPopup.db": {
+      "sha256": "7814e16c1d9e6f56a97be188292093a671e391d79a25db99cc2fd300908c588f",
+      "bytes": 12288
+    },
+    "base/db_TrapDefense.db": {
+      "sha256": "a7f09c30cd957544b337ac15e4dead3b731a9cbaeeff3759d25d74ea41a3efd1",
+      "bytes": 557056
+    },
+    "base/db_TrapDefenseBatchConfig.db": {
+      "sha256": "5f0bc59e175555b51ba266178a0627f065969d288e422ee662d2859287539e19",
+      "bytes": 278528
+    },
+    "base/db_TrapDefenseCsvConfig.db": {
+      "sha256": "8a9d2f4fd91112ae98339c507147391adadfda49d037aabefa0decf61535ddae",
+      "bytes": 20480
+    },
+    "base/db_TrapDefenseMonsterGroupConfig.db": {
+      "sha256": "6e2435dcc997aa617587bf785e10c9adccd5957240ee9d0eaf32826563efbaf0",
+      "bytes": 12288
+    },
+    "base/db_Treasure.db": {
+      "sha256": "cae92b6c0a45aada08bc37d7f5b4ce5e20ed90934aeaeed64d6acd40d93f1af9",
+      "bytes": 24576
+    },
+    "base/db_TuningNode.db": {
+      "sha256": "7274651c254841f27f904e08c09ab8c6f8f81495fed3c285cc9cb653aa948b1d",
+      "bytes": 16384
+    },
+    "base/db_TurntableActivity.db": {
+      "sha256": "cdd2394cc83571e5227bc9649349d78011faf7ef07e084a3ad1ade47c2699187",
+      "bytes": 65536
+    },
+    "base/db_UiCamera.db": {
+      "sha256": "1e6fb0d8b82955db926024ddb8b44560b8f5812f3df60e35cbe7c9df6c6363c6",
+      "bytes": 98304
+    },
+    "base/db_UiExtraBehavior.db": {
+      "sha256": "6dfa1415eaacbae82a19db128b9d5249070f39a7eef76514a7b02e903e265805",
+      "bytes": 40960
+    },
+    "base/db_UiHotKot.db": {
+      "sha256": "995b1d5b4892297584462040b6df9294babaa954242f2d8738d3118d104a37bb",
+      "bytes": 233472
+    },
+    "base/db_UiPlayItem.db": {
+      "sha256": "12c9100642300416d16baf9151eeb016c7e2bf3be956253c54562f6ca42c2cac",
+      "bytes": 12288
+    },
+    "base/db_VehicleRidingRoles.db": {
+      "sha256": "789767f65b136e22789f235209c45ff2e59f2f54ad0e981b8c9585d6b3fc3fe1",
+      "bytes": 24576
+    },
+    "base/db_VehicleTeam.db": {
+      "sha256": "def2bc2790a5b23809d3865ae3a442011da70ad3448e441e9ffb543d5c9f92ff",
+      "bytes": 12288
+    },
+    "base/db_VillageInfr.db": {
+      "sha256": "6628190184e6e27ffdc3c020b46f95c66013c0c519093ad732ad61df005966d0",
+      "bytes": 94208
+    },
+    "base/db_VisionRecommend.db": {
+      "sha256": "27bf200a7e8fc4b89f55cec0fce310716f4bf9f958997a68bc7dbb60513cb20f",
+      "bytes": 40960
+    },
+    "base/db_WeekCard.db": {
+      "sha256": "293648229d0aab938e8f65193f821f634addfd717905b278d512053153ba5ac9",
+      "bytes": 24576
+    },
+    "base/db_WeeklyChallenge.db": {
+      "sha256": "b13bd3e9a30be3aeaff5abe6cb79f03ed2fb4f18c55c62c9603846abe9a14512",
+      "bytes": 36864
+    },
+    "base/db_WeeklyRogue.db": {
+      "sha256": "f144fe473b5e6628a1a67cddee1e9df2def5441601f5e9d5dc98b012a52906d3",
+      "bytes": 520192
+    },
+    "base/db_WorldNewJourney.db": {
+      "sha256": "952bf1a77e6316c65b3cb7450efd8e9ee1709a1ceca6db3a2dab086771dd773e",
+      "bytes": 12288
+    },
+    "base/db_WriteLetter.db": {
+      "sha256": "bd5e4e979894277b894ea8ecb91a0cacc16f44928f8ff9a82a156d6a179e3946",
+      "bytes": 12288
+    },
+    "base/db_WuWaGoLevelCsv.db": {
+      "sha256": "f99226201ce09d5c13bf6b8e3bd9844396f04a2fd2d7deac330215dbc435f0f7",
+      "bytes": 135168
+    },
+    "base/db_WuWuKuji.db": {
+      "sha256": "9f62ed467c405bb90f45b0a925c7b2bb0ec9f0cbccdf12717fe0404aa9c4016d",
+      "bytes": 36864
+    },
+    "base/db_WuWuTask.db": {
+      "sha256": "863c79e47ec635fe820ad943ff133f4258b6ab6b1d64d409e1bb602cc87cad5a",
+      "bytes": 36864
+    },
+    "base/db_accesspath.db": {
+      "sha256": "8d6347fbb88f4c171bc208449461f98ee929e9b0f950eaf2093d05308e49e70e",
+      "bytes": 253952
+    },
+    "base/db_achievement.db": {
+      "sha256": "16fa95226b998f25aac529cdae75a86ec57898847a3c0db48f740f7aff9eed1e",
+      "bytes": 335872
+    },
+    "base/db_activity.db": {
+      "sha256": "ffd7bc09d7903b449da62dcaa27196653abaea94ae3d937eb2dea0fc580d8a74",
+      "bytes": 2199552
+    },
+    "base/db_activityfunplay.db": {
+      "sha256": "8f266c5da5faa4142446d49a0824fc2d6fc388ce207f3752effc2d7e314cce31",
+      "bytes": 45056
+    },
+    "base/db_adventure_detect.db": {
+      "sha256": "4a217f853cd959a175f69adf56c5921d4b8e3b0fa4b1f031299ff09e2b65cfaa",
+      "bytes": 684032
+    },
+    "base/db_adventurerecord.db": {
+      "sha256": "7af37b085b54add712a93ee2da3dbcd4ad861fd5e8caa6518e7095ddb91e479e",
+      "bytes": 61440
+    },
+    "base/db_adventuretask.db": {
+      "sha256": "1a14394f543845f3654a8549b614a0ad125431bfe6cbff42cf703b6587d78641",
+      "bytes": 40960
+    },
+    "base/db_advice.db": {
+      "sha256": "56fdd759abffd61382ff7b1db6a39d0bf26f48171b7040f7d8ad638d15a239d3",
+      "bytes": 57344
+    },
+    "base/db_ai.db": {
+      "sha256": "640fc2a1a352112f63f406094550d184147891cdf600d93a2b7328b050b4eb7e",
+      "bytes": 1527808
+    },
+    "base/db_aoi.db": {
+      "sha256": "ac137fa3fb54193088154e37ffd85eab4ca933ec386a9e4d262a2c37dcdc734a",
+      "bytes": 12288
+    },
+    "base/db_area.db": {
+      "sha256": "be737ac24c07403de032b90426a0baddd0a9f8e45dec6a49256ae3a96702fdb6",
+      "bytes": 192512
+    },
+    "base/db_areaMpc.db": {
+      "sha256": "e2a8aee1f12933131c716962a584660265ff3fe035c4cd9ae4e26745019d8ba5",
+      "bytes": 12288
+    },
+    "base/db_areaquest.db": {
+      "sha256": "f8256319ef26a53d0170322becdef91c52b95da978715ecea504c5f198e39b04",
+      "bytes": 53248
+    },
+    "base/db_audio.db": {
+      "sha256": "4e993d6e322f537ca5d90f58ec2956fe06eef17ff29ff9c22f042286741701eb",
+      "bytes": 323584
+    },
+    "base/db_audio_interjection.db": {
+      "sha256": "da94f9eb2d7e779e465ac319a082942a52990129057140c0009c5e3b230824c9",
+      "bytes": 77824
+    },
+    "base/db_bag.db": {
+      "sha256": "c1c50977029111fcb25578373ae3fc3ace821400ebafce853a2021e638f93852",
+      "bytes": 28672
+    },
+    "base/db_battle_pass.db": {
+      "sha256": "9ba41d5358e019e2e9e1688852cd33731af30810b32b7f8b5598daf05cdbc35d",
+      "bytes": 147456
+    },
+    "base/db_battletag.db": {
+      "sha256": "173c178c465975ef3a82392cf3cc19decd035e244efc70b2d8bc1413d057f911",
+      "bytes": 32768
+    },
+    "base/db_blueprint.db": {
+      "sha256": "45cd70fc7c481906ac020af209a97f4a7e17d358877ab219e73e2497ea7e1c4b",
+      "bytes": 3702784
+    },
+    "base/db_buff.db": {
+      "sha256": "272c3861a1c1cb58c2dd75a0ea642023456b77e371675b45b799d4a2c4a8f5b9",
+      "bytes": 9129984
+    },
+    "base/db_buffeffect.db": {
+      "sha256": "37d96d0727e175c0b670a93ad67a87f012118a06c870dd2ef73a4dcc3d45e6c3",
+      "bytes": 1183744
+    },
+    "base/db_bullet_preload.db": {
+      "sha256": "d14db56448ccfee94e01a1901a5fa21aafdb30dbeee62c94ddcd7328b47c962c",
+      "bytes": 14856192
+    },
+    "base/db_calabash.db": {
+      "sha256": "4fc7f3c3dd002a650b0e7bb4405d6b134662ba7b819c09ccd97e6adfe9b16c5d",
+      "bytes": 176128
+    },
+    "base/db_catchSignalDifficulty.db": {
+      "sha256": "2d80fa0a0fd9df1dfb9f00506576fec671a87df6710b94cb92970c3638a5cd47",
+      "bytes": 16384
+    },
+    "base/db_catchSignalGameplay.db": {
+      "sha256": "3f04569b6df9483be8726f9705a65ad55e54707cb10154fbc82c93df9f78fb3b",
+      "bytes": 16384
+    },
+    "base/db_cgVedio.db": {
+      "sha256": "7eb6a0b5ddd47653fe7e0320a8346f512aef3dcb85b226314070d9e7a77c515e",
+      "bytes": 352256
+    },
+    "base/db_character_preload.db": {
+      "sha256": "3d0baf9e92bfffe40deb1464f99c888176cdf279941725d7b2b84c41244129a8",
+      "bytes": 28672
+    },
+    "base/db_chat.db": {
+      "sha256": "5f42e784544181c49d18cb3c4e85e42b9a1243869760344d7960e4c005cc7dfb",
+      "bytes": 81920
+    },
+    "base/db_cipherGameplay.db": {
+      "sha256": "9b669e4d7171ade82ee5affa2d6ac0c0d1f723209a2f406ce007a4f2cbe30b51",
+      "bytes": 12288
+    },
+    "base/db_climb.db": {
+      "sha256": "2ecada6647ed1a56f52c2eb76bdd1a9ad9e37934c8dd2a520969b29b60b22042",
+      "bytes": 12288
+    },
+    "base/db_clue.db": {
+      "sha256": "c708ed6599d5ae400615c6b90fcd51883b7c58a15dec607ee29be1436b259ca3",
+      "bytes": 28672
+    },
+    "base/db_combo_teaching.db": {
+      "sha256": "e5bc3ede04eac81d698721e7e880b369cef635ae5241b98884c3f50ceef5bc83",
+      "bytes": 450560
+    },
+    "base/db_common_param.db": {
+      "sha256": "547152c42530801abe792ac65284550313686cec5cac5e49dd5212b841907255",
+      "bytes": 229376
+    },
+    "base/db_common_skill_preload.db": {
+      "sha256": "b655fcdf0836ff4e9e343b21848d6b80414f0e170704fd019f5222251c1f0545",
+      "bytes": 45056
+    },
+    "base/db_communicate.db": {
+      "sha256": "092befabb5fcee029a6c94cb41bcd6b893c21a50437a536d11882e32214b3514",
+      "bytes": 12288
+    },
+    "base/db_component_config.db": {
+      "sha256": "d475b450ede5332cff455c47d01390aa8195302d3d4afd74de5e2cc5d1d9368e",
+      "bytes": 53248
+    },
+    "base/db_compose.db": {
+      "sha256": "a44bc869c3f08750358ae2512c0c255fd42f08967933a29770d01e7c93327bfe",
+      "bytes": 65536
+    },
+    "base/db_condition.db": {
+      "sha256": "0228b4f111eb5b55d8254321bf41fc1bebff0202b34c7a5a1a0a54ceaf49d0ab",
+      "bytes": 3387392
+    },
+    "base/db_confirmbox.db": {
+      "sha256": "bc923e36b7e4c0214b2caedb3ad52426f5136200bfec82212f47b085a8c12500",
+      "bytes": 126976
+    },
+    "base/db_contrast.db": {
+      "sha256": "95a495a4ce3856d6aae141b53675e1e498023c4256c2038d9dfefcd499111795",
+      "bytes": 12288
+    },
+    "base/db_cook.db": {
+      "sha256": "fb2415f1da09dd4a9f4843dba97f9584408371b9551871f5df85a97e2587886c",
+      "bytes": 81920
+    },
+    "base/db_creature_gen.db": {
+      "sha256": "136e8443272077b648d467d688fed894a4e98f9cf8618bb60a99004db393fddc",
+      "bytes": 1581056
+    },
+    "base/db_creature_gen_group.db": {
+      "sha256": "192651814f677f5ea8fc0006a272457d4687553f5361a5159cd73e6ac687c8d5",
+      "bytes": 159744
+    },
+    "base/db_custom_sequence.db": {
+      "sha256": "d4c64c77b2c4bffd93dff890f350be36f80ba57ce200cff90b1ba0f0fdfb271b",
+      "bytes": 12288
+    },
+    "base/db_cycle_tower.db": {
+      "sha256": "4d0524742f26385f9f162d8b4d0b3499dde5c5b159809badd1a26927a055dada",
+      "bytes": 45056
+    },
+    "base/db_daily_activity.db": {
+      "sha256": "c542deb824766ee696662752b022b6e924a3227845ac44709a5fe198095175cd",
+      "bytes": 36864
+    },
+    "base/db_daily_task.db": {
+      "sha256": "e57a002e743614d45014a0046c6a29e42dbec44bb8f814ba95c92b2a8534017f",
+      "bytes": 36864
+    },
+    "base/db_damage.db": {
+      "sha256": "c8dfe5356db3c13b1e8ad7cb82b5e72ff6374799341b3b8e515787ec740ddceb",
+      "bytes": 5144576
+    },
+    "base/db_damage_text.db": {
+      "sha256": "2cc013fdee484e3ee0db24d3d6fa6d0388c4ed9c93c5efa74214b3eab6949a12",
+      "bytes": 200704
+    },
+    "base/db_datalayer.db": {
+      "sha256": "3b1de1c365b2a8aca1c73431d1cd674614ceddaa034c24a0e2bb4cf5b324e365",
+      "bytes": 98304
+    },
+    "base/db_debugview.db": {
+      "sha256": "b0cf0eca749a0abd254317cc1cbcc4b859701371688daf6b2fa38cc45b2e6d54",
+      "bytes": 106496
+    },
+    "base/db_device_render_feature.db": {
+      "sha256": "6b7f78e6d9eb090cba9d7e54937f6adc260d97423dcc9cfdc187f754790d6f13",
+      "bytes": 32768
+    },
+    "base/db_digital_screen.db": {
+      "sha256": "7d579856d637f6397562856a026ab0975e54ec7fefce6212608bfab3017dbcce",
+      "bytes": 20480
+    },
+    "base/db_dragon_ball.db": {
+      "sha256": "e3e08b2b78f6a67eb72194adf95883adc49e0176f032700a5252f09a31bfefe8",
+      "bytes": 49152
+    },
+    "base/db_drop.db": {
+      "sha256": "96adf200d853f932e25e57a801605ba70463b361f79feb9ed8a683151189924a",
+      "bytes": 1929216
+    },
+    "base/db_dynamic_creaturegen.db": {
+      "sha256": "7ec2025b348662c1581c6cd2a0bae5d065c3a982dceb840185e139c6f91675d2",
+      "bytes": 20480
+    },
+    "base/db_effect.db": {
+      "sha256": "367fb18323cf971132649d6b61699a1edb88c5e3a3a19ce57e371c13872c271b",
+      "bytes": 28672
+    },
+    "base/db_effectSpec.db": {
+      "sha256": "9aa9bb08c9a4370abb325011f8069e2fa4b3103e3efc69fe9f7ea6f7f33b4c63",
+      "bytes": 3842048
+    },
+    "base/db_element_info.db": {
+      "sha256": "097491061d149211549db109a265080bb398b221fa27dfc7db39ba1280225ead",
+      "bytes": 61440
+    },
+    "base/db_enrichment.db": {
+      "sha256": "e84e59969b32d229fbf4afd758b31ea00c0315d9b91b8214d26e5e4446424b18",
+      "bytes": 49152
+    },
+    "base/db_entity_audio.db": {
+      "sha256": "47305e02c2eeb400cb5d0c4f501f24ccfeb2d7b1877243b7458f4023c3aa755f",
+      "bytes": 81920
+    },
+    "base/db_entity_skill_preload.db": {
+      "sha256": "544d5b8a92cf5b41dd516690e5a863b77ccc5cae480b929aff0dd0960ac683f6",
+      "bytes": 21602304
+    },
+    "base/db_error_code.db": {
+      "sha256": "5f75e8f401d614a50a02f8a928a01de33f411a9003936cbb74e3f1484d4b8829",
+      "bytes": 606208
+    },
+    "base/db_exchangereward.db": {
+      "sha256": "8ad199b58f134c14762943aea855674b5b7d733a790802e002beb9f33ea7d169",
+      "bytes": 102400
+    },
+    "base/db_explore_progress.db": {
+      "sha256": "c764a8ea2833e2dd8b65c320dc9c75c204bd6330024811950563226755c65b88",
+      "bytes": 167936
+    },
+    "base/db_explore_skill.db": {
+      "sha256": "996529ba3991ce9295d857cfb9e3d067055be7c255a0c268884da957656d3a3d",
+      "bytes": 73728
+    },
+    "base/db_favor.db": {
+      "sha256": "9cfe2e5b08474291c3b2a128cd62c8a142984dd24de535bdc260ad337918bef0",
+      "bytes": 1777664
+    },
+    "base/db_filter_sort.db": {
+      "sha256": "147e34f0a379e877bfde7ced26a5a4e0b0d4badc0e02853fd80717d5314571dd",
+      "bytes": 163840
+    },
+    "base/db_flow.db": {
+      "sha256": "573186d5711367deacdf5d64afc6f40b81e21a3a936b11f7e17bc2c70f7fb88d",
+      "bytes": 1654784
+    },
+    "base/db_flowState.db": {
+      "sha256": "ec860952c0c0e0e6cb3fb182f49ae08349b8c70b26c2236c68f08a58a7c62eab",
+      "bytes": 50827264
+    },
+    "base/db_flow_text.db": {
+      "sha256": "6ce58b6b2b06f1e62d558a8b7fc3350d81c9cad21e7ee1893802aca7cd9e74a9",
+      "bytes": 16384
+    },
+    "base/db_forge.db": {
+      "sha256": "f70b2ff56bfee5ebc75f0bcc1b155bbc527408c6879c9ac60b55f23053865162",
+      "bytes": 16384
+    },
+    "base/db_formation.db": {
+      "sha256": "f249c32aa6672ccd76c9cddb9615e7c6c80d0b8043577b246ae665a86e4d1c67",
+      "bytes": 65536
+    },
+    "base/db_friend.db": {
+      "sha256": "2c8af493106b101e76b95c90a403675d0d6a0f5b7626552b9ad31d91f5ad8310",
+      "bytes": 20480
+    },
+    "base/db_function.db": {
+      "sha256": "1173a157a513b9c7a2f246f14c2139b4fe0a637642d8fe38ff0723700dca80bf",
+      "bytes": 69632
+    },
+    "base/db_gacha.db": {
+      "sha256": "6c75cde86ccb129a4d28d019df78baeb8b83e7075926e11381d467552d37ad59",
+      "bytes": 356352
+    },
+    "base/db_gameplaytimer.db": {
+      "sha256": "711261276f0b2cf50f57887807b4ebd773f0197836c8e1f9ad32922e7fbab9d0",
+      "bytes": 20480
+    },
+    "base/db_gender_text.db": {
+      "sha256": "ff648648ad8378c08c69ac9d04c829372e196716025c2c54d41973bc9ecdbe9c",
+      "bytes": 16384
+    },
+    "base/db_general_action.db": {
+      "sha256": "af6d57e86df178147ed32b605978eb4c722487804979455cdc0f488f57b2934d",
+      "bytes": 487424
+    },
+    "base/db_general_event.db": {
+      "sha256": "516134356059485b5d85dc607d807135d13a42e255c246131ae37ad7a7fa8a48",
+      "bytes": 208896
+    },
+    "base/db_generic_tips.db": {
+      "sha256": "7a62ce69bafeec7655280c0d9a2ca9a01ef0cd4fe01322103891a9f8218f7453",
+      "bytes": 106496
+    },
+    "base/db_giftpackage.db": {
+      "sha256": "63c004955acbb09fd61ecdb66650df2ca4049dfc8d2a90ebb0bcc3d38b48dba0",
+      "bytes": 204800
+    },
+    "base/db_global_config.db": {
+      "sha256": "fc59ed342918904d4b7472977cc5fba252824972af7cde5b9382da84d5934733",
+      "bytes": 73728
+    },
+    "base/db_gm.db": {
+      "sha256": "b62840f4d5c109830051828bc1b2b8262fd71cb308dc46d38a3cf58a9c558690",
+      "bytes": 180224
+    },
+    "base/db_guide_new.db": {
+      "sha256": "795492cfbe7b37915465d750a9dd33d7639ec62b329d574ce64bd69bbd1e8267",
+      "bytes": 3108864
+    },
+    "base/db_handbook.db": {
+      "sha256": "358a52d30c03db5c710fb11f6799d4be0c8d297e1df998dd83a767e236f299bf",
+      "bytes": 454656
+    },
+    "base/db_handbook_entrance.db": {
+      "sha256": "c0cabdc26c6a7561e7cd06ac76cbc09cec1945c8fdb39a1f40e046883fb216e7",
+      "bytes": 16384
+    },
+    "base/db_hardness_mode.db": {
+      "sha256": "d7354e2397510d7a7e6e2090e8eba42c22894317c5296385f929dbf1e605beed",
+      "bytes": 40960
+    },
+    "base/db_head_icon.db": {
+      "sha256": "47e760eabc02afe199c5246b51f8555a54963d194347671ff95dd9f180a66ed3",
+      "bytes": 12288
+    },
+    "base/db_heal.db": {
+      "sha256": "d9e7aadd7aaa4680beb8b0a9a8250da09a3f0f55f2714505326990d6716ce532",
+      "bytes": 12288
+    },
+    "base/db_help.db": {
+      "sha256": "e736ad363d2ead10c02a316f8abec150b763a17ffbba32f21f2ce541f387ed5d",
+      "bytes": 139264
+    },
+    "base/db_hot_patch.db": {
+      "sha256": "1b36c59931ca2b65c4de283ec8a0e0fb46c97f6c5b22c28633ea2df4a35fe9cb",
+      "bytes": 12288
+    },
+    "base/db_influence.db": {
+      "sha256": "b77bf77351f19934f8af1fcda0a29ac4b219cbd02899d0e048646fc3ef5704e2",
+      "bytes": 28672
+    },
+    "base/db_infodisplay.db": {
+      "sha256": "35d99505b6255c09207fb2f0893d5869b131d27f7a8b4cbc72162a7e0e87f622",
+      "bytes": 196608
+    },
+    "base/db_input_settings.db": {
+      "sha256": "2be561a885cbf23c658cb3011baa5b4b90b1bfe8ffd1c0e2d4272b5c1323adbb",
+      "bytes": 196608
+    },
+    "base/db_instance_dungeon.db": {
+      "sha256": "3d80a6ddd1ee547b693696dab48c576a2c9808829cae6d1df9964549a86d97f9",
+      "bytes": 3772416
+    },
+    "base/db_instance_dungeon_step.db": {
+      "sha256": "f34dabaa6bbd5cba5a370aa1aecbd00dc4beac2cd230cbfcc4fb11dad8c256e6",
+      "bytes": 28672
+    },
+    "base/db_item.db": {
+      "sha256": "6fa9a44351634839aed02e5f333715158d5910b7f16d130fb270e512b728af1c",
+      "bytes": 1978368
+    },
+    "base/db_item_exchange.db": {
+      "sha256": "6fa1f85eb8ab44e2436bfae78f53d75e8063acf17cfd0a4713a6bf754239c16b",
+      "bytes": 20480
+    },
+    "base/db_key.db": {
+      "sha256": "b029a9db0c0fd4b31e5cc60f184598a8a157fb5022844215e44ce4a759d4bede",
+      "bytes": 94208
+    },
+    "base/db_langOfLogo.db": {
+      "sha256": "09dcfebd9b8552b36da7a562dec7a9878d3f563c83aa0c1cd59dd1c481a128c3",
+      "bytes": 24576
+    },
+    "base/db_level_entity.db": {
+      "sha256": "3e8bc58cdb2e7cec194b113b15ecbdb01d01a6c5e178d97ce1ded7693420aa7f",
+      "bytes": 150138880
+    },
+    "base/db_levelgameplay.db": {
+      "sha256": "b9d1f05bb49ccca80064c89d5299df24c1c8274e84c1b204edec34b6f3402e3d",
+      "bytes": 86016
+    },
+    "base/db_loadingtips.db": {
+      "sha256": "237a792885374b2b7b684f1333b55adc4c055134954df59bd47ac5f9e1d81fbc",
+      "bytes": 212992
+    },
+    "base/db_longpress_config.db": {
+      "sha256": "83645ad723bcd9daa7eec19958a58ac5ba443f2fe8837b76afbff83a4fac7689",
+      "bytes": 12288
+    },
+    "base/db_mail.db": {
+      "sha256": "130a4ca0eb35575020e8bc3cf2baa9985f43f35a1c6f554ac1ebda0e33e0fc45",
+      "bytes": 28672
+    },
+    "base/db_main_role_change.db": {
+      "sha256": "cd5a57ee1924759ecd255c6c18c635c6d9ec4f9a5cb025c87d18327c7ed4f331",
+      "bytes": 16384
+    },
+    "base/db_map.db": {
+      "sha256": "3bc970ac6acd682d60f2a3b9afba08373514a68ec6f320bcdae37a0078374bcf",
+      "bytes": 184320
+    },
+    "base/db_map_mark.db": {
+      "sha256": "41126edf2857665db88c18c8806f7aa12ba7b842c53f59c7c7c8fb5e49ffbb43",
+      "bytes": 1478656
+    },
+    "base/db_mapfog.db": {
+      "sha256": "4c0ce22570f57f1df535e896fcbbc3154b49148272203b15bba9831e8f39fdce",
+      "bytes": 204800
+    },
+    "base/db_mapnote.db": {
+      "sha256": "690cfe1645c90e2c147da5349983e15a57965e2646b5f270b4a1ff0d8cd5a575",
+      "bytes": 20480
+    },
+    "base/db_mapping.db": {
+      "sha256": "7462fbdea7ce69a994dd3a89dae24b8916dee99d77eb916fae5fa698b534d9f9",
+      "bytes": 16384
+    },
+    "base/db_menu.db": {
+      "sha256": "07382cc3e779669e25ecb05f8cb9e4a4871f29c7a5894020bdc3dc3bd07d8119",
+      "bytes": 311296
+    },
+    "base/db_mobile_battle_ui_set.db": {
+      "sha256": "242a92b511e60370454b5245de0ad9ac478dfd490fb372ad3fd5a6350aef9d63",
+      "bytes": 16384
+    },
+    "base/db_model_config_preload.db": {
+      "sha256": "c3311ee06d5278f45832a51d25c9ce381397be4afcc31f4201d9d00fe4ffc845",
+      "bytes": 3641344
+    },
+    "base/db_monsterDisplay.db": {
+      "sha256": "92b99f0a63d0d7c06f0b2d3eddf98e4d1788cf8f574a76f6ce9cfdab2cf9da07",
+      "bytes": 16384
+    },
+    "base/db_monster_Info.db": {
+      "sha256": "5e6c0c015b197079683bc54cf213d415517128ff16fae310b5fe2a7b5f4515e9",
+      "bytes": 241664
+    },
+    "base/db_monthCardContent.db": {
+      "sha256": "81b5af3e5a04a63340d0148aa578e69f7055eadb717a3e393e670a5adbfd81b8",
+      "bytes": 12288
+    },
+    "base/db_motion.db": {
+      "sha256": "62a34f181d28082839a9d8f1459f366e2cd05387b7f5370b80b41084c4058efe",
+      "bytes": 94208
+    },
+    "base/db_motorfight.db": {
+      "sha256": "f5fe8fbe3f53009e79005621245907dba438f48b57c66e400d116430ec0f0871",
+      "bytes": 737280
+    },
+    "base/db_nearbytrace.db": {
+      "sha256": "618eadb357b4f88cd95369955df122a4b7aad700d753835228d31c2b026438ef",
+      "bytes": 16384
+    },
+    "base/db_new_occupation.db": {
+      "sha256": "e655ac8dd4f38a2ab1fa2217f0f84828ba59441a684168c3b7c4208f9db3f80c",
+      "bytes": 32768
+    },
+    "base/db_npc_actions.db": {
+      "sha256": "8d846c858f7dbbd61a1b28c8a5250953cc41ea78d019421b5c6022e5b556bbd0",
+      "bytes": 16384
+    },
+    "base/db_npc_attributes.db": {
+      "sha256": "43102c6ba78f8e58a09dbd356daf3ee8befc20b14d17899702b29fb687688f6e",
+      "bytes": 12288
+    },
+    "base/db_npc_headinfo.db": {
+      "sha256": "11adc54a9013e366ffb9343b33c79544927657f05e0594f7c76d9b9261ddc127",
+      "bytes": 28672
+    },
+    "base/db_occupation.db": {
+      "sha256": "ef5d6ce6053bbccb101f59ef479886d5ea45eef34e7b703c0b6e9008b4c455a1",
+      "bytes": 36864
+    },
+    "base/db_once_tower_challenge.db": {
+      "sha256": "a1c41b0f86e609afb46f3edf2d4964e350f1a66f27da5114b3ad1f5446d9d8b5",
+      "bytes": 49152
+    },
+    "base/db_parkourchallenge.db": {
+      "sha256": "3806647860eabb2e5d33fb3e919d206554874a633976e3e6fd335af3e0612841",
+      "bytes": 16384
+    },
+    "base/db_payCurrency.db": {
+      "sha256": "0049400090af8b5bc5c23d6fd89af5d495ad2680cd2b8196c97a1e28aee07f7d",
+      "bytes": 176128
+    },
+    "base/db_payshop.db": {
+      "sha256": "9126acd1b61b4e265c862fa549f323d59c3aed498987d48dcae0d2898b8e09c9",
+      "bytes": 188416
+    },
+    "base/db_pbdata_preload.db": {
+      "sha256": "70159b0d55c9df0600235e08f989c09877fa82d3b65a2ce9f420bb40586e68a6",
+      "bytes": 1257472
+    },
+    "base/db_personal.db": {
+      "sha256": "22b90aa923dda0dc3e68d0584aaeb7d024c12068d9d375fce8ced4861574bc98",
+      "bytes": 16384
+    },
+    "base/db_personal_card.db": {
+      "sha256": "d99596afcb753cfc681fd5f330244afc2a00752cba75efb563d8ac340d60c2d2",
+      "bytes": 90112
+    },
+    "base/db_phantom.db": {
+      "sha256": "ab6930daf80dde9fd70063caa5dd2baf870bb3952deee50657ca1c6755a771ed",
+      "bytes": 1716224
+    },
+    "base/db_photograph.db": {
+      "sha256": "e2c2b7f2bd6c83174c4d4d3b6a0237fe7c6668213da42329dcf0509898f26a6c",
+      "bytes": 118784
+    },
+    "base/db_physics_asset.db": {
+      "sha256": "c856f3e80f1ecdd6e9c229fe01ad8c865a64353573237f278c81b911ebc41987",
+      "bytes": 12288
+    },
+    "base/db_playerStateRestriction.db": {
+      "sha256": "0e55632306081d6880e0d773346211808a5cf697b80a3ce68fb942e01344a9aa",
+      "bytes": 16384
+    },
+    "base/db_player_exp.db": {
+      "sha256": "0abc3f0f537cae43771e59a0d4f5edf54d4f8e3a259574a73e0593b3e579dff4",
+      "bytes": 20480
+    },
+    "base/db_plot_audio.db": {
+      "sha256": "5b152b2d6fc2e56be26d4061b28782138eb08eb69aff614b2c4a8e3ca45a9a4e",
+      "bytes": 8040448
+    },
+    "base/db_prefab.db": {
+      "sha256": "cbcb489fc5c956c1dc4df14713541bf1f3e825356f760041845197f6ea564a7f",
+      "bytes": 2514944
+    },
+    "base/db_property.db": {
+      "sha256": "a0d39a09ff6f83c46060852e0c3744bb78a9a41cbfb225448947147b45e9ab96",
+      "bytes": 1200128
+    },
+    "base/db_protocol_monitor.db": {
+      "sha256": "5243609d98430c1276bae5c40f2983e525686471cb8fd264557c017d34c559b2",
+      "bytes": 12288
+    },
+    "base/db_quest.db": {
+      "sha256": "12691fda5e6166a281fccd57453644aa8eee0ee0a843a04816c7d57a8a62ab72",
+      "bytes": 61440
+    },
+    "base/db_quest_chapter.db": {
+      "sha256": "142dc1d1ad4f90b8b2ef53cde7de816890a0107454a2d77279ef244837d15611",
+      "bytes": 40960
+    },
+    "base/db_quest_step.db": {
+      "sha256": "90d8fca03da2cff7e0aa15bce822e2b76cc34861444ebe77761c3c40034a010f",
+      "bytes": 147456
+    },
+    "base/db_questtype.db": {
+      "sha256": "8f7874a3944f0594ec72ebf981c33bc1308f2d3d6a80a4824ba66974539eebcd",
+      "bytes": 40960
+    },
+    "base/db_redDot.db": {
+      "sha256": "0c753c76c36eb6dbf31f401fa2862ac5bf596a27cdcf44b271763639bb4e8c6e",
+      "bytes": 24576
+    },
+    "base/db_report.db": {
+      "sha256": "e66783d3c2e14b67711f252dd948e228f3a150ea45805635d73821e2ccb51d5e",
+      "bytes": 24576
+    },
+    "base/db_resonate_chain.db": {
+      "sha256": "b56a66c59e84ada5612ab40939b69fde75b38bf240c3380d81fe4438f85f10d7",
+      "bytes": 262144
+    },
+    "base/db_revive.db": {
+      "sha256": "b5ce9f8cef69cfee5fa698fedf9ebdcf24317deddd690992873ce23fa9d71c0d",
+      "bytes": 24576
+    },
+    "base/db_role.db": {
+      "sha256": "cbb022b24ce907a07b75c3a6eea08640295d76a00d954e8153c5da20f6221e9f",
+      "bytes": 876544
+    },
+    "base/db_roleDescription.db": {
+      "sha256": "ce3150ee54e213ae05797a5a0f06e9fd7a77f146be43aafb2808d21084cd7a50",
+      "bytes": 16384
+    },
+    "base/db_roleInfluence.db": {
+      "sha256": "74a2e597c771db16be8bf302bf2a8d4cc01cb905ad5ec8cfee2d4b30d544aa3c",
+      "bytes": 12288
+    },
+    "base/db_roleQuest.db": {
+      "sha256": "f898e7bd4c30f0344f00b11fd8e707cf99749907b30e4b27e7bcf22bf97012e4",
+      "bytes": 16384
+    },
+    "base/db_roleTrainingDegree.db": {
+      "sha256": "06ce1c7ba5839c8c829597f4329b73c1bc571eaf676f525361089653c0916411",
+      "bytes": 20480
+    },
+    "base/db_role_battle_view.db": {
+      "sha256": "18dd9e59ea6c26fa317efbd56ea725889567d4187a80c7ae064ff29c0f77a1cd",
+      "bytes": 12288
+    },
+    "base/db_role_level.db": {
+      "sha256": "b484749799cde8894d240a5c54688184f083f397468db5d4e67031aad2657146",
+      "bytes": 118784
+    },
+    "base/db_scenegameplay.db": {
+      "sha256": "ab592b3e2335462903fdd26d0a7a647bea3799f552bca35662ad5ef3ea5414e3",
+      "bytes": 28672
+    },
+    "base/db_sceneobjects.db": {
+      "sha256": "4b9ae2993607632dc9997509a216eacca470526abb542107ae2ac233814b4b0a",
+      "bytes": 24576
+    },
+    "base/db_scenestep.db": {
+      "sha256": "4e2269a382d3ceb811304ceeb3ca10df6155dcb560c4595a13e6b4f5da8b4326",
+      "bytes": 94208
+    },
+    "base/db_shield.db": {
+      "sha256": "805f9c4c343cf79ed85c7580dbfde8eb9a961acb114e106c944143519a695393",
+      "bytes": 32768
+    },
+    "base/db_shop.db": {
+      "sha256": "cd18c8ae919dbf4079445539803943c51a41a40e76d898aaa4a5b7a9032b951d",
+      "bytes": 155648
+    },
+    "base/db_signalDecodeGamePlay.db": {
+      "sha256": "8ed5ea48fea392b2026947d5b3880967bdc992fb740c60df0f808bd99526883b",
+      "bytes": 16384
+    },
+    "base/db_signalDecodeTabColor.db": {
+      "sha256": "86eaa9eb37843ec7d42b4498824a66797e1f6b767301ca00a7c6226854d42efe",
+      "bytes": 12288
+    },
+    "base/db_signalDecodeWaveform.db": {
+      "sha256": "d8af51b9073bae75ab0d4f231531714606e9a9a1165ddac44ba5f15cdac758e9",
+      "bytes": 16384
+    },
+    "base/db_skill.db": {
+      "sha256": "09d8f1c9eccb17d8ea6b6098fa748197432eed1564789914eb50bc2ecbf4b56e",
+      "bytes": 2011136
+    },
+    "base/db_skillButton.db": {
+      "sha256": "4353cc61874304b312f3f69733bf2082992fe6725c456cf24974f08d85aa1475",
+      "bytes": 266240
+    },
+    "base/db_skillTree.db": {
+      "sha256": "c3180702da34c811318e68b408fc5a93234a77a08bd29ae0388ab2bf5321f5cb",
+      "bytes": 487424
+    },
+    "base/db_skybox.db": {
+      "sha256": "63b74e1cc430b4091fe916510be31f17f10e3ba71e9b8fc71ab7703c92747d3e",
+      "bytes": 16384
+    },
+    "base/db_slide.db": {
+      "sha256": "801ec199c16dab8829f4ebfeaabeaab05da707515d1a7fb85035fc576f886486",
+      "bytes": 12288
+    },
+    "base/db_speaker.db": {
+      "sha256": "782aa1b18f2e6dde6df7700ac0357b54056402a7227c66ae1c41f4f73733e732",
+      "bytes": 1642496
+    },
+    "base/db_special_item.db": {
+      "sha256": "7eff0c8978edc887a310a52bec46d4e99c13c6461b321b4c1887a9092702bda7",
+      "bytes": 12288
+    },
+    "base/db_state_machine_preload.db": {
+      "sha256": "b2b324057cb6f0d5a38c7cd71537d6fead17dff1040fd334f1f88d944bab817b",
+      "bytes": 131072
+    },
+    "base/db_subtitle_text.db": {
+      "sha256": "93da631065d877c04b1569c0653978eb45d42898b6d02d7c2e64dff44258fd71",
+      "bytes": 385024
+    },
+    "base/db_talkoptionicon.db": {
+      "sha256": "1c85db2c0aa781965294bb4ed2cc9b4084b26a214cbecee8c7a3e6cc0af24eec",
+      "bytes": 12288
+    },
+    "base/db_teamconfig.db": {
+      "sha256": "cbe525dfe478378375e914664340ec54b5ab12d8eb393bfdea08be2b25e0056e",
+      "bytes": 16384
+    },
+    "base/db_teleporter.db": {
+      "sha256": "fb733379c1069e8baead805781b243081d91ae5d8019526d346d5400e5c9ff6c",
+      "bytes": 131072
+    },
+    "base/db_template.db": {
+      "sha256": "c7dcbdb618ec53c5d2291780e2300a91d1503733c7fff05a675c5927d68bf1ff",
+      "bytes": 26324992
+    },
+    "base/db_templatedata_preload.db": {
+      "sha256": "92452a4da38728cf4b21bbc521db082ed5d4e3c31013659c48ac0508e03eae7d",
+      "bytes": 4403200
+    },
+    "base/db_text.db": {
+      "sha256": "ff17f0f61312488b7d0872f610b01acf9e0ffa04557a3432ce30a2f3601efb39",
+      "bytes": 196608
+    },
+    "base/db_time_of_day.db": {
+      "sha256": "23a0916b230082fcde1831f1af34b5a93711d67f3e20455808eee09f87af8450",
+      "bytes": 20480
+    },
+    "base/db_tough_modifier.db": {
+      "sha256": "73d64f55d92be4e4d56305552f05a39c6744cc4e9596e1e1268fc3c06f283f68",
+      "bytes": 12288
+    },
+    "base/db_tower.db": {
+      "sha256": "9f91c51596a6c9d2537ba94696b3f65ad8604250f9ac0fa2202c99a7e491d2d4",
+      "bytes": 339968
+    },
+    "base/db_trial_role.db": {
+      "sha256": "74a7fa8b39d9f97b529dbd5832e2ab09174db6d6168517233ef53a1466100a2b",
+      "bytes": 2891776
+    },
+    "base/db_ui.db": {
+      "sha256": "5d2fb053999614f66c03cd0ea6b57e13e06f911707819e45457878c180ede95f",
+      "bytes": 802816
+    },
+    "base/db_ui_prefabRichTextData.db": {
+      "sha256": "95c74b1a8620f4ee26def0d516b01201244ca5dbddb617c60f5de261551ad146",
+      "bytes": 12660736
+    },
+    "base/db_ui_prefabTextItem.db": {
+      "sha256": "db250ee0e36222915c98f883327d344b388fcf0892e20a2ba8dbe496fbec84cf",
+      "bytes": 3612672
+    },
+    "base/db_ui_resource.db": {
+      "sha256": "83eb139b5607fc8f6265d7c3f57ff0241d8fb8eb73ebe5f5887a671fd6cae8a2",
+      "bytes": 3317760
+    },
+    "base/db_weapon.db": {
+      "sha256": "9c0eeb6c275b05986a9fd698b9fd97a6a2bec7aa1b08d27fe54698ebdcaa3a8a",
+      "bytes": 634880
+    },
+    "base/db_weapon_visible.db": {
+      "sha256": "4043d9339d32bcf638698cfc7a7352b15205c5895894af8a3a92d1f037968c84",
+      "bytes": 40960
+    },
+    "base/db_weather.db": {
+      "sha256": "bee84407bc4d16e66d678bc43f7ade3774acdb2d8a80f80b7dc74d6ef026ffdd",
+      "bytes": 53248
+    },
+    "base/db_worldlevel.db": {
+      "sha256": "d5eeae22ae4ba0ffe40b0dcdc8b60c0ca2f1b249f24415047718796b6a49341e",
+      "bytes": 12288
+    },
+    "en/Sneak.db": {
+      "sha256": "75ae739be23cdb07267a4c9f9a4e9509c73a95c4713c078dd3624b0557d91208",
+      "bytes": 12288
+    },
+    "en/lang_UiHotKot.db": {
+      "sha256": "6b9351ca4e260a39d20138326b2f64d48ff42f728b90e0454034c37f97bd4019",
+      "bytes": 20480
+    },
+    "en/lang_accesspath.db": {
+      "sha256": "9017e0aa0683e594eefdfe4ac8a825ce5b36fbf6ed7deb30d5cbe71f7dee5bdf",
+      "bytes": 12288
+    },
+    "en/lang_achievement.db": {
+      "sha256": "add82b89b76230bde5c78c5adab76c88c873f3f74e7a250a2732edb022152bdb",
+      "bytes": 28672
+    },
+    "en/lang_activity.db": {
+      "sha256": "9d303d7ea996de378f84c27b69e481d533e14b67eba4ff2a505c1551e1eac663",
+      "bytes": 20480
+    },
+    "en/lang_adventuretask.db": {
+      "sha256": "e5504d619747de78c8d6f77adc81af697bb23d8b0ad663cdb24a6dcc82a4190d",
+      "bytes": 20480
+    },
+    "en/lang_advice.db": {
+      "sha256": "afd2363f31ad7fd5282bd92f7bc752c5f5ab53d6de726f7028fb33468fbbbced",
+      "bytes": 45056
+    },
+    "en/lang_area.db": {
+      "sha256": "f482a3f539faa51ace6068e9eff3ac60ab9929cb4c958f7f09c7baf604cc007f",
+      "bytes": 12288
+    },
+    "en/lang_areaquest.db": {
+      "sha256": "4a3ecabc321310b2afc6c2bd7a406245c1aba5c953eae0727b1960f4a893d9b5",
+      "bytes": 20480
+    },
+    "en/lang_bag.db": {
+      "sha256": "5e4cd02908ad99e631eb79a6bfd7597e6f6c5a517a0da4c068a4b2e1b0f78edc",
+      "bytes": 28672
+    },
+    "en/lang_battlepass.db": {
+      "sha256": "62b09fb17d16ef32e2b66b9ba890f8f59a29f1603b5447fd50a471e361d396cf",
+      "bytes": 12288
+    },
+    "en/lang_calabash.db": {
+      "sha256": "e8e535ad9caec79da9171d830051a783daf66aefea8cf179c2270d03ed105005",
+      "bytes": 28672
+    },
+    "en/lang_cgVideo.db": {
+      "sha256": "7ad65e9d6b0cca6b2bde8d70ae230e9eb50da6a11a141f846053c02cc5a8af31",
+      "bytes": 12288
+    },
+    "en/lang_chat.db": {
+      "sha256": "70d0333c2e7370c9259c6c732090afbe9ff4b192a340f5dcf6f2b088009e3e8d",
+      "bytes": 28672
+    },
+    "en/lang_combo_teaching.db": {
+      "sha256": "3dc87cca56dbffacfd3fac23cedb8dead0b2099d0df2ee6f64f12ba4c652290d",
+      "bytes": 12288
+    },
+    "en/lang_common_param.db": {
+      "sha256": "283116319d5a3cf0772d26c310237d3c275e8d18159612c19e47568cc21db06a",
+      "bytes": 12288
+    },
+    "en/lang_compose.db": {
+      "sha256": "71d932a6971cab0c753f6397d5ec2a2acc067d4bf7bd9318dc6a67c58962a6b0",
+      "bytes": 40960
+    },
+    "en/lang_condition.db": {
+      "sha256": "52ff085d6b5857fcc9defea64e919cf888e2109bc4f06b8a5914536e49813915",
+      "bytes": 69632
+    },
+    "en/lang_confirmbox.db": {
+      "sha256": "ddacade93d38c486a3dc1c6e1394a4cf9a54f3c6225dd0926ee10b11d370178a",
+      "bytes": 28672
+    },
+    "en/lang_cook.db": {
+      "sha256": "00532ed593a9a4a5ceaaa0a5b02ea5aa83d30eafcbdab132b8806e8855841484",
+      "bytes": 53248
+    },
+    "en/lang_country.db": {
+      "sha256": "cc80908e3d57a640afbe5c073ba9524ea281689436284f3454899ee79bb09224",
+      "bytes": 20480
+    },
+    "en/lang_custom_sequence.db": {
+      "sha256": "4b2c43bebdd703f58828d27cc3caf3d1a505d81e819f075d0723cd7793f05195",
+      "bytes": 12288
+    },
+    "en/lang_cycle_tower.db": {
+      "sha256": "02db146a3a3d9260dd32f54c8c0b91066307cd7c81b9499dc3c66b313fbcad66",
+      "bytes": 28672
+    },
+    "en/lang_damage.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_detection.db": {
+      "sha256": "07e8e039763a3f4ff9467891ba274caf3802b1ab7e4d248274a7d757729fa856",
+      "bytes": 61440
+    },
+    "en/lang_dragon_ball.db": {
+      "sha256": "099448478ccd99c32f286e0fe59bcb5f2301af6147104249bbd9bf33cebb9c25",
+      "bytes": 12288
+    },
+    "en/lang_drop.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_element_info.db": {
+      "sha256": "4489507f5585bbb09033a67cd4d914eea6f029c4171d8a5d5666f07737e279a8",
+      "bytes": 28672
+    },
+    "en/lang_error_code.db": {
+      "sha256": "d0f7ebac2e1ec4640d78c11e6367bb21808da46e081a76b2d9f7d1fb78bdc28d",
+      "bytes": 40960
+    },
+    "en/lang_explore_progress.db": {
+      "sha256": "2a25a64ed69bab9af902f7315f95fea2a762c12d1efb8cccd34e56a3709ac851",
+      "bytes": 12288
+    },
+    "en/lang_explore_skill.db": {
+      "sha256": "37899039cc8239a286911a32411c8f897f887498b632d11de0637ee4bdb706f9",
+      "bytes": 12288
+    },
+    "en/lang_favor.db": {
+      "sha256": "3765c13215db69eaee5722c3e97d1bd24d9c556972831b55537acd0f27b1381f",
+      "bytes": 90112
+    },
+    "en/lang_flow.db": {
+      "sha256": "fdd6756adf3295aa2d8e641ce161d8651398e32a4ba6c608abae729747801f53",
+      "bytes": 12288
+    },
+    "en/lang_flow_text.db": {
+      "sha256": "4075b02ac8cbe91deb473f48a3ddfc146413e3193cfe5e2e2f38afb8223b5eb7",
+      "bytes": 12288
+    },
+    "en/lang_forge.db": {
+      "sha256": "5fd6c8d8d6e0d44fc6996479b5b550ad819206cff75ed6d28e7bcf1ce5b29522",
+      "bytes": 12288
+    },
+    "en/lang_formation.db": {
+      "sha256": "58d1c044dc36574766bcb08322702aa17a611db9f35a351bc01b4bb1b790c161",
+      "bytes": 12288
+    },
+    "en/lang_friend.db": {
+      "sha256": "ebfa09ba7a548c4972d74c5b9e7c7e1cb04bbba3bd97e6ab50b6e15d8e43c179",
+      "bytes": 12288
+    },
+    "en/lang_function.db": {
+      "sha256": "da06be0ede809c5df8a434cf662b6caa7b4486edcef7bddd418a16c14bf2794c",
+      "bytes": 20480
+    },
+    "en/lang_gacha.db": {
+      "sha256": "0b2b98bb78deb4c2fdc551a40ddc8109f553810158d561e6bcb7adc793782acf",
+      "bytes": 12288
+    },
+    "en/lang_gameplaytimer.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_generic_tips.db": {
+      "sha256": "fc565c2adcc58975e32eed44f235257ae118abe6d2300504ac3442e17692c249",
+      "bytes": 36864
+    },
+    "en/lang_gm.db": {
+      "sha256": "ac2933401ef07e086b339f455e8c18cb61c6ca8fd74c79ef308879a17a83f78f",
+      "bytes": 20480
+    },
+    "en/lang_guide_new.db": {
+      "sha256": "024bb312e01888dbaa6343b69d3a232304962ea32d98bcf54ef96610e955fff6",
+      "bytes": 102400
+    },
+    "en/lang_handbook.db": {
+      "sha256": "89b1ec4dcdd1bce55620965bc32acb846e71b3c7a9ff4887d724fcde8c181e43",
+      "bytes": 135168
+    },
+    "en/lang_handbook_entrance.db": {
+      "sha256": "98df497d0b7a668e5b2a03585a95ea30dc2b9c1e5413bb86bb1a4863d685f5c6",
+      "bytes": 12288
+    },
+    "en/lang_help.db": {
+      "sha256": "e884d67f353e75c4e44e6d9c5840177dc890a55245d026fcccc1d013b60a1ada",
+      "bytes": 12288
+    },
+    "en/lang_hot_patch.db": {
+      "sha256": "4a3d7ba7ca80324da52b37dfb03d14dde17a734782ffe027188aace4caf15043",
+      "bytes": 36864
+    },
+    "en/lang_influence.db": {
+      "sha256": "cc80908e3d57a640afbe5c073ba9524ea281689436284f3454899ee79bb09224",
+      "bytes": 20480
+    },
+    "en/lang_infodisplay.db": {
+      "sha256": "22649bae8e220d22977c17f0126ad45d8a8ef74e0f0d606e8ade7aac2ba7c429",
+      "bytes": 94208
+    },
+    "en/lang_instance_dungeon.db": {
+      "sha256": "cee98f74f1af5aec490a5f38e705822281652719d5ef28017916ba65721e6f5b",
+      "bytes": 57344
+    },
+    "en/lang_instance_dungeon_entrance.db": {
+      "sha256": "1bf44dd72dbc81696142f812a7cecd86bfa29e30b7366ff02387b7d62338789f",
+      "bytes": 12288
+    },
+    "en/lang_instance_dungeon_step.db": {
+      "sha256": "09709a78c7c1b8d0cb427aa1e5c2b9a0aac3a981698d3bfbe60207ad26a3525b",
+      "bytes": 12288
+    },
+    "en/lang_item.db": {
+      "sha256": "75e37213070c6f693a7cb517d9ab0144424df8881512f0d9425c9149b0bd47a4",
+      "bytes": 200704
+    },
+    "en/lang_item_exchange.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_levelgameplay.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_loadingtips.db": {
+      "sha256": "caddcea4664122b32b4f5e8f27710ff8d5080a926cb1b4dd72140db65392fe49",
+      "bytes": 12288
+    },
+    "en/lang_mail.db": {
+      "sha256": "1f06566dc341a9673703adc595fd0bb5b6c18adf16baf157ed29b299caa7127f",
+      "bytes": 28672
+    },
+    "en/lang_map.db": {
+      "sha256": "1b3c906fe9a83985cd95e907ae1bfee900b774fe9817e20871bbdc114914b603",
+      "bytes": 20480
+    },
+    "en/lang_map_mark.db": {
+      "sha256": "1bdfc0c8d36b87ea75e4afda3be6bbc524206ccc2adf112dc7d259c1bbad9142",
+      "bytes": 65536
+    },
+    "en/lang_mapfog.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_mapnote.db": {
+      "sha256": "2595bf06c7c74f138f5df94f2ce55e3ae1c0ec89f6f050955f7f3c3769a18392",
+      "bytes": 12288
+    },
+    "en/lang_mapping.db": {
+      "sha256": "03b2962a4c079d7b604982357fa36446536aaa9031be6f5611f95c64b8c15039",
+      "bytes": 12288
+    },
+    "en/lang_menu.db": {
+      "sha256": "4ee398e6557b1055513a703b1bf41dc7744dff4c34461462f937b4b938869422",
+      "bytes": 36864
+    },
+    "en/lang_monsterDisplay.db": {
+      "sha256": "56b177dfa766747061389fe0a7276f29f06a646b2e139dfb9c1fd3c3ce071897",
+      "bytes": 12288
+    },
+    "en/lang_monster_Info.db": {
+      "sha256": "b9c3c13a595deac93e1c19995be7e1a56561cf62db50c91689a7027e2196a01f",
+      "bytes": 57344
+    },
+    "en/lang_motion.db": {
+      "sha256": "ea399a806fd551ff751c413201fc3163763db9b57d05e7232771cb5239368cac",
+      "bytes": 12288
+    },
+    "en/lang_multi_text.db": {
+      "sha256": "a6bcf5da519a6b74ca4cb1f5d0dcaeb1705599b647d74054b7c5663eabbcc92b",
+      "bytes": 42479616
+    },
+    "en/lang_multi_text_1sthalf.db": {
+      "sha256": "4a351567ea0c3ad6b9b8a6beefa65f4d72e98beac1cf5d4a1139f4379b47fc17",
+      "bytes": 409600
+    },
+    "en/lang_npc_headinfo.db": {
+      "sha256": "270dc5c63d16872a92700fb5e16862965c36759649b59742cafecfad77648064",
+      "bytes": 12288
+    },
+    "en/lang_occupation.db": {
+      "sha256": "88146ad1d3d77e06d6b8272d74a5d0e8dd04e0e4d946e0b2afa72ef4ea04c4aa",
+      "bytes": 12288
+    },
+    "en/lang_once_tower_challenge.db": {
+      "sha256": "8f1bc5301be069ffc518149943121a83043c61a031ec19f489d32c25e931fd49",
+      "bytes": 36864
+    },
+    "en/lang_parkourchallenge.db": {
+      "sha256": "05887ef98d1ffbe0d3007b1d4438086e2eefae49d464ed8fa7dbca123777828c",
+      "bytes": 12288
+    },
+    "en/lang_payshop.db": {
+      "sha256": "320732a715e19984cbaba3b9431267a14f99b8c67392249c0d0eaaa447477f5b",
+      "bytes": 36864
+    },
+    "en/lang_personal.db": {
+      "sha256": "8b872a2645c0c7b139918a27c63eb8a7fc30668826869be06e6edeba9cd370cf",
+      "bytes": 12288
+    },
+    "en/lang_personal_card.db": {
+      "sha256": "f3da51624fb5d75ecd2cd42799b08cb0dc9f806207138b1f859aef895bed601f",
+      "bytes": 12288
+    },
+    "en/lang_phantom.db": {
+      "sha256": "7988670f6a89684128240b720fa71bcc8223d51f7024dacdee99941c41e17a9f",
+      "bytes": 258048
+    },
+    "en/lang_photograph.db": {
+      "sha256": "d3a43b8b9e378431662dd2d10556499d8525a7ecd2638eeadf76f49a16290283",
+      "bytes": 20480
+    },
+    "en/lang_player_exp.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_prefabtext.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_property.db": {
+      "sha256": "002526c68597763f47ac021262368083eaf54cd977f935e89e38267aab146336",
+      "bytes": 20480
+    },
+    "en/lang_quest.db": {
+      "sha256": "09d9b7abc67be802660f7255772d89d4e0d343c100a12d0676e5298fa1f8cedc",
+      "bytes": 12288
+    },
+    "en/lang_quest_chapter.db": {
+      "sha256": "ac043a542fae33419fee861387b8d39ed2d31ac113f6b895f8bb1a32fa3084f1",
+      "bytes": 12288
+    },
+    "en/lang_quest_step.db": {
+      "sha256": "b75020e60fd800e010f685cba1e6facfc58373cc8db1757701bf31515c237c3c",
+      "bytes": 28672
+    },
+    "en/lang_questtype.db": {
+      "sha256": "15e6898d9638e88f4bb63b4aa95535cfd575f91a95a8a9f0a9618424b52f0458",
+      "bytes": 12288
+    },
+    "en/lang_report.db": {
+      "sha256": "0d566c08ecac4607c2a37d8b10dc1acb867b00b5c005e4a8ac937aa7c0da55b7",
+      "bytes": 20480
+    },
+    "en/lang_resonate_chain.db": {
+      "sha256": "a6b819f27ef4368da733558f0ed2fbbd1a539ac32f9d97a0d204deea7747d580",
+      "bytes": 49152
+    },
+    "en/lang_revive.db": {
+      "sha256": "a73ab3f95132b36b1aafc46e38fbdc2fb7b45e9a12843a601394393e919cffc8",
+      "bytes": 12288
+    },
+    "en/lang_role.db": {
+      "sha256": "986d1b20d8ad1a83f697cbf912de14cf0ca013b9b18d4b502eedcea97947d5b6",
+      "bytes": 32768
+    },
+    "en/lang_roleDescription.db": {
+      "sha256": "4771627eb10a6e57212e1e7dd0658d84507f43c2385552ee094145a368653090",
+      "bytes": 12288
+    },
+    "en/lang_roleInfluence.db": {
+      "sha256": "809107a26c6a40e2e43a15f60e453ad94509078d91e72074821a0ae200bea551",
+      "bytes": 12288
+    },
+    "en/lang_roleQuest.db": {
+      "sha256": "ad44cc660d46677d09e78755b8e2814443359780eeb7704d6ff1c10abc35dc71",
+      "bytes": 12288
+    },
+    "en/lang_role_level.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_role_reson.db": {
+      "sha256": "f1968a4d805bb5037ac408a8f8b9389896c314275b2da28febc6782fe760c877",
+      "bytes": 36864
+    },
+    "en/lang_role_training_degree.db": {
+      "sha256": "0c17220d2c78ab75643a441280e473850ab0f94d07e2d4a9e555a99ac908699e",
+      "bytes": 12288
+    },
+    "en/lang_scenegameplay.db": {
+      "sha256": "424f46111edd98e4aaf4c7481c013d2d4ba82d956e0b56292538e6db85d2c0a4",
+      "bytes": 12288
+    },
+    "en/lang_scenestep.db": {
+      "sha256": "b216b40ebd77e969b72ffc92861cd40c314516919a22e066f0cd272995a42ccf",
+      "bytes": 12288
+    },
+    "en/lang_shop.db": {
+      "sha256": "288ac0216c0c9d9281f5cbeef05bbf4c612ffeb534436e4dc1bb6e2de608be16",
+      "bytes": 45056
+    },
+    "en/lang_skill.db": {
+      "sha256": "3008fb689d1be9c250f29bf2c46765faa92783fa92f0be27d980633f054c02eb",
+      "bytes": 147456
+    },
+    "en/lang_skillTree.db": {
+      "sha256": "92d2071ef6b1a667b5636c00898b17c812f2b0152866e3db12f99a654c448e00",
+      "bytes": 61440
+    },
+    "en/lang_speaker.db": {
+      "sha256": "a7012322d6b88a00e553b7d28500b380c6840e9a4d8e3639115b53c8f855ea19",
+      "bytes": 167936
+    },
+    "en/lang_special_item.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_subtitle_text.db": {
+      "sha256": "bcb141470c1f58baecd97e92a218a2e934be2dec16d544f38be0b4bfef8c996b",
+      "bytes": 94208
+    },
+    "en/lang_teleporter.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_text.db": {
+      "sha256": "69017df0a6c14589a48a7d41373c6b3dccd126889940255cf54a91a0be8d9b0f",
+      "bytes": 49152
+    },
+    "en/lang_time_of_day.db": {
+      "sha256": "b480606bbc0774055fa52f6047df3a8c18a9300b8fe5b234b7416f7fc787d563",
+      "bytes": 12288
+    },
+    "en/lang_trial_role.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_ui.db": {
+      "sha256": "ceb7223224ea13b38bfa38ab2ac47d4afaf296bbe2fe9ee49cc509c764e05c5f",
+      "bytes": 12288
+    },
+    "en/lang_ui_prefabTextItem.db": {
+      "sha256": "942f198b3e0dbc3d1d9b993bd3a94d11569f24c2716a1f6350df5584c718b606",
+      "bytes": 90112
+    },
+    "en/lang_ui_resource.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "en/lang_weapon.db": {
+      "sha256": "6ca98ccabee6a7b310e68340ad158af5282924e4760b07fe0f4c9605855c29f8",
+      "bytes": 53248
+    },
+    "ja/Sneak.db": {
+      "sha256": "75ae739be23cdb07267a4c9f9a4e9509c73a95c4713c078dd3624b0557d91208",
+      "bytes": 12288
+    },
+    "ja/lang_UiHotKot.db": {
+      "sha256": "ed9df2429f34094bf75b3b5c57f3e07a476597079334187e3fa2303916b0ac82",
+      "bytes": 20480
+    },
+    "ja/lang_accesspath.db": {
+      "sha256": "06b9c1945be3400ef630818043b1b6011d4d5df71940a16267dd1cd529cf4d4e",
+      "bytes": 12288
+    },
+    "ja/lang_achievement.db": {
+      "sha256": "add82b89b76230bde5c78c5adab76c88c873f3f74e7a250a2732edb022152bdb",
+      "bytes": 28672
+    },
+    "ja/lang_activity.db": {
+      "sha256": "9d303d7ea996de378f84c27b69e481d533e14b67eba4ff2a505c1551e1eac663",
+      "bytes": 20480
+    },
+    "ja/lang_adventuretask.db": {
+      "sha256": "e5504d619747de78c8d6f77adc81af697bb23d8b0ad663cdb24a6dcc82a4190d",
+      "bytes": 20480
+    },
+    "ja/lang_advice.db": {
+      "sha256": "9f2c10a27eaedfc4eb4052edd755166331ecccaf9b6dd61b72d5c087439462cc",
+      "bytes": 45056
+    },
+    "ja/lang_area.db": {
+      "sha256": "c8cd5eb68e20d292f2e98636a3d6306e67796b8e2adbe45f57edfd28505b8ec9",
+      "bytes": 12288
+    },
+    "ja/lang_areaquest.db": {
+      "sha256": "4a3ecabc321310b2afc6c2bd7a406245c1aba5c953eae0727b1960f4a893d9b5",
+      "bytes": 20480
+    },
+    "ja/lang_bag.db": {
+      "sha256": "9841064ee47e25c25d5b6fd33bbcf82cf803d85d4372880559735acc8adff1e0",
+      "bytes": 28672
+    },
+    "ja/lang_battlepass.db": {
+      "sha256": "62b09fb17d16ef32e2b66b9ba890f8f59a29f1603b5447fd50a471e361d396cf",
+      "bytes": 12288
+    },
+    "ja/lang_calabash.db": {
+      "sha256": "c355d3dd532cb90703da5129c0496c5bf20b50a0d79fa0ca3c98469c0a695246",
+      "bytes": 28672
+    },
+    "ja/lang_cgVideo.db": {
+      "sha256": "0a07a4300cbffda9554fb4a9b8511a23430a26ae3ec53da7ccf10fce50d770bd",
+      "bytes": 12288
+    },
+    "ja/lang_chat.db": {
+      "sha256": "07d4fbcf9c4daf1c61dd68f96e9b243fcad7a0eec705cb6be28db18c0cedcd02",
+      "bytes": 28672
+    },
+    "ja/lang_combo_teaching.db": {
+      "sha256": "3dc87cca56dbffacfd3fac23cedb8dead0b2099d0df2ee6f64f12ba4c652290d",
+      "bytes": 12288
+    },
+    "ja/lang_common_param.db": {
+      "sha256": "8ff1e01226c4be836b7a0b917b7d17671143cad98718a53a101f4c6dd29819ed",
+      "bytes": 12288
+    },
+    "ja/lang_compose.db": {
+      "sha256": "5fb2a793be2ed1a6022c8bded4673eae2997eb957258924d6dd7f288d0fa65a8",
+      "bytes": 36864
+    },
+    "ja/lang_condition.db": {
+      "sha256": "e891a812c0d73afb2aed56529d43a2305987cdae517499119c6611b7e1542e0a",
+      "bytes": 69632
+    },
+    "ja/lang_confirmbox.db": {
+      "sha256": "aa707533fcee173318d21ae524eb91845f1c115a78b57e254a0efd38356c3f6b",
+      "bytes": 28672
+    },
+    "ja/lang_cook.db": {
+      "sha256": "09965411f217b186510fd2b2056c86aad3f19310ffa30ab2aa26e621e97b2a7d",
+      "bytes": 53248
+    },
+    "ja/lang_country.db": {
+      "sha256": "7365119777f3b6f170b6290ed442f55d13073df21b5bc17195ea4a71f0e1d242",
+      "bytes": 20480
+    },
+    "ja/lang_custom_sequence.db": {
+      "sha256": "4b2c43bebdd703f58828d27cc3caf3d1a505d81e819f075d0723cd7793f05195",
+      "bytes": 12288
+    },
+    "ja/lang_cycle_tower.db": {
+      "sha256": "c6600d95cc545888590daa3ddd36ac2b06e841dd3188426c429ba5ff79eb1d74",
+      "bytes": 28672
+    },
+    "ja/lang_damage.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_detection.db": {
+      "sha256": "27be75f53dbaf17969f5173544e7b93ceab4d840805434e77e1c144636a9457f",
+      "bytes": 65536
+    },
+    "ja/lang_dragon_ball.db": {
+      "sha256": "099448478ccd99c32f286e0fe59bcb5f2301af6147104249bbd9bf33cebb9c25",
+      "bytes": 12288
+    },
+    "ja/lang_drop.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_element_info.db": {
+      "sha256": "f06d15a7d2dda8ef3d68dd2ce0d6c07bb7c25c9a0efbc1bc7b468e110a24fbfc",
+      "bytes": 28672
+    },
+    "ja/lang_error_code.db": {
+      "sha256": "049d03117bebd17d91962f9668dde41094b014d2ec34f896168556b24d9732e2",
+      "bytes": 40960
+    },
+    "ja/lang_explore_progress.db": {
+      "sha256": "7fd8d57471f81dd4de13a96574a3cfbe07071d8b762123dc72d7129a65fd34f4",
+      "bytes": 12288
+    },
+    "ja/lang_explore_skill.db": {
+      "sha256": "94434191d196a3b6eab93b062b50f1f0ed8e51fd7ca7eb458c2e74afb21d88bc",
+      "bytes": 12288
+    },
+    "ja/lang_favor.db": {
+      "sha256": "aa560c089c86785d957319384c91fe08639f7142244cee08f6ab43ace4f594b0",
+      "bytes": 94208
+    },
+    "ja/lang_flow.db": {
+      "sha256": "fdd6756adf3295aa2d8e641ce161d8651398e32a4ba6c608abae729747801f53",
+      "bytes": 12288
+    },
+    "ja/lang_flow_text.db": {
+      "sha256": "4075b02ac8cbe91deb473f48a3ddfc146413e3193cfe5e2e2f38afb8223b5eb7",
+      "bytes": 12288
+    },
+    "ja/lang_forge.db": {
+      "sha256": "48bd38fdce38d56511263f23fafdc40b5f6e8cb37d91346c5de002455a1d11ba",
+      "bytes": 12288
+    },
+    "ja/lang_formation.db": {
+      "sha256": "58d1c044dc36574766bcb08322702aa17a611db9f35a351bc01b4bb1b790c161",
+      "bytes": 12288
+    },
+    "ja/lang_friend.db": {
+      "sha256": "ebfa09ba7a548c4972d74c5b9e7c7e1cb04bbba3bd97e6ab50b6e15d8e43c179",
+      "bytes": 12288
+    },
+    "ja/lang_function.db": {
+      "sha256": "5fe75106902327904bd51532ec65f79dca70bc22d98f5dbbbbaf133c8c74196a",
+      "bytes": 20480
+    },
+    "ja/lang_gacha.db": {
+      "sha256": "0b2b98bb78deb4c2fdc551a40ddc8109f553810158d561e6bcb7adc793782acf",
+      "bytes": 12288
+    },
+    "ja/lang_gameplaytimer.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_generic_tips.db": {
+      "sha256": "be61d6067ac2a52e35600b0139e6377d97e89d6ff8e0d663f98ed825a12ebcd9",
+      "bytes": 36864
+    },
+    "ja/lang_gm.db": {
+      "sha256": "ac2933401ef07e086b339f455e8c18cb61c6ca8fd74c79ef308879a17a83f78f",
+      "bytes": 20480
+    },
+    "ja/lang_guide_new.db": {
+      "sha256": "6e7c8670ed1d0ab116b765613924c21c26e87399e80fc8c469df0ed7f863ff3a",
+      "bytes": 110592
+    },
+    "ja/lang_handbook.db": {
+      "sha256": "c9a0b88d63269a844738bd1aa8f2dd0bf389454df9e0412c79d42e7578255acc",
+      "bytes": 151552
+    },
+    "ja/lang_handbook_entrance.db": {
+      "sha256": "ef1c41aa27de4f0aa5b2f63a4b1c3cbf726b3fa4d14654d7a73078d1c8aef058",
+      "bytes": 12288
+    },
+    "ja/lang_help.db": {
+      "sha256": "ec2162081dcdbda54cfa7a05641fb2695b9342ece07e8d79ec8732aa441c9da3",
+      "bytes": 12288
+    },
+    "ja/lang_hot_patch.db": {
+      "sha256": "e5cd93ac245161812aad02417af8d8f8255ef51b4ec0f3e45bdf99e39fbc6b48",
+      "bytes": 40960
+    },
+    "ja/lang_influence.db": {
+      "sha256": "7365119777f3b6f170b6290ed442f55d13073df21b5bc17195ea4a71f0e1d242",
+      "bytes": 20480
+    },
+    "ja/lang_infodisplay.db": {
+      "sha256": "11cafb8d2868f4badfbe7d88ef6207e07aa5c472be5977e756d46f0aee4b1b42",
+      "bytes": 102400
+    },
+    "ja/lang_instance_dungeon.db": {
+      "sha256": "e09257de07dc317fb4b2f20e8ebf0f4f847b37e57daedeaa41e61bc7dc210404",
+      "bytes": 57344
+    },
+    "ja/lang_instance_dungeon_entrance.db": {
+      "sha256": "6314c23e2c7308e2f5a425ef1339562ccca475b315bbfaa5ca815025b7e07330",
+      "bytes": 12288
+    },
+    "ja/lang_instance_dungeon_step.db": {
+      "sha256": "09709a78c7c1b8d0cb427aa1e5c2b9a0aac3a981698d3bfbe60207ad26a3525b",
+      "bytes": 12288
+    },
+    "ja/lang_item.db": {
+      "sha256": "29ba9436be71f86eae5f9f14b26a7c250106c5af79cd5c87bc775ba8063df388",
+      "bytes": 208896
+    },
+    "ja/lang_item_exchange.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_levelgameplay.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_loadingtips.db": {
+      "sha256": "e7ff62f0f859d8ac88d7a830d7f0c16284d5f4af488524f299d7d23b2693f2fe",
+      "bytes": 12288
+    },
+    "ja/lang_mail.db": {
+      "sha256": "d7a5a3fdc4bf830d8590eeb959ad648dc0cd27217b588b5e0bd6152533a3f80f",
+      "bytes": 28672
+    },
+    "ja/lang_map.db": {
+      "sha256": "1b3c906fe9a83985cd95e907ae1bfee900b774fe9817e20871bbdc114914b603",
+      "bytes": 20480
+    },
+    "ja/lang_map_mark.db": {
+      "sha256": "74c776995d34978f733e8d9b5d09fcf83dbc39fd733952601297b9b3877adfb7",
+      "bytes": 65536
+    },
+    "ja/lang_mapfog.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_mapnote.db": {
+      "sha256": "2595bf06c7c74f138f5df94f2ce55e3ae1c0ec89f6f050955f7f3c3769a18392",
+      "bytes": 12288
+    },
+    "ja/lang_mapping.db": {
+      "sha256": "32f18ebcd6ec2ba1a0cc871f6118dac3edbdbdc525d830b1e8fba490cfe7bba0",
+      "bytes": 12288
+    },
+    "ja/lang_menu.db": {
+      "sha256": "b4a43535e1354417296d09fc3e1aa00226b954ec5e96c9d23dbe095cad082aac",
+      "bytes": 36864
+    },
+    "ja/lang_monsterDisplay.db": {
+      "sha256": "56b177dfa766747061389fe0a7276f29f06a646b2e139dfb9c1fd3c3ce071897",
+      "bytes": 12288
+    },
+    "ja/lang_monster_Info.db": {
+      "sha256": "37bfc73c8803c43e2d5abdb6a87346d5493d12d99264cbbc7ed9cea6e574e9f3",
+      "bytes": 69632
+    },
+    "ja/lang_motion.db": {
+      "sha256": "ea399a806fd551ff751c413201fc3163763db9b57d05e7232771cb5239368cac",
+      "bytes": 12288
+    },
+    "ja/lang_multi_text.db": {
+      "sha256": "3bf16b8c5fc3731fd0a369879c35a25292f5338a75bb838fb7eefe1187478d46",
+      "bytes": 48541696
+    },
+    "ja/lang_multi_text_1sthalf.db": {
+      "sha256": "08a59b1ce3578a5b911fd16a4e61816b4e4fd691f6107d13b95d2fe0ca93c225",
+      "bytes": 532480
+    },
+    "ja/lang_npc_headinfo.db": {
+      "sha256": "c3422371a8619f8fb2001956acdcd41e8b8fcedbec20e2bc8987549f8e009034",
+      "bytes": 12288
+    },
+    "ja/lang_occupation.db": {
+      "sha256": "8c534e3a4917d5a431475d581f8b64b113e6a49b38fba93e9fce4229f9422ee5",
+      "bytes": 12288
+    },
+    "ja/lang_once_tower_challenge.db": {
+      "sha256": "65f65c0215121766032c9f287b6b38699163935498f9e46c0b40fd3e0b90469e",
+      "bytes": 36864
+    },
+    "ja/lang_parkourchallenge.db": {
+      "sha256": "05887ef98d1ffbe0d3007b1d4438086e2eefae49d464ed8fa7dbca123777828c",
+      "bytes": 12288
+    },
+    "ja/lang_payshop.db": {
+      "sha256": "d5e50b978e473377aaa67301bbc946c80e6d355a3f832cbd5c7b6b2139405ec1",
+      "bytes": 36864
+    },
+    "ja/lang_personal.db": {
+      "sha256": "8b872a2645c0c7b139918a27c63eb8a7fc30668826869be06e6edeba9cd370cf",
+      "bytes": 12288
+    },
+    "ja/lang_personal_card.db": {
+      "sha256": "f3da51624fb5d75ecd2cd42799b08cb0dc9f806207138b1f859aef895bed601f",
+      "bytes": 12288
+    },
+    "ja/lang_phantom.db": {
+      "sha256": "7547b3626b201ed0f1c8e4f8473ca50b990c766c634d87378a0fb08c97032886",
+      "bytes": 290816
+    },
+    "ja/lang_photograph.db": {
+      "sha256": "04a77a24238a384eed44916b4c5de5a72ef6d72e057ce04a9f73ad72ef9f5401",
+      "bytes": 20480
+    },
+    "ja/lang_player_exp.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_prefabtext.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_property.db": {
+      "sha256": "f24d9a86bd81b564a5554a59f89b1b0ec2abf423472f6019df2b19260bb0e51a",
+      "bytes": 24576
+    },
+    "ja/lang_quest.db": {
+      "sha256": "09d9b7abc67be802660f7255772d89d4e0d343c100a12d0676e5298fa1f8cedc",
+      "bytes": 12288
+    },
+    "ja/lang_quest_chapter.db": {
+      "sha256": "663be6fc7a5e714641487d77aaa31fde32571a643461171db44321459d96554a",
+      "bytes": 12288
+    },
+    "ja/lang_quest_step.db": {
+      "sha256": "6fa6aed82da621e6003013840c5b31f3a133b2ecf0188a5cf81b80d7b6e106bd",
+      "bytes": 28672
+    },
+    "ja/lang_questtype.db": {
+      "sha256": "56c7725449df94633bcfa85bb370aefab4015c0e4679fcffac8a83554c68bad7",
+      "bytes": 12288
+    },
+    "ja/lang_report.db": {
+      "sha256": "0d566c08ecac4607c2a37d8b10dc1acb867b00b5c005e4a8ac937aa7c0da55b7",
+      "bytes": 20480
+    },
+    "ja/lang_resonate_chain.db": {
+      "sha256": "07d495a45ec25b2aaf9995b26d9571ac862260a72450ceb75984c6142f0b984e",
+      "bytes": 49152
+    },
+    "ja/lang_revive.db": {
+      "sha256": "fcbb280aeb5003c5f55684cf60bd3f43c8138e49b8fefdd8e90f08bfb42b1d9d",
+      "bytes": 12288
+    },
+    "ja/lang_role.db": {
+      "sha256": "88310eaaba3483cc9ec02cd8e14c1eb44cbb4cc0c29f0d81b4b6cd90e174b193",
+      "bytes": 32768
+    },
+    "ja/lang_roleDescription.db": {
+      "sha256": "650bf55ece3b39d30cac40aab5a0ca310c4baa698441c1d675ef102bb856cd5b",
+      "bytes": 12288
+    },
+    "ja/lang_roleInfluence.db": {
+      "sha256": "e084830219acb484c257c99919a591ce9f720fefca3760560a5a67b214c3c75d",
+      "bytes": 12288
+    },
+    "ja/lang_roleQuest.db": {
+      "sha256": "ad44cc660d46677d09e78755b8e2814443359780eeb7704d6ff1c10abc35dc71",
+      "bytes": 12288
+    },
+    "ja/lang_role_level.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_role_reson.db": {
+      "sha256": "ca1e470378c9c05bb1442ae8ac03fdab185740d44678fbae67682d4ff57678d4",
+      "bytes": 36864
+    },
+    "ja/lang_role_training_degree.db": {
+      "sha256": "0c17220d2c78ab75643a441280e473850ab0f94d07e2d4a9e555a99ac908699e",
+      "bytes": 12288
+    },
+    "ja/lang_scenegameplay.db": {
+      "sha256": "424f46111edd98e4aaf4c7481c013d2d4ba82d956e0b56292538e6db85d2c0a4",
+      "bytes": 12288
+    },
+    "ja/lang_scenestep.db": {
+      "sha256": "b216b40ebd77e969b72ffc92861cd40c314516919a22e066f0cd272995a42ccf",
+      "bytes": 12288
+    },
+    "ja/lang_shop.db": {
+      "sha256": "4de823081fa922fd762c35b5781edad94192ba32ff824d55ce33c4163f716b6f",
+      "bytes": 45056
+    },
+    "ja/lang_skill.db": {
+      "sha256": "2c3a7534343f889c0929b5f19d950b45dfe727c5ae23ba55f832b0471c997cf7",
+      "bytes": 147456
+    },
+    "ja/lang_skillTree.db": {
+      "sha256": "63c6d6b38b19dd795a8e298ebb5bb1cc14ae8053e584bd7901580e642d8d0b47",
+      "bytes": 69632
+    },
+    "ja/lang_speaker.db": {
+      "sha256": "280a80f8c34ee37ff2a6f0ec1729cf8cb4a1f738196faabc70a80914cba01c79",
+      "bytes": 167936
+    },
+    "ja/lang_special_item.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_subtitle_text.db": {
+      "sha256": "17d3abdd735f6d49377a7ad23e8a1e2814d1679caaa21c01aba93503a8c7ea21",
+      "bytes": 94208
+    },
+    "ja/lang_teleporter.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_text.db": {
+      "sha256": "065ded811266e807a0705ac83d763cd811e209450c21f4b5e964e67687027416",
+      "bytes": 49152
+    },
+    "ja/lang_time_of_day.db": {
+      "sha256": "5b32c5961169875b108022a64ae5ae9ab67f54a85f169c37b1f609c91dd15b03",
+      "bytes": 12288
+    },
+    "ja/lang_trial_role.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_ui.db": {
+      "sha256": "9c0f4e9a50f16f43e0d416ce7def9ebb8a34a83ca9fdee002ad46b1c8a8e1f64",
+      "bytes": 12288
+    },
+    "ja/lang_ui_prefabTextItem.db": {
+      "sha256": "942f198b3e0dbc3d1d9b993bd3a94d11569f24c2716a1f6350df5584c718b606",
+      "bytes": 90112
+    },
+    "ja/lang_ui_resource.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "ja/lang_weapon.db": {
+      "sha256": "c61cfc82c4f7400148a0900a6acc5ec3d23ffa066c9b9ad25097594eca0d07d4",
+      "bytes": 53248
+    },
+    "zh-Hans/Sneak.db": {
+      "sha256": "d792cf83d7d118b9d9f10d7fa9a28edc7ec22b3e42f4e54aa8ac0b418e1e7d54",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_UiHotKot.db": {
+      "sha256": "57ab67bac84082bda5345dc30cafb652fc983969159c29eab5c5d1668ded1f33",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_accesspath.db": {
+      "sha256": "12c0de0629349ebe39072d9bd525ddc2e760adb6014c418b32d063915c8f5af8",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_achievement.db": {
+      "sha256": "c6c20527072d9d3369be27acc9677452965205b68e1dfc4388fdd9f043b75dfc",
+      "bytes": 40960
+    },
+    "zh-Hans/lang_activity.db": {
+      "sha256": "239961cff77e1038a2e2d549519144a6b56570a6c6c0e1890125f3e8052ccb61",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_adventuretask.db": {
+      "sha256": "e66ffa3ee9be884f8bd6aa4a4257d483115cb5fcfb7bc5b7a8d361be9cef571a",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_advice.db": {
+      "sha256": "929acc2276fe727ef5d9baacf5a770a23a08a76a81262fd8d99404d04b1cf8b9",
+      "bytes": 45056
+    },
+    "zh-Hans/lang_area.db": {
+      "sha256": "02922ceb94af4bc7e42f1f6cd950614d96c17843434fb87ad7a2fb35cfd6b759",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_areaquest.db": {
+      "sha256": "6353996ed59d1fa661b0307373e08fdc1678402ecb7af9bbec9b44611400237c",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_bag.db": {
+      "sha256": "0ac061ad797f05eabf36744b013bf1bb106af0dea38325a707df43c75df0e66f",
+      "bytes": 28672
+    },
+    "zh-Hans/lang_battlepass.db": {
+      "sha256": "52469ffa0a41395cde48c498e93560df78fa568b68e567a00feafe8f4fb74242",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_calabash.db": {
+      "sha256": "789c66e835b9797aa3b4bc5836890ff765c467bb802b9a7f7e11c66ba282c020",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_cgVideo.db": {
+      "sha256": "4eccb8be215d11b90dadc34504a8aa1c12fe0bf87d312dd20796218ceb95c996",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_chat.db": {
+      "sha256": "6ab33aad7f94006ad70ec1ab37fe84cf2662850dd3ea6b9cb51ce13d82dc2e9f",
+      "bytes": 28672
+    },
+    "zh-Hans/lang_combo_teaching.db": {
+      "sha256": "e591ae467bea502ecb004acb18d1ce1a9ce9148fa56fedae2e1d869c2e5ff9f3",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_common_param.db": {
+      "sha256": "8a7ee7afba7ebd2d80b70408a14818b16be99e8404fed732516366fb34786ed1",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_compose.db": {
+      "sha256": "13e914853318e8ca6bbfed719637131d3ed17e2f70e885459435584ee0291a79",
+      "bytes": 40960
+    },
+    "zh-Hans/lang_condition.db": {
+      "sha256": "d94db7e78085f7de5ee34951ad0dcc80c534e5a6c4043cac3958166ffedcca43",
+      "bytes": 131072
+    },
+    "zh-Hans/lang_confirmbox.db": {
+      "sha256": "bd99f4e66cbbccce8459ef09610f1660c953a8abd14c196ee59b3e14b43c57e0",
+      "bytes": 118784
+    },
+    "zh-Hans/lang_cook.db": {
+      "sha256": "a0aa51811cfd7a497051ce0301a72c305597a4a92155c604b3a3df9db1c2887a",
+      "bytes": 65536
+    },
+    "zh-Hans/lang_country.db": {
+      "sha256": "e668a277e3638f3bea4f9ba3a69c20863a2181769a58dbc8d955db61dc75747b",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_custom_sequence.db": {
+      "sha256": "36c4687d6ee1519d83831bd3bb7695391556645845506b4dc4087eee4f2a997c",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_cycle_tower.db": {
+      "sha256": "3fc32e144dd78ac47318e6224439a587a9133464d392ed11c1dc7ca4385c30b6",
+      "bytes": 28672
+    },
+    "zh-Hans/lang_damage.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_detection.db": {
+      "sha256": "55ad4a3fae042494445a9329ffa6956254f73f9e32d3f0a39a5045c963105ce0",
+      "bytes": 94208
+    },
+    "zh-Hans/lang_dragon_ball.db": {
+      "sha256": "b190e27213730899937359b7c5de62942fe6662dbe3c1fccd5e85835f85e7d35",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_drop.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_element_info.db": {
+      "sha256": "de3b6bca5f8fd06e068f12c407da0d0252b52df408f0e39f35f06e0738add08b",
+      "bytes": 28672
+    },
+    "zh-Hans/lang_error_code.db": {
+      "sha256": "964db2830af29696938ada80f08a36c6f83613927acd83a9a47bdbe1497269d2",
+      "bytes": 77824
+    },
+    "zh-Hans/lang_explore_progress.db": {
+      "sha256": "a99093686d2c323a1074743ead6c71814030a9b32a4933b3deb35e0a062c3487",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_explore_skill.db": {
+      "sha256": "95a0a634cfc2fb3578bc2e8d99edb59f5629ebcdecd4ca6c20849456e96260f1",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_favor.db": {
+      "sha256": "dc659133bf6dfa616d74c91b6763258fa6c300be80a4d03335840d8353ed468d",
+      "bytes": 344064
+    },
+    "zh-Hans/lang_flow.db": {
+      "sha256": "6fe430856c1e45530dfc7edb419b8937a7f887b5d8ad1ed7e01de7d2994df7b6",
+      "bytes": 16384
+    },
+    "zh-Hans/lang_flow_text.db": {
+      "sha256": "50daaaa64fee7c35ca061ed6f25311e920a6da8f8a003b2389ed4468772ad849",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_forge.db": {
+      "sha256": "9de7846dd100daad3f76808987a66928db912de64dcf1bf9ad7ddc26ada0bee5",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_formation.db": {
+      "sha256": "fcac8f46ceec7f2a92005c1e252c8731c17df12cbb16b45661652fcf8da1bc1e",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_friend.db": {
+      "sha256": "efa21c740a7794f6dc0255da9af3f60b4156ab0119439af809d84cb1b49c0821",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_function.db": {
+      "sha256": "5084cb50dc228c169b4326b5b037b5b86ad27c4b64811d3e748f2b51e062fad3",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_gacha.db": {
+      "sha256": "cbd048578913c6a5b07cd6594ac8d95226ada41ac7e0b73a8c8c036645651da4",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_gameplaytimer.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_generic_tips.db": {
+      "sha256": "ba9f6538806fef419d37a8e5415f47ef5bc2c4a242b4780854876e0117fd5889",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_gm.db": {
+      "sha256": "224cbdf462207c6f18e01f31b7805473a8642621c741e58daa9645522a81764d",
+      "bytes": 28672
+    },
+    "zh-Hans/lang_guide_new.db": {
+      "sha256": "6348a335542a917e70483b221175dfe7235ff381b77dfb784c909bf261a985ef",
+      "bytes": 106496
+    },
+    "zh-Hans/lang_handbook.db": {
+      "sha256": "4db8c756ef3c21ce653236e5447dd99c95398cbd542644511cadb2fa72b6763e",
+      "bytes": 208896
+    },
+    "zh-Hans/lang_handbook_entrance.db": {
+      "sha256": "e79a3b7ec9e28d17d41c4ef64cdb18aa7f86f926945b9778543339777dc61cae",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_help.db": {
+      "sha256": "265d93bd57d68b3222ae62bc1fd611468f29fb6c80dc277a254356ede6c49ff3",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_hot_patch.db": {
+      "sha256": "4c6b837abd8fd459fe446bb3575569b0898402f35b0558bbf37f378f70bbdf72",
+      "bytes": 32768
+    },
+    "zh-Hans/lang_influence.db": {
+      "sha256": "e668a277e3638f3bea4f9ba3a69c20863a2181769a58dbc8d955db61dc75747b",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_infodisplay.db": {
+      "sha256": "c2c287938300d643312b2d19fe1f325e2e1a1affdfee2885b31152df769de6cf",
+      "bytes": 139264
+    },
+    "zh-Hans/lang_instance_dungeon.db": {
+      "sha256": "5f3020190c763cd119f435f2af7365d5f908f3dcd7667c48ebac692c753d5426",
+      "bytes": 122880
+    },
+    "zh-Hans/lang_instance_dungeon_entrance.db": {
+      "sha256": "e227bf4ddcd8950969ca72f7063c1ed73fccab2c2cbcf3b3000cfc6fbee31dc1",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_instance_dungeon_step.db": {
+      "sha256": "c30dfc2f811707f6faba8a7609229bbdf5c39d2ca7147615981b79aa9b5f3b17",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_item.db": {
+      "sha256": "5153b1aa16428ea254e972ac3f8452208aea63c4469b4c96e4abb4453050cb42",
+      "bytes": 380928
+    },
+    "zh-Hans/lang_item_exchange.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_levelgameplay.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_loadingtips.db": {
+      "sha256": "0dab0028a78906937f12261f7f8a0564d2a533af32b40e509e92c6c5d4ec3d65",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_mail.db": {
+      "sha256": "c6a94daa60ba6dc00be4852bfef23c09b717989716348bc409b440e9b680e3f5",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_map.db": {
+      "sha256": "6b5e88a7e5ea08f47725c8c50a285714769938c2598bf268125397e4bce59da9",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_map_mark.db": {
+      "sha256": "b25bd424ced5dbcc15fcb7c75124d9d0cd3d73385bfd86ff6045f4aad21597ff",
+      "bytes": 81920
+    },
+    "zh-Hans/lang_mapfog.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_mapnote.db": {
+      "sha256": "c68461c380e302b930ab1939fe72fde43a40430887d9d742d3dc930e9c3de295",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_mapping.db": {
+      "sha256": "95862942df4c5f24ca3d0360977e2b320067fa86a5a3b9a2f663e7b66802510c",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_menu.db": {
+      "sha256": "15a78a7311d998f29518bfb9a5151b352ffd586415d7ac012b5610d535eb2f49",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_monsterDisplay.db": {
+      "sha256": "5db3c40784c80e81359af5d138b1005fc57e14300f7622ed211144a73e851a92",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_monster_Info.db": {
+      "sha256": "90a7758a4e7e30feabe7bfc7e5c25f32cf2bc9bf577748266558853dc4622858",
+      "bytes": 65536
+    },
+    "zh-Hans/lang_motion.db": {
+      "sha256": "f6ad3dc236b2b18c4732ac9eb27c1a0e46f9b57e45579028b4aa9c5033f45c00",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_multi_text.db": {
+      "sha256": "6c2d0a1c4dab69d55868732100b232af90f07d7dc94ec2d0f4efbbeff5b9f032",
+      "bytes": 40681472
+    },
+    "zh-Hans/lang_multi_text_1sthalf.db": {
+      "sha256": "465ffa60708fae11673551af85ec0916edd3f879e04bdba742e5c79faf7fe2eb",
+      "bytes": 397312
+    },
+    "zh-Hans/lang_npc_headinfo.db": {
+      "sha256": "d664f0d2a75d6f0282720b8cab7b7fea62a2e85c951bab921af365dcb2295d28",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_occupation.db": {
+      "sha256": "66b6d46b9231f6803c6f26f18307f4c7af1d7664a465fce09d789e5714b8a0b9",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_once_tower_challenge.db": {
+      "sha256": "66db0dc85e6eee53b018e716f7ce52259056f3276df77566d7650d6a4c2478e9",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_parkourchallenge.db": {
+      "sha256": "36618e1faadfddb7b44a79d08d753e6d1dd3f0c8c0581ff1f60b5c74bbc65de6",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_payshop.db": {
+      "sha256": "ea939b804eaf1565af8604d80a072ffd94e5ab5b56e78a9ee8ac31e148c63df5",
+      "bytes": 36864
+    },
+    "zh-Hans/lang_personal.db": {
+      "sha256": "1457c480b301fdb0331f78921b1629166a815282ccc1ba847fda5cb2e5c989dd",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_personal_card.db": {
+      "sha256": "053cd8166c59624eb0b5e21a61472ddb3452163470abf1cfa5c9adeefc30386e",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_phantom.db": {
+      "sha256": "cfeccfc6a18483c72e30d00a22e65697cb688d0c880c0aa93b3f4d7fca1e35ad",
+      "bytes": 466944
+    },
+    "zh-Hans/lang_photograph.db": {
+      "sha256": "81e9c3d2b98a522053f433c0be377984476b7724701688673179c63e2d462fdb",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_player_exp.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_prefabtext.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_property.db": {
+      "sha256": "9cceacf6f743eb04697d0dac20c51e467ef25e82e09db485c462e748efa5ecd5",
+      "bytes": 24576
+    },
+    "zh-Hans/lang_quest.db": {
+      "sha256": "cd4bafcead5f2d8dac78054a16e989adf2ffd111fce29af14c5536c65a618c46",
+      "bytes": 24576
+    },
+    "zh-Hans/lang_quest_chapter.db": {
+      "sha256": "4e3c6c1247670dd1fbe8ec63abf438df69ce03116c500722abfbee2f9048aaed",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_quest_step.db": {
+      "sha256": "ce25673dea3aea8fc1327b6f28861a5ff3e520a4ed98491368e0996d1ee2c532",
+      "bytes": 40960
+    },
+    "zh-Hans/lang_questtype.db": {
+      "sha256": "7ba3d2fde7f9f5d42f25fa3de62a9e3bb43f3298b9a2c43e5fcee9c03736e870",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_report.db": {
+      "sha256": "896c7908df26201260ffcb3b699c65619714758723d988bcfc2cb74ac0cbb0f9",
+      "bytes": 20480
+    },
+    "zh-Hans/lang_resonate_chain.db": {
+      "sha256": "4268a8d89ec7b6c2ef1e6c4000e65738a89508afcf7d212a34a6edfddfa0576f",
+      "bytes": 86016
+    },
+    "zh-Hans/lang_revive.db": {
+      "sha256": "61d3fd3d1d1cab1f8b9f95bebf990c319175bfd597b2572d15e864be2b53dbaa",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_role.db": {
+      "sha256": "e4cfdc9a80c6cf5f0bc8a72f5c2539d78df275d495b8230f2377bfc7878ffce5",
+      "bytes": 32768
+    },
+    "zh-Hans/lang_roleDescription.db": {
+      "sha256": "f72694043e2bb99d04cbc0bdbf5423389eea0c4cc14ea0f701db6129d1b56cec",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_roleInfluence.db": {
+      "sha256": "834fad5888eb967c2884c88580cc4316cf30eab7406b0f06c94a091d6416cdf5",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_roleQuest.db": {
+      "sha256": "892ec9d9117ccf1a3477a1045ffc1cb966197ca19ade2b8ebbb083d2dc6f6326",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_role_level.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_role_reson.db": {
+      "sha256": "377ba705f9678d265852d824b91ad2e46b655ece2a418bbdbc06b0ac635cc9f7",
+      "bytes": 61440
+    },
+    "zh-Hans/lang_role_training_degree.db": {
+      "sha256": "c6612a0e6090e222ebd5ff6882f8369bc4cc7421b3ebf47fee353b4d021cc3fa",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_scenegameplay.db": {
+      "sha256": "e9c3aa572e6d1f0a57b7c8a93675ebb3e1235f01278b4d944946a5e3635a1cb7",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_scenestep.db": {
+      "sha256": "831c036bca0e1cb0af6ada51e24bf2930ba16ceca74fdebb5af78859b9db546d",
+      "bytes": 32768
+    },
+    "zh-Hans/lang_shop.db": {
+      "sha256": "078922294b774be59fcf71003060ea92d6959e3ad6a7064c2d348fc94eb2e78f",
+      "bytes": 69632
+    },
+    "zh-Hans/lang_skill.db": {
+      "sha256": "90e9fffc8927a92afebe877c2b44774e4198e30071d017a254b7c41949c2221b",
+      "bytes": 913408
+    },
+    "zh-Hans/lang_skillTree.db": {
+      "sha256": "0e57193e629a5d05ebec2a91325c8d345021f0ba03455431e29fbd8aafb5e8b2",
+      "bytes": 86016
+    },
+    "zh-Hans/lang_speaker.db": {
+      "sha256": "edae79b89b13db5fc1f664300a8ad4dbf0fc8607b6a9b551f839a9300f089b11",
+      "bytes": 274432
+    },
+    "zh-Hans/lang_special_item.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_subtitle_text.db": {
+      "sha256": "51f2386497f451952069db77c59eda8bccd2ab80d6a2eb87aafcf220870727f6",
+      "bytes": 167936
+    },
+    "zh-Hans/lang_teleporter.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_text.db": {
+      "sha256": "16ce521386f98ddd1d08ea6cdc935a79b12e73db9bdb4915103903b0f2052d36",
+      "bytes": 278528
+    },
+    "zh-Hans/lang_time_of_day.db": {
+      "sha256": "eb3db33409fc088d49737fb65e2ac0fc102e67b5cba2c35e2109a43c04b3fcdf",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_trial_role.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_ui.db": {
+      "sha256": "107d655c321c2ef6ab6d12ac530c500a7b70ba9c33efd06fb1430d9098e6ea58",
+      "bytes": 12288
+    },
+    "zh-Hans/lang_ui_prefabTextItem.db": {
+      "sha256": "e04d8059c0b784f6f944694f06882a15dacad8d12aa694dae06e0b2337263edd",
+      "bytes": 188416
+    },
+    "zh-Hans/lang_ui_resource.db": {
+      "sha256": "90ace00a99ea2550a26104bcbe895ed20e9f70b0eac2abc3df509ecf65d989cf",
+      "bytes": 4096
+    },
+    "zh-Hans/lang_weapon.db": {
+      "sha256": "af27a60ccad2c159d532e8e8701167ae7c330320dcb24a6f0966ca538dc13d38",
+      "bytes": 57344
+    }
+  }
+}

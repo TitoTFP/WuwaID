@@ -4,7 +4,11 @@ import type {
 	QuestSummary,
 	TextCategory,
 	TranslationDraft,
-	AppliedVersion,
+	TextDiffGroupsResponse,
+	TextDiffResponse,
+	TextDiffStatus,
+	TextVersion,
+	TextVersionLanguage,
 	LogEntry,
 	HeartbeatPoint,
 	SystemMetrics,
@@ -268,13 +272,122 @@ export async function fetchGlossaryMatches(
 	);
 }
 
-export async function fetchVersions(): Promise<{ versions: AppliedVersion[] }> {
-	return request<{ versions: AppliedVersion[] }>("/workbench/versions");
+export async function fetchVersions(): Promise<{ versions: TextVersion[] }> {
+	return request<{ versions: TextVersion[] }>("/workbench/versions");
 }
 
 export async function fetchVersionDiff(versionTag?: string) {
 	const query = versionTag ? `?version=${encodeURIComponent(versionTag)}` : "";
 	return request<any>(`/workbench/versions/diff${query}`);
+}
+
+export async function createTextVersion(tag: string, note?: string): Promise<{ version: TextVersion }> {
+	return request<{ version: TextVersion }>("/workbench/versions", {
+		method: "POST",
+		body: JSON.stringify({ tag, note: note || null }),
+	});
+}
+
+export async function fetchTextVersionDiff(params: {
+	base: string;
+	target: string;
+	language: TextVersionLanguage;
+	status?: TextDiffStatus;
+	query?: string;
+	page?: number;
+	pageSize?: number;
+}): Promise<TextDiffResponse> {
+	const query = new URLSearchParams({
+		base: params.base,
+		target: params.target,
+		lang: params.language,
+	});
+	if (params.status) query.set("status", params.status);
+	if (params.query) query.set("q", params.query);
+	if (params.page) query.set("page", String(params.page));
+	if (params.pageSize) query.set("page_size", String(params.pageSize));
+	return request<TextDiffResponse>(`/workbench/versions/diff?${query.toString()}`);
+}
+
+export async function fetchTextVersionGroups(params: {
+	base: string;
+	target: string;
+	language: TextVersionLanguage;
+}): Promise<TextDiffGroupsResponse> {
+	const query = new URLSearchParams({
+		base: params.base,
+		target: params.target,
+		lang: params.language,
+	});
+	return request<TextDiffGroupsResponse>(`/workbench/versions/diff/groups?${query.toString()}`);
+}
+
+async function downloadTextVersionFile(endpoint: string): Promise<{ blob: Blob; filename: string }> {
+	const token = localStorage.getItem("wuwaid_token");
+	const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+	const response = await fetch(`${API_BASE}${endpoint}`, { headers });
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({ error: "Download failed" }));
+		throw new Error(errorData.error || `HTTP ${response.status}`);
+	}
+	const disposition = response.headers.get("Content-Disposition") || "";
+	const filename = disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-text-diff";
+	return { blob: await response.blob(), filename };
+}
+
+export function textVersionExportUrl(params: {
+	base: string;
+	target: string;
+	language: TextVersionLanguage;
+	format: "sqlite" | "csv";
+}): string {
+	const query = new URLSearchParams({
+		base: params.base,
+		target: params.target,
+		lang: params.language,
+		format: params.format,
+	});
+	return `${API_BASE}/workbench/versions/diff/export?${query.toString()}`;
+}
+
+export async function downloadStructuredTextDiff(params: {
+	base: string;
+	target: string;
+	language: TextVersionLanguage;
+	groups: string[];
+}): Promise<{ blob: Blob; filename: string }> {
+	const token = localStorage.getItem("wuwaid_token");
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...(token ? { Authorization: `Bearer ${token}` } : {}),
+	};
+	const response = await fetch(`${API_BASE}/workbench/versions/diff/export-structured`, {
+		method: "POST",
+		headers,
+		body: JSON.stringify(params),
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({ error: "Download failed" }));
+		throw new Error(errorData.error || `HTTP ${response.status}`);
+	}
+	const disposition = response.headers.get("Content-Disposition") || "";
+	const filename = disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-structured-diff.zip";
+	return { blob: await response.blob(), filename };
+}
+
+export async function downloadTextVersionDiff(params: {
+	base: string;
+	target: string;
+	language: TextVersionLanguage;
+	format: "sqlite" | "csv";
+}): Promise<{ blob: Blob; filename: string }> {
+	const query = new URLSearchParams({
+		base: params.base,
+		target: params.target,
+		lang: params.language,
+		format: params.format,
+	});
+	return downloadTextVersionFile(`/workbench/versions/diff/export?${query.toString()}`);
 }
 
 // ==========================================
@@ -327,7 +440,18 @@ export async function fetchConfigDbs(): Promise<{ exportFiles: string[] }> {
 	return request<{ exportFiles: string[] }>("/ops/databases");
 }
 
-export async function importConfigDb(file: File) {
+export interface ImportConfigDbResult {
+	status: string;
+	file: { name: string; sizeBytes: number };
+	updatedQuestFiles: number;
+	updatedQuestLines: number;
+	updatedCategoryFiles: number;
+	updatedCategoryItems: number;
+	indexedCategoryRows?: number;
+	indexedDialogueRows?: number;
+}
+
+export async function importConfigDb(file: File): Promise<ImportConfigDbResult> {
 	const token = localStorage.getItem("wuwaid_token");
 	const query = new URLSearchParams({ filename: file.name });
 
@@ -352,14 +476,7 @@ export async function importConfigDb(file: File) {
 		throw new Error(errorData.error || `HTTP ${res.status}`);
 	}
 
-	return res.json() as Promise<{
-		status: string;
-		file: { name: string; sizeBytes: number };
-		updatedQuestFiles: number;
-		updatedQuestLines: number;
-		updatedCategoryFiles: number;
-		updatedCategoryItems: number;
-	}>;
+	return res.json() as Promise<ImportConfigDbResult>;
 }
 
 export function resetIdTranslations() {

@@ -1,0 +1,96 @@
+[
+  {
+    "versionTag": "v3.6",
+    "versionType": "dataset",
+    "appliedAt": "2026-08-20T19:17:21.282394Z",
+    "author": "WuwaID Data Pipeline",
+    "commitHash": "db-bad3849c39a9",
+    "sourceFingerprint": "bad3849c39a96965606615dbc61a38f11a30d1e8b26f441723dfb52e6093012c",
+    "sourceDatabaseCount": 820,
+    "sourceDatabaseBytes": 694198272,
+    "changedFiles": 198,
+    "addedFiles": 6,
+    "removedFiles": 0,
+    "previousVersionTag": "v3.5",
+    "manifestPath": "data/version_manifests/v3.6.json",
+    "totalLinesModified": 198,
+    "description": "Snapshot database game Wuthering Waves v3.6.",
+    "diffSummary": [
+      {
+        "questTitle": "base",
+        "linesChanged": 183,
+        "filesChanged": 183,
+        "addedFiles": 6,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "en",
+        "linesChanged": 5,
+        "filesChanged": 5,
+        "addedFiles": 0,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "ja",
+        "linesChanged": 5,
+        "filesChanged": 5,
+        "addedFiles": 0,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "zh-Hans",
+        "linesChanged": 5,
+        "filesChanged": 5,
+        "addedFiles": 0,
+        "removedFiles": 0
+      }
+    ]
+  },
+  {
+    "versionTag": "v3.5",
+    "versionType": "dataset",
+    "appliedAt": "2026-08-20T19:09:44.974841Z",
+    "author": "WuwaID Data Pipeline",
+    "commitHash": "db-8dd46c720cd4",
+    "sourceFingerprint": "8dd46c720cd4e553ca75adc0ef22abfcf933707b88b6053b7f0eaf6105a3654e",
+    "sourceDatabaseCount": 814,
+    "sourceDatabaseBytes": 670183424,
+    "changedFiles": 0,
+    "addedFiles": 814,
+    "removedFiles": 0,
+    "previousVersionTag": null,
+    "manifestPath": "data/version_manifests/v3.5.json",
+    "totalLinesModified": 0,
+    "description": "Snapshot database game Wuthering Waves v3.5.",
+    "diffSummary": [
+      {
+        "questTitle": "base",
+        "linesChanged": 0,
+        "filesChanged": 0,
+        "addedFiles": 484,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "en",
+        "linesChanged": 0,
+        "filesChanged": 0,
+        "addedFiles": 110,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "ja",
+        "linesChanged": 0,
+        "filesChanged": 0,
+        "addedFiles": 110,
+        "removedFiles": 0
+      },
+      {
+        "questTitle": "zh-Hans",
+        "linesChanged": 0,
+        "filesChanged": 0,
+        "addedFiles": 110,
+        "removedFiles": 0
+      }
+    ]
+  }
+]

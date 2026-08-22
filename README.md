@@ -85,13 +85,17 @@ Repositori **WuwaID** mengintegrasikan loader game, data terjemahan, WebUI terpa
 ```text
 WuwaID/
 ├── src/ & sdk/           # C++ WinHTTP proxy loader & PakBypass DLL loader
-├── data/                 # Data lokal hasil ekspor (diabaikan Git)
+├── data/                 # Export lokal; manifest versi dilacak, hasil export diabaikan
 ├── webui/                # Vite + React + Express reader, workbench, ops, dan database tools
 ├── scripts/              # Skrip Python untuk ekspor database lokalisasi game
 └── release/              # Artefak packaging dan validasi release
 ```
 
-`webui/` adalah satu-satunya aplikasi web aktif di repository ini. Data runtime seperti `data/quests/` dan `webui/data/db_uploads/` sengaja tidak disimpan di Git.
+`webui/` adalah satu-satunya aplikasi web aktif di repository ini. Data runtime seperti
+`data/quests/`, `webui/data/db_uploads/`, dan database snapshot row-level
+`data/version_history.db` sengaja tidak disimpan di Git. Sebaliknya,
+`data/version_history.json` dan `data/version_manifests/` menyimpan metadata sumber
+database yang reproducible dan dilacak Git.
 
 ---
 
@@ -135,6 +139,34 @@ Mode DB-only tidak memerlukan file `.pak` di folder `wuwaIndonesia`. Log loader
 berada di `pakbypass_logs`, sedangkan log exporter berada di
 `%USERPROFILE%\Desktop\WuwaDBExport\export_log.txt` atau di sebelah DLL sebagai
 `export_localization_db.log` jika folder Desktop tidak dapat ditulis.
+
+Gunakan opsi `--version` untuk mencatat manifest sumber database sebelum dan sesudah
+pergantian data:
+
+```sh
+# Simpan baseline sebelum mengganti data/db_exports
+python scripts/export_text_grouped.py --version v3.5 --record-only
+
+# Setelah data/db_exports diganti dengan export game terbaru
+python scripts/export_text_grouped.py --version v3.6
+```
+
+Ringkasan fingerprint dan perubahan disimpan di `data/version_history.json`,
+sedangkan hash SHA-256 setiap database disimpan di
+`data/version_manifests/`. Kedua metadata sumber tersebut dilacak Git. Setelah
+data WebUI selesai digenerasi, login sebagai editor lalu gunakan **Create immutable
+tag** pada halaman Versions untuk membuat snapshot row-level resmi di
+`data/version_history.db`. Database ini lokal dan sengaja tidak disimpan Git.
+
+Untuk membuat snapshot dari generated dataset lain tanpa mengganti working tree:
+
+```sh
+cd webui
+npx tsx server/textVersionsCli.ts \
+  --tag v3.5 \
+  --source /path/to/generated-data \
+  --note "Remote generated official dataset"
+```
 
 #### Ekspor Dialog Quest Terurut
 
@@ -181,6 +213,7 @@ python scripts/update_launcher_background.py --dry-run
 
 ### 3. WebUI terpadu
 
+Pastikan utilitas `zip` tersedia jika ingin memakai ekspor **Structured DB ZIP**.
 Generate data lokal terlebih dahulu jika diperlukan, lalu jalankan aplikasi:
 
 ```sh

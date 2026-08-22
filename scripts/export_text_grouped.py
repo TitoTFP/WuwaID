@@ -19,6 +19,8 @@ Output structure:
       others.json            (misc small groups)
 """
 
+import argparse
+import hashlib
 import sqlite3
 import os
 import json
@@ -29,6 +31,7 @@ import shutil
 import glob
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -40,6 +43,8 @@ QUEST_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "quests")
 CATEGORIES_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "categories")
 CATEGORIES_MANIFEST_FILE = os.path.join(OUTPUT_DIR, "categories.json")
 INDEX_DB_FILE = os.path.join(OUTPUT_DIR, "index.db")
+VERSION_HISTORY_FILE = os.path.join(REPO_ROOT, "data", "version_history.json")
+VERSION_MANIFEST_DIR = os.path.join(REPO_ROOT, "data", "version_manifests")
 LANGUAGES = ["zh-Hans", "en", "ja"]
 CATEGORY_MIN_ITEMS = 25
 CATEGORY_MAX_CHILDREN = 64
@@ -104,6 +109,168 @@ def write_json(path: str, value):
             json.dump(value, f, ensure_ascii=False, indent=2)
     except OSError as exc:
         raise RuntimeError(f"Failed writing {path}: {exc}") from exc
+
+
+def build_db_manifest(config_db_dir: str) -> dict[str, dict[str, int | str]]:
+    """Hash every exported database so game-data versions are reproducible."""
+    manifest: dict[str, dict[str, int | str]] = {}
+    for dirpath, _, filenames in os.walk(config_db_dir):
+        for filename in sorted(filenames):
+            if not filename.lower().endswith(".db"):
+                continue
+
+            file_path = os.path.join(dirpath, filename)
+            relative_path = os.path.relpath(file_path, config_db_dir).replace(os.sep, "/")
+            digest = hashlib.sha256()
+            with open(file_path, "rb") as source:
+                for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                    digest.update(chunk)
+
+            manifest[relative_path] = {
+                "sha256": digest.hexdigest(),
+                "bytes": os.path.getsize(file_path),
+            }
+
+    return dict(sorted(manifest.items()))
+
+
+def _load_json_list(path: str) -> list[dict]:
+    if not os.path.isfile(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as source:
+            value = json.load(source)
+        return value if isinstance(value, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def _load_version_manifest(version: dict) -> dict[str, dict[str, int | str]]:
+    relative_path = version.get("manifestPath")
+    if not isinstance(relative_path, str):
+        return {}
+
+    manifest_path = os.path.join(REPO_ROOT, relative_path)
+    try:
+        with open(manifest_path, encoding="utf-8") as source:
+            payload = json.load(source)
+        files = payload.get("files") if isinstance(payload, dict) else None
+        return files if isinstance(files, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _version_filename(version_tag: str) -> str:
+    safe_tag = re.sub(r"[^A-Za-z0-9._-]+", "_", version_tag).strip("._")
+    return safe_tag or "version"
+
+
+def _compare_manifests(
+    previous: dict[str, dict[str, int | str]],
+    current: dict[str, dict[str, int | str]],
+) -> tuple[list[str], list[str], list[str], dict[str, dict[str, int]]]:
+    previous_paths = set(previous)
+    current_paths = set(current)
+    added = sorted(current_paths - previous_paths)
+    removed = sorted(previous_paths - current_paths)
+    changed = sorted(
+        path for path in current_paths & previous_paths
+        if current[path].get("sha256") != previous[path].get("sha256")
+    )
+
+    locale_stats: dict[str, dict[str, int]] = {}
+    for relative_path in sorted(current_paths | previous_paths):
+        locale = relative_path.split("/", 1)[0]
+        stats = locale_stats.setdefault(locale, {"changed": 0, "added": 0, "removed": 0})
+        if relative_path in added:
+            stats["added"] += 1
+        elif relative_path in removed:
+            stats["removed"] += 1
+        elif relative_path in changed:
+            stats["changed"] += 1
+
+    return changed, added, removed, locale_stats
+
+
+def record_data_version(
+    config_db_dir: str,
+    version_tag: str,
+    author: str,
+    description: str | None,
+    manifest: dict[str, dict[str, int | str]] | None = None,
+) -> dict:
+    """Persist a source-database snapshot and its diff from the prior version."""
+    current_manifest = manifest or build_db_manifest(config_db_dir)
+    history = _load_json_list(VERSION_HISTORY_FILE)
+    previous_version = next(
+        (item for item in history if item.get("versionTag") != version_tag), None
+    )
+    previous_manifest = _load_version_manifest(previous_version or {})
+    changed, added, removed, locale_stats = _compare_manifests(
+        previous_manifest, current_manifest
+    )
+
+    fingerprint_payload = json.dumps(
+        current_manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    fingerprint = hashlib.sha256(fingerprint_payload).hexdigest()
+    captured_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    manifest_relative_path = os.path.join(
+        "data", "version_manifests", f"{_version_filename(version_tag)}.json"
+    ).replace(os.sep, "/")
+    manifest_path = os.path.join(REPO_ROOT, manifest_relative_path)
+
+    safe_makedirs(VERSION_MANIFEST_DIR)
+    write_json(
+        manifest_path,
+        {
+            "versionTag": version_tag,
+            "capturedAt": captured_at,
+            "sourceDirectory": os.path.relpath(config_db_dir, REPO_ROOT).replace(os.sep, "/"),
+            "files": current_manifest,
+        },
+    )
+
+    diff_summary = [
+        {
+            "questTitle": locale,
+            "linesChanged": stats["changed"],
+            "filesChanged": stats["changed"],
+            "addedFiles": stats["added"],
+            "removedFiles": stats["removed"],
+        }
+        for locale, stats in sorted(locale_stats.items())
+    ]
+    total_bytes = sum(int(item["bytes"]) for item in current_manifest.values())
+    previous_tag = previous_version.get("versionTag") if previous_version else None
+    record = {
+        "versionTag": version_tag,
+        "versionType": "dataset",
+        "appliedAt": captured_at,
+        "author": author,
+        "commitHash": f"db-{fingerprint[:12]}",
+        "sourceFingerprint": fingerprint,
+        "sourceDatabaseCount": len(current_manifest),
+        "sourceDatabaseBytes": total_bytes,
+        "changedFiles": len(changed),
+        "addedFiles": len(added),
+        "removedFiles": len(removed),
+        "previousVersionTag": previous_tag,
+        "manifestPath": manifest_relative_path,
+        "totalLinesModified": len(changed),
+        "description": description or f"Snapshot database game {version_tag}.",
+        "diffSummary": diff_summary,
+    }
+    history = [record] + [
+        item for item in history if item.get("versionTag") != version_tag
+    ]
+    write_json(VERSION_HISTORY_FILE, history)
+
+    print(
+        f"Version {version_tag} recorded: {len(current_manifest)} databases, "
+        f"{len(changed)} changed, {len(added)} added, {len(removed)} removed."
+    )
+    return record
 
 
 def sanitize_filename(name: str, max_len: int = 80) -> str:
@@ -1170,16 +1337,58 @@ def build_tid_to_db_map(all_keys: set) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Export grouped Wuthering Waves text and record a database version."
+    )
+    parser.add_argument(
+        "config_db_dir",
+        nargs="?",
+        help="ConfigDB/WuwaDBExport directory (defaults to data/db_exports).",
+    )
+    parser.add_argument(
+        "--version",
+        dest="version_tag",
+        help="Game data version tag to record, for example v3.5 or v3.6.",
+    )
+    parser.add_argument(
+        "--author",
+        default="WuwaID Data Pipeline",
+        help="Author recorded in the version history.",
+    )
+    parser.add_argument(
+        "--description",
+        help="Optional description for the recorded game data version.",
+    )
+    parser.add_argument(
+        "--record-only",
+        action="store_true",
+        help="Record database fingerprints without regenerating WebUI data.",
+    )
+    args = parser.parse_args()
+
+    if args.record_only and not args.version_tag:
+        parser.error("--record-only requires --version")
+
     print("=" * 60)
     print("  Wuthering Waves Text Exporter (Grouped & Ordered)")
     print("=" * 60)
 
     global CONFIG_DB_DIR
-    cli_dir = sys.argv[1] if len(sys.argv) > 1 else None
-    CONFIG_DB_DIR = resolve_config_db_dir(cli_dir)
+    CONFIG_DB_DIR = resolve_config_db_dir(args.config_db_dir)
     print(f"Config DB dir: {CONFIG_DB_DIR}")
     if not os.path.isdir(CONFIG_DB_DIR):
         raise FileNotFoundError(f"Config DB directory does not exist: {CONFIG_DB_DIR}")
+
+    source_manifest = build_db_manifest(CONFIG_DB_DIR) if args.version_tag else None
+    if args.record_only:
+        record_data_version(
+            CONFIG_DB_DIR,
+            args.version_tag,
+            args.author,
+            args.description,
+            source_manifest,
+        )
+        return
 
     # -----------------------------------------------------------------------
     # Part 1: Quest-Ordered Dialogue Export
@@ -1530,6 +1739,15 @@ def main():
     print(f"    - Category manifest: {CATEGORIES_MANIFEST_FILE}")
     print(f"  Total Category files created: {len(manifest_categories)}")
     print("=" * 60)
+
+    if args.version_tag:
+        record_data_version(
+            CONFIG_DB_DIR,
+            args.version_tag,
+            args.author,
+            args.description,
+            source_manifest,
+        )
 
 
 if __name__ == "__main__":

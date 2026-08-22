@@ -12,6 +12,7 @@ import type {
 	SystemMetrics,
 } from "../src/types/index.js";
 import { realDataLoader } from "./realDataLoader.js";
+import { invalidateTextVersionWorkingSet } from "./textVersions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,45 +167,7 @@ class WebUIDatabase {
 		},
 	];
 
-	public appliedVersions: AppliedVersion[] = [
-		{
-			versionTag: "v1.2.0-ID",
-			appliedAt: "2026-08-05T14:30:00Z",
-			author: "ChiefEditor_Jinzhou",
-			commitHash: "a8f93bc",
-			totalLinesModified: 142,
-			description:
-				"Penyelarasan Glosarium Bab I & II: Pembaharuan istilah Midnight Rangers & Sentinel Jue.",
-			diffSummary: [
-				{ questTitle: "Utterance of Frost & Thunder", linesChanged: 42 },
-				{ questTitle: "Beneath the Crescent Moon", linesChanged: 100 },
-			],
-		},
-		{
-			versionTag: "v1.1.5-ID",
-			appliedAt: "2026-08-01T09:15:00Z",
-			author: "HuanglongLinguist",
-			commitHash: "c7d210e",
-			totalLinesModified: 88,
-			description:
-				"Perbaikan QA otomatis: Penyesuaian variabel {PlayerName} dan tanda baca pada dialogue choices.",
-			diffSummary: [
-				{ questTitle: "Echoes of the Huanglong Tide", linesChanged: 88 },
-			],
-		},
-		{
-			versionTag: "v1.0.0-ID",
-			appliedAt: "2026-07-20T18:00:00Z",
-			author: "SystemInit",
-			commitHash: "e100f2a",
-			totalLinesModified: 42850,
-			description:
-				"Rilis awal arsip terjemahan bahasa Indonesia WuwaID Quests.",
-			diffSummary: [
-				{ questTitle: "Seluruh Quest Bab I - IV", linesChanged: 42850 },
-			],
-		},
-	];
+	public appliedVersions: AppliedVersion[] = [];
 
 	public logEntries: LogEntry[] = [];
 	public heartbeatHistory: HeartbeatPoint[] = [];
@@ -212,6 +175,7 @@ class WebUIDatabase {
 	public archives: UploadArchive[] = [];
 	public uploads: UploadArchive[] = [];
 	public sessions: Map<string, UserSession> = new Map();
+	private versionsSignature = "";
 
 	constructor() {
 		this.loadDrafts();
@@ -250,16 +214,24 @@ class WebUIDatabase {
 		}
 	}
 
+	private getVersionsFile() {
+		return path.resolve(__dirname, "../../data/version_history.json");
+	}
+
+	private getVersionsSignature() {
+		const versionsFile = this.getVersionsFile();
+		if (!fs.existsSync(versionsFile)) return "";
+		const stats = fs.statSync(versionsFile);
+		return `${stats.mtimeMs}:${stats.size}`;
+	}
+
 	private loadVersions() {
-		const versionsFile = path.resolve(
-			__dirname,
-			"../../data/quests/versions.json",
-		);
+		const versionsFile = this.getVersionsFile();
 		if (fs.existsSync(versionsFile)) {
 			try {
 				const raw = fs.readFileSync(versionsFile, "utf-8");
 				const list = JSON.parse(raw);
-				if (Array.isArray(list) && list.length > 0) {
+				if (Array.isArray(list)) {
 					this.appliedVersions = list;
 				}
 			} catch (e) {
@@ -268,13 +240,23 @@ class WebUIDatabase {
 		} else {
 			this.saveVersions();
 		}
+		this.versionsSignature = this.getVersionsSignature();
+	}
+
+	private refreshVersions() {
+		const signature = this.getVersionsSignature();
+		if (signature !== this.versionsSignature) {
+			this.loadVersions();
+		}
+	}
+
+	public getAppliedVersions() {
+		this.refreshVersions();
+		return this.appliedVersions;
 	}
 
 	public saveVersions() {
-		const versionsFile = path.resolve(
-			__dirname,
-			"../../data/quests/versions.json",
-		);
+		const versionsFile = this.getVersionsFile();
 		try {
 			const dir = path.dirname(versionsFile);
 			if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -286,6 +268,7 @@ class WebUIDatabase {
 		} catch (e) {
 			console.error("[db] Failed saving versions.json:", e);
 		}
+		this.versionsSignature = this.getVersionsSignature();
 	}
 
 	public createSession(
@@ -356,6 +339,7 @@ class WebUIDatabase {
 		appliedCount: number;
 		versionTag: string;
 	} {
+		this.refreshVersions();
 		const approvedDrafts = this.drafts.filter((d) => d.status === "approved");
 		if (approvedDrafts.length === 0) {
 			return { status: "none", appliedCount: 0, versionTag: "" };
@@ -425,6 +409,7 @@ class WebUIDatabase {
 
 		this.saveDrafts();
 		realDataLoader.invalidateTranslationStats();
+		invalidateTextVersionWorkingSet();
 
 		const versionTag = `v1.2.${Date.now().toString().slice(-4)}-ID`;
 		const newVersion: AppliedVersion = {

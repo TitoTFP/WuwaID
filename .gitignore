@@ -223,6 +223,8 @@ Javascript/*
 WuwaDBExport*/
 data/db_exports/
 data/quests/
+# Local WebUI row snapshots; source version history and manifests are tracked.
+data/version_history.db*
 webui/data/db_uploads/
 scripts/export_quest_ordered/
 export_quest_raw_all/

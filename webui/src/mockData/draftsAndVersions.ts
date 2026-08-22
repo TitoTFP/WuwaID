@@ -1,4 +1,4 @@
-import { TranslationDraft, AppliedVersion } from '../types';
+import { TranslationDraft } from '../types';
 
 export const MOCK_DRAFTS: TranslationDraft[] = [
   {
@@ -69,42 +69,5 @@ export const MOCK_DRAFTS: TranslationDraft[] = [
     status: 'rejected',
     rejectionReason: 'Gaya bahasa terlalu informal/gaul, tidak sesuai pedoman tata bahasa resmi game.',
     createdAt: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
-  },
-];
-
-export const MOCK_APPLIED_VERSIONS: AppliedVersion[] = [
-  {
-    versionTag: 'v1.2.0-ID',
-    appliedAt: '2026-08-05T14:30:00Z',
-    author: 'ChiefEditor_Jinzhou',
-    commitHash: 'a8f93bc',
-    totalLinesModified: 142,
-    description: 'Penyelarasan Glosarium Bab I & II: Pembaharuan istilah Midnight Rangers & Sentinel Jue.',
-    diffSummary: [
-      { questTitle: 'Utterance of Frost & Thunder', linesChanged: 42 },
-      { questTitle: 'Beneath the Crescent Moon', linesChanged: 100 },
-    ],
-  },
-  {
-    versionTag: 'v1.1.5-ID',
-    appliedAt: '2026-08-01T09:15:00Z',
-    author: 'HuanglongLinguist',
-    commitHash: 'c7d210e',
-    totalLinesModified: 88,
-    description: 'Perbaikan QA otomatis: Penyesuaian variabel {PlayerName} dan tanda baca pada dialogue choices.',
-    diffSummary: [
-      { questTitle: 'Echoes of the Huanglong Tide', linesChanged: 88 },
-    ],
-  },
-  {
-    versionTag: 'v1.0.0-ID',
-    appliedAt: '2026-07-20T18:00:00Z',
-    author: 'SystemInit',
-    commitHash: 'e100f2a',
-    totalLinesModified: 42850,
-    description: 'Rilis awal arsip terjemahan bahasa Indonesia WuwaID Quests.',
-    diffSummary: [
-      { questTitle: 'Seluruh Quest Bab I - IV', linesChanged: 42850 },
-    ],
   },
 ];

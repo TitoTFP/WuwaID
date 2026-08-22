@@ -4,6 +4,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
 	BookOpen,
 	Database,
+	GitBranch,
 	Activity,
 	Search,
 	Shield,
@@ -125,6 +126,20 @@ export const Masthead: React.FC<MastheadProps> = ({
 					>
 						<Database className="w-3.5 h-3.5" />
 						<span>Kategori</span>
+					</NavLink>
+
+					<NavLink
+						to="/workbench/versions"
+						className={() =>
+							`flex items-center space-x-2 px-3 py-1 rounded-md text-xs font-mono font-medium transition-all ${
+								activeMode === "workbench"
+									? "bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/30 shadow-sm"
+									: "text-slate-300 hover:text-slate-100 hover:bg-obsidian-800"
+							}`
+						}
+					>
+						<GitBranch className="w-3.5 h-3.5" />
+						<span>Workbench</span>
 					</NavLink>
 
 					<NavLink

@@ -113,35 +113,119 @@ export function rebuildCategoryIndex(indexPath: string): number {
 			"INSERT INTO categories VALUES (?,?,?,?)",
 		);
 		let rowCount = 0;
-		for (const file of listCategoryFiles()) {
-			const document = readCategoryDocument(file);
-			if (!document) continue;
-			let translatedCount = 0;
-			for (const [key, item] of Object.entries(document)) {
-				const id = item.id || item.text_id || item.mt || "";
-				if (id.trim()) translatedCount++;
-				insertText.run(
+		database.exec("BEGIN");
+		try {
+			for (const file of listCategoryFiles()) {
+				const document = readCategoryDocument(file);
+				if (!document) continue;
+				let translatedCount = 0;
+				for (const [key, item] of Object.entries(document)) {
+					const id = item.id || item.text_id || item.mt || "";
+					if (id.trim()) translatedCount++;
+					insertText.run(
+						file.name,
+						key,
+						key.split("_", 1)[0],
+						item["zh-Hans"] || item.zh || "",
+						item.en || "",
+						item.ja || "",
+						id,
+					);
+					rowCount++;
+				}
+				insertCategory.run(
 					file.name,
-					key,
-					key.split("_", 1)[0],
-					item["zh-Hans"] || item.zh || "",
-					item.en || "",
-					item.ja || "",
-					id,
+					file.relativePath,
+					Object.keys(document).length,
+					translatedCount,
 				);
-				rowCount++;
 			}
-			insertCategory.run(
-				file.name,
-				file.relativePath,
-				Object.keys(document).length,
-				translatedCount,
-			);
+			database.exec("COMMIT");
+		} catch (error) {
+			database.exec("ROLLBACK");
+			throw error;
 		}
 		database.close();
 		return rowCount;
 	} catch (error) {
 		database.close();
 		throw error;
+	}
+}
+
+export function updateCategoryIndex(indexPath: string, categoryNames: string[]): number {
+	if (!categoryNames.length || !fs.existsSync(indexPath)) return 0;
+
+	const database = new DatabaseSync(indexPath, { timeout: 5000 });
+	try {
+		const tables = database
+			.prepare("SELECT name FROM sqlite_master WHERE type = ?")
+			.all("table") as Array<{ name?: string }>;
+		const hasCategoryIndex = tables.some((table) => table.name === "category_text_idx") &&
+			tables.some((table) => table.name === "categories");
+		if (!hasCategoryIndex) {
+			database.close();
+			return rebuildCategoryIndex(indexPath);
+		}
+
+		const deleteText = database.prepare(
+			"DELETE FROM category_text_idx WHERE category = ?",
+		);
+		const insertText = database.prepare(
+			"INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?)",
+		);
+		const upsertCategory = database.prepare(
+			`INSERT INTO categories (name, file, key_count, translated_count)
+			 VALUES (?, ?, ?, ?)
+			 ON CONFLICT(name) DO UPDATE SET
+			 file = excluded.file,
+			 key_count = excluded.key_count,
+			 translated_count = excluded.translated_count`,
+		);
+
+		let rowCount = 0;
+		database.exec("BEGIN");
+		try {
+			for (const categoryName of new Set(categoryNames)) {
+				const file = resolveCategoryFile(categoryName);
+				if (!file) continue;
+				const document = readCategoryDocument(file);
+				if (!document) continue;
+
+				deleteText.run(file.name);
+				let translatedCount = 0;
+				for (const [key, item] of Object.entries(document)) {
+					const id = item.id || item.text_id || item.mt || "";
+					if (id.trim()) translatedCount++;
+					insertText.run(
+						file.name,
+						key,
+						key.split("_", 1)[0],
+						item["zh-Hans"] || item.zh || "",
+						item.en || "",
+						item.ja || "",
+						id,
+					);
+					rowCount++;
+				}
+				upsertCategory.run(
+					file.name,
+					file.relativePath,
+					Object.keys(document).length,
+					translatedCount,
+				);
+			}
+			database.exec("COMMIT");
+		} catch (error) {
+			database.exec("ROLLBACK");
+			throw error;
+		}
+		return rowCount;
+	} finally {
+		try {
+			database.close();
+		} catch {
+			// The connection was already closed before a full rebuild fallback.
+		}
 	}
 }

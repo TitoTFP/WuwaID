@@ -1,7 +1,14 @@
 import type React from "react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Database, Download, RefreshCw, RotateCcw, Upload } from "lucide-react";
+import {
+	Database,
+	Download,
+	FolderOpen,
+	RefreshCw,
+	RotateCcw,
+	Upload,
+} from "lucide-react";
 import {
 	downloadExportDb,
 	fetchConfigDbs,
@@ -11,6 +18,10 @@ import {
 
 export const DatabaseView: React.FC = () => {
 	const [dbImporting, setDbImporting] = useState(false);
+	const [dbImportProgress, setDbImportProgress] = useState<{
+		current: number;
+		total: number;
+	} | null>(null);
 	const [dbResetting, setDbResetting] = useState(false);
 	const [dbExporting, setDbExporting] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
@@ -21,30 +32,47 @@ export const DatabaseView: React.FC = () => {
 	});
 
 	const handleImportDb = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
+		const files = Array.from(event.target.files ?? [])
+			.filter((file) => file.name.toLowerCase().endsWith(".db"))
+			.sort((left, right) =>
+				(left.webkitRelativePath || left.name).localeCompare(
+					right.webkitRelativePath || right.name,
+				),
+			);
 		event.target.value = "";
-		if (!file) return;
-
-		if (!file.name.toLowerCase().endsWith(".db")) {
-			setMessage("Pilih file dengan ekstensi .db.");
+		if (!files.length) {
+			setMessage("Pilih file atau folder yang berisi file .db.");
 			return;
 		}
 
 		setDbImporting(true);
+		setDbImportProgress({ current: 0, total: files.length });
 		setMessage(null);
+		let importedFiles = 0;
+		let updatedQuestLines = 0;
+		let updatedCategoryItems = 0;
+		const failedFiles: string[] = [];
 		try {
-			const result = await importConfigDb(file);
+			for (const [index, file] of files.entries()) {
+				setDbImportProgress({ current: index + 1, total: files.length });
+				try {
+					const result = await importConfigDb(file);
+					importedFiles++;
+					updatedQuestLines += result.updatedQuestLines;
+					updatedCategoryItems += result.updatedCategoryItems;
+				} catch {
+					failedFiles.push(file.webkitRelativePath || file.name);
+				}
+			}
+			const failedSummary = failedFiles.length
+				? ` Gagal: ${failedFiles.slice(0, 3).join(", ")}${failedFiles.length > 3 ? ", ..." : ""}.`
+				: "";
 			setMessage(
-				`${result.file.name} berhasil diterapkan. ${result.updatedQuestLines} teks quest (termasuk pilihan) dan ${result.updatedCategoryItems} item kategori diproses. Content yang sama dengan English dianggap belum diterjemahkan.`,
-			);
-		} catch (importError) {
-			setMessage(
-				importError instanceof Error
-					? importError.message
-					: "Impor database gagal.",
+				`${importedFiles}/${files.length} database berhasil diterapkan. ${updatedQuestLines} teks quest dan ${updatedCategoryItems} item kategori diproses.${failedSummary}`,
 			);
 		} finally {
 			setDbImporting(false);
+			setDbImportProgress(null);
 		}
 	};
 
@@ -121,19 +149,41 @@ export const DatabaseView: React.FC = () => {
 						</span>
 					</div>
 					<div className="flex items-center space-x-2">
-						<label
-							className={`flex items-center space-x-1.5 px-3 py-1 rounded border font-mono text-[10px] font-bold cursor-pointer transition-all ${dbImporting || dbResetting ? "opacity-50 cursor-wait border-obsidian-700 text-slate-500" : "border-cyber-gold/50 text-cyber-gold hover:border-cyber-gold"}`}
-						>
-							<Upload className="w-3.5 h-3.5" />
-							<span>{dbImporting ? "Mengimpor..." : "Impor .db"}</span>
-							<input
-								type="file"
-								accept=".db"
-								className="hidden"
-								disabled={dbImporting || dbResetting}
-								onChange={handleImportDb}
-							/>
-						</label>
+						{[
+							{
+								icon: Upload,
+								label: dbImporting ? "Mengimpor..." : "Impor .db",
+								multiple: false,
+							},
+							{
+								icon: FolderOpen,
+								label: dbImporting
+									? `Mengimpor ${dbImportProgress?.current ?? 0}/${dbImportProgress?.total ?? 0}...`
+									: "Impor folder .db",
+								multiple: true,
+							},
+						].map(({ icon: Icon, label, multiple }) => (
+							<label
+								key={label}
+								className={`flex items-center space-x-1.5 px-3 py-1 rounded border font-mono text-[10px] font-bold cursor-pointer transition-all ${dbImporting || dbResetting ? "opacity-50 cursor-wait border-obsidian-700 text-slate-500" : "border-cyber-gold/50 text-cyber-gold hover:border-cyber-gold"}`}
+							>
+								<Icon className="w-3.5 h-3.5" />
+								<span>{label}</span>
+								<input
+									type="file"
+									accept=".db"
+									className="hidden"
+									disabled={dbImporting || dbResetting}
+									multiple={multiple}
+									ref={(element) => {
+										if (multiple && element) {
+											element.setAttribute("webkitdirectory", "");
+										}
+									}}
+									onChange={handleImportDb}
+								/>
+							</label>
+						))}
 						<button
 							type="button"
 							onClick={() => void refetch()}

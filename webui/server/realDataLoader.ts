@@ -22,6 +22,7 @@ const QUESTS_DATA_DIR = path.join(REPO_ROOT, "data/quests");
 
 const QUESTS_JSON_DIR = path.join(QUESTS_DATA_DIR, "quests");
 const CHAPTERS_FILE = path.join(QUESTS_DATA_DIR, "chapters.json");
+const CATEGORIES_MANIFEST_FILE = path.join(QUESTS_DATA_DIR, "categories.json");
 const INDEX_DB_FILE = path.join(QUESTS_DATA_DIR, "index.db");
 
 export interface CategoryDetailResult {
@@ -104,7 +105,28 @@ export class RealDataLoader {
 	private db: DatabaseSync | null = null;
 	private questDetailCache: Map<string, QuestDetail> = new Map();
 	private categoryCache: Map<string, any> = new Map();
+	private dialogueKeyFiles: Map<string, string> | null = null;
 	private translationStatsCache: TranslationCorpusStats | null = null;
+	private dataSignature = "";
+
+	private getDataSignature(): string {
+		return [INDEX_DB_FILE, CHAPTERS_FILE, CATEGORIES_MANIFEST_FILE]
+			.map((filePath) => {
+				if (!fs.existsSync(filePath)) return `${filePath}:missing`;
+				const stats = fs.statSync(filePath);
+				return `${filePath}:${stats.mtimeMs}:${stats.size}`;
+			})
+			.join("|");
+	}
+
+	private ensureFresh(): void {
+		const nextSignature = this.getDataSignature();
+		if (this.dataSignature && nextSignature !== this.dataSignature) {
+			console.log("[RealDataLoader] Generated data changed; refreshing caches.");
+			this.invalidateTranslationStats();
+		}
+		this.dataSignature = nextSignature;
+	}
 
 	private getDialogueRows(data: any): any[] {
 		if (Array.isArray(data.all_lines)) return data.all_lines;
@@ -208,6 +230,7 @@ export class RealDataLoader {
 	}
 
 	public getTranslationProgress() {
+		this.ensureFresh();
 		const stats = this.getTranslationStats().overall;
 		return {
 			totalLines: stats.total,
@@ -216,10 +239,100 @@ export class RealDataLoader {
 		};
 	}
 
+	private getDialogueKeyFiles(): Map<string, string> {
+		if (!this.dialogueKeyFiles) this.getQuestFileMap();
+		return this.dialogueKeyFiles || new Map();
+	}
+
+	private searchDialogueKeys(
+		query: string,
+		lang: "en" | "id" | "zh" | "ja",
+		limit: number,
+	): GlobalSearchResult[] {
+		if (
+			query.length < 12 ||
+			!/^[A-Za-z0-9]+(?:_[A-Za-z0-9]*)+$/.test(query)
+		) {
+			return [];
+		}
+
+		const needle = query.toLowerCase();
+		const matchingFiles = new Set<string>();
+		for (const [key, filePath] of this.getDialogueKeyFiles()) {
+			if (key.includes(needle)) matchingFiles.add(filePath);
+		}
+
+		const results: GlobalSearchResult[] = [];
+		for (const filePath of matchingFiles) {
+			try {
+				const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+				const qid = String(data.quest_id ?? "");
+				if (!qid) continue;
+				const questTitle = String(data.quest_name || `Quest ${qid}`);
+				const chapterTitle = String(data.chapter_name || "");
+
+				for (const [rowIndex, row] of this.getDialogueRows(data).entries()) {
+					const items = [
+						{ item: row, isOption: false },
+						...(Array.isArray(row?.options)
+							? row.options.map((item: any) => ({ item, isOption: true }))
+							: []),
+					];
+					const lineId = String(row.id ?? rowIndex + 1);
+
+					for (const { item, isOption } of items) {
+						const key = String(item?.text_key ?? "");
+						if (!key.toLowerCase().includes(needle)) continue;
+
+						const textId = String(item?.text_id ?? item?.text_id_mt ?? "");
+						const textEn = String(
+							item?.text_en ?? item?.["text_zh-Hans"] ?? item?.text_zh ?? "",
+						);
+						const textZh = String(item?.["text_zh-Hans"] ?? item?.text_zh ?? "");
+						const textJa = String(item?.text_ja ?? "");
+						const text =
+							lang === "en"
+								? textEn
+								: lang === "zh"
+									? textZh
+									: lang === "ja"
+										? textJa
+										: textId;
+
+						results.push({
+							kind: "dialogue",
+							id: `${qid}:${lineId}:${key}`,
+							questId: qid,
+							questTitle,
+							chapterTitle,
+							lineId,
+							lineNo: Number(lineId),
+							speakerName: String(
+								item?.speaker_en ||
+									row?.speaker_en ||
+									(isOption ? "Player" : "Narrator"),
+							),
+							text: text || textEn,
+							englishText: textEn,
+							translated: textId.trim().length > 0,
+							lang,
+						});
+						if (results.length >= limit) return results;
+					}
+				}
+			} catch {
+				// The normal index remains available when an individual source is invalid.
+			}
+		}
+
+		return results;
+	}
+
 	public search(
 		query: string,
 		options: GlobalSearchOptions = {},
 	): GlobalSearchResult[] {
+		this.ensureFresh();
 		if (!this.db) return [];
 
 		const term = query.trim();
@@ -237,6 +350,11 @@ export class RealDataLoader {
 		const results: GlobalSearchResult[] = [];
 		const dialogueQuery = ftsQuery(term);
 		const categoryQuery = ftsQuery(term);
+		const dialogueKeyResults =
+			scope === "all" || scope === "dialogue"
+				? this.searchDialogueKeys(term, lang, limit)
+				: [];
+		results.push(...dialogueKeyResults);
 
 		if (scope === "all" || scope === "dialogue") {
 			try {
@@ -265,7 +383,9 @@ export class RealDataLoader {
 						`SELECT qid, line_id, quest_name, chapter_name, speaker_en, text_en, text_id, text_zh, text_ja
 						 FROM dialogue_idx WHERE ${clauses.join(" AND ")} LIMIT ?`,
 					)
-					.all(...params, limit) as Array<Record<string, unknown>>;
+					.all(...params, Math.max(0, limit - dialogueKeyResults.length)) as Array<
+					Record<string, unknown>
+				>;
 				for (const row of rows) {
 					const translated = String(row.text_id || "").trim().length > 0;
 					const text = String(row[textColumn] || row.text_en || "");
@@ -393,6 +513,8 @@ export class RealDataLoader {
 		this.loadedCategories = null;
 		this.questDetailCache.clear();
 		this.categoryCache.clear();
+		this.questFileMap = null;
+		this.dialogueKeyFiles = null;
 		if (this.db) {
 			this.db.close();
 			this.db = null;
@@ -408,6 +530,7 @@ export class RealDataLoader {
 	}
 
 	public isAvailable(): boolean {
+		this.ensureFresh();
 		return fs.existsSync(QUESTS_DATA_DIR);
 	}
 
@@ -425,9 +548,11 @@ export class RealDataLoader {
 				);
 			}
 		}
+		this.dataSignature = this.getDataSignature();
 	}
 
 	public getChapters(): Chapter[] | null {
+		this.ensureFresh();
 		if (this.loadedChapters) return this.loadedChapters;
 
 		try {
@@ -482,6 +607,7 @@ export class RealDataLoader {
 		type?: string;
 		sort?: string;
 	}): QuestSummary[] | null {
+		this.ensureFresh();
 		const chapterId = opts?.chapterId;
 		const search = opts?.search?.trim();
 		const type = opts?.type;
@@ -707,8 +833,10 @@ export class RealDataLoader {
 		if (this.questFileMap) return this.questFileMap;
 
 		const map = new Map<string, string>();
+		const keyFiles = new Map<string, string>();
 		if (!fs.existsSync(QUESTS_JSON_DIR)) {
 			this.questFileMap = map;
+			this.dialogueKeyFiles = keyFiles;
 			return map;
 		}
 
@@ -735,6 +863,16 @@ export class RealDataLoader {
 						if (data.quest_id !== undefined) {
 							map.set(String(data.quest_id), fullPath);
 						}
+						for (const row of this.getDialogueRows(data)) {
+							const items = [
+								row,
+								...(Array.isArray(row?.options) ? row.options : []),
+							];
+							for (const item of items) {
+								const key = String(item?.text_key ?? "").trim().toLowerCase();
+								if (key && !keyFiles.has(key)) keyFiles.set(key, fullPath);
+							}
+						}
 					} catch {
 						// Ignore JSON parse errors
 					}
@@ -744,10 +882,12 @@ export class RealDataLoader {
 
 		walk(QUESTS_JSON_DIR);
 		this.questFileMap = map;
+		this.dialogueKeyFiles = keyFiles;
 		return map;
 	}
 
 	public getQuestDetail(id: string): QuestDetail | null {
+		this.ensureFresh();
 		if (this.questDetailCache.has(id)) {
 			return this.questDetailCache.get(id)!;
 		}
@@ -863,6 +1003,7 @@ export class RealDataLoader {
 	}
 
 	public getCategories(): TextCategory[] | null {
+		this.ensureFresh();
 		if (this.loadedCategories) return this.loadedCategories;
 
 		if (!fs.existsSync(CATEGORIES_JSON_DIR)) return null;
@@ -913,6 +1054,7 @@ export class RealDataLoader {
 		categoryName: string,
 		opts?: { q?: string; page?: number; limit?: number },
 	): CategoryDetailResult | null {
+		this.ensureFresh();
 		const file = resolveCategoryFile(categoryName);
 		if (!file) return null;
 		const cleanName = file.name;
