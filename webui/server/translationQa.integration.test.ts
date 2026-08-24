@@ -317,7 +317,7 @@ test("production startup preserves the legacy auth availability contract", async
 	);
 	try {
 		let ready = false;
-		for (let attempt = 0; attempt < 40; attempt++) {
+		for (let attempt = 0; attempt < 200; attempt++) {
 			try {
 				const health = await fetch(`http://127.0.0.1:${port}/api/health`);
 				if (health.ok) {

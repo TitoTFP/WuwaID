@@ -8,13 +8,14 @@ type JsonRecord = Record<string, unknown>;
 const QUESTS_JSON_DIR = path.join(REPO_ROOT, "data/quests/quests");
 
 export function readDialogueRows(document: JsonRecord): JsonRecord[] {
-	if (Array.isArray(document.all_lines)) return document.all_lines;
-	if (Array.isArray(document.dialogue)) return document.dialogue;
 	if (Array.isArray(document.flows)) {
-		return document.flows.flatMap((flow: JsonRecord) =>
+		const rows = document.flows.flatMap((flow: JsonRecord) =>
 			Array.isArray(flow.dialogue) ? flow.dialogue : [],
 		) as JsonRecord[];
+		if (rows.length > 0) return rows;
 	}
+	if (Array.isArray(document.all_lines)) return document.all_lines;
+	if (Array.isArray(document.dialogue)) return document.dialogue;
 	return [];
 }
 
@@ -149,12 +150,12 @@ function readQuestPageRow(row: JsonRecord, index: number): QuestPageRow {
 	};
 }
 
-export function listQuestJsonFiles(): string[] {
-	if (!fs.existsSync(QUESTS_JSON_DIR)) return [];
+export function listQuestJsonFiles(questsRoot = QUESTS_JSON_DIR): string[] {
+	if (!fs.existsSync(questsRoot)) return [];
 	const directFiles = fs
-		.readdirSync(QUESTS_JSON_DIR, { withFileTypes: true })
+		.readdirSync(questsRoot, { withFileTypes: true })
 		.filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-		.map((entry) => path.join(QUESTS_JSON_DIR, entry.name));
+		.map((entry) => path.join(questsRoot, entry.name));
 	if (directFiles.length > 0) return directFiles.sort();
 
 	const files: string[] = [];
@@ -166,11 +167,14 @@ export function listQuestJsonFiles(): string[] {
 				files.push(filePath);
 		}
 	};
-	walk(QUESTS_JSON_DIR);
+	walk(questsRoot);
 	return files.sort();
 }
 
-export function rebuildDialogueIndex(indexPath: string): number {
+export function rebuildDialogueIndex(
+	indexPath: string,
+	questsRoot = QUESTS_JSON_DIR,
+): number {
 	if (!fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
 	try {
@@ -252,7 +256,7 @@ export function rebuildDialogueIndex(indexPath: string): number {
 		`);
 		let indexedRows = 0;
 		try {
-			for (const filePath of listQuestJsonFiles()) {
+			for (const filePath of listQuestJsonFiles(questsRoot)) {
 				try {
 					const document = JSON.parse(
 						fs.readFileSync(filePath, "utf-8"),
@@ -338,6 +342,7 @@ export function rebuildDialogueIndex(indexPath: string): number {
 export function refreshDialogueIndex(
 	indexPath: string,
 	questIds: readonly string[],
+	questsRoot = QUESTS_JSON_DIR,
 ): number {
 	if (!questIds.length || !fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
@@ -360,7 +365,7 @@ export function refreshDialogueIndex(
 		if (!hasDialogueIndex || !hasDialogueKeyIndex || !hasQuestPageIndex) return 0;
 		if (!hasExportName) {
 			database.close();
-			return rebuildDialogueIndex(indexPath);
+			return rebuildDialogueIndex(indexPath, questsRoot);
 		}
 
 		const deleteQuest = database.prepare(
@@ -393,7 +398,7 @@ export function refreshDialogueIndex(
 		`);
 		const wantedIds = new Set(questIds);
 		const documents = new Map<string, JsonRecord>();
-		for (const filePath of listQuestJsonFiles()) {
+		for (const filePath of listQuestJsonFiles(questsRoot)) {
 			try {
 				const document = JSON.parse(
 					fs.readFileSync(filePath, "utf-8"),

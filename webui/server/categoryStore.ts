@@ -42,21 +42,25 @@ function walk(dir: string, relative = ""): CategoryFile[] {
 	return files;
 }
 
-export function listCategoryFiles(): CategoryFile[] {
-	return walk(CATEGORIES_JSON_DIR).sort((a, b) => a.name.localeCompare(b.name));
+export function listCategoryFiles(
+	categoriesRoot = CATEGORIES_JSON_DIR,
+): CategoryFile[] {
+	return walk(categoriesRoot).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function cleanCategoryName(value: string): string {
 	return value.replace(/^cat_/, "").replaceAll("\\", "/");
 }
 
-export function resolveCategoryFile(value: string): CategoryFile | null {
+export function resolveCategoryFile(
+	value: string,
+	categoriesRoot = CATEGORIES_JSON_DIR,
+): CategoryFile | null {
 	const name = cleanCategoryName(value);
 	if (!name || path.posix.isAbsolute(name)) return null;
 	const relativePath = `${name}.json`;
-	const filePath =
-		path.resolve(CATEGORIES_JSON_DIR, ...name.split("/")) + ".json";
-	const root = `${path.resolve(CATEGORIES_JSON_DIR)}${path.sep}`;
+	const filePath = path.resolve(categoriesRoot, ...name.split("/")) + ".json";
+	const root = `${path.resolve(categoriesRoot)}${path.sep}`;
 	if (
 		!filePath.startsWith(root) ||
 		name.split("/").some((part) => !part || part === "." || part === "..")
@@ -80,7 +84,10 @@ export function readCategoryDocument(
 	}
 }
 
-export function rebuildCategoryIndex(indexPath: string): number {
+export function rebuildCategoryIndex(
+	indexPath: string,
+	categoriesRoot = CATEGORIES_JSON_DIR,
+): number {
 	if (!fs.existsSync(indexPath)) return 0;
 
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
@@ -116,7 +123,7 @@ export function rebuildCategoryIndex(indexPath: string): number {
 		);
 		let rowCount = 0;
 		try {
-			for (const file of listCategoryFiles()) {
+			for (const file of listCategoryFiles(categoriesRoot)) {
 				const document = readCategoryDocument(file);
 				if (!document) continue;
 				let translatedCount = 0;
@@ -158,6 +165,7 @@ export function rebuildCategoryIndex(indexPath: string): number {
 export function updateCategoryIndex(
 	indexPath: string,
 	categoryNames: string[],
+	categoriesRoot = CATEGORIES_JSON_DIR,
 ): number {
 	if (!categoryNames.length || !fs.existsSync(indexPath)) return 0;
 
@@ -197,7 +205,7 @@ export function updateCategoryIndex(
 		database.exec("BEGIN");
 		try {
 			for (const categoryName of new Set(categoryNames)) {
-				const file = resolveCategoryFile(categoryName);
+				const file = resolveCategoryFile(categoryName, categoriesRoot);
 				if (!file) continue;
 				const document = readCategoryDocument(file);
 				if (!document) continue;

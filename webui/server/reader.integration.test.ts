@@ -181,6 +181,8 @@ test("approved category drafts update raw JSON and the category read model", {
 		"data/quests/categories/__reader_draft_test__",
 	);
 	const categoryFile = path.join(categoryDirectory, "Text.json");
+	const versionHistoryPath = path.join(REPO_ROOT, "data/version_history.json");
+	const previousVersionHistory = fs.readFileSync(versionHistoryPath);
 	const previousDrafts = [...db.drafts];
 	fs.mkdirSync(categoryDirectory, { recursive: true });
 	fs.writeFileSync(
@@ -226,6 +228,7 @@ test("approved category drafts update raw JSON and the category read model", {
 		db.drafts.push(...previousDrafts);
 		db.saveDrafts();
 		fs.rmSync(categoryDirectory, { recursive: true, force: true });
+		fs.writeFileSync(versionHistoryPath, previousVersionHistory);
 		realDataLoader.invalidateTranslationStats();
 		rebuildCategoryIndex(path.join(REPO_ROOT, "data/quests/index.db"));
 		realDataLoader.invalidateTranslationStats();

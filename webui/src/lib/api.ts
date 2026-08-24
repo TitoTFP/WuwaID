@@ -625,28 +625,92 @@ export async function fetchConfigDbs(): Promise<{ exportFiles: string[] }> {
 	return request<{ exportFiles: string[] }>("/ops/databases");
 }
 
-export interface ImportConfigDbResult {
-	status: string;
-	file: { name: string; sizeBytes: number };
+export type DatabaseJobStatus =
+	| "staging"
+	| "queued"
+	| "running"
+	| "completed"
+	| "failed";
+
+export interface DatabaseJobProgress {
+	stage: string;
+	current: number;
+	total: number;
+	detail?: string;
+}
+
+export interface DatabaseJobResult {
+	status: "imported" | "reset";
+	fileCount?: number;
 	updatedQuestFiles: number;
 	updatedQuestLines: number;
 	updatedCategoryFiles: number;
 	updatedCategoryItems: number;
-	indexedCategoryRows?: number;
-	indexedDialogueRows?: number;
+	indexedCategoryRows: number;
+	indexedDialogueRows: number;
+	indexedStatsRows: number;
 }
 
-export async function importConfigDb(
-	file: File,
-): Promise<ImportConfigDbResult> {
-	const token = localStorage.getItem("wuwaid_token");
-	const query = new URLSearchParams({ filename: file.name });
+export interface DatabaseJob {
+	id: string;
+	kind: "import" | "reset";
+	status: DatabaseJobStatus;
+	createdAt: string;
+	updatedAt: string;
+	expectedFiles: number;
+	receivedFiles: number;
+	progress: DatabaseJobProgress;
+	result?: DatabaseJobResult;
+	error?: string;
+}
 
+export async function startConfigDbImportBatch(expectedFiles: number) {
+	return request<DatabaseJob>("/ops/databases/import-batch", {
+		method: "POST",
+		body: JSON.stringify({ expectedFiles }),
+	});
+}
+
+export async function uploadConfigDbImportFile(
+	batchId: string,
+	file: File,
+	index: number,
+): Promise<DatabaseJob> {
+	const token = localStorage.getItem("wuwaid_token");
+	const query = new URLSearchParams({
+		filename: file.name,
+		index: String(index),
+	});
 	const headers: Record<string, string> = {
 		"Content-Type": "application/octet-stream",
 	};
 	if (token) headers.Authorization = `Bearer ${token}`;
+	const res = await fetch(
+		`${API_BASE}/ops/databases/import-batch/${encodeURIComponent(batchId)}/file?${query.toString()}`,
+		{ method: "POST", headers, body: file },
+	);
+	if (!res.ok) {
+		const errorData = await res.json().catch(() => ({ error: "Import failed" }));
+		throw new Error(errorData.error || `HTTP ${res.status}`);
+	}
+	return res.json() as Promise<DatabaseJob>;
+}
 
+export async function finishConfigDbImportBatch(batchId: string) {
+	return request<DatabaseJob>(
+		`/ops/databases/import-batch/${encodeURIComponent(batchId)}/finish`,
+		{ method: "POST" },
+	);
+}
+
+/** Legacy single-file API; new UI uses the batch endpoints above. */
+export async function importConfigDb(file: File): Promise<DatabaseJob> {
+	const token = localStorage.getItem("wuwaid_token");
+	const query = new URLSearchParams({ filename: file.name });
+	const headers: Record<string, string> = {
+		"Content-Type": "application/octet-stream",
+	};
+	if (token) headers.Authorization = `Bearer ${token}`;
 	const res = await fetch(
 		`${API_BASE}/ops/databases/import?${query.toString()}`,
 		{
@@ -655,23 +719,19 @@ export async function importConfigDb(
 			body: file,
 		},
 	);
-
 	if (!res.ok) {
 		const errorData = await res.json().catch(() => ({ error: "Import failed" }));
 		throw new Error(errorData.error || `HTTP ${res.status}`);
 	}
+	return res.json() as Promise<DatabaseJob>;
+}
 
-	return res.json() as Promise<ImportConfigDbResult>;
+export function fetchDatabaseJob(id: string) {
+	return request<DatabaseJob>(`/ops/jobs/${encodeURIComponent(id)}`);
 }
 
 export function resetIdTranslations() {
-	return request<{
-		status: string;
-		updatedQuestFiles: number;
-		updatedQuestLines: number;
-		updatedCategoryFiles: number;
-		updatedCategoryItems: number;
-	}>("/ops/databases/reset-id", { method: "POST" });
+	return request<DatabaseJob>("/ops/databases/reset-id", { method: "POST" });
 }
 
 export function getDownloadExportDbUrl(name: string): string {

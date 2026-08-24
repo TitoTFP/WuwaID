@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	Database,
@@ -12,9 +12,39 @@ import {
 import {
 	downloadExportDb,
 	fetchConfigDbs,
-	importConfigDb,
+	fetchDatabaseJob,
+	finishConfigDbImportBatch,
 	resetIdTranslations,
+	startConfigDbImportBatch,
+	uploadConfigDbImportFile,
+	type DatabaseJob,
 } from "../lib/api";
+
+const DATABASE_JOB_STORAGE_KEY = "wuwaid_database_job";
+
+function sleep(milliseconds: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function waitForDatabaseJob(
+	id: string,
+	onUpdate: (job: DatabaseJob) => void,
+): Promise<DatabaseJob> {
+	for (;;) {
+		const job = await fetchDatabaseJob(id);
+		onUpdate(job);
+		if (job.status === "completed" || job.status === "failed") return job;
+		await sleep(500);
+	}
+}
+
+function formatDatabaseJobResult(job: DatabaseJob): string {
+	if (!job.result) return job.error || "Job database selesai tanpa hasil.";
+	const fileSummary = job.result.fileCount
+		? `${job.result.fileCount} database`
+		: "Translasi ID";
+	return `${fileSummary} selesai. ${job.result.updatedQuestLines} teks quest (termasuk pilihan) dan ${job.result.updatedCategoryItems} item kategori diproses.`;
+}
 
 export const DatabaseView: React.FC = () => {
 	const [dbImporting, setDbImporting] = useState(false);
@@ -23,6 +53,7 @@ export const DatabaseView: React.FC = () => {
 		total: number;
 	} | null>(null);
 	const [dbResetting, setDbResetting] = useState(false);
+	const [dbJob, setDbJob] = useState<DatabaseJob | null>(null);
 	const [dbExporting, setDbExporting] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 
@@ -30,6 +61,51 @@ export const DatabaseView: React.FC = () => {
 		queryKey: ["configDbs"],
 		queryFn: fetchConfigDbs,
 	});
+
+	useEffect(() => {
+		const stored = localStorage.getItem(DATABASE_JOB_STORAGE_KEY);
+		if (!stored) return;
+		let cancelled = false;
+		void (async () => {
+			try {
+				const parsed = JSON.parse(stored) as { id?: string };
+				if (!parsed.id) return;
+				const initial = await fetchDatabaseJob(parsed.id);
+				if (cancelled) return;
+				setDbJob(initial);
+				if (initial.status === "completed" || initial.status === "failed") {
+					localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
+					setMessage(formatDatabaseJobResult(initial));
+					return;
+				}
+				if (initial.status === "staging") {
+					setMessage(
+						`Import sebelumnya siap dilanjutkan; pilih kembali ${initial.expectedFiles} file .db yang sama untuk meneruskan upload.`,
+					);
+					return;
+				}
+				if (initial.kind === "import") setDbImporting(true);
+				else setDbResetting(true);
+				const finished = await waitForDatabaseJob(parsed.id, (job) => {
+					if (!cancelled) setDbJob(job);
+				});
+				if (!cancelled) {
+					setMessage(formatDatabaseJobResult(finished));
+					localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
+				}
+			} catch {
+				if (!cancelled) localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
+			} finally {
+				if (!cancelled) {
+					setDbImporting(false);
+					setDbResetting(false);
+				}
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const handleImportDb = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(event.target.files ?? [])
@@ -45,30 +121,53 @@ export const DatabaseView: React.FC = () => {
 			return;
 		}
 
+		const pendingBatch =
+			dbJob?.kind === "import" && dbJob.status === "staging" ? dbJob : null;
+		if (pendingBatch && pendingBatch.expectedFiles !== files.length) {
+			setMessage(
+				`Batch sebelumnya menunggu ${pendingBatch.expectedFiles} file; pilih jumlah file yang sama untuk melanjutkan.`,
+			);
+			return;
+		}
+
 		setDbImporting(true);
 		setDbImportProgress({ current: 0, total: files.length });
+		setDbJob(pendingBatch);
 		setMessage(null);
-		let importedFiles = 0;
-		let updatedQuestLines = 0;
-		let updatedCategoryItems = 0;
-		const failedFiles: string[] = [];
 		try {
-			for (const [index, file] of files.entries()) {
-				setDbImportProgress({ current: index + 1, total: files.length });
-				try {
-					const result = await importConfigDb(file);
-					importedFiles++;
-					updatedQuestLines += result.updatedQuestLines;
-					updatedCategoryItems += result.updatedCategoryItems;
-				} catch {
-					failedFiles.push(file.webkitRelativePath || file.name);
-				}
+			const batch = pendingBatch || (await startConfigDbImportBatch(files.length));
+			if (!pendingBatch) {
+				localStorage.setItem(
+					DATABASE_JOB_STORAGE_KEY,
+					JSON.stringify({ id: batch.id, kind: batch.kind }),
+				);
 			}
-			const failedSummary = failedFiles.length
-				? ` Gagal: ${failedFiles.slice(0, 3).join(", ")}${failedFiles.length > 3 ? ", ..." : ""}.`
-				: "";
+			setDbJob(batch);
+			for (const [index, file] of files.entries()) {
+				const staged = await uploadConfigDbImportFile(batch.id, file, index);
+				setDbJob(staged);
+				setDbImportProgress({ current: index + 1, total: files.length });
+			}
+			const queued = await finishConfigDbImportBatch(batch.id);
+			setDbJob(queued);
+			const finished = await waitForDatabaseJob(queued.id, (job) => {
+				setDbJob(job);
+				setDbImportProgress({
+					current: job.progress.current,
+					total: job.progress.total,
+				});
+			});
+			if (finished.status === "failed") {
+				localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
+				throw new Error(finished.error || "Import database gagal.");
+			}
+			setMessage(formatDatabaseJobResult(finished));
+			localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
+		} catch (importError) {
 			setMessage(
-				`${importedFiles}/${files.length} database berhasil diterapkan. ${updatedQuestLines} teks quest dan ${updatedCategoryItems} item kategori diproses.${failedSummary}`,
+				importError instanceof Error
+					? importError.message
+					: "Import database gagal.",
 			);
 		} finally {
 			setDbImporting(false);
@@ -86,12 +185,21 @@ export const DatabaseView: React.FC = () => {
 		}
 
 		setDbResetting(true);
+		setDbJob(null);
 		setMessage(null);
 		try {
-			const result = await resetIdTranslations();
-			setMessage(
-				`Translasi ID dihapus: ${result.updatedQuestLines} teks quest (termasuk pilihan) dan ${result.updatedCategoryItems} item kategori.`,
+			const queued = await resetIdTranslations();
+			localStorage.setItem(
+				DATABASE_JOB_STORAGE_KEY,
+				JSON.stringify({ id: queued.id, kind: queued.kind }),
 			);
+			setDbJob(queued);
+			const finished = await waitForDatabaseJob(queued.id, setDbJob);
+			if (finished.status === "failed") {
+				throw new Error(finished.error || "Penghapusan translasi gagal.");
+			}
+			setMessage(formatDatabaseJobResult(finished));
+			localStorage.removeItem(DATABASE_JOB_STORAGE_KEY);
 		} catch (resetError) {
 			setMessage(
 				resetError instanceof Error
@@ -202,21 +310,22 @@ export const DatabaseView: React.FC = () => {
 							className="flex items-center space-x-1.5 rounded border border-cyber-rose/50 px-2.5 py-1 text-[10px] font-mono font-bold text-cyber-rose hover:border-cyber-rose disabled:opacity-50"
 						>
 							<RotateCcw className="w-3.5 h-3.5" />
-							<span>
-								{dbResetting ? "Menghapus..." : "Hapus semua translasi ID"}
-							</span>
+							<span>{dbResetting ? "Menghapus..." : "Hapus semua translasi ID"}</span>
 						</button>
 					</div>
 				</div>
 
 				<p className="py-2 text-[10px] font-mono text-slate-500">
 					Impor tidak menyimpan file .db. Semua Content dari MultiText langsung
-					menimpa terjemahan quest, pilihan percabangan, dan kategori di data
-					WebUI.
+					menimpa terjemahan quest, pilihan percabangan, dan kategori di data WebUI.
 				</p>
 				{message && (
-					<p className="pb-2 text-[10px] font-mono text-cyber-cyan">
-						{message}
+					<p className="pb-2 text-[10px] font-mono text-cyber-cyan">{message}</p>
+				)}
+				{dbJob && (dbImporting || dbResetting) && (
+					<p className="pb-2 text-[10px] font-mono text-cyber-gold">
+						Job {dbJob.status}: {dbJob.progress.detail || dbJob.progress.stage}
+						{dbJob.progress.current}/{dbJob.progress.total}
 					</p>
 				)}
 				{error && (
@@ -259,9 +368,8 @@ export const DatabaseView: React.FC = () => {
 							</span>
 						</div>
 						<p className="mt-1 text-[10px] font-mono text-slate-400">
-							File upload hanya diproses sementara lalu dihapus. Content yang
-							sama dengan English dikosongkan agar tetap dihitung belum
-							diterjemahkan.
+							File upload hanya diproses sementara lalu dihapus. Content yang sama
+							dengan English dikosongkan agar tetap dihitung belum diterjemahkan.
 						</p>
 					</div>
 				</div>

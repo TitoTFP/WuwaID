@@ -92,8 +92,8 @@ WuwaID/
 ```
 
 `webui/` adalah satu-satunya aplikasi web aktif di repository ini. Data runtime seperti
-`data/quests/`, `webui/data/db_uploads/`, dan database snapshot row-level
-`data/version_history.db` sengaja tidak disimpan di Git. Sebaliknya,
+`data/quests/`, `webui/data/db_uploads/`, `webui/data/database_jobs/`, dan database
+snapshot row-level `data/version_history.db` sengaja tidak disimpan di Git. Sebaliknya,
 `data/version_history.json` dan `data/version_manifests/` menyimpan metadata sumber
 database yang reproducible dan dilacak Git.
 
@@ -224,6 +224,14 @@ npm run dev        # Vite :3000 + Express API :3001
 npm run build      # Typecheck dan production build
 npm run build:reader-index -- --force  # Bangun ulang read model SQLite dari JSON
 npm start          # Menjalankan server hasil build
+```
+
+Dari root repository, alias verifikasi berikut meneruskan ke `webui/`:
+
+```sh
+npm run check
+npm run build
+npm run test:integration
 ```
 
 `npm run dev` dan `npm start` mempertahankan kontrak login legacy WebUI.

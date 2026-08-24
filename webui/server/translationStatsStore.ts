@@ -30,8 +30,13 @@ type StatsRow = {
 	textTranslated: number;
 };
 
-function listQuestJsonFiles(): string[] {
-	if (!fs.existsSync(QUESTS_JSON_DIR)) return [];
+function listQuestJsonFiles(questsRoot = QUESTS_JSON_DIR): string[] {
+	if (!fs.existsSync(questsRoot)) return [];
+	const directFiles = fs
+		.readdirSync(questsRoot, { withFileTypes: true })
+		.filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+		.map((entry) => path.join(questsRoot, entry.name));
+	if (directFiles.length > 0) return directFiles.sort();
 	const files: string[] = [];
 	const walk = (directory: string) => {
 		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -41,7 +46,7 @@ function listQuestJsonFiles(): string[] {
 				files.push(filePath);
 		}
 	};
-	walk(QUESTS_JSON_DIR);
+	walk(questsRoot);
 	return files.sort();
 }
 
@@ -93,9 +98,12 @@ function statsForDocument(
 	};
 }
 
-function loadStats(questIds?: ReadonlySet<string>): StatsRow[] {
+function loadStats(
+	questIds?: ReadonlySet<string>,
+	questsRoot = QUESTS_JSON_DIR,
+): StatsRow[] {
 	const rows = new Map<number, StatsRow>();
-	for (const filePath of listQuestJsonFiles()) {
+	for (const filePath of listQuestJsonFiles(questsRoot)) {
 		try {
 			const document = JSON.parse(
 				fs.readFileSync(filePath, "utf-8"),
@@ -162,16 +170,22 @@ function insertRows(database: DatabaseSync, rows: readonly StatsRow[]): number {
 	}
 }
 
-function rebuildExact(database: DatabaseSync): number {
-	return insertRows(database, loadStats());
+function rebuildExact(
+	database: DatabaseSync,
+	questsRoot = QUESTS_JSON_DIR,
+): number {
+	return insertRows(database, loadStats(undefined, questsRoot));
 }
 
-export function ensureTranslationStatsTable(indexPath: string): number {
+export function ensureTranslationStatsTable(
+	indexPath: string,
+	questsRoot = QUESTS_JSON_DIR,
+): number {
 	if (!fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath);
 	try {
 		database.exec(STATS_SCHEMA);
-		if (!hasStatsSource(database)) return rebuildExact(database);
+		if (!hasStatsSource(database)) return rebuildExact(database, questsRoot);
 		return Number(
 			(
 				database
@@ -187,14 +201,15 @@ export function ensureTranslationStatsTable(indexPath: string): number {
 export function refreshTranslationStats(
 	indexPath: string,
 	questIds: readonly string[],
+	questsRoot = QUESTS_JSON_DIR,
 ): number {
 	if (!questIds.length || !fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
 	try {
 		database.exec(STATS_SCHEMA);
 		const wantedIds = new Set(questIds);
-		if (!hasStatsSource(database)) return rebuildExact(database);
-		const rows = loadStats(wantedIds);
+		if (!hasStatsSource(database)) return rebuildExact(database, questsRoot);
+		const rows = loadStats(wantedIds, questsRoot);
 		const deleteRow = database.prepare(
 			"DELETE FROM translation_stats WHERE qid = ?",
 		);

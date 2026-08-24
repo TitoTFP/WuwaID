@@ -1,0 +1,9 @@
+{
+  "name": "wuwaid",
+  "private": true,
+  "scripts": {
+    "check": "npm --prefix webui run check",
+    "build": "npm --prefix webui run build",
+    "test:integration": "npm --prefix webui run test:integration"
+  }
+}

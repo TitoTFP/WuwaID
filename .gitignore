@@ -228,6 +228,7 @@ data/version_history.db*
 data/translation_qa.db*
 data/translation_qa_reviews.json*
 webui/data/db_uploads/
+webui/data/database_jobs/
 webui/data/version_history.json
 scripts/export_quest_ordered/
 export_quest_raw_all/

@@ -75,11 +75,16 @@ function sourceEntriesFromFiles(
 	);
 }
 
-export function listQuestSourceEntries(): QuestSourceEntry[] {
-	return sourceEntriesFromFiles(listQuestJsonFiles());
+export function listQuestSourceEntries(
+	questsRoot?: string,
+): QuestSourceEntry[] {
+	return sourceEntriesFromFiles(listQuestJsonFiles(questsRoot));
 }
 
-export function ensureQuestSourceIndex(indexPath: string): number {
+export function ensureQuestSourceIndex(
+	indexPath: string,
+	questsRoot?: string,
+): number {
 	if (!fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
 	try {
@@ -93,7 +98,7 @@ export function ensureQuestSourceIndex(indexPath: string): number {
 				value TEXT NOT NULL
 			);
 		`);
-		const filePaths = listQuestJsonFiles();
+		const filePaths = listQuestJsonFiles(questsRoot);
 		const signature = filePaths.join("\n");
 		const existingMeta = database
 			.prepare("SELECT value FROM quest_sources_meta WHERE key = ?")
@@ -135,7 +140,10 @@ function isTranslated(value: unknown): boolean {
 	return typeof value === "string" ? value.trim().length > 0 : Boolean(value);
 }
 
-export function rebuildQuestSummaryIndex(indexPath: string): number {
+export function rebuildQuestSummaryIndex(
+	indexPath: string,
+	questsRoot?: string,
+): number {
 	if (!fs.existsSync(indexPath)) return 0;
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
 	try {
@@ -161,7 +169,7 @@ export function rebuildQuestSummaryIndex(indexPath: string): number {
 		database.exec("DELETE FROM quests");
 		database.exec("BEGIN");
 		try {
-			for (const [ord, filePath] of listQuestJsonFiles().entries()) {
+			for (const [ord, filePath] of listQuestJsonFiles(questsRoot).entries()) {
 				try {
 					const document = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<
 						string,
@@ -216,7 +224,11 @@ function indexNeedsRebuild(indexPath: string, table: string): boolean {
 
 export function buildReaderIndex(
 	indexPath: string,
-	options: { force?: boolean } = {},
+	options: {
+		force?: boolean;
+		questsJsonDir?: string;
+		categoriesJsonDir?: string;
+	} = {},
 ): {
 	quests: number;
 	dialogueRows: number;
@@ -234,11 +246,14 @@ export function buildReaderIndex(
 		database.close();
 	}
 
-	const quests = rebuildQuestSummaryIndex(indexPath);
-	const dialogueRows = rebuildDialogueIndex(indexPath);
-	const categoryRows = rebuildCategoryIndex(indexPath);
-	ensureTranslationStatsTable(indexPath);
-	const sourceRows = ensureQuestSourceIndex(indexPath);
+	const quests = rebuildQuestSummaryIndex(indexPath, options.questsJsonDir);
+	const dialogueRows = rebuildDialogueIndex(indexPath, options.questsJsonDir);
+	const categoryRows = rebuildCategoryIndex(
+		indexPath,
+		options.categoriesJsonDir,
+	);
+	ensureTranslationStatsTable(indexPath, options.questsJsonDir);
+	const sourceRows = ensureQuestSourceIndex(indexPath, options.questsJsonDir);
 	return { quests, dialogueRows, categoryRows, sourceRows };
 }
 
