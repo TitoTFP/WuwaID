@@ -12,6 +12,7 @@ import {
 	LogIn,
 	LogOut,
 	UserCheck,
+	ClipboardCheck,
 } from "lucide-react";
 import type { SurfaceMode, UserRole } from "../types";
 
@@ -48,6 +49,12 @@ export const Masthead: React.FC<MastheadProps> = ({
 			location.pathname.startsWith("/translator")
 		) {
 			return "workbench";
+		}
+		if (
+			location.pathname.startsWith("/qa") ||
+			location.pathname.startsWith("/translation-qa")
+		) {
+			return "qa";
 		}
 		if (
 			location.pathname.startsWith("/operations") ||
@@ -140,6 +147,20 @@ export const Masthead: React.FC<MastheadProps> = ({
 					>
 						<GitBranch className="w-3.5 h-3.5" />
 						<span>Workbench</span>
+					</NavLink>
+
+					<NavLink
+						to="/qa"
+						className={() =>
+							`flex items-center space-x-2 px-3 py-1 rounded-md text-xs font-mono font-medium transition-all ${
+								activeMode === "qa"
+									? "bg-cyber-gold/15 text-cyber-gold border border-cyber-gold/30 shadow-sm"
+									: "text-slate-300 hover:text-slate-100 hover:bg-obsidian-800"
+							}`
+						}
+					>
+						<ClipboardCheck className="w-3.5 h-3.5" />
+						<span>QA</span>
 					</NavLink>
 
 					<NavLink

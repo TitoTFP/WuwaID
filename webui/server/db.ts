@@ -12,6 +12,15 @@ import type {
 	SystemMetrics,
 } from "../src/types/index.js";
 import { realDataLoader } from "./realDataLoader.js";
+import { refreshDialogueIndex } from "./dialogueIndexStore.js";
+import { refreshTranslationStats } from "./translationStatsStore.js";
+import {
+	REPO_ROOT,
+	cleanCategoryName,
+	readCategoryDocument,
+	resolveCategoryFile,
+	updateCategoryIndex,
+} from "./categoryStore.js";
 import { invalidateTextVersionWorkingSet } from "./textVersions.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -204,11 +213,7 @@ class WebUIDatabase {
 		try {
 			const dir = path.dirname(draftsFile);
 			if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-			fs.writeFileSync(
-				draftsFile,
-				JSON.stringify(this.drafts, null, 2),
-				"utf-8",
-			);
+			fs.writeFileSync(draftsFile, JSON.stringify(this.drafts, null, 2), "utf-8");
 		} catch (e) {
 			console.error("[db] Failed saving drafts.json:", e);
 		}
@@ -271,10 +276,7 @@ class WebUIDatabase {
 		this.versionsSignature = this.getVersionsSignature();
 	}
 
-	public createSession(
-		role: "editor" | "admin",
-		username: string,
-	): UserSession {
+	public createSession(role: "editor" | "admin", username: string): UserSession {
 		const token = `token_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 		const session: UserSession = {
 			token,
@@ -284,6 +286,10 @@ class WebUIDatabase {
 		};
 		this.sessions.set(token, session);
 		return session;
+	}
+
+	public getSession(token: string): UserSession | undefined {
+		return this.sessions.get(token);
 	}
 
 	public createDraft(data: Partial<TranslationDraft>): TranslationDraft {
@@ -345,8 +351,7 @@ class WebUIDatabase {
 			return { status: "none", appliedCount: 0, versionTag: "" };
 		}
 
-		const REPO_ROOT = path.resolve(__dirname, "../../");
-		const QUESTS_DIR = path.join(REPO_ROOT, "data/quests/quests");
+		const INDEX_DB_FILE = path.join(REPO_ROOT, "data/quests/index.db");
 
 		const grouped = new Map<string, TranslationDraft[]>();
 		for (const d of approvedDrafts) {
@@ -356,22 +361,68 @@ class WebUIDatabase {
 		}
 
 		let appliedCount = 0;
+		const appliedQuestIds: string[] = [];
+		const appliedCategoryNames: string[] = [];
 		const diffSummary: Array<{ questTitle: string; linesChanged: number }> = [];
 
 		for (const [questId, drafts] of grouped.entries()) {
-			const filePath = path.join(QUESTS_DIR, `${questId}.json`);
+			if (questId.startsWith("cat:")) {
+				const categoryName = cleanCategoryName(questId.slice(4));
+				const categoryFile = resolveCategoryFile(categoryName);
+				let linesChangedInCategory = 0;
+				if (categoryFile) {
+					const categoryDocument = readCategoryDocument(categoryFile);
+					if (categoryDocument) {
+						const keys = Object.keys(categoryDocument);
+						for (const draft of drafts) {
+							const key = draft.lineId?.startsWith("line_")
+								? draft.lineId.slice(5)
+								: draft.lineId || (draft.lineNo ? keys[draft.lineNo - 1] : undefined);
+							const item = key ? categoryDocument[key] : undefined;
+							if (!item) continue;
+							if (
+								item.id === draft.proposedText &&
+								item.text_id === draft.proposedText
+							)
+								continue;
+							item.id = draft.proposedText;
+							item.text_id = draft.proposedText;
+							linesChangedInCategory++;
+							appliedCount++;
+						}
+						if (linesChangedInCategory > 0) {
+							fs.writeFileSync(
+								categoryFile.filePath,
+								JSON.stringify(categoryDocument, null, 2),
+								"utf-8",
+							);
+							appliedCategoryNames.push(categoryName);
+						}
+					}
+				}
+				diffSummary.push({
+					questTitle: drafts[0].questTitle || categoryName,
+					linesChanged: linesChangedInCategory,
+				});
+				continue;
+			}
+
+			const filePath = realDataLoader.getQuestSourceFile(questId);
 			let linesChangedInQuest = 0;
 
-			if (fs.existsSync(filePath)) {
+			if (filePath && fs.existsSync(filePath)) {
 				try {
 					const rawText = fs.readFileSync(filePath, "utf-8");
 					const questJson = JSON.parse(rawText);
 
 					let dialogueList: any[] = [];
-					if (Array.isArray(questJson.all_lines))
-						dialogueList = questJson.all_lines;
+					if (Array.isArray(questJson.all_lines)) dialogueList = questJson.all_lines;
 					else if (Array.isArray(questJson.dialogue))
 						dialogueList = questJson.dialogue;
+					else if (Array.isArray(questJson.flows))
+						dialogueList = questJson.flows.flatMap((flow: any) =>
+							Array.isArray(flow.dialogue) ? flow.dialogue : [],
+						);
 
 					for (const d of drafts) {
 						const line = dialogueList.find(
@@ -392,15 +443,12 @@ class WebUIDatabase {
 						}
 					}
 
-					fs.writeFileSync(
-						filePath,
-						JSON.stringify(questJson, null, 2),
-						"utf-8",
-					);
+					fs.writeFileSync(filePath, JSON.stringify(questJson, null, 2), "utf-8");
 					diffSummary.push({
 						questTitle: drafts[0].questTitle || `Quest ${questId}`,
 						linesChanged: linesChangedInQuest,
 					});
+					if (linesChangedInQuest > 0) appliedQuestIds.push(questId);
 				} catch (e) {
 					console.error(`[db] Error applying drafts to quest ${questId}:`, e);
 				}
@@ -408,6 +456,9 @@ class WebUIDatabase {
 		}
 
 		this.saveDrafts();
+		refreshDialogueIndex(INDEX_DB_FILE, appliedQuestIds);
+		refreshTranslationStats(INDEX_DB_FILE, appliedQuestIds);
+		updateCategoryIndex(INDEX_DB_FILE, appliedCategoryNames);
 		realDataLoader.invalidateTranslationStats();
 		invalidateTextVersionWorkingSet();
 

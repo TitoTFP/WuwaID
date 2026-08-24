@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import type {
 	Chapter,
 	QuestDetail,
+	QuestDetailPage,
 	QuestSummary,
 	TextCategory,
 	DialogueLine,
@@ -11,10 +12,10 @@ import type {
 import {
 	CATEGORIES_JSON_DIR,
 	REPO_ROOT as CATEGORY_REPO_ROOT,
-	listCategoryFiles,
-	readCategoryDocument,
 	resolveCategoryFile,
 } from "./categoryStore.js";
+import { ensureTranslationStatsTable } from "./translationStatsStore.js";
+import { ensureReaderIndex } from "./readerIndexStore.js";
 
 // Path to canonical real data (data/quests)
 const REPO_ROOT = CATEGORY_REPO_ROOT;
@@ -104,8 +105,6 @@ export class RealDataLoader {
 	private loadedCategories: TextCategory[] | null = null;
 	private db: DatabaseSync | null = null;
 	private questDetailCache: Map<string, QuestDetail> = new Map();
-	private categoryCache: Map<string, any> = new Map();
-	private dialogueKeyFiles: Map<string, string> | null = null;
 	private translationStatsCache: TranslationCorpusStats | null = null;
 	private dataSignature = "";
 
@@ -128,23 +127,9 @@ export class RealDataLoader {
 		this.dataSignature = nextSignature;
 	}
 
-	private getDialogueRows(data: any): any[] {
-		if (Array.isArray(data.all_lines)) return data.all_lines;
-		if (Array.isArray(data.dialogue)) return data.dialogue;
-		if (Array.isArray(data.flows)) {
-			return data.flows.flatMap((flow: any) =>
-				Array.isArray(flow.dialogue) ? flow.dialogue : [],
-			);
-		}
-		return [];
-	}
-
 	private getLineTranslationStats(rows: any[]): TranslationStats {
 		const textItems = rows
-			.flatMap((row) => [
-				row,
-				...(Array.isArray(row?.options) ? row.options : []),
-			])
+			.flatMap((row) => [row, ...(Array.isArray(row?.options) ? row.options : [])])
 			.filter((item) => item?.text_key);
 		const isTranslated = (item: any) =>
 			[item?.text_id, item?.text_id_mt].some((value) =>
@@ -159,62 +144,92 @@ export class RealDataLoader {
 		};
 	}
 
+	private getIndexedTranslationStats(): TranslationCorpusStats | null {
+		if (!this.db) return null;
+
+		try {
+			let rows: Array<Record<string, unknown>>;
+			try {
+				rows = this.db
+					.prepare(
+						"SELECT qid, chapter_id, total, translated, text_total, text_translated FROM translation_stats",
+					)
+					.all() as Array<Record<string, unknown>>;
+			} catch {
+				rows = this.db
+					.prepare(
+						`SELECT d.qid, COALESCE(q.chapter_id, 0) AS chapter_id,
+							COUNT(*) AS total,
+							SUM(CASE WHEN TRIM(COALESCE(d.text_id, '')) <> '' THEN 1 ELSE 0 END) AS translated
+						 FROM dialogue_idx d
+						 LEFT JOIN quests q ON q.qid = d.qid
+						 GROUP BY d.qid, COALESCE(q.chapter_id, 0)`,
+					)
+					.all() as Array<Record<string, unknown>>;
+			}
+			if (rows.length === 0) return null;
+
+			const overall: TranslationStats = {
+				total: 0,
+				translated: 0,
+				textTotal: 0,
+				textTranslated: 0,
+			};
+			const byChapter = new Map<number, TranslationStats>();
+			const byQuest = new Map<string, TranslationStats>();
+
+			for (const row of rows) {
+				const stats: TranslationStats = {
+					total: Number(row.total || 0),
+					translated: Number(row.translated || 0),
+					textTotal: Number(row.text_total || row.total || 0),
+					textTranslated: Number(row.text_translated || row.translated || 0),
+				};
+				const questId = String(row.qid || "");
+				const chapterId = Number(row.chapter_id || 0);
+				if (questId) byQuest.set(questId, stats);
+
+				for (const [key, value] of Object.entries(stats)) {
+					overall[key as keyof TranslationStats] += value;
+				}
+				const chapterStats = byChapter.get(chapterId) || {
+					total: 0,
+					translated: 0,
+					textTotal: 0,
+					textTranslated: 0,
+				};
+				for (const [key, value] of Object.entries(stats)) {
+					chapterStats[key as keyof TranslationStats] += value;
+				}
+				byChapter.set(chapterId, chapterStats);
+			}
+
+			return { overall, byChapter, byQuest };
+		} catch (error) {
+			console.warn(
+				"[RealDataLoader] Indexed translation stats unavailable:",
+				error,
+			);
+			return null;
+		}
+	}
+
 	private getTranslationStats(): TranslationCorpusStats {
 		if (this.translationStatsCache) return this.translationStatsCache;
 
-		const overall: TranslationStats = {
-			total: 0,
-			translated: 0,
-			textTotal: 0,
-			textTranslated: 0,
-		};
-		const byChapter = new Map<number, TranslationStats>();
-		const byQuest = new Map<string, TranslationStats>();
-
-		if (fs.existsSync(QUESTS_JSON_DIR)) {
-			const questFiles = Array.from(
-				new Set(this.getQuestFileMap().values()),
-			);
-			for (const file of questFiles) {
-				try {
-					const data = JSON.parse(
-						fs.readFileSync(file, "utf-8"),
-					);
-					const questId = String(data.quest_id || "");
-					const chapterId = Number(data.chapter_id ?? 0);
-					const stats = this.getLineTranslationStats(
-						this.getDialogueRows(data),
-					);
-					if (questId) {
-						byQuest.set(questId, stats);
-					}
-
-					overall.total += stats.total;
-					overall.translated += stats.translated;
-					overall.textTotal += stats.textTotal;
-					overall.textTranslated += stats.textTranslated;
-					const chapterStats = byChapter.get(chapterId) || {
-						total: 0,
-						translated: 0,
-						textTotal: 0,
-						textTranslated: 0,
-					};
-					chapterStats.total += stats.total;
-					chapterStats.translated += stats.translated;
-					chapterStats.textTotal += stats.textTotal;
-					chapterStats.textTranslated += stats.textTranslated;
-					byChapter.set(chapterId, chapterStats);
-				} catch (error) {
-					console.warn(
-						`[RealDataLoader] Skipping translation stats for ${file}:`,
-						error,
-					);
-				}
-			}
+		const indexedStats = this.getIndexedTranslationStats();
+		if (indexedStats) {
+			this.translationStatsCache = indexedStats;
+			return indexedStats;
 		}
 
-		this.translationStatsCache = { overall, byChapter, byQuest };
-		return this.translationStatsCache;
+		const emptyStats: TranslationCorpusStats = {
+			overall: { total: 0, translated: 0, textTotal: 0, textTranslated: 0 },
+			byChapter: new Map(),
+			byQuest: new Map(),
+		};
+		this.translationStatsCache = emptyStats;
+		return emptyStats;
 	}
 
 	private getPercentage(stats: TranslationStats): number {
@@ -239,93 +254,81 @@ export class RealDataLoader {
 		};
 	}
 
-	private getDialogueKeyFiles(): Map<string, string> {
-		if (!this.dialogueKeyFiles) this.getQuestFileMap();
-		return this.dialogueKeyFiles || new Map();
-	}
-
 	private searchDialogueKeys(
 		query: string,
 		lang: "en" | "id" | "zh" | "ja",
 		limit: number,
+		options: { speaker?: string; untranslated?: boolean } = {},
 	): GlobalSearchResult[] {
 		if (
+			!this.db ||
 			query.length < 12 ||
 			!/^[A-Za-z0-9]+(?:_[A-Za-z0-9]*)+$/.test(query)
 		) {
 			return [];
 		}
 
-		const needle = query.toLowerCase();
-		const matchingFiles = new Set<string>();
-		for (const [key, filePath] of this.getDialogueKeyFiles()) {
-			if (key.includes(needle)) matchingFiles.add(filePath);
-		}
-
-		const results: GlobalSearchResult[] = [];
-		for (const filePath of matchingFiles) {
-			try {
-				const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-				const qid = String(data.quest_id ?? "");
-				if (!qid) continue;
-				const questTitle = String(data.quest_name || `Quest ${qid}`);
-				const chapterTitle = String(data.chapter_name || "");
-
-				for (const [rowIndex, row] of this.getDialogueRows(data).entries()) {
-					const items = [
-						{ item: row, isOption: false },
-						...(Array.isArray(row?.options)
-							? row.options.map((item: any) => ({ item, isOption: true }))
-							: []),
-					];
-					const lineId = String(row.id ?? rowIndex + 1);
-
-					for (const { item, isOption } of items) {
-						const key = String(item?.text_key ?? "");
-						if (!key.toLowerCase().includes(needle)) continue;
-
-						const textId = String(item?.text_id ?? item?.text_id_mt ?? "");
-						const textEn = String(
-							item?.text_en ?? item?.["text_zh-Hans"] ?? item?.text_zh ?? "",
-						);
-						const textZh = String(item?.["text_zh-Hans"] ?? item?.text_zh ?? "");
-						const textJa = String(item?.text_ja ?? "");
-						const text =
-							lang === "en"
-								? textEn
-								: lang === "zh"
-									? textZh
-									: lang === "ja"
-										? textJa
-										: textId;
-
-						results.push({
-							kind: "dialogue",
-							id: `${qid}:${lineId}:${key}`,
-							questId: qid,
-							questTitle,
-							chapterTitle,
-							lineId,
-							lineNo: Number(lineId),
-							speakerName: String(
-								item?.speaker_en ||
-									row?.speaker_en ||
-									(isOption ? "Player" : "Narrator"),
-							),
-							text: text || textEn,
-							englishText: textEn,
-							translated: textId.trim().length > 0,
-							lang,
-						});
-						if (results.length >= limit) return results;
-					}
-				}
-			} catch {
-				// The normal index remains available when an individual source is invalid.
+		const keyQuery = ftsQuery(query);
+		if (!keyQuery) return [];
+		try {
+			const clauses = ["dialogue_key_idx MATCH ?"];
+			const params: Array<string | number> = [`text_key : ${keyQuery}`];
+			if (options.speaker) {
+				clauses.push("speaker_en LIKE ? ESCAPE '\\' COLLATE NOCASE");
+				const speakerPattern = options.speaker.replace(/[\\%_]/g, "\\$&");
+				params.push(`%${speakerPattern}%`);
 			}
-		}
+			if (options.untranslated) {
+				clauses.push("(text_id IS NULL OR trim(text_id) = '')");
+			}
+			const rows = this.db
+				.prepare(
+					`SELECT qid, line_id, is_option, text_key, quest_name, chapter_name,
+							speaker_en, text_en, text_zh, text_ja, text_id
+					 FROM dialogue_key_idx
+					 WHERE ${clauses.join(" AND ")}
+					 ORDER BY rowid
+					 LIMIT ?`,
+				)
+				.all(...params, limit) as Array<Record<string, unknown>>;
 
-		return results;
+			return rows.map((row) => {
+				const qid = String(row.qid);
+				const lineId = String(row.line_id);
+				const key = String(row.text_key || "");
+				const textId = String(row.text_id || "");
+				const textEn = String(row.text_en || row.text_zh || "");
+				const textZh = String(row.text_zh || "");
+				const textJa = String(row.text_ja || "");
+				const text =
+					lang === "en"
+						? textEn
+						: lang === "zh"
+							? textZh
+							: lang === "ja"
+								? textJa
+								: textId;
+				return {
+					kind: "dialogue",
+					id: `${qid}:${lineId}:${key}`,
+					questId: qid,
+					questTitle: String(row.quest_name || `Quest ${qid}`),
+					chapterTitle: String(row.chapter_name || ""),
+					lineId,
+					lineNo: Number(lineId),
+					speakerName: String(
+						row.speaker_en || (Number(row.is_option) ? "Player" : "Narrator"),
+					),
+					text: text || textEn,
+					englishText: textEn,
+					translated: textId.trim().length > 0,
+					lang,
+				};
+			}) as GlobalSearchResult[];
+		} catch (error) {
+			console.warn("[RealDataLoader] Dialogue key search failed:", error);
+			return [];
+		}
 	}
 
 	public search(
@@ -352,7 +355,10 @@ export class RealDataLoader {
 		const categoryQuery = ftsQuery(term);
 		const dialogueKeyResults =
 			scope === "all" || scope === "dialogue"
-				? this.searchDialogueKeys(term, lang, limit)
+				? this.searchDialogueKeys(term, lang, limit, {
+						speaker: options.speaker,
+						untranslated: options.untranslated,
+					})
 				: [];
 		results.push(...dialogueKeyResults);
 
@@ -427,9 +433,7 @@ export class RealDataLoader {
 						kind: "quest",
 						id: qid,
 						title: String(row.quest_name || `Quest ${qid}`),
-						chapterTitle: String(
-							row.chapter_name || `Chapter ${row.chapter_id}`,
-						),
+						chapterTitle: String(row.chapter_name || `Chapter ${row.chapter_id}`),
 						totalLines: Number(row.total_lines || 0),
 						translatedLines: questStats?.textTranslated || 0,
 						translatedTextTotal:
@@ -504,7 +508,7 @@ export class RealDataLoader {
 			}
 		}
 
-		return results;
+		return results.slice(0, limit);
 	}
 
 	public invalidateTranslationStats() {
@@ -512,13 +516,12 @@ export class RealDataLoader {
 		this.loadedChapters = null;
 		this.loadedCategories = null;
 		this.questDetailCache.clear();
-		this.categoryCache.clear();
-		this.questFileMap = null;
-		this.dialogueKeyFiles = null;
-		if (this.db) {
-			this.db.close();
-			this.db = null;
+		this.questSourceFileCache.clear();
+		if (this.db) this.db.close();
+		this.db = null;
+		if (fs.existsSync(INDEX_DB_FILE)) {
 			try {
+				ensureTranslationStatsTable(INDEX_DB_FILE);
 				this.db = new DatabaseSync(INDEX_DB_FILE, {
 					open: true,
 					readOnly: true,
@@ -535,7 +538,14 @@ export class RealDataLoader {
 	}
 
 	constructor() {
+		ensureReaderIndex(INDEX_DB_FILE);
 		if (fs.existsSync(INDEX_DB_FILE)) {
+			try {
+				ensureTranslationStatsTable(INDEX_DB_FILE);
+			} catch (error) {
+				console.warn("[RealDataLoader] Failed preparing translation stats:", error);
+			}
+
 			try {
 				this.db = new DatabaseSync(INDEX_DB_FILE, {
 					open: true,
@@ -548,6 +558,7 @@ export class RealDataLoader {
 				);
 			}
 		}
+		this.translationStatsCache = this.getIndexedTranslationStats();
 		this.dataSignature = this.getDataSignature();
 	}
 
@@ -606,16 +617,29 @@ export class RealDataLoader {
 		search?: string;
 		type?: string;
 		sort?: string;
+		limit?: number;
+		unbounded?: boolean;
 	}): QuestSummary[] | null {
 		this.ensureFresh();
 		const chapterId = opts?.chapterId;
 		const search = opts?.search?.trim();
 		const type = opts?.type;
 		const sort = opts?.sort || "id_asc";
-
 		const targetChNum = chapterId
 			? parseInt(chapterId.replace("ch_", "").replace("ch", ""), 10)
 			: null;
+		const requestedLimit =
+			opts?.unbounded || opts?.limit === undefined || !Number.isFinite(opts.limit)
+				? undefined
+				: Math.max(1, Math.min(200, Math.floor(opts.limit)));
+		const defaultLimit =
+			!opts?.unbounded &&
+			targetChNum === null &&
+			!search &&
+			(!type || type === "all")
+				? 100
+				: undefined;
+		const resultLimit = requestedLimit ?? defaultLimit;
 
 		// Fast path: SQLite query from index.db
 		if (this.db) {
@@ -642,12 +666,12 @@ export class RealDataLoader {
 				}
 
 				if (search) {
-					if (!isNaN(Number(search))) {
-						conditions.push("(qid = ? OR quest_name LIKE ?)");
-						params.push(Number(search), `%$search%`);
-					} else {
+					if (isNaN(Number(search))) {
 						conditions.push("quest_name LIKE ?");
 						params.push(`%${search}%`);
+					} else {
+						conditions.push("(qid = ? OR quest_name LIKE ?)");
+						params.push(Number(search), `%${search}%`);
 					}
 				}
 
@@ -663,9 +687,9 @@ export class RealDataLoader {
 				else if (sort === "lines_asc") orderBy = "ORDER BY total_lines ASC";
 
 				sql += ` ${orderBy}`;
-
-				if (targetChNum === null && !search && (!type || type === "all")) {
-					sql += " LIMIT 100";
+				if (resultLimit !== undefined) {
+					sql += " LIMIT ?";
+					params.push(resultLimit);
 				}
 
 				const rows: any[] = this.db.prepare(sql).all(...params);
@@ -682,18 +706,17 @@ export class RealDataLoader {
 							ja: r.quest_name || `Quest ${r.qid}`,
 						},
 						type: r.quest_type === 1 ? "main" : "side",
-						rawQuestType: r.quest_type !== undefined ? r.quest_type : 1,
+						rawQuestType: r.quest_type === undefined ? 1 : r.quest_type,
 						totalLines: r.total_lines || 0,
 						translatedLines: {
 							id:
-								this.getTranslationStats().byQuest.get(String(r.qid))
-									?.textTranslated ?? 0,
+								this.getTranslationStats().byQuest.get(String(r.qid))?.textTranslated ??
+								0,
 							zh: r.total_lines || 0,
 							ja: r.total_lines || 0,
 						},
 						translatedTextTotal:
-							this.getTranslationStats().byQuest.get(String(r.qid))
-								?.textTotal ??
+							this.getTranslationStats().byQuest.get(String(r.qid))?.textTotal ??
 							(r.total_lines || 0),
 						updatedAt: new Date().toISOString(),
 					}));
@@ -706,184 +729,40 @@ export class RealDataLoader {
 			}
 		}
 
-		// Fallback path: JSON directory scan
-		if (!fs.existsSync(QUESTS_JSON_DIR)) return null;
-
-		try {
-			const files = fs
-				.readdirSync(QUESTS_JSON_DIR)
-				.filter((f) => f.endsWith(".json"));
-			const summaries: QuestSummary[] = [];
-
-			for (const file of files) {
-				const filePath = path.join(QUESTS_JSON_DIR, file);
-				try {
-					const raw = fs.readFileSync(filePath, "utf-8");
-					const questData = JSON.parse(raw);
-
-					const qid = String(questData.quest_id || file.replace(".json", ""));
-					const questChNum =
-						questData.chapter_id !== undefined
-							? Number(questData.chapter_id)
-							: 0;
-
-					if (targetChNum !== null && questChNum !== targetChNum) {
-						continue;
-					}
-
-					let lineCount = questData.total_lines || 0;
-					if (!lineCount) {
-						if (Array.isArray(questData.all_lines))
-							lineCount = questData.all_lines.length;
-						else if (Array.isArray(questData.dialogue))
-							lineCount = questData.dialogue.length;
-						else if (Array.isArray(questData.flows)) {
-							lineCount = questData.flows.reduce(
-								(acc: number, f: any) =>
-									acc + (f.dialogue ? f.dialogue.length : 0),
-								0,
-							);
-						}
-					}
-
-					const rawQType =
-						questData.quest_type !== undefined
-							? questData.quest_type
-							: questChNum === 0
-								? 2
-								: 1;
-
-					if (type && type !== "all") {
-						if (type === "main" && rawQType !== 1) continue;
-						if (type === "side" && rawQType === 1) continue;
-						if (!isNaN(Number(type)) && rawQType !== Number(type)) continue;
-					}
-
-					if (search) {
-						const qName = (questData.quest_name || "").toLowerCase();
-						if (
-							!qName.includes(search.toLowerCase()) &&
-							!qid.includes(search)
-						) {
-							continue;
-						}
-					}
-
-					const questStats = this.getTranslationStats().byQuest.get(qid);
-					const translatedCount = questStats?.textTranslated ?? 0;
-					const summary: QuestSummary = {
-						id: qid,
-						chapterId: `ch_${questChNum}`,
-						chapterTitle: questData.chapter_name || `Chapter ${questChNum}`,
-						title: {
-							en: questData.quest_name || `Quest ${qid}`,
-							id: questData.quest_name || `Quest ${qid}`,
-							"zh-Hans": questData.quest_name || `Quest ${qid}`,
-							ja: questData.quest_name || `Quest ${qid}`,
-						},
-						type: rawQType === 1 ? "main" : "side",
-						rawQuestType: rawQType,
-						totalLines: lineCount,
-						translatedLines: {
-							id: translatedCount,
-							zh: lineCount,
-							ja: lineCount,
-						},
-						translatedTextTotal: questStats?.textTotal ?? lineCount,
-						updatedAt: new Date().toISOString(),
-					};
-
-					summaries.push(summary);
-
-					if (
-						targetChNum === null &&
-						!search &&
-						(!type || type === "all") &&
-						summaries.length >= 100
-					) {
-						break;
-					}
-				} catch (error) {
-					console.warn(`[RealDataLoader] Skipping quest file ${file}:`, error);
-				}
-			}
-
-			// Sort fallback
-			summaries.sort((a, b) => {
-				if (sort === "id_desc") return Number(b.id) - Number(a.id);
-				if (sort === "name_asc")
-					return (a.title.en || "").localeCompare(b.title.en || "");
-				if (sort === "name_desc")
-					return (b.title.en || "").localeCompare(a.title.en || "");
-				if (sort === "lines_desc") return b.totalLines - a.totalLines;
-				if (sort === "lines_asc") return a.totalLines - b.totalLines;
-				return Number(a.id) - Number(b.id);
-			});
-
-			return summaries;
-		} catch (e) {
-			console.error("[RealDataLoader] Error scanning quests:", e);
-		}
+		// The request path is read-model-only. A missing or corrupt index is handled by
+		// the route's compatibility database, never by scanning the raw corpus.
 		return null;
 	}
 
-	private questFileMap: Map<string, string> | null = null;
+	private questSourceFileCache = new Map<string, string | null>();
 
-	private getQuestFileMap(): Map<string, string> {
-		if (this.questFileMap) return this.questFileMap;
-
-		const map = new Map<string, string>();
-		const keyFiles = new Map<string, string>();
-		if (!fs.existsSync(QUESTS_JSON_DIR)) {
-			this.questFileMap = map;
-			this.dialogueKeyFiles = keyFiles;
-			return map;
+	public getQuestSourceFile(id: string): string | null {
+		this.ensureFresh();
+		if (this.questSourceFileCache.has(id)) {
+			return this.questSourceFileCache.get(id) || null;
 		}
 
-		const walk = (dir: string) => {
-			let entries: fs.Dirent[] = [];
+		let result: string | null = null;
+		if (this.db) {
 			try {
-				entries = fs.readdirSync(dir, { withFileTypes: true });
-			} catch {
-				return;
-			}
-			for (const entry of entries) {
-				const fullPath = path.join(dir, entry.name);
-				if (entry.isDirectory()) {
-					walk(fullPath);
-				} else if (entry.name === "dialogue.json") {
-					const dirName = path.basename(dir);
-					const match = dirName.match(/^(\d+)_/);
-					if (match) {
-						map.set(match[1], fullPath);
-					}
-					try {
-						const raw = fs.readFileSync(fullPath, "utf-8");
-						const data = JSON.parse(raw);
-						if (data.quest_id !== undefined) {
-							map.set(String(data.quest_id), fullPath);
-						}
-						for (const row of this.getDialogueRows(data)) {
-							const items = [
-								row,
-								...(Array.isArray(row?.options) ? row.options : []),
-							];
-							for (const item of items) {
-								const key = String(item?.text_key ?? "").trim().toLowerCase();
-								if (key && !keyFiles.has(key)) keyFiles.set(key, fullPath);
-							}
-						}
-					} catch {
-						// Ignore JSON parse errors
-					}
+				const row = this.db
+					.prepare("SELECT file FROM quest_sources WHERE qid = ?")
+					.get(id) as { file?: string } | undefined;
+				const filePath = String(row?.file || "");
+				const root = `${path.resolve(QUESTS_JSON_DIR)}${path.sep}`;
+				if (
+					filePath.startsWith(root) &&
+					fs.existsSync(filePath) &&
+					fs.statSync(filePath).isFile()
+				) {
+					result = filePath;
 				}
+			} catch {
+				// A missing source index is handled as unavailable, never by scanning the corpus.
 			}
-		};
-
-		walk(QUESTS_JSON_DIR);
-		this.questFileMap = map;
-		this.dialogueKeyFiles = keyFiles;
-		return map;
+		}
+		this.questSourceFileCache.set(id, result);
+		return result;
 	}
 
 	public getQuestDetail(id: string): QuestDetail | null {
@@ -892,10 +771,8 @@ export class RealDataLoader {
 			return this.questDetailCache.get(id)!;
 		}
 
-		const map = this.getQuestFileMap();
-		const filePath =
-			map.get(id) || path.join(QUESTS_JSON_DIR, `${id}.json`);
-		if (!filePath || !fs.existsSync(filePath)) {
+		const filePath = this.getQuestSourceFile(id);
+		if (!filePath) {
 			return null;
 		}
 
@@ -973,7 +850,7 @@ export class RealDataLoader {
 			const questStats = this.getLineTranslationStats(rawDialogue);
 			const detail: QuestDetail = {
 				id: String(data.quest_id || id),
-				chapterId: `ch_${data.chapter_id !== undefined ? data.chapter_id : 1}`,
+				chapterId: `ch_${data.chapter_id === undefined ? 1 : data.chapter_id}`,
 				chapterTitle: data.chapter_name || "Chapter I",
 				title: {
 					en: data.quest_name || `Quest ${id}`,
@@ -1002,51 +879,229 @@ export class RealDataLoader {
 		return null;
 	}
 
-	public getCategories(): TextCategory[] | null {
-		this.ensureFresh();
-		if (this.loadedCategories) return this.loadedCategories;
-
-		if (!fs.existsSync(CATEGORIES_JSON_DIR)) return null;
+	public async getQuestDetailPage(
+		id: string,
+		opts: { page?: number; pageSize?: number; q?: string; speaker?: string } = {},
+	): Promise<QuestDetailPage | null> {
+		if (!this.db) return null;
 
 		try {
-			const categories: TextCategory[] = [];
+			const metadata = this.db
+				.prepare(
+					"SELECT qid, quest_name, quest_type, chapter_id, chapter_name, total_lines FROM quests WHERE qid = ?",
+				)
+				.get(id) as Record<string, unknown> | undefined;
+			if (!metadata) return null;
 
-			for (const file of listCategoryFiles()) {
-				const catName = file.name;
-				const fileStats = fs.statSync(file.filePath);
-				const rawObj = readCategoryDocument(file) || {};
-
-				const totalItems = Object.keys(rawObj).length;
-				const translatedItems = Object.values(rawObj).filter((item: any) =>
-					[item?.id, item?.text_id, item?.mt].some((value) =>
-						typeof value === "string"
-							? value.trim().length > 0
-							: Boolean(value),
-					),
-				).length;
-				const progressPercentage =
-					totalItems > 0
-						? Math.round((translatedItems / totalItems) * 10000) / 100
-						: 0;
-
-				categories.push({
-					id: `cat_${catName.replaceAll("/", "_")}`,
-					name: catName,
-					description: `Kategori teks resmi game: ${catName} (${Math.round(fileStats.size / 1024)} KB)`,
-					totalItems,
-					translatedItems,
-					progressPercentage,
-				});
+			const questId = Number(metadata.qid);
+			const stats = this.getTranslationStats().byQuest.get(String(questId));
+			const query = (opts.q || "").trim().toLocaleLowerCase();
+			const speaker = (opts.speaker || "").trim();
+			const pageSize = Math.max(
+				1,
+				Math.min(200, Math.floor(opts.pageSize || 200)),
+			);
+			const requestedPage = Math.max(1, Math.floor(opts.page || 1));
+			const clauses = ["qid = ?"];
+			const params: Array<string | number> = [questId];
+			if (speaker && speaker !== "all") {
+				clauses.push("speaker_search LIKE ? ESCAPE '\\'");
+				const escapedSpeaker = speaker
+					.toLocaleLowerCase()
+					.replace(/[\\%_]/g, "\\$&");
+				params.push(`%${escapedSpeaker}%`);
 			}
+			if (query) {
+				clauses.push("search_text LIKE ? ESCAPE '\\'");
+				const escapedQuery = query.replace(/[\\%_]/g, "\\$&");
+				params.push(`%${escapedQuery}%`);
+			}
+			const whereClause = clauses.join(" AND ");
+			const filteredLines = Number(
+				(
+					this.db
+						.prepare(
+							`SELECT COUNT(*) AS count FROM quest_page_idx WHERE ${whereClause}`,
+						)
+						.get(...params) as { count?: number }
+				)?.count || 0,
+			);
+			const totalPages = Math.max(1, Math.ceil(filteredLines / pageSize));
+			const page = Math.min(totalPages, requestedPage);
+			const readParams = [...params, pageSize, (page - 1) * pageSize];
+			const rows = this.db
+				.prepare(
+					`SELECT line_no, line_id, line_type, speaker_id, speaker_name_id,
+							speaker_en, speaker_zh, speaker_ja, text_en, text_zh, text_ja,
+							text_id, options_json
+					 FROM quest_page_idx
+					 WHERE ${whereClause}
+					 ORDER BY line_no
+					 LIMIT ? OFFSET ?`,
+				)
+				.all(...readParams) as Array<Record<string, unknown>>;
 
-			// Sort categories alphabetically
-			categories.sort((a, b) => a.name.localeCompare(b.name));
+			const readString = (
+				row: Record<string, unknown>,
+				...keys: string[]
+			): string => {
+				for (const key of keys) {
+					const value = row[key];
+					if (typeof value === "string") return value;
+					if (typeof value === "number") return String(value);
+				}
+				return "";
+			};
+			const lines = rows.map((row) => {
+				let rawOptions: unknown = undefined;
+				if (String(row.options_json || "")) {
+					try {
+						rawOptions = JSON.parse(String(row.options_json));
+					} catch {
+						rawOptions = undefined;
+					}
+				}
+				const options = Array.isArray(rawOptions)
+					? rawOptions
+							.filter((value): value is Record<string, unknown> =>
+								Boolean(value && typeof value === "object" && !Array.isArray(value)),
+							)
+							.map((option, optionIndex) => ({
+								id: `opt_${optionIndex + 1}`,
+								text: {
+									en: readString(option, "text_en", "text_zh-Hans", "text_zh"),
+									id: readString(option, "text_id", "text_id_mt"),
+									"zh-Hans": readString(option, "text_zh-Hans", "text_zh"),
+									ja: readString(option, "text_ja"),
+								},
+							}))
+					: undefined;
+				const rawType = readString(row, "line_type");
+				return {
+					id: `line_${readString(row, "line_id") || row.line_no}`,
+					lineNo: Number(row.line_no),
+					type:
+						rawType === "Option" || options
+							? "choice"
+							: rawType === "SceneSeparator"
+								? "scene_separator"
+								: "dialogue",
+					speaker: {
+						id: readString(row, "speaker_id"),
+						name: {
+							en: readString(row, "speaker_en"),
+							id: readString(row, "speaker_name_id", "speaker_en"),
+							"zh-Hans": readString(row, "speaker_zh"),
+							ja: readString(row, "speaker_ja"),
+						},
+					},
+					text: {
+						en: readString(row, "text_en"),
+						id: readString(row, "text_id"),
+						"zh-Hans": readString(row, "text_zh"),
+						ja: readString(row, "text_ja"),
+					},
+					options,
+				};
+			}) as DialogueLine[];
+			const questIdText = String(metadata.qid || id);
+			const questTitle = String(metadata.quest_name || `Quest ${questIdText}`);
+			const chapterId = Number(metadata.chapter_id ?? 1);
+			const totalLines = Number(metadata.total_lines || stats?.total || 0);
 
-			this.loadedCategories = categories;
-			return categories;
-		} catch (e) {
-			console.error("[RealDataLoader] Error reading categories:", e);
+			return {
+				id: questIdText,
+				chapterId: `ch_${chapterId}`,
+				chapterTitle: String(metadata.chapter_name || `Chapter ${chapterId}`),
+				title: {
+					en: questTitle,
+					id: questTitle,
+					"zh-Hans": questTitle,
+					ja: questTitle,
+				},
+				summary: {
+					en: `Official quest data: ${questTitle}`,
+					id: `Arsip quest resmi game WuwaID: ${questTitle}`,
+				},
+				type: Number(metadata.quest_type || 0) === 1 ? "main" : "side",
+				totalLines,
+				translatedLines: stats?.textTranslated || 0,
+				translatedTextTotal: stats?.textTotal || totalLines,
+				lines,
+				updatedAt: new Date().toISOString(),
+				page,
+				pageSize,
+				filteredLines,
+				totalPages,
+				hasNextPage: page < totalPages,
+				hasPreviousPage: page > 1,
+			};
+		} catch (error) {
+			console.error(`[RealDataLoader] Error reading indexed quest ${id}:`, error);
+			return null;
 		}
+	}
+
+	public getCategories(opts?: {
+		q?: string;
+		limit?: number;
+	}): TextCategory[] | null {
+		this.ensureFresh();
+		const query = opts?.q?.trim().toLowerCase() || "";
+		const limit =
+			opts?.limit === undefined || !Number.isFinite(opts.limit)
+				? undefined
+				: Math.max(1, Math.min(200, Math.floor(opts.limit)));
+		const applyCategoryOptions = (categories: TextCategory[]) => {
+			const filtered = query
+				? categories.filter((category) =>
+						category.name.toLowerCase().includes(query),
+					)
+				: categories;
+			return limit === undefined ? filtered : filtered.slice(0, limit);
+		};
+
+		if (this.loadedCategories) return applyCategoryOptions(this.loadedCategories);
+		if (!this.db) return null;
+
+		{
+			try {
+				const rows = this.db
+					.prepare(
+						"SELECT name, file, key_count, translated_count FROM categories ORDER BY name",
+					)
+					.all() as Array<Record<string, unknown>>;
+				if (rows.length > 0) {
+					this.loadedCategories = rows.map((row) => {
+						const name = String(row.name || "");
+						const relativePath = String(row.file || `${name}.json`);
+						const filePath = path.resolve(CATEGORIES_JSON_DIR, relativePath);
+						const root = `${path.resolve(CATEGORIES_JSON_DIR)}${path.sep}`;
+						const size =
+							filePath.startsWith(root) && fs.existsSync(filePath)
+								? fs.statSync(filePath).size
+								: 0;
+						const totalItems = Number(row.key_count || 0);
+						const translatedItems = Number(row.translated_count || 0);
+						return {
+							id: `cat_${name.replaceAll("/", "_")}`,
+							name,
+							description: `Kategori teks resmi game: ${name} (${Math.round(size / 1024)} KB)`,
+							totalItems,
+							translatedItems,
+							progressPercentage:
+								totalItems > 0
+									? Math.round((translatedItems / totalItems) * 10000) / 100
+									: 0,
+						};
+					});
+					return applyCategoryOptions(this.loadedCategories);
+				}
+			} catch (error) {
+				console.warn("[RealDataLoader] Indexed categories unavailable:", error);
+			}
+		}
+
 		return null;
 	}
 
@@ -1055,95 +1110,94 @@ export class RealDataLoader {
 		opts?: { q?: string; page?: number; limit?: number },
 	): CategoryDetailResult | null {
 		this.ensureFresh();
+		if (!this.db) return null;
 		const file = resolveCategoryFile(categoryName);
 		if (!file) return null;
 		const cleanName = file.name;
 
 		try {
-			let rawObj = this.categoryCache.get(cleanName);
-			if (!rawObj) {
-				rawObj = readCategoryDocument(file);
-				if (!rawObj) return null;
-				this.categoryCache.set(cleanName, rawObj);
-			}
+			const category = this.db
+				.prepare(
+					"SELECT key_count, translated_count FROM categories WHERE name = ?",
+				)
+				.get(cleanName) as
+				| { key_count?: number; translated_count?: number }
+				| undefined;
+			if (!category) return null;
 
 			const q = (opts?.q || "").toLowerCase().trim();
-			const page = Math.max(1, opts?.page || 1);
-			const limit = Math.max(1, Math.min(200, opts?.limit || 50));
-
-			const allKeys = Object.keys(rawObj);
-			const totalItems = allKeys.length;
-
-			const filteredKeys = allKeys.filter((key) => {
-				if (!q) return true;
-				const item = rawObj[key];
-				const textEn = (item.en || "").toLowerCase();
-				const textZh = (item["zh-Hans"] || item.zh || "").toLowerCase();
-				const textJa = (item.ja || "").toLowerCase();
-				const textId = (item.id || item.text_id || "").toLowerCase();
-				return (
-					key.toLowerCase().includes(q) ||
-					textEn.includes(q) ||
-					textZh.includes(q) ||
-					textJa.includes(q) ||
-					textId.includes(q)
-				);
-			});
-
-			const filteredItems = filteredKeys.length;
+			const page = Math.max(1, Math.floor(opts?.page || 1));
+			const limit = Math.max(1, Math.min(200, Math.floor(opts?.limit || 50)));
+			const like = `%${q}%`;
+			const where = q
+				? `category = ? AND (
+					key LIKE ? COLLATE NOCASE OR
+					text_en LIKE ? COLLATE NOCASE OR
+					text_zh LIKE ? COLLATE NOCASE OR
+					text_ja LIKE ? COLLATE NOCASE OR
+					text_id LIKE ? COLLATE NOCASE
+				)`
+				: "category = ?";
+			const filterParams = q
+				? [cleanName, like, like, like, like, like]
+				: [cleanName];
+			const filteredItems = q
+				? Number(
+						(
+							this.db
+								.prepare(
+									`SELECT COUNT(*) AS count FROM category_text_idx WHERE ${where}`,
+								)
+								.get(...filterParams) as { count?: number }
+						)?.count || 0,
+					)
+				: Number(category.key_count || 0);
+			const totalItems = Number(category.key_count || 0);
 			const totalPages = Math.ceil(filteredItems / limit) || 1;
 			const validPage = Math.min(page, totalPages);
-
 			const startIndex = (validPage - 1) * limit;
-			const pageKeys = filteredKeys.slice(startIndex, startIndex + limit);
-
-			const items = pageKeys.map((key) => {
-				const item = rawObj[key];
-				const en = item.en || "";
-				const zh = item["zh-Hans"] || item.zh || "";
-				const ja = item.ja || "";
-				const idText = item.id || item.text_id || item.mt || "";
-
-				return {
-					key,
-					text: {
-						en,
-						id: idText,
-						"zh-Hans": zh,
-						ja,
-					},
-				};
-			});
-
-			const translatedCount = allKeys.filter((k) => {
-				const item = rawObj[k];
-				return !!(item.id || item.text_id || item.mt);
-			}).length;
-			const progressPercentage =
-				totalItems > 0
-					? Math.round((translatedCount / totalItems) * 10000) / 100
-					: 0;
+			const rows = this.db
+				.prepare(
+					`SELECT key, text_en, text_id, text_zh, text_ja
+					 FROM category_text_idx
+					 WHERE ${where}
+					 ORDER BY rowid
+					 LIMIT ? OFFSET ?`,
+				)
+				.all(...filterParams, limit, startIndex) as Array<Record<string, unknown>>;
+			const items = rows.map((row) => ({
+				key: String(row.key || ""),
+				text: {
+					en: String(row.text_en || ""),
+					id: String(row.text_id || ""),
+					"zh-Hans": String(row.text_zh || ""),
+					ja: String(row.text_ja || ""),
+				},
+			}));
+			const translatedItems = Number(category.translated_count || 0);
 
 			return {
 				name: cleanName,
 				totalItems,
 				filteredItems,
-				translatedItems: translatedCount,
+				translatedItems,
 				translatedTextTotal: totalItems,
-				progressPercentage,
+				progressPercentage:
+					totalItems > 0
+						? Math.round((translatedItems / totalItems) * 10000) / 100
+						: 0,
 				page: validPage,
 				limit,
 				totalPages,
 				items,
 			};
-		} catch (e) {
+		} catch (error) {
 			console.error(
-				`[RealDataLoader] Error reading category detail for ${categoryName}:`,
-				e,
+				`[RealDataLoader] Error reading indexed category detail for ${categoryName}:`,
+				error,
 			);
+			return null;
 		}
-
-		return null;
 	}
 }
 

@@ -21,6 +21,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 	quest,
 }) => {
 	const [selectedLineIndex, setSelectedLineIndex] = useState<number>(0);
+	const [linePage, setLinePage] = useState(1);
 	const [targetTexts, setTargetTexts] = useState<Record<string, string>>({});
 	const [isSaved, setIsSaved] = useState(true);
 	const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
@@ -30,6 +31,27 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 			? quest.lines.filter((l) => l.type !== "scene_separator")
 			: [];
 	}, [quest]);
+	const linePageSize = 100;
+	const linePageCount = Math.max(
+		1,
+		Math.ceil(editableLines.length / linePageSize),
+	);
+	const visibleStart = (linePage - 1) * linePageSize;
+	const visibleLines = editableLines.slice(
+		visibleStart,
+		visibleStart + linePageSize,
+	);
+
+	useEffect(() => {
+		setSelectedLineIndex(0);
+		setLinePage(1);
+	}, [quest.id, quest.lines]);
+
+	const selectLine = (index: number) => {
+		const nextIndex = Math.max(0, Math.min(editableLines.length - 1, index));
+		setSelectedLineIndex(nextIndex);
+		setLinePage(Math.floor(nextIndex / linePageSize) + 1);
+	};
 
 	useEffect(() => {
 		const initial: Record<string, string> = {};
@@ -42,9 +64,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 	const currentLine = editableLines[selectedLineIndex] || editableLines[0];
 	const sourceEn = currentLine?.text.en || "";
 	const sourceZh = currentLine?.text["zh-Hans"] || "";
-	const currentTargetText = currentLine
-		? targetTexts[currentLine.id] || ""
-		: "";
+	const currentTargetText = currentLine ? targetTexts[currentLine.id] || "" : "";
 
 	const qaResult = useMemo(() => {
 		return runQACheck(sourceEn, currentTargetText);
@@ -89,7 +109,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 				e.preventDefault();
 				handleSaveLine();
 				if (selectedLineIndex < editableLines.length - 1) {
-					setSelectedLineIndex((prev) => prev + 1);
+					selectLine(selectedLineIndex + 1);
 				}
 			}
 		};
@@ -112,23 +132,22 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 				{/* Left Pane (3 cols): Dialogue Line Selector List */}
 				<div className="lg:col-span-3 cyber-card p-3 flex flex-col overflow-hidden">
 					<div className="flex items-center justify-between pb-2 border-b border-obsidian-800 text-xs font-mono shrink-0">
-						<span className="text-slate-300 font-bold uppercase">
-							Daftar Baris
-						</span>
+						<span className="text-slate-300 font-bold uppercase">Daftar Baris</span>
 						<span className="text-cyber-cyan font-bold">
 							{editableLines.length} Baris
 						</span>
 					</div>
 
 					<div className="flex-1 overflow-y-auto pt-2 space-y-1.5 pr-1">
-						{editableLines.map((line, idx) => {
+						{visibleLines.map((line, idx) => {
+							const globalIndex = visibleStart + idx;
 							const textId = targetTexts[line.id] || "";
-							const isSelected = idx === selectedLineIndex;
+							const isSelected = globalIndex === selectedLineIndex;
 
 							return (
 								<div
 									key={line.id}
-									onClick={() => setSelectedLineIndex(idx)}
+									onClick={() => selectLine(globalIndex)}
 									className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
 										isSelected
 											? "bg-cyber-gold/15 border-cyber-gold/50 shadow-gold-glow"
@@ -141,9 +160,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 										>
 											{line.speaker.name.id || line.speaker.name.en}
 										</span>
-										<span className="text-[10px] text-slate-400">
-											#{line.lineNo}
-										</span>
+										<span className="text-[10px] text-slate-400">#{line.lineNo}</span>
 									</div>
 									<p className="text-[11px] text-slate-400 line-clamp-1 font-sans">
 										{textId}
@@ -152,6 +169,31 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 							);
 						})}
 					</div>
+					{linePageCount > 1 && (
+						<div className="flex items-center justify-between border-t border-obsidian-800 pt-2 text-[10px] font-mono text-slate-400">
+							<span>
+								Halaman {linePage} / {linePageCount}
+							</span>
+							<div className="flex gap-1">
+								<button
+									type="button"
+									onClick={() => selectLine(visibleStart - 1)}
+									disabled={linePage === 1}
+									className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+								>
+									‹
+								</button>
+								<button
+									type="button"
+									onClick={() => selectLine(visibleStart + linePageSize)}
+									disabled={linePage === linePageCount}
+									className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+								>
+									›
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 
 				{/* Center Pane (6 cols): Active Line Source & Translation Editor */}
@@ -163,9 +205,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 						</span>
 						<div className="flex items-center space-x-2">
 							<button
-								onClick={() =>
-									setSelectedLineIndex((prev) => Math.max(0, prev - 1))
-								}
+								onClick={() => selectLine(selectedLineIndex - 1)}
 								disabled={selectedLineIndex === 0}
 								className="p-1 rounded bg-obsidian-950 border border-obsidian-800 text-slate-400 hover:text-slate-100 disabled:opacity-30"
 							>
@@ -175,11 +215,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 								{selectedLineIndex + 1} / {editableLines.length}
 							</span>
 							<button
-								onClick={() =>
-									setSelectedLineIndex((prev) =>
-										Math.min(editableLines.length - 1, prev + 1),
-									)
-								}
+								onClick={() => selectLine(selectedLineIndex + 1)}
 								disabled={selectedLineIndex === editableLines.length - 1}
 								className="p-1 rounded bg-obsidian-950 border border-obsidian-800 text-slate-400 hover:text-slate-100 disabled:opacity-30"
 							>
@@ -262,9 +298,7 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 					<div className="cyber-card p-3 space-y-2 border-obsidian-800">
 						<div className="flex items-center space-x-2 border-b border-obsidian-800 pb-1.5 text-xs font-mono">
 							<Sparkles className="w-3.5 h-3.5 text-cyber-cyan" />
-							<span className="text-slate-200 font-bold uppercase">
-								QA Check
-							</span>
+							<span className="text-slate-200 font-bold uppercase">QA Check</span>
 						</div>
 
 						{qaResult.isValid ? (
@@ -304,18 +338,12 @@ export const TranslatorWorkbench: React.FC<TranslatorWorkbenchProps> = ({
 										className="p-2 rounded bg-obsidian-950 border border-obsidian-800 text-xs space-y-0.5"
 									>
 										<div className="flex items-center justify-between font-mono">
-											<span className="text-cyber-gold font-bold">
-												{item.term}
-											</span>
-											<span className="text-[9px] text-slate-400">
-												{item.category}
-											</span>
+											<span className="text-cyber-gold font-bold">{item.term}</span>
+											<span className="text-[9px] text-slate-400">{item.category}</span>
 										</div>
 										<div className="text-slate-300 font-sans text-[11px]">
 											Acuan:{" "}
-											<strong className="text-cyber-cyan">
-												{item.translation}
-											</strong>
+											<strong className="text-cyber-cyan">{item.translation}</strong>
 										</div>
 									</div>
 								))

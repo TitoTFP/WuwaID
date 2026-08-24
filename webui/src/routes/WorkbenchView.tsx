@@ -6,7 +6,7 @@ import { MOCK_QUEST_DETAILS } from "../mockData/quests";
 import { TranslatorWorkbench } from "../components/workbench/TranslatorWorkbench";
 import { DialogueTreeEditor } from "../components/workbench/DialogueTreeEditor";
 import {
-	fetchQuestDetail,
+	fetchQuestDetailPage,
 	fetchCategoryDetail,
 	fetchQuests,
 	fetchCategories,
@@ -35,6 +35,12 @@ export const WorkbenchView: React.FC = () => {
 	const [selectedCategoryName, setSelectedCategoryName] = useState<string>(
 		urlCategoryName || "Item/ItemInfo",
 	);
+	const [questSearch, setQuestSearch] = useState("");
+	const [categorySearch, setCategorySearch] = useState("");
+	const [questPage, setQuestPage] = useState(1);
+	const [categoryPage, setCategoryPage] = useState(1);
+	const questPageSize = 200;
+	const categoryPageSize = 200;
 	const [activeTab, setActiveTab] = useState<"translator" | "tree">(
 		"translator",
 	);
@@ -43,35 +49,44 @@ export const WorkbenchView: React.FC = () => {
 		if (urlCategoryName) {
 			setMode("category");
 			setSelectedCategoryName(urlCategoryName);
+			setCategoryPage(1);
 		} else if (urlQuestId) {
 			setMode("quest");
 			setSelectedQuestId(urlQuestId);
+			setQuestPage(1);
 		}
 	}, [urlQuestId, urlCategoryName]);
 
 	// Fetch lists for selector dropdown
 	const { data: questListData } = useQuery({
-		queryKey: ["questsListWorkbench"],
-		queryFn: () => fetchQuests({ sort: "id_asc" }),
+		queryKey: ["questsListWorkbench", questSearch],
+		queryFn: () => fetchQuests({ q: questSearch, sort: "id_asc", limit: 100 }),
 	});
 
 	const { data: categoryListData } = useQuery({
-		queryKey: ["categoriesListWorkbench"],
-		queryFn: fetchCategories,
+		queryKey: ["categoriesListWorkbench", categorySearch],
+		queryFn: () => fetchCategories({ q: categorySearch, limit: 100 }),
 	});
 
-	// Fetch quest detail when in quest mode
+	// Fetch quest detail page when in quest mode
 	const { data: questDetailData, isLoading: isLoadingQuest } = useQuery({
-		queryKey: ["questDetail", selectedQuestId],
-		queryFn: () => fetchQuestDetail(selectedQuestId),
+		queryKey: ["questDetail", selectedQuestId, questPage],
+		queryFn: () =>
+			fetchQuestDetailPage(selectedQuestId, {
+				page: questPage,
+				pageSize: questPageSize,
+			}),
 		enabled: mode === "quest" && !!selectedQuestId,
 	});
 
 	// Fetch category detail when in category mode
 	const { data: categoryDetailData, isLoading: isLoadingCategory } = useQuery({
-		queryKey: ["categoryDetailWorkbench", selectedCategoryName],
+		queryKey: ["categoryDetailWorkbench", selectedCategoryName, categoryPage],
 		queryFn: () =>
-			fetchCategoryDetail(selectedCategoryName, { limit: 1000 }),
+			fetchCategoryDetail(selectedCategoryName, {
+				page: categoryPage,
+				limit: categoryPageSize,
+			}),
 		enabled: mode === "category" && !!selectedCategoryName,
 	});
 
@@ -81,7 +96,7 @@ export const WorkbenchView: React.FC = () => {
 		const items = categoryDetailData.items || [];
 		const lines: DialogueLine[] = items.map((item, idx) => ({
 			id: `line_${item.key || idx + 1}`,
-			lineNo: idx + 1,
+			lineNo: (categoryPage - 1) * categoryPageSize + idx + 1,
 			type: "dialogue",
 			speaker: {
 				id: "key",
@@ -115,12 +130,12 @@ export const WorkbenchView: React.FC = () => {
 				id: `Arsip penerjemahan kategori teks: ${categoryDetailData.name}`,
 			},
 			type: "side",
-			totalLines: items.length,
+			totalLines: categoryDetailData.filteredItems,
 			translatedLines: categoryDetailData.translatedItems || 0,
 			lines,
 			updatedAt: new Date().toISOString(),
 		};
-	}, [categoryDetailData]);
+	}, [categoryDetailData, categoryPage, categoryPageSize]);
 
 	const activeQuest: QuestDetail =
 		mode === "category"
@@ -149,6 +164,7 @@ export const WorkbenchView: React.FC = () => {
 	const handleTargetChange = (val: string) => {
 		if (mode === "quest") {
 			setSelectedQuestId(val);
+			setQuestPage(1);
 			navigate(`/workbench?questId=${encodeURIComponent(val)}`);
 		} else {
 			setSelectedCategoryName(val);
@@ -167,9 +183,7 @@ export const WorkbenchView: React.FC = () => {
 						<button
 							onClick={() => {
 								setMode("quest");
-								navigate(
-									`/workbench?questId=${encodeURIComponent(selectedQuestId)}`,
-								);
+								navigate(`/workbench?questId=${encodeURIComponent(selectedQuestId)}`);
 							}}
 							className={`flex items-center space-x-1 px-2.5 py-1 rounded text-xs font-mono transition-all cursor-pointer ${
 								mode === "quest"
@@ -202,33 +216,53 @@ export const WorkbenchView: React.FC = () => {
 
 					{/* Dropdown Selector */}
 					{mode === "quest" ? (
-						<select
-							value={selectedQuestId}
-							onChange={(e) => handleTargetChange(e.target.value)}
-							className="bg-obsidian-950 text-cyber-cyan border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none max-w-xs truncate cursor-pointer"
-						>
-							{quests.map((q) => (
-								<option key={q.id} value={q.id}>
-									#{q.id} - {q.title.id || q.title.en}
-								</option>
-							))}
-						</select>
+						<>
+							<input
+								value={questSearch}
+								onChange={(e) => setQuestSearch(e.target.value)}
+								placeholder="Cari quest / ID..."
+								aria-label="Cari quest atau ID"
+								className="w-32 bg-obsidian-950 text-slate-200 border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none focus:border-cyber-cyan"
+							/>
+							<select
+								value={selectedQuestId}
+								onChange={(e) => handleTargetChange(e.target.value)}
+								className="bg-obsidian-950 text-cyber-cyan border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none max-w-xs truncate cursor-pointer"
+							>
+								{quests.map((q) => (
+									<option key={q.id} value={q.id}>
+										#{q.id} - {q.title.id || q.title.en}
+									</option>
+								))}
+							</select>
+						</>
 					) : (
-						<select
-							value={selectedCategoryName}
-							onChange={(e) => handleTargetChange(e.target.value)}
-							className="bg-obsidian-950 text-cyber-gold border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none max-w-xs truncate cursor-pointer"
-						>
-							{categories.map((c) => (
-								<option key={c.id} value={c.name}>
-									{c.name} ({c.totalItems} teks)
-								</option>
-							))}
-						</select>
+						<>
+							<input
+								value={categorySearch}
+								onChange={(e) => setCategorySearch(e.target.value)}
+								placeholder="Cari kategori..."
+								aria-label="Cari kategori"
+								className="w-32 bg-obsidian-950 text-slate-200 border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none focus:border-cyber-gold"
+							/>
+							<select
+								value={selectedCategoryName}
+								onChange={(e) => handleTargetChange(e.target.value)}
+								className="bg-obsidian-950 text-cyber-gold border border-obsidian-800 rounded px-2.5 py-1 text-xs font-mono focus:outline-none max-w-xs truncate cursor-pointer"
+							>
+								{categories.map((c) => (
+									<option key={c.id} value={c.name}>
+										{c.name} ({c.totalItems} teks)
+									</option>
+								))}
+							</select>
+						</>
 					)}
 
 					<span className="text-slate-400 font-bold font-sans text-sm hidden sm:inline">
-						{mode === "category" ? selectedCategoryName : activeQuest.title?.id || activeQuest.title?.en}
+						{mode === "category"
+							? selectedCategoryName
+							: activeQuest.title?.id || activeQuest.title?.en}
 					</span>
 				</div>
 
@@ -261,6 +295,60 @@ export const WorkbenchView: React.FC = () => {
 					)}
 				</div>
 			</div>
+
+			{mode === "quest" && questDetailData && questDetailData.totalPages > 1 && (
+				<div className="shrink-0 flex items-center justify-end gap-2 text-[10px] font-mono text-slate-400">
+					<span>
+						Dialog {questDetailData.page} / {questDetailData.totalPages}
+					</span>
+					<button
+						type="button"
+						onClick={() => setQuestPage((page) => Math.max(1, page - 1))}
+						disabled={!questDetailData.hasPreviousPage}
+						className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+					>
+						‹
+					</button>
+					<button
+						type="button"
+						onClick={() => setQuestPage((page) => page + 1)}
+						disabled={!questDetailData.hasNextPage}
+						className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+					>
+						›
+					</button>
+				</div>
+			)}
+
+			{mode === "category" &&
+				categoryDetailData &&
+				categoryDetailData.totalPages > 1 && (
+					<div className="shrink-0 flex items-center justify-end gap-2 text-[10px] font-mono text-slate-400">
+						<span>
+							Item {categoryDetailData.page} / {categoryDetailData.totalPages}
+						</span>
+						<button
+							type="button"
+							onClick={() => setCategoryPage((page) => Math.max(1, page - 1))}
+							disabled={categoryPage === 1}
+							className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+						>
+							‹
+						</button>
+						<button
+							type="button"
+							onClick={() =>
+								setCategoryPage((page) =>
+									Math.min(categoryDetailData.totalPages, page + 1),
+								)
+							}
+							disabled={categoryPage === categoryDetailData.totalPages}
+							className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+						>
+							›
+						</button>
+					</div>
+				)}
 
 			{/* Active Sub-Tab Content Container */}
 			<div className="flex-1 min-h-0 overflow-hidden">

@@ -1,6 +1,7 @@
 import type {
 	Chapter,
 	QuestDetail,
+	QuestDetailPage,
 	QuestSummary,
 	TextCategory,
 	TranslationDraft,
@@ -12,6 +13,12 @@ import type {
 	LogEntry,
 	HeartbeatPoint,
 	SystemMetrics,
+	TranslationQAItem,
+	TranslationQAListResponse,
+	TranslationQASourceKind,
+	TranslationQAScanJob,
+	TranslationQASummary,
+	TranslationQAStatus,
 } from "../types";
 
 const API_BASE = "/api";
@@ -33,9 +40,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 	});
 
 	if (!res.ok) {
-		const errorData = await res
-			.json()
-			.catch(() => ({ error: "Request failed" }));
+		const errorData = await res.json().catch(() => ({ error: "Request failed" }));
 		throw new Error(errorData.error || `HTTP ${res.status}`);
 	}
 
@@ -52,6 +57,104 @@ export async function fetchMetrics(): Promise<SystemMetrics> {
 }
 
 // ==========================================
+// TRANSLATION QA ENDPOINTS (/api/qa/*)
+// ==========================================
+
+export async function fetchTranslationQASummary(): Promise<TranslationQASummary> {
+	return request<TranslationQASummary>("/qa/summary");
+}
+
+export async function startTranslationQAScan(): Promise<TranslationQAScanJob> {
+	return request<TranslationQAScanJob>("/qa/scan", { method: "POST" });
+}
+
+export async function fetchTranslationQAScan(
+	id: string,
+): Promise<TranslationQAScanJob> {
+	return request<TranslationQAScanJob>(`/qa/scan/${encodeURIComponent(id)}`);
+}
+
+export async function scanTranslationQA(): Promise<TranslationQASummary> {
+	let job = await startTranslationQAScan();
+	for (let attempt = 0; attempt < 360; attempt++) {
+		if (job.status === "completed" && job.summary) return job.summary;
+		if (job.status === "failed")
+			throw new Error(job.error || "Translation QA scan gagal.");
+		await new Promise((resolve) => window.setTimeout(resolve, 2000));
+		job = await fetchTranslationQAScan(job.id);
+	}
+	throw new Error("Translation QA scan melebihi batas waktu 12 menit.");
+}
+
+export async function fetchTranslationQAItems(params: {
+	status?: TranslationQAStatus | "all";
+	kind?: TranslationQASourceKind | "all";
+	q?: string;
+	issue?: string;
+	sample?: boolean;
+	page?: number;
+	pageSize?: number;
+}): Promise<TranslationQAListResponse> {
+	const query = new URLSearchParams();
+	if (params.status) query.set("status", params.status);
+	if (params.kind) query.set("kind", params.kind);
+	if (params.q) query.set("q", params.q);
+	if (params.issue) query.set("issue", params.issue);
+	if (params.sample) query.set("sample", "true");
+	if (params.page) query.set("page", String(params.page));
+	if (params.pageSize) query.set("page_size", String(params.pageSize));
+	return request<TranslationQAListResponse>(`/qa/items?${query.toString()}`);
+}
+
+export async function fetchTranslationQAItem(
+	id: string,
+): Promise<TranslationQAItem> {
+	return request<TranslationQAItem>(`/qa/items/${encodeURIComponent(id)}`);
+}
+
+export async function updateTranslationQAReview(
+	id: string,
+	payload: { status: "review" | "approved" | "reset"; comment?: string },
+): Promise<{ item: TranslationQAItem }> {
+	return request<{ item: TranslationQAItem }>(
+		`/qa/items/${encodeURIComponent(id)}`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(payload),
+		},
+	);
+}
+
+export async function downloadTranslationQAReport(params: {
+	format: "json" | "csv";
+	status?: TranslationQAStatus | "all";
+	kind?: TranslationQASourceKind | "all";
+	q?: string;
+	issue?: string;
+}): Promise<{ blob: Blob; filename: string }> {
+	const query = new URLSearchParams({ format: params.format });
+	if (params.status) query.set("status", params.status);
+	if (params.kind) query.set("kind", params.kind);
+	if (params.q) query.set("q", params.q);
+	if (params.issue) query.set("issue", params.issue);
+	const token = localStorage.getItem("wuwaid_token");
+	const response = await fetch(`${API_BASE}/qa/export?${query.toString()}`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : {},
+	});
+	if (!response.ok) {
+		const errorData = await response
+			.json()
+			.catch(() => ({ error: "QA export failed" }));
+		throw new Error(errorData.error || `HTTP ${response.status}`);
+	}
+	const disposition = response.headers.get("Content-Disposition") || "";
+	const filename =
+		disposition.match(/filename="([^"]+)"/)?.[1] ||
+		`wuwaid-translation-qa.${params.format}`;
+	return { blob: await response.blob(), filename };
+}
+
+// ==========================================
 // 1. READER TAB ENDPOINTS (/api/reader/*)
 // ==========================================
 
@@ -59,11 +162,39 @@ export async function fetchChapters(): Promise<{ chapters: Chapter[] }> {
 	return request<{ chapters: Chapter[] }>("/reader/chapters");
 }
 
+export interface ReaderOverviewResponse {
+	chapters: Chapter[];
+	categories: TextCategory[];
+	metrics: SystemMetrics;
+}
+
+export async function fetchReaderOverview(): Promise<ReaderOverviewResponse> {
+	return request<ReaderOverviewResponse>("/reader/overview");
+}
+
+export interface QuestListResponse {
+	quests: QuestSummary[];
+	page?: number;
+	pageSize?: number;
+	filteredQuests?: number;
+	totalPages?: number;
+	hasNextPage?: boolean;
+	hasPreviousPage?: boolean;
+}
+
 export async function fetchQuests(
 	params?:
 		| string
-		| { chapterId?: string; q?: string; type?: string; sort?: string },
-): Promise<{ quests: QuestSummary[] }> {
+		| {
+				chapterId?: string;
+				q?: string;
+				type?: string;
+				sort?: string;
+				limit?: number;
+				page?: number;
+				pageSize?: number;
+		  },
+): Promise<QuestListResponse> {
 	const searchParams = new URLSearchParams();
 
 	if (typeof params === "string") {
@@ -73,20 +204,52 @@ export async function fetchQuests(
 		if (params.q) searchParams.append("q", params.q);
 		if (params.type) searchParams.append("type", params.type);
 		if (params.sort) searchParams.append("sort", params.sort);
+		if (params.limit) searchParams.append("limit", String(params.limit));
+		if (params.page !== undefined)
+			searchParams.append("page", String(params.page));
+		if (params.pageSize !== undefined)
+			searchParams.append("pageSize", String(params.pageSize));
 	}
 
 	const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
-	return request<{ quests: QuestSummary[] }>(`/reader/quests${query}`);
+	return request<QuestListResponse>(`/reader/quests${query}`);
 }
 
 export async function fetchQuestDetail(id: string): Promise<QuestDetail> {
 	return request<QuestDetail>(`/reader/quests/${encodeURIComponent(id)}`);
 }
 
-export async function fetchCategories(): Promise<{
-	categories: TextCategory[];
-}> {
-	return request<{ categories: TextCategory[] }>("/reader/categories");
+export async function fetchQuestDetailPage(
+	id: string,
+	params: {
+		page?: number;
+		pageSize?: number;
+		q?: string;
+		speaker?: string;
+	} = {},
+): Promise<QuestDetailPage> {
+	const query = new URLSearchParams();
+	if (params.page !== undefined) query.set("page", String(params.page));
+	if (params.pageSize !== undefined)
+		query.set("pageSize", String(params.pageSize));
+	if (params.q) query.set("q", params.q);
+	if (params.speaker && params.speaker !== "all")
+		query.set("speaker", params.speaker);
+	const suffix = query.toString() ? `?${query.toString()}` : "";
+	return request<QuestDetailPage>(
+		`/reader/quests/${encodeURIComponent(id)}${suffix}`,
+	);
+}
+
+export async function fetchCategories(params?: {
+	q?: string;
+	limit?: number;
+}): Promise<{ categories: TextCategory[] }> {
+	const query = new URLSearchParams();
+	if (params?.q) query.set("q", params.q);
+	if (params?.limit) query.set("limit", String(params.limit));
+	const suffix = query.toString() ? `?${query.toString()}` : "";
+	return request<{ categories: TextCategory[] }>(`/reader/categories${suffix}`);
 }
 
 export interface CategoryDetailResponse {
@@ -281,7 +444,10 @@ export async function fetchVersionDiff(versionTag?: string) {
 	return request<any>(`/workbench/versions/diff${query}`);
 }
 
-export async function createTextVersion(tag: string, note?: string): Promise<{ version: TextVersion }> {
+export async function createTextVersion(
+	tag: string,
+	note?: string,
+): Promise<{ version: TextVersion }> {
 	return request<{ version: TextVersion }>("/workbench/versions", {
 		method: "POST",
 		body: JSON.stringify({ tag, note: note || null }),
@@ -306,7 +472,9 @@ export async function fetchTextVersionDiff(params: {
 	if (params.query) query.set("q", params.query);
 	if (params.page) query.set("page", String(params.page));
 	if (params.pageSize) query.set("page_size", String(params.pageSize));
-	return request<TextDiffResponse>(`/workbench/versions/diff?${query.toString()}`);
+	return request<TextDiffResponse>(
+		`/workbench/versions/diff?${query.toString()}`,
+	);
 }
 
 export async function fetchTextVersionGroups(params: {
@@ -319,19 +487,28 @@ export async function fetchTextVersionGroups(params: {
 		target: params.target,
 		lang: params.language,
 	});
-	return request<TextDiffGroupsResponse>(`/workbench/versions/diff/groups?${query.toString()}`);
+	return request<TextDiffGroupsResponse>(
+		`/workbench/versions/diff/groups?${query.toString()}`,
+	);
 }
 
-async function downloadTextVersionFile(endpoint: string): Promise<{ blob: Blob; filename: string }> {
+async function downloadTextVersionFile(
+	endpoint: string,
+): Promise<{ blob: Blob; filename: string }> {
 	const token = localStorage.getItem("wuwaid_token");
-	const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+	const headers: Record<string, string> = token
+		? { Authorization: `Bearer ${token}` }
+		: {};
 	const response = await fetch(`${API_BASE}${endpoint}`, { headers });
 	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({ error: "Download failed" }));
+		const errorData = await response
+			.json()
+			.catch(() => ({ error: "Download failed" }));
 		throw new Error(errorData.error || `HTTP ${response.status}`);
 	}
 	const disposition = response.headers.get("Content-Disposition") || "";
-	const filename = disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-text-diff";
+	const filename =
+		disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-text-diff";
 	return { blob: await response.blob(), filename };
 }
 
@@ -361,17 +538,23 @@ export async function downloadStructuredTextDiff(params: {
 		"Content-Type": "application/json",
 		...(token ? { Authorization: `Bearer ${token}` } : {}),
 	};
-	const response = await fetch(`${API_BASE}/workbench/versions/diff/export-structured`, {
-		method: "POST",
-		headers,
-		body: JSON.stringify(params),
-	});
+	const response = await fetch(
+		`${API_BASE}/workbench/versions/diff/export-structured`,
+		{
+			method: "POST",
+			headers,
+			body: JSON.stringify(params),
+		},
+	);
 	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({ error: "Download failed" }));
+		const errorData = await response
+			.json()
+			.catch(() => ({ error: "Download failed" }));
 		throw new Error(errorData.error || `HTTP ${response.status}`);
 	}
 	const disposition = response.headers.get("Content-Disposition") || "";
-	const filename = disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-structured-diff.zip";
+	const filename =
+		disposition.match(/filename="([^"]+)"/)?.[1] || "wuwaid-structured-diff.zip";
 	return { blob: await response.blob(), filename };
 }
 
@@ -387,7 +570,9 @@ export async function downloadTextVersionDiff(params: {
 		lang: params.language,
 		format: params.format,
 	});
-	return downloadTextVersionFile(`/workbench/versions/diff/export?${query.toString()}`);
+	return downloadTextVersionFile(
+		`/workbench/versions/diff/export?${query.toString()}`,
+	);
 }
 
 // ==========================================
@@ -451,7 +636,9 @@ export interface ImportConfigDbResult {
 	indexedDialogueRows?: number;
 }
 
-export async function importConfigDb(file: File): Promise<ImportConfigDbResult> {
+export async function importConfigDb(
+	file: File,
+): Promise<ImportConfigDbResult> {
 	const token = localStorage.getItem("wuwaid_token");
 	const query = new URLSearchParams({ filename: file.name });
 
@@ -470,9 +657,7 @@ export async function importConfigDb(file: File): Promise<ImportConfigDbResult> 
 	);
 
 	if (!res.ok) {
-		const errorData = await res
-			.json()
-			.catch(() => ({ error: "Import failed" }));
+		const errorData = await res.json().catch(() => ({ error: "Import failed" }));
 		throw new Error(errorData.error || `HTTP ${res.status}`);
 	}
 
@@ -521,9 +706,7 @@ async function downloadDb(url: string, name: string): Promise<void> {
 
 	const res = await fetch(url, { headers });
 	if (!res.ok) {
-		const errorData = await res
-			.json()
-			.catch(() => ({ error: "Export failed" }));
+		const errorData = await res.json().catch(() => ({ error: "Export failed" }));
 		throw new Error(errorData.error || `HTTP ${res.status}`);
 	}
 

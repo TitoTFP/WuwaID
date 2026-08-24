@@ -83,14 +83,16 @@ export function readCategoryDocument(
 export function rebuildCategoryIndex(indexPath: string): number {
 	if (!fs.existsSync(indexPath)) return 0;
 
-	const database = new DatabaseSync(indexPath);
+	const database = new DatabaseSync(indexPath, { timeout: 5000 });
 	try {
+		database.exec("BEGIN");
 		database.exec(`
 			DROP TABLE IF EXISTS category_text_idx;
 			DROP TABLE IF EXISTS categories;
 			CREATE VIRTUAL TABLE category_text_idx USING fts5(
 				category UNINDEXED,
 				key UNINDEXED,
+				name UNINDEXED,
 				prefix UNINDEXED,
 				text_zh,
 				text_en,
@@ -107,13 +109,12 @@ export function rebuildCategoryIndex(indexPath: string): number {
 		`);
 
 		const insertText = database.prepare(
-			"INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?)",
+			"INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?,?)",
 		);
 		const insertCategory = database.prepare(
 			"INSERT INTO categories VALUES (?,?,?,?)",
 		);
 		let rowCount = 0;
-		database.exec("BEGIN");
 		try {
 			for (const file of listCategoryFiles()) {
 				const document = readCategoryDocument(file);
@@ -125,6 +126,7 @@ export function rebuildCategoryIndex(indexPath: string): number {
 					insertText.run(
 						file.name,
 						key,
+						item.name || item.entity || item.speaker || item.character || "",
 						key.split("_", 1)[0],
 						item["zh-Hans"] || item.zh || "",
 						item.en || "",
@@ -153,7 +155,10 @@ export function rebuildCategoryIndex(indexPath: string): number {
 	}
 }
 
-export function updateCategoryIndex(indexPath: string, categoryNames: string[]): number {
+export function updateCategoryIndex(
+	indexPath: string,
+	categoryNames: string[],
+): number {
 	if (!categoryNames.length || !fs.existsSync(indexPath)) return 0;
 
 	const database = new DatabaseSync(indexPath, { timeout: 5000 });
@@ -161,8 +166,13 @@ export function updateCategoryIndex(indexPath: string, categoryNames: string[]):
 		const tables = database
 			.prepare("SELECT name FROM sqlite_master WHERE type = ?")
 			.all("table") as Array<{ name?: string }>;
-		const hasCategoryIndex = tables.some((table) => table.name === "category_text_idx") &&
-			tables.some((table) => table.name === "categories");
+		const categoryColumns = database
+			.prepare('PRAGMA table_info("category_text_idx")')
+			.all() as Array<{ name?: string }>;
+		const hasCategoryIndex =
+			tables.some((table) => table.name === "category_text_idx") &&
+			tables.some((table) => table.name === "categories") &&
+			categoryColumns.some((column) => column.name === "name");
 		if (!hasCategoryIndex) {
 			database.close();
 			return rebuildCategoryIndex(indexPath);
@@ -172,7 +182,7 @@ export function updateCategoryIndex(indexPath: string, categoryNames: string[]):
 			"DELETE FROM category_text_idx WHERE category = ?",
 		);
 		const insertText = database.prepare(
-			"INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?)",
+			"INSERT INTO category_text_idx VALUES (?,?,?,?,?,?,?,?)",
 		);
 		const upsertCategory = database.prepare(
 			`INSERT INTO categories (name, file, key_count, translated_count)
@@ -200,6 +210,7 @@ export function updateCategoryIndex(indexPath: string, categoryNames: string[]):
 					insertText.run(
 						file.name,
 						key,
+						item.name || item.entity || item.speaker || item.character || "",
 						key.split("_", 1)[0],
 						item["zh-Hans"] || item.zh || "",
 						item.en || "",

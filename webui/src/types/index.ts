@@ -2,6 +2,7 @@ export type SurfaceMode =
 	| "reader"
 	| "categories"
 	| "workbench"
+	| "qa"
 	| "operations"
 	| "databases";
 
@@ -171,6 +172,16 @@ export interface QuestDetail {
 	updatedAt: string;
 }
 
+export type QuestDetailPage = Omit<QuestDetail, "lines"> & {
+	lines: DialogueLine[];
+	page: number;
+	pageSize: number;
+	filteredLines: number;
+	totalPages: number;
+	hasNextPage: boolean;
+	hasPreviousPage: boolean;
+};
+
 export interface QuestSummary {
 	id: string;
 	title: MultilingualText;
@@ -216,4 +227,142 @@ export interface SystemMetrics {
 	activeTranslators: number;
 	activePlayers24h: number;
 	serverStatus: "online" | "degraded" | "maintenance";
+}
+
+export type TranslationQAStatus = "pass" | "review" | "approved";
+export type TranslationQASourceKind = "quest" | "category";
+
+export interface TranslationQAIssue {
+	code: string;
+	severity: "error" | "warning" | "info";
+	message: string;
+}
+
+export type TranslationQAAttachmentConfidence = "high" | "medium" | "low";
+
+export interface TranslationQAAttachmentReason {
+	code: string;
+	message: string;
+}
+
+export interface TranslationQAAttachmentCandidate {
+	occurrenceId: string;
+	key: string;
+	sourceKind: TranslationQASourceKind;
+	sourceRef: string;
+	sourcePath: string;
+	questId?: string;
+	questTitle?: string;
+	chapterTitle?: string;
+	lineNo?: number;
+	lineId?: string;
+	speaker?: string;
+	sourceText: string;
+	score: number;
+	confidence: TranslationQAAttachmentConfidence;
+	sameQuest: boolean;
+	reasons: TranslationQAAttachmentReason[];
+}
+
+export interface TranslationQAAttachmentEvidence {
+	occurrenceId: string;
+	key: string;
+	lineNo?: number;
+	lineId?: string;
+	sourceText: string;
+	targetText: string;
+	targetVariant?: string;
+	currentScore: number;
+	score: number;
+	margin: number;
+	confidence: TranslationQAAttachmentConfidence;
+	reasons: TranslationQAAttachmentReason[];
+	candidates: TranslationQAAttachmentCandidate[];
+}
+
+export interface TranslationQAGlossaryMatch {
+	term: string;
+	translation: string;
+	category?: string;
+	present: boolean;
+}
+
+export interface TranslationQAContext {
+	id: string;
+	lineNo?: number;
+	lineId?: string;
+	speaker?: string;
+	sourceText: string;
+	targetText: string;
+	previousText?: string;
+	nextText?: string;
+	attachmentEvidence?: TranslationQAAttachmentEvidence[];
+}
+
+export interface TranslationQAReview {
+	status: "review" | "approved";
+	comment: string;
+	reviewer: string;
+	updatedAt: string;
+	fingerprint: string;
+}
+
+export interface TranslationQAItem {
+	id: string;
+	key: string;
+	sourceKind: TranslationQASourceKind;
+	sourceRef: string;
+	sourcePath: string;
+	questId?: string;
+	questTitle?: string;
+	chapterTitle?: string;
+	lineNo?: number;
+	speaker?: string;
+	sourceText: string;
+	targetText: string;
+	targetVariant?: string;
+	occurrences: number;
+	contexts: TranslationQAContext[];
+	issues: TranslationQAIssue[];
+	glossaryMatches: TranslationQAGlossaryMatch[];
+	attachmentEvidence: TranslationQAAttachmentEvidence[];
+	autoStatus: "pass" | "review";
+	status: TranslationQAStatus;
+	review?: TranslationQAReview;
+	fingerprint: string;
+}
+
+export interface TranslationQASummary {
+	generatedAt: string;
+	dataFingerprint: string;
+	totalItems: number;
+	totalOccurrences: number;
+	parseErrors: number;
+	statusCounts: Record<TranslationQAStatus, number>;
+	issueCounts: Record<string, number>;
+	sourceKindCounts: Record<TranslationQASourceKind, number>;
+}
+
+export interface TranslationQAReport {
+	summary: TranslationQASummary;
+	items: TranslationQAItem[];
+}
+
+export interface TranslationQAListResponse {
+	summary: TranslationQASummary;
+	items: TranslationQAItem[];
+	page: number;
+	pageSize: number;
+	total: number;
+}
+
+export type TranslationQAScanJobStatus = "running" | "completed" | "failed";
+
+export interface TranslationQAScanJob {
+	id: string;
+	status: TranslationQAScanJobStatus;
+	startedAt: string;
+	finishedAt?: string;
+	summary?: TranslationQASummary;
+	error?: string;
 }

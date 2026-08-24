@@ -4,13 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n web,server -c cyan,yellow \"vite\" \"tsx watch server/index.ts\"",
+    "dev": "concurrently -k -n web,server -c cyan,yellow \"vite\" \"tsx watch server/dev.ts\"",
     "dev:web": "vite",
-    "dev:server": "tsx watch server/index.ts",
+    "dev:server": "tsx watch server/dev.ts",
     "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
     "build:web": "tsc --noEmit && vite build",
-    "start": "node dist/server/index.js",
-    "check": "tsc --noEmit"
+    "start": "node dist/server/start.js",
+    "check": "tsc --noEmit",
+    "qa": "tsx server/translationQaCli.ts",
+    "test:qa": "tsx --test server/translationQa.test.ts server/translationQa.integration.test.ts",
+    "test:integration": "tsx --test server/translationQa.integration.test.ts server/ops.integration.test.ts server/reader.integration.test.ts",
+    "benchmark:reader": "node scripts/benchmark-reader.mjs",
+    "build:reader-index": "tsx scripts/build-reader-index.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.0",

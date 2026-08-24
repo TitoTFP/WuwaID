@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { QuestDetail } from "../../types";
 import { GitCommit, CornerDownRight, Plus } from "lucide-react";
 
@@ -13,6 +13,22 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 	const [selectedNodeId, setSelectedNodeId] = useState<string>(
 		quest.lines[0]?.id || "",
 	);
+	const [treePage, setTreePage] = useState(1);
+	const treePageSize = 100;
+	const treePageCount = Math.max(
+		1,
+		Math.ceil(quest.lines.length / treePageSize),
+	);
+	const visibleLines = useMemo(
+		() =>
+			quest.lines.slice((treePage - 1) * treePageSize, treePage * treePageSize),
+		[quest.lines, treePage],
+	);
+
+	useEffect(() => {
+		setSelectedNodeId(quest.lines[0]?.id || "");
+		setTreePage(1);
+	}, [quest.id, quest.lines]);
 
 	const selectedLine =
 		quest.lines.find((l) => l.id === selectedNodeId) || quest.lines[0];
@@ -26,8 +42,8 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 						<span>Interactive Dialogue Tree & Branch Structure Editor</span>
 					</h2>
 					<p className="text-xs text-slate-400 font-mono mt-0.5">
-						Kelola alur percakapan, cabang pilihan (Dialogue Choices), dan
-						struktur ID speaker.
+						Kelola alur percakapan, cabang pilihan (Dialogue Choices), dan struktur ID
+						speaker.
 					</p>
 				</div>
 				<span className="px-2.5 py-1 bg-cyber-gold/10 border border-cyber-gold/30 text-cyber-gold text-xs font-mono rounded">
@@ -46,7 +62,7 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 					</div>
 
 					<div className="space-y-2">
-						{quest.lines.map((line) => {
+						{visibleLines.map((line) => {
 							const isSelected = line.id === selectedNodeId;
 							const isSeparator = line.type === "scene_separator";
 							const isChoice = line.type === "choice";
@@ -74,8 +90,7 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 								>
 									<div className="flex items-center justify-between font-mono mb-1">
 										<span className="font-bold text-slate-200">
-											#{line.lineNo} •{" "}
-											{line.speaker.name.id || line.speaker.name.en}
+											#{line.lineNo} • {line.speaker.name.id || line.speaker.name.en}
 										</span>
 										{isChoice && (
 											<span className="px-2 py-0.5 bg-cyber-gold/20 text-cyber-gold rounded text-[10px]">
@@ -95,9 +110,7 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 													className="text-[11px] text-cyber-gold flex items-center space-x-1"
 												>
 													<CornerDownRight className="w-3 h-3 shrink-0" />
-													<span className="line-clamp-1">
-														{opt.text.id || ""}
-													</span>
+													<span className="line-clamp-1">{opt.text.id || ""}</span>
 												</div>
 											))}
 										</div>
@@ -106,6 +119,33 @@ export const DialogueTreeEditor: React.FC<DialogueTreeEditorProps> = ({
 							);
 						})}
 					</div>
+					{treePageCount > 1 && (
+						<div className="flex items-center justify-between border-t border-obsidian-800 pt-2 text-[10px] font-mono text-slate-400">
+							<span>
+								Halaman {treePage} / {treePageCount}
+							</span>
+							<div className="flex gap-1">
+								<button
+									type="button"
+									onClick={() => setTreePage((page) => Math.max(1, page - 1))}
+									disabled={treePage === 1}
+									className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+								>
+									‹
+								</button>
+								<button
+									type="button"
+									onClick={() =>
+										setTreePage((page) => Math.min(treePageCount, page + 1))
+									}
+									disabled={treePage === treePageCount}
+									className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+								>
+									›
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 
 				{/* Right Column (7 cols): Selected Node Inspector & Branch Editor */}

@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -23,11 +23,9 @@ import {
 import { QuestStreamViewer } from "../components/reader/QuestStreamViewer";
 import { CyberSelect } from "../components/common/CyberSelect";
 import {
-	fetchChapters,
+	fetchReaderOverview,
 	fetchQuests,
-	fetchCategories,
-	fetchMetrics,
-	fetchQuestDetail,
+	fetchQuestDetailPage,
 } from "../lib/api";
 import type { QuestSummary } from "../types";
 
@@ -44,9 +42,24 @@ export const ReaderView: React.FC = () => {
 		"id_asc" | "id_desc" | "lines_desc" | "lines_asc" | "name_asc" | "name_desc"
 	>("id_asc");
 	const [categorySearchQuery, setCategorySearchQuery] = useState("");
+	const [questListPage, setQuestListPage] = useState(1);
+	const [questPage, setQuestPage] = useState(1);
+	const questListPageSize = 200;
+	const [questLineQuery, setQuestLineQuery] = useState("");
+	const [questSpeaker, setQuestSpeaker] = useState("all");
 
 	const selectedChapterId = urlChapterId || null;
 	const selectedQuestId = urlQuestId || null;
+
+	useEffect(() => {
+		setQuestPage(1);
+		setQuestLineQuery("");
+		setQuestSpeaker("all");
+	}, [selectedQuestId]);
+
+	useEffect(() => {
+		setQuestListPage(1);
+	}, [selectedChapterId, questFilterQuery, questTypeFilter, questSortOption]);
 
 	// Helper for quest type badges
 	const getQuestTypeBadge = (q: QuestSummary) => {
@@ -108,19 +121,9 @@ export const ReaderView: React.FC = () => {
 	};
 
 	// Queries
-	const { data: chaptersData } = useQuery({
-		queryKey: ["chapters"],
-		queryFn: fetchChapters,
-	});
-
-	const { data: categoriesData } = useQuery({
-		queryKey: ["categories"],
-		queryFn: fetchCategories,
-	});
-
-	const { data: metricsData } = useQuery({
-		queryKey: ["metrics"],
-		queryFn: fetchMetrics,
+	const { data: overviewData } = useQuery({
+		queryKey: ["readerOverview"],
+		queryFn: fetchReaderOverview,
 	});
 
 	const { data: chapterQuestsData, isLoading: isLoadingQuests } = useQuery({
@@ -130,6 +133,7 @@ export const ReaderView: React.FC = () => {
 			questFilterQuery,
 			questTypeFilter,
 			questSortOption,
+			questListPage,
 		],
 		queryFn: () =>
 			fetchQuests({
@@ -137,6 +141,8 @@ export const ReaderView: React.FC = () => {
 				q: questFilterQuery,
 				type: questTypeFilter,
 				sort: questSortOption,
+				page: questListPage,
+				pageSize: questListPageSize,
 			}),
 		enabled: !!selectedChapterId && !selectedQuestId,
 	});
@@ -146,14 +152,26 @@ export const ReaderView: React.FC = () => {
 		isLoading: isLoadingQuestDetail,
 		isError: isQuestDetailError,
 	} = useQuery({
-		queryKey: ["questDetail", selectedQuestId],
-		queryFn: () => fetchQuestDetail(selectedQuestId!),
+		queryKey: [
+			"questDetailPage",
+			selectedQuestId,
+			questPage,
+			questLineQuery,
+			questSpeaker,
+		],
+		queryFn: () =>
+			fetchQuestDetailPage(selectedQuestId!, {
+				page: questPage,
+				pageSize: 200,
+				q: questLineQuery,
+				speaker: questSpeaker,
+			}),
 		enabled: !!selectedQuestId,
 	});
 
-	const chapters = chaptersData?.chapters || fontMockData;
-	const categories = categoriesData?.categories || MOCK_TEXT_CATEGORIES;
-	const metrics = metricsData || {
+	const chapters = overviewData?.chapters || fontMockData;
+	const categories = overviewData?.categories || MOCK_TEXT_CATEGORIES;
+	const metrics = overviewData?.metrics || {
 		totalQuests: 1248,
 		totalDialogueLines: 42850,
 		translationCoverageId: 0,
@@ -230,12 +248,33 @@ export const ReaderView: React.FC = () => {
 						>
 							<ArrowLeft className="w-3.5 h-3.5" />
 							<span>
-								Kembali ke Daftar Quest (
-								{activeQuestDetail.chapterTitle || "Chapter"})
+								Kembali ke Daftar Quest ({activeQuestDetail.chapterTitle || "Chapter"})
 							</span>
 						</button>
 					</div>
-					<QuestStreamViewer quest={activeQuestDetail} />
+					<QuestStreamViewer
+						quest={activeQuestDetail}
+						pageInfo={
+							questDetailData
+								? {
+										page: questDetailData.page,
+										totalPages: questDetailData.totalPages,
+										filteredLines: questDetailData.filteredLines,
+									}
+								: undefined
+						}
+						searchQuery={questLineQuery}
+						selectedSpeaker={questSpeaker}
+						onSearchQueryChange={(value: string) => {
+							setQuestLineQuery(value);
+							setQuestPage(1);
+						}}
+						onSpeakerChange={(value: string) => {
+							setQuestSpeaker(value);
+							setQuestPage(1);
+						}}
+						onPageChange={setQuestPage}
+					/>
 				</div>
 			);
 		}
@@ -282,13 +321,12 @@ export const ReaderView: React.FC = () => {
 										? currentChapter.number
 										: `Chapter ${selectedChapterId}`}
 								</span>
-								<span>
-									{currentChapter ? currentChapter.title : "Daftar Quest"}
-								</span>
+								<span>{currentChapter ? currentChapter.title : "Daftar Quest"}</span>
 							</h1>
 							<p className="text-xs text-slate-400 font-mono mt-0.5">
-								{filteredQuests.length} Quest ditampilkan ({questList.length}{" "}
-								total di bab ini)
+								{filteredQuests.length} Quest ditampilkan (
+								{chapterQuestsData?.filteredQuests ?? questList.length} total di bab
+								ini)
 							</p>
 						</div>
 					</div>
@@ -352,6 +390,30 @@ export const ReaderView: React.FC = () => {
 					</div>
 				</div>
 
+				{chapterQuestsData?.totalPages && chapterQuestsData.totalPages > 1 && (
+					<div className="shrink-0 flex items-center justify-end gap-2 text-[10px] font-mono text-slate-400">
+						<span>
+							Halaman {chapterQuestsData.page} / {chapterQuestsData.totalPages}
+						</span>
+						<button
+							type="button"
+							onClick={() => setQuestListPage((page) => Math.max(1, page - 1))}
+							disabled={!chapterQuestsData.hasPreviousPage}
+							className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+						>
+							‹
+						</button>
+						<button
+							type="button"
+							onClick={() => setQuestListPage((page) => page + 1)}
+							disabled={!chapterQuestsData.hasNextPage}
+							className="rounded border border-obsidian-700 px-1.5 py-1 disabled:opacity-40"
+						>
+							›
+						</button>
+					</div>
+				)}
+
 				{/* Quest Grid List */}
 				<div className="flex-1 overflow-y-auto pr-1">
 					{isLoadingQuests ? (
@@ -380,15 +442,13 @@ export const ReaderView: React.FC = () => {
 												{badge.label}
 											</span>
 											<span className="text-slate-400">
-												{q.translatedLines.id} /{" "}
-												{q.translatedTextTotal ?? q.totalLines} tertranslasi
+												{q.translatedLines.id} / {q.translatedTextTotal ?? q.totalLines}{" "}
+												tertranslasi
 											</span>
 										</div>
 
 										<h3 className="text-sm font-bold text-slate-100 group-hover:text-cyber-cyan transition-colors flex items-center justify-between">
-											<span className="line-clamp-1">
-												{q.title.id || q.title.en}
-											</span>
+											<span className="line-clamp-1">{q.title.id || q.title.en}</span>
 											<ChevronRight className="w-4 h-4 text-cyber-cyan opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
 										</h3>
 
@@ -428,8 +488,8 @@ export const ReaderView: React.FC = () => {
 						</h1>
 
 						<p className="text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-1">
-							Eksplorasi cerita, percakapan dialog multibahasa (EN, ZH-Hans, JA,
-							ID), dan database teks game secara instan.
+							Eksplorasi cerita, percakapan dialog multibahasa (EN, ZH-Hans, JA, ID),
+							dan database teks game secara instan.
 						</p>
 					</div>
 
@@ -441,9 +501,7 @@ export const ReaderView: React.FC = () => {
 								<div className="text-base font-bold font-mono text-slate-100">
 									{metrics.totalQuests.toLocaleString()}
 								</div>
-								<div className="text-[10px] text-slate-500 font-mono">
-									Quests
-								</div>
+								<div className="text-[10px] text-slate-500 font-mono">Quests</div>
 							</div>
 						</div>
 
@@ -453,9 +511,7 @@ export const ReaderView: React.FC = () => {
 								<div className="text-base font-bold font-mono text-slate-100">
 									{metrics.totalDialogueLines.toLocaleString()}
 								</div>
-								<div className="text-[10px] text-slate-500 font-mono">
-									Baris ID
-								</div>
+								<div className="text-[10px] text-slate-500 font-mono">Baris ID</div>
 							</div>
 						</div>
 
@@ -465,9 +521,7 @@ export const ReaderView: React.FC = () => {
 								<div className="text-base font-bold font-mono text-slate-100">
 									{metrics.translationCoverageId}%
 								</div>
-								<div className="text-[10px] text-slate-500 font-mono">
-									Cakupan
-								</div>
+								<div className="text-[10px] text-slate-500 font-mono">Cakupan</div>
 							</div>
 						</div>
 					</div>
@@ -511,8 +565,8 @@ export const ReaderView: React.FC = () => {
 											<ChevronRight className="w-4 h-4 text-cyber-cyan opacity-0 group-hover:opacity-100 transition-opacity" />
 										</h3>
 										<p className="text-[11px] text-slate-400 mt-0.5 font-mono">
-											{ch.questCount} Quests • {ch.totalLines.toLocaleString()}{" "}
-											Baris Dialog • {ch.region}
+											{ch.questCount} Quests • {ch.totalLines.toLocaleString()} Baris
+											Dialog • {ch.region}
 										</p>
 									</div>
 									<div className="w-full bg-obsidian-800 rounded-full h-1 overflow-hidden">
@@ -564,9 +618,7 @@ export const ReaderView: React.FC = () => {
 							.filter(
 								(cat) =>
 									!categorySearchQuery.trim() ||
-									cat.name
-										.toLowerCase()
-										.includes(categorySearchQuery.toLowerCase()),
+									cat.name.toLowerCase().includes(categorySearchQuery.toLowerCase()),
 							)
 							.map((cat, idx) => (
 								<div

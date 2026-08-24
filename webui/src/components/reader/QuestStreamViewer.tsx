@@ -9,17 +9,37 @@ import { ExportDbMenu } from "../common/ExportDbMenu";
 
 interface QuestStreamViewerProps {
 	quest: QuestDetail;
+	pageInfo?: {
+		page: number;
+		totalPages: number;
+		filteredLines: number;
+	};
+	searchQuery?: string;
+	selectedSpeaker?: string;
+	onSearchQueryChange?: (value: string) => void;
+	onSpeakerChange?: (value: string) => void;
+	onPageChange?: (page: number) => void;
 }
 
 export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 	quest,
+	pageInfo,
+	searchQuery: controlledSearchQuery,
+	selectedSpeaker: controlledSelectedSpeaker,
+	onSearchQueryChange,
+	onSpeakerChange,
+	onPageChange,
 }) => {
 	const navigate = useNavigate();
 	const [primaryLang, setPrimaryLang] = useState<LanguageCode>("id");
 	const [secondaryLang, setSecondaryLang] = useState<LanguageCode>("en");
-	const [selectedSpeaker, setSelectedSpeaker] = useState<string>("all");
-	const [searchQuery, setSearchQuery] = useState("");
+	const [localSelectedSpeaker, setLocalSelectedSpeaker] = useState("all");
+	const [localSearchQuery, setLocalSearchQuery] = useState("");
 	const [exportingMode, setExportingMode] = useState<ExportMode | null>(null);
+	const selectedSpeaker = controlledSelectedSpeaker ?? localSelectedSpeaker;
+	const searchQuery = controlledSearchQuery ?? localSearchQuery;
+	const updateSpeaker = onSpeakerChange ?? setLocalSelectedSpeaker;
+	const updateSearchQuery = onSearchQueryChange ?? setLocalSearchQuery;
 	const [exportError, setExportError] = useState<string | null>(null);
 
 	const handleExport = async (mode: ExportMode) => {
@@ -49,6 +69,7 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 
 	const filteredLines = useMemo(() => {
 		if (!quest.lines) return [];
+		if (pageInfo) return quest.lines;
 		return quest.lines.filter((line) => {
 			if (selectedSpeaker !== "all" && line.speaker?.id !== selectedSpeaker) {
 				return false;
@@ -59,9 +80,7 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 				const textSec = secondaryLang
 					? (line.text[secondaryLang] || "").toLowerCase()
 					: "";
-				const speakerName = (
-					line.speaker?.name[primaryLang] || ""
-				).toLowerCase();
+				const speakerName = (line.speaker?.name[primaryLang] || "").toLowerCase();
 				return (
 					textPri.includes(query) ||
 					textSec.includes(query) ||
@@ -70,7 +89,14 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 			}
 			return true;
 		});
-	}, [quest, selectedSpeaker, searchQuery, primaryLang, secondaryLang]);
+	}, [
+		quest,
+		pageInfo,
+		selectedSpeaker,
+		searchQuery,
+		primaryLang,
+		secondaryLang,
+	]);
 
 	useEffect(() => {
 		const hash = window.location.hash;
@@ -91,9 +117,7 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 				<div className="flex items-center space-x-3">
 					<div>
 						<div className="flex items-center space-x-2 text-xs font-mono">
-							<span className="text-cyber-cyan font-bold">
-								{quest.chapterTitle}
-							</span>
+							<span className="text-cyber-cyan font-bold">{quest.chapterTitle}</span>
 							<span className="text-slate-500">•</span>
 							<span className="text-slate-400">
 								{quest.translatedLines ?? 0} /{" "}
@@ -155,7 +179,7 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 						<Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
 						<select
 							value={selectedSpeaker}
-							onChange={(e) => setSelectedSpeaker(e.target.value)}
+							onChange={(e) => updateSpeaker(e.target.value)}
 							className="bg-transparent text-slate-300 text-xs font-mono focus:outline-none max-w-[140px] truncate"
 						>
 							<option value="all">Semua Speaker</option>
@@ -173,7 +197,7 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 						<input
 							type="text"
 							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
+							onChange={(e) => updateSearchQuery(e.target.value)}
 							placeholder="Cari..."
 							className="bg-obsidian-950 border border-obsidian-800 rounded pl-8 pr-2 py-1 text-xs font-mono text-slate-200 w-28 focus:w-44 focus:border-cyber-cyan transition-all outline-none"
 						/>
@@ -198,6 +222,32 @@ export const QuestStreamViewer: React.FC<QuestStreamViewerProps> = ({
 					))
 				)}
 			</div>
+			{pageInfo && pageInfo.totalPages > 1 ? (
+				<div className="shrink-0 flex items-center justify-between border-t border-obsidian-800 pt-2 text-xs font-mono text-slate-400">
+					<span>
+						Halaman {pageInfo.page} / {pageInfo.totalPages} ·{" "}
+						{pageInfo.filteredLines.toLocaleString()} baris
+					</span>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => onPageChange?.(pageInfo.page - 1)}
+							disabled={pageInfo.page <= 1}
+							className="rounded border border-obsidian-700 px-2 py-1 text-slate-300 disabled:opacity-40"
+						>
+							Sebelumnya
+						</button>
+						<button
+							type="button"
+							onClick={() => onPageChange?.(pageInfo.page + 1)}
+							disabled={pageInfo.page >= pageInfo.totalPages}
+							className="rounded border border-obsidian-700 px-2 py-1 text-slate-300 disabled:opacity-40"
+						>
+							Berikutnya
+						</button>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 };

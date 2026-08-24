@@ -222,10 +222,41 @@ cd webui
 npm install
 npm run dev        # Vite :3000 + Express API :3001
 npm run build      # Typecheck dan production build
+npm run build:reader-index -- --force  # Bangun ulang read model SQLite dari JSON
 npm start          # Menjalankan server hasil build
 ```
 
-Halaman aktif: **Reader**, **Workbench**, **Operations**, **Databases**, **Drafts**, dan **Versions**.
+`npm run dev` dan `npm start` mempertahankan kontrak login legacy WebUI.
+Read model `data/quests/index.db` dihasilkan dari JSON mentah oleh
+`build:reader-index`; server memverifikasi/provision index tersebut saat startup.
+Read model menyimpan baris quest dan key dialog/option untuk pagination serta pencarian.
+Endpoint request tidak melakukan fallback scan seluruh korpus jika index gagal.
+
+Halaman aktif: **Reader**, **Workbench**, **Translation QA**, **Operations**, **Databases**, **Drafts**, dan **Versions**.
+
+#### Translation QA
+
+Dashboard `/qa` memeriksa placeholder/markup, teks kosong, sisa bahasa Inggris,
+rasio panjang, tanda baca, glosarium, serta inkonsistensi salinan. Temuan dibagi
+menjadi **Pass otomatis**, **Perlu review**, dan **Approved** setelah dikonfirmasi
+editor. Setiap item menampilkan konteks baris sebelum/sesudah, dapat diberi catatan,
+dan dapat diekspor untuk review offline. Issue `attachment_mismatch` menandai target
+yang memiliki evidence kuat lebih cocok dengan source line lain dalam quest, termasuk
+kandidat alternatif, confidence, skor, dan alasan. Detector ini hanya memberi sinyal
+review dan tidak memindahkan teks secara otomatis.
+
+```sh
+# Scan korpus dan tampilkan ringkasan
+npm run qa
+
+# Ekspor temuan yang perlu direview
+npm run qa -- --format csv --status review --output /tmp/wuwaid-translation-qa.csv
+```
+
+Status serta catatan review disimpan secara lokal di `data/translation_qa_reviews.json`;
+hasil scan SQLite berada di `data/translation_qa.db`. Keduanya diabaikan Git dan
+akan dibuat ulang atau dipertahankan otomatis oleh server.
+Ekspor QA memerlukan login editor/admin dan dibatasi maksimal 10.000 item per request.
 
 ---
 

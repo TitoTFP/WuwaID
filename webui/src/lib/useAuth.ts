@@ -1,7 +1,25 @@
-import { useState, useEffect } from 'react';
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
 import { fetchMe, loginUser, loginAdmin, logoutUser } from './api';
 
-export function useAuth() {
+export interface AuthContextValue {
+  role: string;
+  username: string;
+  loading: boolean;
+  login: (password?: string) => Promise<any>;
+  adminLogin: (password?: string) => Promise<any>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function useAuthState(): AuthContextValue {
   const [role, setRole] = useState<string>(() => localStorage.getItem('wuwaid_role') || 'reader');
   const [username, setUsername] = useState<string>('Guest');
   const [loading, setLoading] = useState<boolean>(true);
@@ -46,4 +64,16 @@ export function useAuth() {
     adminLogin: handleAdminLogin,
     logout: handleLogout,
   };
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return createElement(AuthContext.Provider, { value: useAuthState() }, children);
+}
+
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used inside AuthProvider');
+  }
+  return context;
 }

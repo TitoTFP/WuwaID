@@ -23,7 +23,7 @@ export const CategoriesView: React.FC = () => {
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["categories"],
-		queryFn: fetchCategories,
+		queryFn: () => fetchCategories(),
 	});
 
 	const categories = data?.categories || [];
@@ -138,8 +138,7 @@ export const CategoriesView: React.FC = () => {
 						Manajer Kategori Teks UI & Game
 					</h1>
 					<p className="text-xs text-slate-400 font-mono mt-0.5">
-						{categories.length} file berkas terindeks · {rootGroups.length} grup
-						utama
+						{categories.length} file berkas terindeks · {rootGroups.length} grup utama
 					</p>
 				</div>
 
@@ -219,8 +218,7 @@ export const CategoriesView: React.FC = () => {
 									<div className="min-w-0 pr-2">
 										<p className="truncate font-semibold">{group.name}</p>
 										<p className="text-[10px] text-slate-500 font-sans truncate">
-											{group.count} berkas · {group.totalItems.toLocaleString()}{" "}
-											teks
+											{group.count} berkas · {group.totalItems.toLocaleString()} teks
 										</p>
 									</div>
 									<span
@@ -251,8 +249,7 @@ export const CategoriesView: React.FC = () => {
 							</h2>
 							<p className="text-xs font-mono text-slate-400">
 								Total {currentGroupInfo.totalItems.toLocaleString()} teks (
-								{currentGroupInfo.translatedItems.toLocaleString()} terjemahan
-								ID)
+								{currentGroupInfo.translatedItems.toLocaleString()} terjemahan ID)
 							</p>
 						</div>
 
@@ -319,9 +316,7 @@ export const CategoriesView: React.FC = () => {
 
 										<div className="space-y-1.5 w-full pt-2 border-t border-obsidian-800/60">
 											<div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-												<span>
-													{(category.totalItems || 0).toLocaleString()} teks
-												</span>
+												<span>{(category.totalItems || 0).toLocaleString()} teks</span>
 												<div className="flex items-center space-x-2">
 													<button
 														type="button"

@@ -225,7 +225,10 @@ data/db_exports/
 data/quests/
 # Local WebUI row snapshots; source version history and manifests are tracked.
 data/version_history.db*
+data/translation_qa.db*
+data/translation_qa_reviews.json*
 webui/data/db_uploads/
+webui/data/version_history.json
 scripts/export_quest_ordered/
 export_quest_raw_all/
 experiments/
@@ -235,5 +238,8 @@ build-artifacts/
 
 # Agent workspace files
 CLAUDE.md
+AGENTS.md
+CONTEXT.md
+pi-lens.json
 docs/agents/
 .pi-glla/

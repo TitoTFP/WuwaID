@@ -7,6 +7,8 @@ import express, { Router, type Request, type Response } from "express";
 import { db } from "../db.js";
 import { realDataLoader } from "../realDataLoader.js";
 import { invalidateTextVersionWorkingSet } from "../textVersions.js";
+import { refreshDialogueIndex } from "../dialogueIndexStore.js";
+import { refreshTranslationStats } from "../translationStatsStore.js";
 import {
 	listCategoryFiles,
 	rebuildCategoryIndex,
@@ -41,8 +43,11 @@ function getExportDbName(value: unknown): string | null {
 function getImportDbName(value: unknown): string | null {
 	if (
 		typeof value !== "string" ||
+		value.length <= ".db".length ||
 		value !== path.basename(value) ||
-		!/^[A-Za-z0-9][A-Za-z0-9._-]*\.db$/i.test(value)
+		value.includes("\\") ||
+		value.includes("\0") ||
+		!/\.db$/i.test(value)
 	) {
 		return null;
 	}
@@ -118,7 +123,8 @@ function listQuestJsonFiles(): string[] {
 		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
 			const filePath = path.join(directory, entry.name);
 			if (entry.isDirectory()) walk(filePath);
-			else if (entry.isFile() && entry.name === "dialogue.json") files.push(filePath);
+			else if (entry.isFile() && entry.name === "dialogue.json")
+				files.push(filePath);
 		}
 	};
 	walk(QUESTS_JSON_DIR);
@@ -189,13 +195,11 @@ function addQuestExportTexts(
 
 function loadQuestExportTexts(id: string): Map<string, ExportText> | null {
 	if (!SOURCE_NAME_PATTERN.test(id) || path.basename(id) !== id) return null;
-	const filePath = path.join(QUESTS_JSON_DIR, `${id}.json`);
-	if (!fs.existsSync(filePath)) return null;
+	const filePath = realDataLoader.getQuestSourceFile(id);
+	if (!filePath) return null;
 
 	try {
-		const document = JSON.parse(
-			fs.readFileSync(filePath, "utf-8"),
-		) as JsonRecord;
+		const document = JSON.parse(fs.readFileSync(filePath, "utf-8")) as JsonRecord;
 		const entries = new Map<string, ExportText>();
 		addQuestExportTexts(entries, document);
 		return entries;
@@ -229,27 +233,72 @@ function loadCategoryExportTexts(
 }
 
 function collectExportTexts(): Map<string, ExportText> {
-	const entries = new Map<string, ExportText>();
-	for (const filePath of listQuestJsonFiles()) {
+	if (!fs.existsSync(INDEX_DB_FILE)) {
+		throw new Error("Reader index is unavailable for global ConfigDB export");
+	}
+
+	let lastError: unknown;
+	for (let attempt = 0; attempt < 60; attempt++) {
+		const entries = new Map<string, ExportText>();
+		let database: DatabaseSync | null = null;
 		try {
-			addQuestExportTexts(
-				entries,
-				JSON.parse(fs.readFileSync(filePath, "utf-8")),
-			);
+			database = new DatabaseSync(INDEX_DB_FILE, {
+				readOnly: true,
+				timeout: 5000,
+			});
+			const dialogueRows = database
+				.prepare(
+					`SELECT text_key, text_en, text_id, export_name
+					 FROM dialogue_key_idx
+					 ORDER BY rowid`,
+				)
+				.all() as Array<Record<string, unknown>>;
+			for (const row of dialogueRows) {
+				mergeExportText(entries, row.text_key, {
+					en: String(row.text_en ?? ""),
+					id: String(row.text_id ?? ""),
+					name: String(row.export_name ?? ""),
+				});
+			}
+
+			const categoryRows = database
+				.prepare(
+					`SELECT key, name, text_en, text_id
+					 FROM category_text_idx
+					 ORDER BY rowid`,
+				)
+				.all() as Array<Record<string, unknown>>;
+			if (dialogueRows.length === 0 || categoryRows.length === 0) {
+				throw new Error("Reader index is still being rebuilt");
+			}
+			for (const row of categoryRows) {
+				mergeExportText(entries, row.key, {
+					en: String(row.text_en ?? ""),
+					id: String(row.text_id ?? ""),
+					name: String(row.name ?? ""),
+				});
+			}
+			return entries;
 		} catch (error) {
-			console.warn(
-				`[ops] Skipping quest export source ${path.relative(QUESTS_JSON_DIR, filePath)}:`,
-				error,
-			);
+			lastError = error;
+			const message = String(error);
+			if (
+				!/database (?:schema |table )?is locked|vtable constructor failed|no such table|still being rebuilt/i.test(
+					message,
+				)
+			) {
+				throw error;
+			}
+			const wait = new Int32Array(new SharedArrayBuffer(4));
+			Atomics.wait(wait, 0, 0, 100);
+		} finally {
+			database?.close();
 		}
 	}
-	for (const file of listCategoryFiles()) {
-		const category = loadCategoryExportTexts(file.name);
-		if (!category) continue;
-		for (const [id, text] of category.entries)
-			mergeExportText(entries, id, text);
-	}
-	return entries;
+
+	throw lastError instanceof Error
+		? lastError
+		: new Error("Reader index remained unavailable for global ConfigDB export");
 }
 
 function getExportMode(value: unknown): ExportMode | null {
@@ -264,9 +313,7 @@ function selectExportTexts(
 	mode: ExportMode,
 ): Map<string, ExportText> {
 	if (mode !== "untranslated") return entries;
-	return new Map(
-		[...entries].filter(([, text]) => text.id.trim().length === 0),
-	);
+	return new Map([...entries].filter(([, text]) => text.id.trim().length === 0));
 }
 
 function createIdDatabase(
@@ -288,8 +335,8 @@ function createIdDatabase(
 		const columns = database
 			.prepare('PRAGMA table_info("MultiText")')
 			.all() as Array<{
-				name?: string;
-			}>;
+			name?: string;
+		}>;
 		const hasNameColumn = columns.some((column) => column.name === "Name");
 		const update = database.prepare(
 			hasNameColumn
@@ -298,8 +345,7 @@ function createIdDatabase(
 		);
 		database.exec("BEGIN");
 		for (const [id, text] of entries) {
-			const content =
-				mode === "en" ? text.en : text.id.trim() ? text.id : text.en;
+			const content = mode === "en" ? text.en : text.id.trim() ? text.id : text.en;
 			if (hasNameColumn) update.run(content, text.name, id);
 			else update.run(content, id);
 		}
@@ -376,7 +422,10 @@ function applyIdTranslations(translations: Map<string, string>) {
 
 	if (fs.existsSync(QUESTS_JSON_DIR)) {
 		for (const filePath of listQuestJsonFiles()) {
-			const name = path.relative(QUESTS_JSON_DIR, filePath).split(path.sep).join("/");
+			const name = path
+				.relative(QUESTS_JSON_DIR, filePath)
+				.split(path.sep)
+				.join("/");
 			try {
 				const document = JSON.parse(
 					fs.readFileSync(filePath, "utf-8"),
@@ -414,10 +463,7 @@ function applyIdTranslations(translations: Map<string, string>) {
 					}
 				}
 			} catch (error) {
-				console.warn(
-					`[ops] Skipping quest translation import for ${name}:`,
-					error,
-				);
+				console.warn(`[ops] Skipping quest translation import for ${name}:`, error);
 			}
 		}
 	}
@@ -467,72 +513,7 @@ function applyIdTranslations(translations: Map<string, string>) {
 }
 
 function updateDialogueIndex(indexPath: string, questIds: string[]): number {
-	if (!questIds.length || !fs.existsSync(indexPath)) return 0;
-	const database = new DatabaseSync(indexPath, { timeout: 5000 });
-	try {
-		const hasDialogueIndex = (
-			database
-				.prepare("SELECT 1 AS present FROM sqlite_master WHERE type = ? AND name = ?")
-				.get("table", "dialogue_idx")
-		);
-		if (!hasDialogueIndex) return 0;
-
-		const deleteQuest = database.prepare("DELETE FROM dialogue_idx WHERE qid = ?");
-		const insertLine = database.prepare(
-			`INSERT INTO dialogue_idx
-			 (qid, line_id, side, chapter_id, chapter_name, quest_name, quest_type,
-			  line_type, has_options, speaker_en, text_en, text_zh, text_ja, text_id)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		);
-		const wantedIds = new Set(questIds);
-		const documents = new Map<string, JsonRecord>();
-		for (const filePath of listQuestJsonFiles()) {
-			try {
-				const document = JSON.parse(fs.readFileSync(filePath, "utf-8")) as JsonRecord;
-				const questId = String(document.quest_id ?? "");
-				if (wantedIds.has(questId)) documents.set(questId, document);
-			} catch {
-				// The import response already reports the changed files; skip invalid sources here.
-			}
-		}
-
-		let indexedRows = 0;
-		database.exec("BEGIN");
-		try {
-			for (const questId of wantedIds) {
-				const document = documents.get(questId);
-				if (!document) continue;
-				deleteQuest.run(Number(questId));
-				const chapterId = Number(document.chapter_id ?? 0);
-				for (const [index, row] of readDialogueRows(document).entries()) {
-					insertLine.run(
-						Number(document.quest_id ?? questId),
-						Number(row.id ?? index + 1),
-						chapterId === 0 ? 1 : 0,
-						chapterId,
-						String(document.chapter_name ?? ""),
-						String(document.quest_name ?? `Quest ${questId}`),
-						Number(document.quest_type ?? 0),
-						String(row.type ?? ""),
-						Array.isArray(row.options) ? 1 : 0,
-						String(row.speaker_en ?? ""),
-						String(row.text_en ?? ""),
-						String(row["text_zh-Hans"] ?? row.text_zh ?? ""),
-						String(row.text_ja ?? ""),
-						String(row.text_id ?? row.text_id_mt ?? ""),
-					);
-					indexedRows++;
-				}
-			}
-			database.exec("COMMIT");
-		} catch (error) {
-			database.exec("ROLLBACK");
-			throw error;
-		}
-		return indexedRows;
-	} finally {
-		database.close();
-	}
+	return refreshDialogueIndex(indexPath, questIds);
 }
 
 function clearIdTranslations() {
@@ -540,12 +521,10 @@ function clearIdTranslations() {
 	let updatedQuestLines = 0;
 	let updatedCategoryFiles = 0;
 	let updatedCategoryItems = 0;
+	const updatedQuestIds: string[] = [];
 
 	if (fs.existsSync(QUESTS_JSON_DIR)) {
-		for (const name of fs
-			.readdirSync(QUESTS_JSON_DIR)
-			.filter((file) => file.endsWith(".json"))) {
-			const filePath = path.join(QUESTS_JSON_DIR, name);
+		for (const filePath of listQuestJsonFiles()) {
 			try {
 				const document = JSON.parse(
 					fs.readFileSync(filePath, "utf-8"),
@@ -574,10 +553,13 @@ function clearIdTranslations() {
 					writeJson(filePath, document);
 					updatedQuestFiles++;
 					updatedQuestLines += changed;
+					if (document.quest_id !== undefined) {
+						updatedQuestIds.push(String(document.quest_id));
+					}
 				}
 			} catch (error) {
 				console.warn(
-					`[ops] Skipping quest translation reset for ${name}:`,
+					`[ops] Skipping quest translation reset for ${filePath}:`,
 					error,
 				);
 			}
@@ -618,6 +600,7 @@ function clearIdTranslations() {
 	return {
 		updatedQuestFiles,
 		updatedQuestLines,
+		updatedQuestIds,
 		updatedCategoryFiles,
 		updatedCategoryItems,
 	};
@@ -649,14 +632,7 @@ opsRouter.get("/databases/export/:name", (req: Request, res: Response) => {
 	}
 
 	const entries = selectExportTexts(collectExportTexts(), mode);
-	sendGeneratedDatabase(
-		res,
-		name,
-		entries,
-		mode,
-		mode === "untranslated",
-		name,
-	);
+	sendGeneratedDatabase(res, name, entries, mode, mode === "untranslated", name);
 });
 
 // GET /api/ops/databases/export/quest/:id - Export one quest's text IDs
@@ -720,9 +696,7 @@ opsRouter.post(
 		}
 
 		if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
-			res
-				.status(400)
-				.json({ error: "A non-empty SQLite .db file is required" });
+			res.status(400).json({ error: "A non-empty SQLite .db file is required" });
 			return;
 		}
 
@@ -750,6 +724,10 @@ opsRouter.post(
 				INDEX_DB_FILE,
 				updated.updatedQuestIds,
 			);
+			const indexedStatsRows = refreshTranslationStats(
+				INDEX_DB_FILE,
+				updated.updatedQuestIds,
+			);
 			realDataLoader.invalidateTranslationStats();
 			invalidateTextVersionWorkingSet();
 			res.status(200).json({
@@ -757,13 +735,12 @@ opsRouter.post(
 				file: { name, sizeBytes: req.body.length },
 				indexedCategoryRows,
 				indexedDialogueRows,
+				indexedStatsRows,
 				...updated,
 			});
 		} catch (error) {
 			console.error(`[ops] Failed importing ConfigDB ${name}:`, error);
-			res
-				.status(500)
-				.json({ error: "Failed to apply the database translations" });
+			res.status(500).json({ error: "Failed to apply the database translations" });
 		} finally {
 			fs.rmSync(temporary, { force: true });
 		}
@@ -775,8 +752,21 @@ opsRouter.post("/databases/reset-id", (_req: Request, res: Response) => {
 	try {
 		const cleared = clearIdTranslations();
 		rebuildCategoryIndex(INDEX_DB_FILE);
+		const indexedDialogueRows = updateDialogueIndex(
+			INDEX_DB_FILE,
+			cleared.updatedQuestIds,
+		);
+		const indexedStatsRows = refreshTranslationStats(
+			INDEX_DB_FILE,
+			cleared.updatedQuestIds,
+		);
 		realDataLoader.invalidateTranslationStats();
-		res.status(200).json({ status: "reset", ...cleared });
+		res.status(200).json({
+			status: "reset",
+			indexedDialogueRows,
+			indexedStatsRows,
+			...cleared,
+		});
 	} catch (error) {
 		console.error("[ops] Failed resetting Indonesian translations:", error);
 		res.status(500).json({ error: "Failed to reset Indonesian translations" });

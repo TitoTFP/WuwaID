@@ -4,6 +4,7 @@ import { Command } from "cmdk";
 import {
 	Activity,
 	BookOpen,
+	ClipboardCheck,
 	Database,
 	FileText,
 	Layers,
@@ -386,7 +387,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
 						{showCommands && (
 							<>
-								<Command.Group heading="NAVIGASI" className="palette-heading">
+					<Command.Group heading="NAVIGASI" className="palette-heading">
 									<Command.Item
 										value="reader buka reader"
 										onSelect={() => handleSelect("/reader")}
@@ -395,14 +396,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 										<BookOpen className="palette-icon text-cyber-cyan" />
 										<span>Buka Reader</span>
 									</Command.Item>
-									<Command.Item
-										value="workbench buka workbench"
+					<Command.Item
+						value="workbench buka workbench"
 										onSelect={() => handleSelect("/workbench")}
 										className="palette-item"
 									>
 										<PenTool className="palette-icon text-cyber-gold" />
 										<span>Buka Workbench</span>
-									</Command.Item>
+					</Command.Item>
+					<Command.Item
+						value="qa translation quality quality assurance review terjemahan"
+						onSelect={() => handleSelect("/qa")}
+						className="palette-item"
+					>
+						<ClipboardCheck className="palette-icon text-cyber-gold" />
+						<span>Translation QA</span>
+					</Command.Item>
 									<Command.Item
 										value="operations buka operations"
 										onSelect={() => handleSelect("/operations")}
