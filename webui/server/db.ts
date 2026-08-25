@@ -276,7 +276,7 @@ class WebUIDatabase {
 		this.versionsSignature = this.getVersionsSignature();
 	}
 
-	public createSession(role: "editor" | "admin", username: string): UserSession {
+	public createSession(role: UserSession["role"], username: string): UserSession {
 		const token = `token_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 		const session: UserSession = {
 			token,

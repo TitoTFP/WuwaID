@@ -8,23 +8,36 @@ import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import test, { after, before } from "node:test";
 import { createApp } from "./app.js";
+import { db } from "./db.js";
 import {
 	DatabaseJobManager,
 	type DatabaseJobView,
 } from "./databaseJobManager.js";
-import { rebuildCategoryIndex } from "./categoryStore.js";
+import {
+	readCategoryDocument,
+	resolveCategoryFile,
+} from "./categoryStore.js";
 import { buildReaderIndex } from "./readerIndexStore.js";
 
 const REPO_ROOT = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../..",
 );
-const INDEX_DB_FILE = path.join(REPO_ROOT, "data/quests/index.db");
+const FIXTURE_ROOT = path.join(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"test-fixtures/export-data",
+);
 
 let server: Server;
+let fixtureServer: Server;
 let baseUrl = "";
+let fixtureBaseUrl = "";
+let adminToken = "";
+const adminHeaders = () => ({ Authorization: `Bearer ${adminToken}` });
 
 before(async () => {
+	const admin = db.createSession("admin", "Ops Integration Admin");
+	adminToken = admin.token;
 	server = createServer(createApp());
 	server.listen(0, "127.0.0.1");
 	await once(server, "listening");
@@ -33,17 +46,48 @@ before(async () => {
 		throw new Error("Export test server did not expose a port.");
 	}
 	baseUrl = `http://127.0.0.1:${address.port}`;
+
+	fixtureServer = createServer(
+		createApp({
+			opsRouterOptions: {
+				repoRoot: FIXTURE_ROOT,
+				getQuestSourceFile: (id) =>
+					id === "155000000"
+						? path.join(FIXTURE_ROOT, "data/quests/quests/155000000/dialogue.json")
+						: null,
+				resolveCategoryFile: (name) =>
+					resolveCategoryFile(
+						name,
+						path.join(FIXTURE_ROOT, "data/quests/categories"),
+					),
+				readCategoryDocument,
+			},
+		}),
+	);
+	fixtureServer.listen(0, "127.0.0.1");
+	await once(fixtureServer, "listening");
+	const fixtureAddress = fixtureServer.address();
+	if (!fixtureAddress || typeof fixtureAddress === "string") {
+		throw new Error("Export fixture server did not expose a port.");
+	}
+	fixtureBaseUrl = `http://127.0.0.1:${fixtureAddress.port}`;
 });
 
 after(async () => {
-	await new Promise<void>((resolve, reject) => {
-		server.close((error) => (error ? reject(error) : resolve()));
-	});
+	if (adminToken) db.sessions.delete(adminToken);
+	await Promise.all(
+		[server, fixtureServer].map(
+			(activeServer) =>
+				new Promise<void>((resolve, reject) => {
+					activeServer.close((error) => (error ? reject(error) : resolve()));
+				}),
+		),
+	);
 });
 
-test("exports a quest stored in a nested dialogue.json file", async () => {
+test("exports a committed fixture quest stored in a nested dialogue.json file", async () => {
 	const response = await fetch(
-		`${baseUrl}/api/ops/databases/export/quest/155000000?mode=id`,
+		`${fixtureBaseUrl}/api/ops/databases/export/quest/155000000?mode=id`,
 	);
 	const body = Buffer.from(await response.arrayBuffer());
 
@@ -55,17 +99,12 @@ test("exports a quest stored in a nested dialogue.json file", async () => {
 	assert.deepEqual(body.subarray(0, 16), Buffer.from("SQLite format 3\0"));
 });
 
-test("per-source exports add Name without changing templates", async () => {
-	const categoryDirectory = path.join(
-		REPO_ROOT,
-		"data/quests/categories/export_name_test",
-	);
-	const categoryFile = path.join(categoryDirectory, "Text.json");
+test("per-source fixture exports add Name without changing templates", async () => {
 	const temporaryDirectory = fs.mkdtempSync(
 		path.join(os.tmpdir(), "wuwaid-name-export-test-"),
 	);
 	const templatePath = path.join(
-		REPO_ROOT,
+		FIXTURE_ROOT,
 		"data/db_exports/en/lang_multi_text.db",
 	);
 	const templateBefore = fs.readFileSync(templatePath);
@@ -89,58 +128,40 @@ test("per-source exports add Name without changing templates", async () => {
 		}
 	};
 
-	fs.mkdirSync(categoryDirectory, { recursive: true });
-	fs.writeFileSync(
-		categoryFile,
-		JSON.stringify(
-			{
-				AchievementGroup_1001_Name: {
-					en: "Category source",
-					id: "",
-					name: "Category Name",
-				},
-				AchievementGroup_1002_Name: {
-					en: "Category without primary name",
-					id: "",
-					entity: "Do not use this fallback",
-				},
-			},
-			null,
-			2,
-		),
-		"utf8",
-	);
-
 	try {
 		for (const mode of modes) {
 			const questResponse = await fetch(
-				`${baseUrl}/api/ops/databases/export/quest/155000000?mode=${mode}`,
+				`${fixtureBaseUrl}/api/ops/databases/export/quest/155000000?mode=${mode}`,
 			);
 			const questBody = Buffer.from(await questResponse.arrayBuffer());
 			assert.equal(questResponse.status, 200, questBody.toString("utf8"));
 			const questId =
-				mode === "untranslated" ? "Character_Brant_3_27" : "Character_Brant_1_1";
+				mode === "untranslated" ? "Character_Test_1_3" : "Character_Test_1_1";
 			const quest = readRow(questBody, `quest-${mode}.db`, questId);
 			assert.ok(quest.columns.some((column) => column.name === "Name"));
-			assert.equal(quest.row?.Name, "Battier");
+			assert.equal(
+				quest.row?.Name,
+				mode === "untranslated" ? "Narrator" : "Battier",
+			);
+			assert.equal(
+				quest.row?.Content,
+				mode === "untranslated"
+					? "Untranslated phrase"
+					: mode === "en"
+						? "Captain Test"
+						: "Kapten Uji",
+			);
 			if (mode !== "untranslated") {
 				const option = readRow(
 					questBody,
 					`quest-option-${mode}.db`,
-					"Character_Brant_3_4",
+					"Character_Test_1_2",
 				);
 				assert.equal(option.row?.Name, "");
 			}
-			if (mode === "untranslated") {
-				assert.equal(quest.row?.Content, "…");
-			} else if (mode === "en") {
-				assert.match(quest.row?.Content || "", /Captain/);
-			} else {
-				assert.match(quest.row?.Content || "", /Kapten/);
-			}
 
 			const categoryResponse = await fetch(
-				`${baseUrl}/api/ops/databases/export/category/export_name_test/Text?mode=${mode}`,
+				`${fixtureBaseUrl}/api/ops/databases/export/category/export_name_test/Text?mode=${mode}`,
 			);
 			const categoryBody = Buffer.from(await categoryResponse.arrayBuffer());
 			assert.equal(categoryResponse.status, 200, categoryBody.toString("utf8"));
@@ -161,8 +182,6 @@ test("per-source exports add Name without changing templates", async () => {
 		}
 		assert.deepEqual(fs.readFileSync(templatePath), templateBefore);
 	} finally {
-		fs.rmSync(categoryDirectory, { recursive: true, force: true });
-		rebuildCategoryIndex(INDEX_DB_FILE);
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
 });
@@ -537,7 +556,7 @@ test("HTTP valid import and reset jobs keep health responsive while polling", as
 			`${fixtureBaseUrl}/api/ops/databases/import?filename=fixture.db`,
 			{
 				method: "POST",
-				headers: { "Content-Type": "application/octet-stream" },
+				headers: { "Content-Type": "application/octet-stream", ...adminHeaders() },
 				body,
 			},
 		);
@@ -553,7 +572,7 @@ test("HTTP valid import and reset jobs keep health responsive while polling", as
 
 		const resetResponse = await fetch(
 			`${fixtureBaseUrl}/api/ops/databases/reset-id`,
-			{ method: "POST" },
+			{ method: "POST", headers: adminHeaders() },
 		);
 		const resetAccepted = (await resetResponse.json()) as {
 			id: string;
@@ -685,7 +704,7 @@ test("queues a single import and keeps health responsive", async () => {
 		`${baseUrl}/api/ops/databases/import?filename=invalid-job.db`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/octet-stream" },
+			headers: { "Content-Type": "application/octet-stream", ...adminHeaders() },
 			body: Buffer.concat([
 				Buffer.from("SQLite format 3"),
 				Buffer.from([0]),
@@ -711,7 +730,7 @@ test("queues a single import and keeps health responsive", async () => {
 test("stages a folder import and enqueues one batch job", async () => {
 	const start = await fetch(`${baseUrl}/api/ops/databases/import-batch`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...adminHeaders() },
 		body: JSON.stringify({ expectedFiles: 2 }),
 	});
 	const batch = (await start.json()) as { id: string; status: string };
@@ -723,7 +742,7 @@ test("stages a folder import and enqueues one batch job", async () => {
 			`${baseUrl}/api/ops/databases/import-batch/${batch.id}/file?filename=${filename}&index=${index}`,
 			{
 				method: "POST",
-				headers: { "Content-Type": "application/octet-stream" },
+				headers: { "Content-Type": "application/octet-stream", ...adminHeaders() },
 				body: Buffer.concat([
 					Buffer.from("SQLite format 3"),
 					Buffer.from([0]),
@@ -736,7 +755,7 @@ test("stages a folder import and enqueues one batch job", async () => {
 
 	const finish = await fetch(
 		`${baseUrl}/api/ops/databases/import-batch/${batch.id}/finish`,
-		{ method: "POST" },
+		{ method: "POST", headers: adminHeaders() },
 	);
 	const queued = (await finish.json()) as {
 		id: string;
@@ -781,6 +800,49 @@ test("serializes database mutation jobs", async () => {
 		}
 		assert.equal(manager.getJob(first.id)?.status, "failed");
 		assert.equal(manager.getJob(second.id)?.status, "failed");
+	} finally {
+		fs.rmSync(temporaryRoot, { recursive: true, force: true });
+	}
+});
+
+test("database job manager waits for an active writer lock and reclaims stale locks", async () => {
+	const temporaryRoot = fs.mkdtempSync(
+		path.join(os.tmpdir(), "wuwaid-database-job-lock-"),
+	);
+	const lockPath = path.join(temporaryRoot, ".writer.lock");
+	const invalidDatabase = Buffer.concat([
+		Buffer.from("SQLite format 3"),
+		Buffer.from([0]),
+		Buffer.from("not-a-database"),
+	]);
+	try {
+		fs.writeFileSync(
+			lockPath,
+			JSON.stringify({ pid: process.pid, token: "active-owner", startedAt: new Date().toISOString() }),
+		);
+		const manager = new DatabaseJobManager(temporaryRoot);
+		const waiting = manager.enqueueSingleImport("waiting.db", invalidDatabase);
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		assert.equal(manager.getJob(waiting.id)?.status, "queued");
+
+		fs.rmSync(lockPath, { force: true });
+		for (let attempt = 0; attempt < 100; attempt++) {
+			if (manager.getJob(waiting.id)?.status === "failed") break;
+			await new Promise((resolve) => setTimeout(resolve, 25));
+		}
+		assert.equal(manager.getJob(waiting.id)?.status, "failed");
+
+		fs.writeFileSync(
+			lockPath,
+			JSON.stringify({ pid: 999999999, token: "dead-owner", startedAt: new Date(0).toISOString() }),
+		);
+		fs.utimesSync(lockPath, new Date(0), new Date(0));
+		const stale = manager.enqueueSingleImport("stale.db", invalidDatabase);
+		for (let attempt = 0; attempt < 100; attempt++) {
+			if (manager.getJob(stale.id)?.status === "failed") break;
+			await new Promise((resolve) => setTimeout(resolve, 25));
+		}
+		assert.equal(manager.getJob(stale.id)?.status, "failed");
 	} finally {
 		fs.rmSync(temporaryRoot, { recursive: true, force: true });
 	}
@@ -836,7 +898,7 @@ test("recovers a running database job after manager restart", async () => {
 	}
 });
 
-test("global ConfigDB export uses the SQLite read model", async () => {
+test("global ConfigDB export uses the committed SQLite read model fixture", async () => {
 	const temporaryDirectory = fs.mkdtempSync(
 		path.join(os.tmpdir(), "wuwaid-global-export-test-"),
 	);
@@ -859,7 +921,7 @@ test("global ConfigDB export uses the SQLite read model", async () => {
 
 	try {
 		const response = await fetch(
-			`${baseUrl}/api/ops/databases/export/lang_multi_text.db?mode=id`,
+			`${fixtureBaseUrl}/api/ops/databases/export/lang_multi_text.db?mode=id`,
 		);
 		const body = Buffer.from(await response.arrayBuffer());
 		assert.equal(response.status, 200, body.toString("utf8"));
@@ -872,8 +934,8 @@ test("global ConfigDB export uses the SQLite read model", async () => {
 			assert.ok(!columns.some((column) => column.name?.toLowerCase() === "name"));
 			const row = database
 				.prepare("SELECT Content FROM MultiText WHERE Id = ?")
-				.get("Event_TXCQDEBF_1_1") as { Content?: string } | undefined;
-			assert.equal(row?.Content, "Apa itu, Pak Li? Kelihatannya enak banget!");
+				.get("Global_Test_1") as { Content?: string } | undefined;
+			assert.equal(row?.Content, "Global ID");
 		} finally {
 			database.close();
 		}

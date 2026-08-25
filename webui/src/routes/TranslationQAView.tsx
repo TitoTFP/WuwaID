@@ -415,6 +415,7 @@ export function TranslationQAView() {
 	const queryClient = useQueryClient();
 	const { role } = useAuth();
 	const canReview = role === "editor" || role === "admin";
+	const canScan = role === "admin";
 	const [status, setStatus] = useState<TranslationQAStatus | "all">("review");
 	const [kind, setKind] = useState<TranslationQASourceKind | "all">("all");
 	const [issue, setIssue] = useState("");
@@ -550,11 +551,11 @@ export function TranslationQAView() {
 					<button
 						type="button"
 						onClick={() => scanMutation.mutate()}
-						disabled={!canReview || scanMutation.isPending}
+						disabled={!canScan || scanMutation.isPending}
 						title={
-							canReview
+							canScan
 								? "Jalankan scan korpus (cooldown 60 detik)"
-								: "Login editor/admin untuk scan ulang"
+								: "Login admin untuk scan ulang"
 						}
 						className="inline-flex items-center gap-1.5 rounded border border-cyber-cyan/40 bg-cyber-cyan/10 px-3 py-2 text-xs font-mono font-bold text-cyber-cyan hover:bg-cyber-cyan/20 disabled:cursor-not-allowed disabled:opacity-50"
 					>

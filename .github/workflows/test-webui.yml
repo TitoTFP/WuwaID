@@ -1,0 +1,53 @@
+name: Test WebUI and data tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "webui/**"
+      - "scripts/**"
+      - "package.json"
+      - ".github/workflows/test-webui.yml"
+  pull_request:
+    paths:
+      - "webui/**"
+      - "scripts/**"
+      - "package.json"
+      - ".github/workflows/test-webui.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: webui/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install WebUI dependencies
+        run: npm ci --prefix webui
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Run QA tests
+        run: npm --prefix webui run test:qa
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Run Python tests
+        run: npm run test:python
+
+      - name: Build WebUI
+        run: npm run build

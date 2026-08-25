@@ -101,6 +101,19 @@ async function login(
 	return result.body;
 }
 
+async function adminLogin(): Promise<{ token: string; role: string }> {
+	const result = await jsonRequest<{ token: string; role: string }>(
+		"/api/auth/admin/login",
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ password: "admin" }),
+		},
+	);
+	assert.equal(result.response.status, 200);
+	return result.body;
+}
+
 before(async () => {
 	fixtureRoot = await mkdtemp(path.join(tmpdir(), "wuwaid-qa-integration-"));
 	await mkdir(path.join(fixtureRoot, "data/quests/quests/TestQuest"), {
@@ -232,7 +245,9 @@ test("QA snapshot, concurrent summary, review lock, and export limit work togeth
 	assert.equal(initial.body.totalOccurrences, 10_005);
 
 	const editor = await login("editor");
-	const authHeaders = { Authorization: `Bearer ${editor.token}` };
+	const editorHeaders = { Authorization: `Bearer ${editor.token}` };
+	const admin = await adminLogin();
+	const adminHeaders = { Authorization: `Bearer ${admin.token}` };
 	const scan = await jsonRequest<{
 		id: string;
 		status: string;
@@ -240,7 +255,7 @@ test("QA snapshot, concurrent summary, review lock, and export limit work togeth
 		progress: { percent: number };
 	}>("/api/qa/scan", {
 		method: "POST",
-		headers: authHeaders,
+		headers: adminHeaders,
 	});
 	assert.equal(scan.response.status, 202);
 	assert.equal(scan.body.status, "running", scan.body.error);
@@ -260,7 +275,7 @@ test("QA snapshot, concurrent summary, review lock, and export limit work togeth
 		`/api/qa/items/${reviewItem.body.items[0].id}`,
 		{
 			method: "PATCH",
-			headers: { ...authHeaders, "Content-Type": "application/json" },
+			headers: { ...editorHeaders, "Content-Type": "application/json" },
 			body: JSON.stringify({ status: "approved", comment: "blocked during scan" }),
 		},
 	);
@@ -276,7 +291,7 @@ test("QA snapshot, concurrent summary, review lock, and export limit work togeth
 			jsonRequest<{
 				status: string;
 				progress: { percent: number; current?: number; total?: number };
-			}>(`/api/qa/scan/${scan.body.id}`, { headers: authHeaders }),
+			}>(`/api/qa/scan/${scan.body.id}`, { headers: adminHeaders }),
 			request("/api/health"),
 		]);
 		assert.equal(health.status, 200);
@@ -334,7 +349,7 @@ test("QA snapshot, concurrent summary, review lock, and export limit work togeth
 	const exported = await request(
 		"/api/qa/export?format=csv&status=all&limit=999999",
 		{
-			headers: authHeaders,
+			headers: editorHeaders,
 		},
 	);
 	assert.equal(exported.status, 200);
@@ -826,10 +841,12 @@ test("QA stays lazy across workbench and database mutation jobs", async () => {
 		assert.equal(reset.status, "completed", reset.error);
 
 		const originalStatuses = db.drafts.map((draft) => draft.status);
+		const admin = await adminLogin();
 		try {
 			for (const draft of db.drafts) draft.status = "pending";
 			const workbenchResponse = await request("/api/workbench/drafts/apply", {
 				method: "POST",
+				headers: { Authorization: `Bearer ${admin.token}` },
 			});
 			assert.equal(workbenchResponse.status, 200);
 			assert.equal((await workbenchResponse.json()).status, "none");
@@ -865,7 +882,7 @@ test("login preserves the legacy password-compatible response contract", async (
 	assert.equal(admin.body.role, "admin");
 });
 
-test("production startup preserves the legacy auth availability contract", async () => {
+test("production startup validates configured auth credentials", async () => {
 	const port = await getFreePort();
 	const probe = spawn(
 		process.execPath,
@@ -882,8 +899,8 @@ test("production startup preserves the legacy auth availability contract", async
 				...process.env,
 				NODE_ENV: "production",
 				PORT: String(port),
-				WUWAID_EDITOR_PASSWORD: "",
-				WUWAID_ADMIN_PASSWORD: "",
+				WUWAID_EDITOR_PASSWORD: "editor-secret",
+				WUWAID_ADMIN_PASSWORD: "admin-secret",
 			},
 			stdio: ["ignore", "pipe", "pipe"],
 		},
@@ -903,12 +920,21 @@ test("production startup preserves the legacy auth availability contract", async
 			await new Promise((resolve) => setTimeout(resolve, 50));
 		}
 		assert.equal(ready, true);
-		const response = await fetch(
+		const invalid = await fetch(
 			`http://127.0.0.1:${port}/api/auth/admin/login`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ password: "admin" }),
+			},
+		);
+		assert.equal(invalid.status, 401);
+		const response = await fetch(
+			`http://127.0.0.1:${port}/api/auth/admin/login`,
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ password: "admin-secret" }),
 			},
 		);
 		assert.equal(response.status, 200);

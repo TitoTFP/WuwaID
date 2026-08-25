@@ -5,27 +5,39 @@ import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import express, { Router, type Request, type Response } from "express";
 import { db } from "../db.js";
+import { requireAdmin, requireTelemetryToken } from "../requestAuth.js";
 import { realDataLoader } from "../realDataLoader.js";
 import { databaseJobManager as defaultDatabaseJobManager } from "../databaseJobManager.js";
 import { readCategoryDocument, resolveCategoryFile } from "../categoryStore.js";
 import { readDialogueRows } from "../dialogueIndexStore.js";
 import type { LogEntry } from "../../src/types/index.js";
 
+export interface OpsRouterOptions {
+	repoRoot?: string;
+	getQuestSourceFile?: (id: string) => string | null;
+	resolveCategoryFile?: typeof resolveCategoryFile;
+	readCategoryDocument?: typeof readCategoryDocument;
+}
+
 export function createOpsRouter(
 	jobManager = defaultDatabaseJobManager,
+	options: OpsRouterOptions = {},
 ): Router {
 	const databaseJobManager = jobManager;
 	const opsRouter = Router();
 
-	const REPO_ROOT = path.resolve(
-		path.dirname(fileURLToPath(import.meta.url)),
-		"../../../",
-	);
+	const REPO_ROOT =
+		options.repoRoot ||
+		path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../");
 	const TEMP_DB_STORE = path.join(os.tmpdir(), "wuwaid-webui");
 	const DB_EXPORT_TEMPLATE_DIR = path.join(REPO_ROOT, "data/db_exports/en");
 	const EXPORT_DB_NAME_PATTERN = /^lang_multi_text(?:_[A-Za-z0-9-]+)*\.db$/i;
 	const INDEX_DB_FILE = path.join(REPO_ROOT, "data/quests/index.db");
 	const SOURCE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_/-]*$/;
+	const getQuestSourceFile =
+		options.getQuestSourceFile || ((id: string) => realDataLoader.getQuestSourceFile(id));
+	const resolveCategory = options.resolveCategoryFile || resolveCategoryFile;
+	const readCategory = options.readCategoryDocument || readCategoryDocument;
 
 	function getExportDbName(value: unknown): string | null {
 		return typeof value === "string" &&
@@ -121,7 +133,7 @@ export function createOpsRouter(
 		mode: ExportMode,
 	): Map<string, ExportText> | null {
 		if (!SOURCE_NAME_PATTERN.test(id) || path.basename(id) !== id) return null;
-		const filePath = realDataLoader.getQuestSourceFile(id);
+		const filePath = getQuestSourceFile(id);
 		if (!filePath) return null;
 
 		try {
@@ -141,9 +153,9 @@ export function createOpsRouter(
 	): { name: string; entries: Map<string, ExportText> } | null {
 		const cleanName = name.startsWith("cat_") ? name.slice(4) : name;
 		if (!SOURCE_NAME_PATTERN.test(cleanName)) return null;
-		const file = resolveCategoryFile(cleanName);
+		const file = resolveCategory(cleanName);
 		if (!file) return null;
-		const document = readCategoryDocument(file);
+		const document = readCategory(file);
 		if (!document) return null;
 
 		const entries = new Map<string, ExportText>();
@@ -450,6 +462,7 @@ export function createOpsRouter(
 			limit: "256mb",
 		}),
 		(req: Request, res: Response) => {
+			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
 			const name = getImportDbName(req.query.filename);
 			if (!name) {
 				res.status(400).json({ error: "filename must be a simple .db filename" });
@@ -473,6 +486,7 @@ export function createOpsRouter(
 
 	// POST /api/ops/databases/import-batch - Start a durable folder import batch.
 	opsRouter.post("/databases/import-batch", (req: Request, res: Response) => {
+		if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
 		try {
 			const expectedFiles = Number(req.body?.expectedFiles);
 			res.status(201).json(databaseJobManager.startImportBatch(expectedFiles));
@@ -491,6 +505,7 @@ export function createOpsRouter(
 			limit: "256mb",
 		}),
 		(req: Request, res: Response) => {
+			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
 			const name = getImportDbName(req.query.filename);
 			const index = Number(req.query.index);
 			if (!name) {
@@ -519,6 +534,7 @@ export function createOpsRouter(
 	opsRouter.post(
 		"/databases/import-batch/:id/finish",
 		(req: Request, res: Response) => {
+			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
 			try {
 				res.status(202).json(databaseJobManager.finishImportBatch(req.params.id));
 			} catch (error) {
@@ -540,7 +556,8 @@ export function createOpsRouter(
 	});
 
 	// POST /api/ops/databases/reset-id - Queue removal of all Indonesian translations.
-	opsRouter.post("/databases/reset-id", (_req: Request, res: Response) => {
+	opsRouter.post("/databases/reset-id", (req: Request, res: Response) => {
+		if (!requireAdmin(req, res, "Admin login is required to reset translations.")) return;
 		try {
 			res.status(202).json(databaseJobManager.enqueueReset());
 		} catch (error) {
@@ -653,6 +670,7 @@ export function createOpsRouter(
 
 	// POST /api/ops/logs or /api/logs - Remote log ingestion
 	opsRouter.post(["/logs", "/ops/logs"], (req: Request, res: Response) => {
+		if (!requireTelemetryToken(req, res)) return;
 		const { level, message, client } = req.body;
 
 		const newLog: LogEntry = {

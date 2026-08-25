@@ -3,17 +3,20 @@ import cors from "cors";
 import { db } from "./db.js";
 import { readerRouter } from "./routes/reader.js";
 import { workbenchRouter } from "./routes/workbench.js";
-import { createOpsRouter, opsRouter } from "./routes/ops.js";
+import { createOpsRouter, opsRouter, type OpsRouterOptions } from "./routes/ops.js";
 import type { DatabaseJobManager } from "./databaseJobManager.js";
 import { authRouter } from "./routes/auth.js";
 import { qaRouter } from "./routes/qa.js";
 
 export function createApp(
-	options: { databaseJobManager?: DatabaseJobManager } = {},
+	options: {
+		databaseJobManager?: DatabaseJobManager;
+		opsRouterOptions?: OpsRouterOptions;
+	} = {},
 ) {
 	const app = express();
-	const operationsRouter = options.databaseJobManager
-		? createOpsRouter(options.databaseJobManager)
+	const operationsRouter = options.databaseJobManager || options.opsRouterOptions
+		? createOpsRouter(options.databaseJobManager, options.opsRouterOptions)
 		: opsRouter;
 
 	app.use(cors());

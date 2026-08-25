@@ -4,6 +4,7 @@
   "scripts": {
     "check": "npm --prefix webui run check",
     "build": "npm --prefix webui run build",
-    "test:integration": "npm --prefix webui run test:integration"
+    "test:integration": "npm --prefix webui run test:integration",
+    "test:python": "python -m unittest discover -s scripts -p 'test_*.py' -v"
   }
 }

@@ -1,0 +1,41 @@
+{
+  "quest_id": "155000000",
+  "dialogue": [
+    {
+      "text_key": "Character_Test_1_1",
+      "text_en": "Captain Test",
+      "text_id": "Kapten Uji",
+      "speaker_en": "Battier",
+      "options": [
+        {
+          "text_key": "Character_Test_1_2",
+          "text_en": "Choose test",
+          "text_id": "Pilih uji",
+          "speaker_en": ""
+        }
+      ]
+    }
+  ],
+  "all_lines": [
+    {
+      "text_key": "Character_Test_1_1",
+      "text_en": "Captain Test",
+      "text_id": "Kapten Uji",
+      "speaker_en": "Battier",
+      "options": [
+        {
+          "text_key": "Character_Test_1_2",
+          "text_en": "Choose test",
+          "text_id": "Pilih uji",
+          "speaker_en": ""
+        }
+      ]
+    },
+    {
+      "text_key": "Character_Test_1_3",
+      "text_en": "Untranslated phrase",
+      "text_id": "",
+      "speaker_en": "Narrator"
+    }
+  ]
+}

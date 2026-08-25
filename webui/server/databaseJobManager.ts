@@ -18,6 +18,10 @@ const JOB_ID_PATTERN = /^[0-9a-f-]{36}$/i;
 const JOB_RECORD_NAME = "job.json";
 const SQLITE_HEADER = Buffer.from("SQLite format 3\0");
 const MAX_IMPORT_FILES = 2000;
+const WRITER_LOCK_NAME = ".writer.lock";
+const WRITER_LOCK_HEARTBEAT_MS = 5000;
+const WRITER_LOCK_STALE_MS = 30000;
+const WRITER_LOCK_RETRY_MS = 250;
 
 type JobStatus = "staging" | "queued" | "running" | "completed" | "failed";
 
@@ -100,11 +104,17 @@ function mergeProgress(
 export class DatabaseJobManager {
 	private readonly records = new Map<string, DatabaseJobRecord>();
 	private activeJobId: string | null = null;
+	private readonly lockPath: string;
+	private writerLockHandle: number | null = null;
+	private writerLockToken: string | null = null;
+	private lockHeartbeat: NodeJS.Timeout | null = null;
+	private lockRetryTimer: NodeJS.Timeout | null = null;
 
 	constructor(
 		private readonly jobRoot = JOB_ROOT,
 		private readonly options: DatabaseJobManagerOptions = {},
 	) {
+		this.lockPath = path.join(this.jobRoot, WRITER_LOCK_NAME);
 		this.loadRecords();
 		setImmediate(() => this.drain());
 	}
@@ -242,6 +252,7 @@ export class DatabaseJobManager {
 
 	private loadRecords(): void {
 		fs.mkdirSync(this.jobRoot, { recursive: true });
+		let lockedRunningJob = false;
 		for (const entry of fs.readdirSync(this.jobRoot, { withFileTypes: true })) {
 			if (!entry.isDirectory() || !JOB_ID_PATTERN.test(entry.name)) continue;
 			try {
@@ -249,19 +260,131 @@ export class DatabaseJobManager {
 					fs.readFileSync(this.jobRecordPath(entry.name), "utf-8"),
 				) as DatabaseJobRecord;
 				if (record.status === "running") {
-					record.status = "queued";
-					record.updatedAt = now();
-					record.progress = {
-						...record.progress,
-						stage: "recovery",
-						detail: "Dilanjutkan setelah backend restart",
-					};
-					writeAtomic(this.jobRecordPath(record.id), record);
+					if (this.writerLockIsActive()) {
+						lockedRunningJob = true;
+					} else {
+						record.status = "queued";
+						record.updatedAt = now();
+						record.progress = {
+							...record.progress,
+							stage: "recovery",
+							detail: "Dilanjutkan setelah backend restart",
+						};
+						writeAtomic(this.jobRecordPath(record.id), record);
+					}
 				}
 				this.records.set(record.id, record);
 			} catch (error) {
 				console.warn(`[database-jobs] Cannot load ${entry.name}:`, error);
 			}
+		}
+		if (lockedRunningJob) this.scheduleDrainRetry();
+	}
+
+	private writerLockIsActive(): boolean {
+		try {
+			const stats = fs.statSync(this.lockPath);
+			if (Date.now() - stats.mtimeMs > WRITER_LOCK_STALE_MS) return false;
+			const owner = JSON.parse(fs.readFileSync(this.lockPath, "utf8")) as {
+				pid?: number;
+			};
+			const pid = owner.pid;
+			if (typeof pid !== "number" || !Number.isInteger(pid)) return true;
+			if (pid === process.pid) return true;
+			try {
+				process.kill(pid, 0);
+				return true;
+			} catch (error) {
+				return (error as NodeJS.ErrnoException).code === "EPERM";
+			}
+		} catch (error) {
+			return (error as NodeJS.ErrnoException).code !== "ENOENT";
+		}
+	}
+
+	private tryAcquireWriterLock(): boolean {
+		if (this.writerLockHandle !== null) return true;
+		fs.mkdirSync(this.jobRoot, { recursive: true });
+		for (let attempt = 0; attempt < 2; attempt++) {
+			let handle: number | null = null;
+			try {
+				const token = randomUUID();
+				handle = fs.openSync(this.lockPath, "wx");
+				fs.writeFileSync(
+					handle,
+					JSON.stringify({ pid: process.pid, token, startedAt: now() }),
+					"utf8",
+				);
+				this.writerLockHandle = handle;
+				this.writerLockToken = token;
+				this.lockHeartbeat = setInterval(
+					() => this.refreshWriterLock(),
+					WRITER_LOCK_HEARTBEAT_MS,
+				);
+				this.lockHeartbeat.unref();
+				return true;
+			} catch (error) {
+				if (handle !== null) {
+					try {
+						fs.closeSync(handle);
+					} catch {
+						// The failed acquisition is already recoverable via the lock file.
+					}
+				}
+				if ((error as NodeJS.ErrnoException).code !== "EEXIST") return false;
+				if (this.writerLockIsActive()) return false;
+				try {
+					fs.rmSync(this.lockPath, { force: true });
+				} catch {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+	private scheduleDrainRetry(): void {
+		if (this.lockRetryTimer) return;
+		this.lockRetryTimer = setTimeout(() => {
+			this.lockRetryTimer = null;
+			this.loadRecords();
+			this.drain();
+		}, WRITER_LOCK_RETRY_MS);
+		this.lockRetryTimer.unref();
+	}
+
+	private refreshWriterLock(): void {
+		if (this.writerLockHandle === null) return;
+		try {
+			const timestamp = new Date();
+			fs.futimesSync(this.writerLockHandle, timestamp, timestamp);
+		} catch (error) {
+			console.warn("[database-jobs] Writer lock heartbeat failed:", error);
+		}
+	}
+
+	private releaseWriterLock(): void {
+		if (this.lockHeartbeat) clearInterval(this.lockHeartbeat);
+		this.lockHeartbeat = null;
+		const handle = this.writerLockHandle;
+		const token = this.writerLockToken;
+		this.writerLockHandle = null;
+		this.writerLockToken = null;
+		if (handle !== null) {
+			try {
+				fs.closeSync(handle);
+			} catch {
+				// The process can still reclaim the lock after a crash.
+			}
+		}
+		if (!token) return;
+		try {
+			const owner = JSON.parse(fs.readFileSync(this.lockPath, "utf8")) as {
+				token?: string;
+			};
+			if (owner.token === token) fs.rmSync(this.lockPath, { force: true });
+		} catch {
+			// A missing or already-reclaimed lock is safe.
 		}
 	}
 
@@ -306,6 +429,10 @@ export class DatabaseJobManager {
 			.filter((record) => record.status === "queued")
 			.sort((left, right) => left.createdAt.localeCompare(right.createdAt))[0];
 		if (!next) return;
+		if (!this.tryAcquireWriterLock()) {
+			this.scheduleDrainRetry();
+			return;
+		}
 
 		this.activeJobId = next.id;
 		next.status = "running";
@@ -324,7 +451,16 @@ export class DatabaseJobManager {
 		const workerFile = import.meta.url.endsWith(".ts")
 			? "./databaseJobWorker.ts"
 			: "./databaseJobWorker.js";
-		const worker = new Worker(new URL(workerFile, import.meta.url));
+		let worker: Worker;
+		try {
+			worker = new Worker(new URL(workerFile, import.meta.url));
+		} catch (error) {
+			this.retryOrFail(next, errorMessage(error));
+			this.activeJobId = null;
+			this.releaseWriterLock();
+			this.drain();
+			return;
+		}
 		let settled = false;
 		const finish = (handler: () => void) => {
 			if (settled) return;
@@ -332,11 +468,13 @@ export class DatabaseJobManager {
 			handler();
 			void worker.terminate();
 			this.activeJobId = null;
+			this.releaseWriterLock();
 			this.drain();
 		};
 
 		worker.on("message", (message: { type: string; [key: string]: unknown }) => {
 			if (message.type === "progress") {
+				this.refreshWriterLock();
 				next.progress = mergeProgress(
 					next.progress,
 					message.progress as DatabaseJobProgress,
@@ -373,14 +511,18 @@ export class DatabaseJobManager {
 				finish(() => this.retryOrFail(next, `Worker berhenti dengan kode ${code}`));
 			}
 		});
-		worker.postMessage({
-			kind: next.kind,
-			files: next.files.filter((file): file is DatabaseJobFile => file !== null),
-			processorOptions: {
-				...this.options.processorOptions,
-				transactionDirectory: this.jobDirectory(next.id),
-			},
-		});
+		try {
+			worker.postMessage({
+				kind: next.kind,
+				files: next.files.filter((file): file is DatabaseJobFile => file !== null),
+				processorOptions: {
+					...this.options.processorOptions,
+					transactionDirectory: this.jobDirectory(next.id),
+				},
+			});
+		} catch (error) {
+			finish(() => this.retryOrFail(next, errorMessage(error)));
+		}
 	}
 
 	private markFailed(record: DatabaseJobRecord, message: string): void {

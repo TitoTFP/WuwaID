@@ -1,9 +1,9 @@
-import { Router, Request, Response } from "express";
+import { Router, type Request, type Response } from "express";
 import { db } from "../db.js";
-import { TranslationDraft } from "../../src/types/index.js";
+import { requireAdmin, requireEditor } from "../requestAuth.js";
+import type { TranslationDraft } from "../../src/types/index.js";
 import {
   VERSION_LANGUAGES,
-  VERSION_WORKING,
   createTextVersion,
   exportStructuredTextDiff,
   exportTextVersionCsv,
@@ -16,21 +16,6 @@ import {
 } from "../textVersions.js";
 
 export const workbenchRouter = Router();
-
-function requireVersionEditor(req: Request, res: Response): boolean {
-  const authorization = req.headers.authorization;
-  const token = authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length)
-    : "";
-  const session = token ? db.sessions.get(token) : undefined;
-  if (session && (session.role === "editor" || session.role === "admin"))
-    return true;
-
-  res
-    .status(401)
-    .json({ error: "Editor login is required for text version history." });
-  return false;
-}
 
 function textVersionError(res: Response, error: unknown): void {
   const message =
@@ -89,6 +74,7 @@ workbenchRouter.get(
 workbenchRouter.post(
   ["/drafts", "/workbench/drafts", "/editor/drafts"],
   (req: Request, res: Response) => {
+    if (!requireEditor(req, res, "Editor login is required to submit drafts.")) return;
     const {
       questId,
       lineId,
@@ -127,6 +113,7 @@ workbenchRouter.post(
 workbenchRouter.post(
   ["/drafts/:id/approve", "/workbench/drafts/:id/approve"],
   (req: Request, res: Response) => {
+    if (!requireEditor(req, res, "Editor login is required to review drafts.")) return;
     const id = req.params.id;
     const draft = db.updateDraftStatus(id, "approved", "Reviewer Admin");
 
@@ -143,6 +130,7 @@ workbenchRouter.post(
 workbenchRouter.post(
   ["/drafts/:id/reject", "/workbench/drafts/:id/reject"],
   (req: Request, res: Response) => {
+    if (!requireEditor(req, res, "Editor login is required to review drafts.")) return;
     const id = req.params.id;
     const { reason } = req.body;
     const draft = db.updateDraftStatus(
@@ -164,7 +152,8 @@ workbenchRouter.post(
 // POST /api/workbench/drafts/batch-approve or /api/drafts/batch-approve
 workbenchRouter.post(
   ["/drafts/batch-approve", "/workbench/drafts/batch-approve"],
-  (_req: Request, res: Response) => {
+  (req: Request, res: Response) => {
+    if (!requireEditor(req, res, "Editor login is required to review drafts.")) return;
     let count = 0;
     for (const draft of db.drafts) {
       if (draft.status === "pending") {
@@ -180,7 +169,8 @@ workbenchRouter.post(
 // POST /api/workbench/drafts/apply or /api/drafts/apply
 workbenchRouter.post(
   ["/drafts/apply", "/workbench/drafts/apply"],
-  (_req: Request, res: Response) => {
+  (req: Request, res: Response) => {
+    if (!requireAdmin(req, res, "Admin login is required to apply drafts.")) return;
     const result = db.applyApprovedDrafts();
     res.json(result);
   },
@@ -211,7 +201,7 @@ workbenchRouter.post(
 workbenchRouter.get(
   ["/versions", "/workbench/versions", "/editor/versions"],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       res.json({ versions: listTextVersions() });
     } catch (error) {
@@ -224,7 +214,7 @@ workbenchRouter.get(
 workbenchRouter.post(
   ["/versions", "/workbench/versions", "/editor/versions"],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       const tag = queryText(req.body?.tag);
       const note =
@@ -242,7 +232,7 @@ workbenchRouter.post(
 workbenchRouter.get(
   ["/versions/diff", "/workbench/versions/diff", "/editor/versions/diff"],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       const base = queryText(req.query.base);
       const target = queryText(req.query.target);
@@ -273,7 +263,7 @@ workbenchRouter.get(
     "/editor/versions/diff/groups",
   ],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       const base = queryText(req.query.base);
       const target = queryText(req.query.target);
@@ -299,7 +289,7 @@ workbenchRouter.get(
     "/editor/versions/diff/export",
   ],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       const base = queryText(req.query.base);
       const target = queryText(req.query.target);
@@ -337,7 +327,7 @@ workbenchRouter.post(
     "/editor/versions/diff/export-structured",
   ],
   (req: Request, res: Response) => {
-    if (!requireVersionEditor(req, res)) return;
+    if (!requireEditor(req, res, "Editor login is required for text version history.")) return;
     try {
       const base = queryText(req.body?.base);
       const target = queryText(req.body?.target);
@@ -368,7 +358,8 @@ workbenchRouter.post(
 // POST /api/workbench/export or /api/editor/export - Export dataset
 workbenchRouter.post(
   ["/export", "/workbench/export", "/editor/export"],
-  (_req: Request, res: Response) => {
+  (req: Request, res: Response) => {
+    if (!requireAdmin(req, res, "Admin login is required to export the dataset.")) return;
     res.json({
       status: "success",
       exportUrl: "/api/editor/export/download/wuwa_id_dataset_latest.zip",

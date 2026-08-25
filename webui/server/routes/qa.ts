@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "../db.js";
+import { requireAdmin, requireEditor } from "../requestAuth.js";
 import {
 	QA_EXPORT_DEFAULT_LIMIT,
 	QA_EXPORT_MAX_ITEMS,
@@ -15,15 +16,15 @@ import type {
 export const qaRouter = Router();
 
 function requireQaEditor(req: Request, res: Response): boolean {
-	const authorization = req.headers.authorization;
-	const token = authorization?.startsWith("Bearer ")
-		? authorization.slice("Bearer ".length)
-		: "";
-	const session = token ? db.getSession(token) : undefined;
-	if (session && (session.role === "editor" || session.role === "admin")) return true;
+	return Boolean(
+		requireEditor(req, res, "Login editor diperlukan untuk mengubah status QA."),
+	);
+}
 
-	res.status(401).json({ error: "Login editor diperlukan untuk mengubah status QA." });
-	return false;
+function requireQaAdmin(req: Request, res: Response): boolean {
+	return Boolean(
+		requireAdmin(req, res, "Admin login diperlukan untuk menjalankan scan QA."),
+	);
 }
 
 function queryText(value: unknown): string {
@@ -94,7 +95,7 @@ qaRouter.get(["/summary", "/qa/summary"], (_req: Request, res: Response) => {
 
 // POST /api/qa/scan - Force a fresh scan of the source corpus.
 qaRouter.post(["/scan", "/qa/scan"], (req: Request, res: Response) => {
-	if (!requireQaEditor(req, res)) return;
+	if (!requireQaAdmin(req, res)) return;
 	try {
 		res.status(202).json(translationQaService.startForceScan());
 	} catch (error) {
@@ -104,7 +105,7 @@ qaRouter.post(["/scan", "/qa/scan"], (req: Request, res: Response) => {
 
 // GET /api/qa/scan/:id - Poll a background scan job.
 qaRouter.get(["/scan/:id", "/qa/scan/:id"], (req: Request, res: Response) => {
-	if (!requireQaEditor(req, res)) return;
+	if (!requireQaAdmin(req, res)) return;
 	try {
 		const job = translationQaService.getScanJob(req.params.id);
 		if (!job) {

@@ -1,0 +1,12 @@
+{
+  "AchievementGroup_1001_Name": {
+    "en": "Category source",
+    "id": "",
+    "name": "Category Name"
+  },
+  "AchievementGroup_1002_Name": {
+    "en": "Category without primary name",
+    "id": "",
+    "entity": "Do not use this fallback"
+  }
+}

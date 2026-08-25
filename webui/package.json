@@ -13,7 +13,7 @@
     "check": "tsc --noEmit",
     "qa": "tsx server/translationQaCli.ts",
     "test:qa": "tsx --test server/translationQa.test.ts server/translationQa.integration.test.ts",
-    "test:integration": "tsx --test --test-concurrency=1 server/translationQa.integration.test.ts server/ops.integration.test.ts server/reader.integration.test.ts",
+    "test:integration": "tsx --test --test-concurrency=1 server/translationQa.integration.test.ts server/ops.integration.test.ts server/reader.integration.test.ts server/textVersions.integration.test.ts server/authorization.integration.test.ts",
     "benchmark:reader": "node scripts/benchmark-reader.mjs",
     "build:reader-index": "tsx scripts/build-reader-index.ts"
   },

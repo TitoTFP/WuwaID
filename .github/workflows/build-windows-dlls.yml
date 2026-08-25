@@ -1,6 +1,19 @@
 name: Build Windows DLLs
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/export_localization_db/**"
+      - "src/pakbypass/**"
+      - "sdk/**"
+      - ".github/workflows/build-windows-dlls.yml"
+  pull_request:
+    paths:
+      - "src/export_localization_db/**"
+      - "src/pakbypass/**"
+      - "sdk/**"
+      - ".github/workflows/build-windows-dlls.yml"
   workflow_dispatch:
 
 permissions:
@@ -9,6 +22,7 @@ permissions:
 jobs:
   build:
     runs-on: windows-2025
+    timeout-minutes: 20
 
     steps:
       - name: Check out source
