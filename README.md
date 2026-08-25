@@ -28,22 +28,14 @@ Unduh **WuwaID Launcher** — aplikasi yang secara otomatis mengunduh dan memasa
 
 Buka halaman [**Releases**](../../releases), lalu unduh file berikut:
 
-| File          | Deskripsi                                                        |
-| ------------- | ---------------------------------------------------------------- |
-| `WuwaID.zip`  | PAK normal dan varian Hide UID; ekstrak lalu pilih salah satunya |
-| `winhttp.dll` | Loader untuk me-mount patch terjemahan secara otomatis           |
-
-`WuwaID.zip` berisi:
-
-```text
-pakchunk0-ID-WindowsNoEditor_1000_P.pak
-pakchunk0-ID-WindowsNoEditor-HideUID_1000_P.pak
-```
+| File                                             | Deskripsi                                              |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| `pakchunk0-ID-WindowsNoEditor_1000_P.pak`        | File utama terjemahan Bahasa Indonesia                 |
+| `winhttp.dll`                                    | Loader untuk me-mount patch terjemahan secara otomatis |
 
 ### 2. Instalasi
 
-**Langkah 1** — Ekstrak `WuwaID.zip`, pilih PAK normal atau Hide UID, lalu salin
-satu file `.pak` tersebut ke folder berikut:
+**Langkah 1** — Salin file `.pak` ke folder berikut:
 
 ```text
 {Folder game}\Client\Binaries\Win64\wuwaIndonesia\
@@ -64,7 +56,7 @@ Client\Binaries\Win64\
 ├── winhttp.dll
 ├── Client-Win64-Shipping.exe
 └── wuwaIndonesia\
-    └── <PAK normal atau Hide UID yang dipilih>.pak
+    └── pakchunk0-ID-WindowsNoEditor_1000_P.pak
 ```
 
 ### 3. Uninstall
@@ -73,15 +65,7 @@ Hapus file `winhttp.dll` dan folder `wuwaIndonesia`.
 
 ### Kontrak Asset Release
 
-Release baru memuat `WuwaID.zip`, `winhttp.dll`, dan `SHA256sums.txt`.
-`WuwaID.zip` wajib berisi tepat dua member pada root archive:
-`pakchunk0-ID-WindowsNoEditor_1000_P.pak` dan
-`pakchunk0-ID-WindowsNoEditor-HideUID_1000_P.pak`. Daftar checksum memuat hash
-ZIP, kedua byte stream PAK internal, dan `winhttp.dll`, tetapi tidak memuat
-checksum untuk dirinya sendiri. Launcher baru memilih PAK sesuai pengaturan Hide
-UID dan tetap dapat memasang rilis lama yang hanya menyediakan PAK mentah. Setelah
-release beralih ke kontrak ZIP, launcher lama tidak dapat mengonsumsi asset baru dan
-pengguna harus memperbarui launcher terlebih dahulu.
+Release baru hanya memuat satu file patch `pakchunk0-ID-WindowsNoEditor_1000_P.pak`, `winhttp.dll`, dan `SHA256sums.txt`. Daftar checksum wajib memuat dua file binary tersebut dan tidak memuat checksum untuk dirinya sendiri. Gunakan WuwaID Launcher `2.6.0` atau lebih baru sebelum beralih metode instalasi; Method 2 pada launcher lama masih meminta nama asset lama.
 
 ---
 
@@ -116,22 +100,6 @@ database yang reproducible dan dilacak Git.
 ---
 
 ## Pengembangan & Kontribusi (Developer)
-
-### Persiapan Release Lokal
-
-Dari folder versi di bawah `release/`, jalankan:
-
-```sh
-cd release/v3.6.1-id.3
-python ../../scripts/prepare_release.py --repak /path/to/repak
-```
-
-Path `repak` juga dapat diberikan melalui environment `REPAK` atau `PATH`. Script
-memvalidasi input, membuat PAK Hide UID dengan repak V12, lalu menghasilkan
-`WuwaID.zip` dan `SHA256sums.txt` secara atomik. PAK normal, `winhttp.dll`, dan
-folder hasil unpack yang sudah ada tidak diubah. Script ini hanya menyiapkan dan
-memverifikasi artifact lokal; script tidak melakukan commit, tag, push, upload,
-atau publikasi GitHub Release.
 
 ### 1. Ekspor Data Lokalisasi
 
