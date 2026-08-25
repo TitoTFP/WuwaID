@@ -1,4 +1,5 @@
 import { parentPort } from "node:worker_threads";
+import type { TranslationQAScanProgress } from "../src/types/index.js";
 import { translationQaService } from "./translationQa.js";
 
 if (!parentPort) {
@@ -10,7 +11,12 @@ try {
 	if (delay > 0) {
 		await new Promise((resolve) => setTimeout(resolve, delay));
 	}
-	const summary = translationQaService.getSummary(true);
+	const summary = translationQaService.getSummary(
+		true,
+		(progress: TranslationQAScanProgress) => {
+			parentPort?.postMessage({ type: "progress", progress });
+		},
+	);
 	parentPort.postMessage({ ok: true, summary });
 } catch (error) {
 	parentPort.postMessage({

@@ -74,14 +74,18 @@ export async function fetchTranslationQAScan(
 	return request<TranslationQAScanJob>(`/qa/scan/${encodeURIComponent(id)}`);
 }
 
-export async function scanTranslationQA(): Promise<TranslationQASummary> {
+export async function scanTranslationQA(
+	onProgress?: (job: TranslationQAScanJob) => void,
+): Promise<TranslationQASummary> {
 	let job = await startTranslationQAScan();
+	onProgress?.(job);
 	for (let attempt = 0; attempt < 360; attempt++) {
 		if (job.status === "completed" && job.summary) return job.summary;
 		if (job.status === "failed")
 			throw new Error(job.error || "Translation QA scan gagal.");
 		await new Promise((resolve) => window.setTimeout(resolve, 2000));
 		job = await fetchTranslationQAScan(job.id);
+		onProgress?.(job);
 	}
 	throw new Error("Translation QA scan melebihi batas waktu 12 menit.");
 }

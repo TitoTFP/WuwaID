@@ -262,9 +262,18 @@ npm run qa -- --format csv --status review --output /tmp/wuwaid-translation-qa.c
 ```
 
 Status serta catatan review disimpan secara lokal di `data/translation_qa_reviews.json`;
-hasil scan SQLite berada di `data/translation_qa.db`. Keduanya diabaikan Git dan
+hasil scan SQLite berada di `data/translation_qa.db`, dan cache incremental scan
+disimpan di `data/translation_qa_cache.json.gz`. Ketiganya diabaikan Git dan
 akan dibuat ulang atau dipertahankan otomatis oleh server.
 Ekspor QA memerlukan login editor/admin dan dibatasi maksimal 10.000 item per request.
+
+Scan pertama bersifat penuh (full scan); setelah itu perubahan kecil pada file
+diproses secara incremental menggunakan cache persisten yang ditulis dan
+di-swap secara atomic, sehingga hasilnya tetap identik dengan full scan —
+termasuk kandidat attachment lintas quest. Perubahan glossary, rule, scanner,
+atau cache yang tidak valid otomatis memicu fallback full scan. **Force Scan**
+berjalan sebagai background job dengan progress bar berbobot yang monoton
+(parse → alignment → snapshot → finalize) tanpa memblokir WebUI.
 
 ---
 

@@ -357,12 +357,27 @@ export interface TranslationQAListResponse {
 }
 
 export type TranslationQAScanJobStatus = "running" | "completed" | "failed";
+export type TranslationQAScanStage =
+	| "prepare"
+	| "parse"
+	| "alignment"
+	| "snapshot"
+	| "finalize";
+
+export interface TranslationQAScanProgress {
+	stage: TranslationQAScanStage;
+	current: number;
+	total: number;
+	percent: number;
+	detail: string;
+}
 
 export interface TranslationQAScanJob {
 	id: string;
 	status: TranslationQAScanJobStatus;
 	startedAt: string;
 	finishedAt?: string;
+	progress: TranslationQAScanProgress;
 	summary?: TranslationQASummary;
 	error?: string;
 }

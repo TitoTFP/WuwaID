@@ -3,11 +3,9 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
+import { gzipSync, gunzipSync } from "node:zlib";
 import { DatabaseSync } from "node:sqlite";
-import {
-	REPO_ROOT,
-	listCategoryFiles,
-} from "./categoryStore.js";
+import { REPO_ROOT, listCategoryFiles } from "./categoryStore.js";
 import {
 	inspectTranslation,
 	TRANSLATION_QA_RULE_VERSION,
@@ -24,10 +22,11 @@ import type {
 	TranslationQAIssue,
 	TranslationQAItem,
 	TranslationQAListResponse,
-	TranslationQAReview,
 	TranslationQASourceKind,
 	TranslationQASummary,
 	TranslationQAScanJob,
+	TranslationQAScanProgress,
+	TranslationQAScanStage,
 	TranslationQAStatus,
 } from "../src/types/index.js";
 
@@ -37,10 +36,14 @@ const GLOSSARY_FILE = path.join(
 	QA_SOURCE_ROOT,
 	"data/glossary/glossary_draft_merged.json",
 );
-const QA_DATA_DIR = process.env.WUWAID_QA_STATE_DIR || path.join(REPO_ROOT, "data");
+const QA_DATA_DIR =
+	process.env.WUWAID_QA_STATE_DIR || path.join(REPO_ROOT, "data");
 const QA_DB_FILE = path.join(QA_DATA_DIR, "translation_qa.db");
 const QA_REVIEWS_FILE = path.join(QA_DATA_DIR, "translation_qa_reviews.json");
 const QA_DB_TEMP_PREFIX = `${QA_DB_FILE}.tmp-`;
+const QA_CACHE_FILE = path.join(QA_DATA_DIR, "translation_qa_cache.json.gz");
+const QA_CACHE_TEMP_PREFIX = `${QA_CACHE_FILE}.tmp-`;
+const QA_CACHE_VERSION = "1";
 const MAX_CONTEXTS = 8;
 const TRANSLATION_QA_SCANNER_VERSION = "10";
 export const QA_EXPORT_DEFAULT_LIMIT = 5_000;
@@ -102,6 +105,38 @@ interface CachedScan {
 	generatedAt: string;
 }
 
+interface CachedFile {
+	signature: string;
+	sourceKind: TranslationQASourceKind;
+	groups: RawGroup[];
+}
+
+interface PersistentScanCache {
+	version: string;
+	configFingerprint: string;
+	dataFingerprint: string;
+	files: Record<string, CachedFile>;
+}
+
+interface StoredScanSummary {
+	generatedAt: string;
+	dataFingerprint: string;
+	totalItems: number;
+	totalOccurrences: number;
+	parseErrors: number;
+	issueCounts: Record<string, number>;
+	sourceKindCounts: Record<TranslationQASourceKind, number>;
+}
+
+interface ScanCounts {
+	totalItems: number;
+	totalOccurrences: number;
+	issueCounts: Record<string, number>;
+	sourceKindCounts: Record<TranslationQASourceKind, number>;
+}
+
+type ScanProgressReporter = (progress: TranslationQAScanProgress) => void;
+
 export class TranslationQAScanRateLimitError extends Error {
 	public readonly retryAfterSeconds: number;
 
@@ -115,7 +150,9 @@ export class TranslationQAScanRateLimitError extends Error {
 export class TranslationQAScanInProgressError extends Error {
 	public readonly retryAfterSeconds = 5;
 
-	constructor(message = "QA scan sedang berjalan; snapshot terakhir belum tersedia.") {
+	constructor(
+		message = "QA scan sedang berjalan; snapshot terakhir belum tersedia.",
+	) {
 		super(message);
 		this.name = "TranslationQAScanInProgressError";
 	}
@@ -124,20 +161,28 @@ export class TranslationQAScanInProgressError extends Error {
 const CURATED_GLOSSARY: GlossaryRule[] = [
 	{ term: "Resonator", translation: "Resonator", category: "Lore" },
 	{ term: "Tacet Discord", translation: "Tacet Discord", category: "Enemy" },
-	{ term: "Midnight Rangers", translation: "Midnight Rangers", category: "Faction" },
+	{
+		term: "Midnight Rangers",
+		translation: "Midnight Rangers",
+		category: "Faction",
+	},
 	{ term: "Gorges of Spirits", translation: "Ngarai Roh", category: "Location" },
 	{ term: "Huanglong", translation: "Huanglong", category: "Location" },
 	{ term: "Sentinel Jue", translation: "Sentinel Jue", category: "Lore" },
 	{ term: "Frequency", translation: "Frekuensi", category: "Tech" },
 	{ term: "Sonata Effect", translation: "Efek Sonata", category: "Game System" },
-	{ term: "Overclocking", translation: "Overclocking (Kelebihan Beban Frekuensi)", category: "Game System" },
+	{
+		term: "Overclocking",
+		translation: "Overclocking (Kelebihan Beban Frekuensi)",
+		category: "Game System",
+	},
 ];
 
 function toRelativePath(filePath: string): string {
 	return path.relative(QA_SOURCE_ROOT, filePath).split(path.sep).join("/");
 }
 
-function hash(value: string): string {
+function hash(value: string | Buffer): string {
 	return crypto.createHash("sha256").update(value).digest("hex");
 }
 
@@ -150,18 +195,25 @@ function stableId(
 }
 
 function textValue(value: unknown): string {
-	return typeof value === "string" ? value : value == null ? "" : String(value);
+	if (typeof value === "string") return value;
+	return value == null ? "" : String(value);
 }
 
-function effectiveTarget(item: Record<string, unknown>, includeCategoryFields = false): string {
+function effectiveTarget(
+	item: Record<string, unknown>,
+	includeCategoryFields = false,
+): string {
 	return textValue(
 		item.text_id ||
-		item.text_id_mt ||
-		(includeCategoryFields ? item.id || item.mt : ""),
+			item.text_id_mt ||
+			(includeCategoryFields ? item.id || item.mt : ""),
 	);
 }
 
-function targetVariants(item: Record<string, unknown>, includeId = false): string[] {
+function targetVariants(
+	item: Record<string, unknown>,
+	includeId = false,
+): string[] {
 	return [
 		item.text_id,
 		item.text_id_mt,
@@ -183,7 +235,10 @@ function speakerText(item: Record<string, unknown>, fallback: string): string {
 	).trim();
 }
 
-function walkFiles(dir: string, predicate: (name: string) => boolean): string[] {
+function walkFiles(
+	dir: string,
+	predicate: (name: string) => boolean,
+): string[] {
 	if (!fs.existsSync(dir)) return [];
 	const files: string[] = [];
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -200,21 +255,29 @@ function questFiles(): string[] {
 
 function categoryFiles(): Array<{ name: string; filePath: string }> {
 	const categoryRoot = path.join(QA_SOURCE_ROOT, "data/quests/categories");
-	return walkFiles(categoryRoot, (name) => name.endsWith(".json")).map((filePath) => ({
-		name: path.relative(categoryRoot, filePath).replace(/\.json$/i, "").split(path.sep).join("/"),
-		filePath,
-	}));
+	return walkFiles(categoryRoot, (name) => name.endsWith(".json")).map(
+		(filePath) => ({
+			name: path
+				.relative(categoryRoot, filePath)
+				.replace(/\.json$/i, "")
+				.split(path.sep)
+				.join("/"),
+			filePath,
+		}),
+	);
 }
 
-function dialogueRows(data: Record<string, unknown>): Record<string, unknown>[] {
+function dialogueRows(
+	data: Record<string, unknown>,
+): Record<string, unknown>[] {
 	if (Array.isArray(data.all_lines)) {
-		return data.all_lines.filter(
-			(item): item is Record<string, unknown> => Boolean(item && typeof item === "object"),
+		return data.all_lines.filter((item): item is Record<string, unknown> =>
+			Boolean(item && typeof item === "object"),
 		);
 	}
 	if (Array.isArray(data.dialogue)) {
-		return data.dialogue.filter(
-			(item): item is Record<string, unknown> => Boolean(item && typeof item === "object"),
+		return data.dialogue.filter((item): item is Record<string, unknown> =>
+			Boolean(item && typeof item === "object"),
 		);
 	}
 
@@ -243,7 +306,8 @@ function dialogueRows(data: Record<string, unknown>): Record<string, unknown>[] 
 
 function loadGlossary(): GlossaryRule[] {
 	const rules = new Map<string, GlossaryRule>();
-	for (const item of CURATED_GLOSSARY) rules.set(item.term.toLocaleLowerCase(), item);
+	for (const item of CURATED_GLOSSARY)
+		rules.set(item.term.toLocaleLowerCase(), item);
 
 	if (fs.existsSync(GLOSSARY_FILE)) {
 		try {
@@ -252,7 +316,9 @@ function loadGlossary(): GlossaryRule[] {
 				Record<string, unknown>
 			>;
 			for (const [term, value] of Object.entries(raw)) {
-				const translation = textValue(value.indonesian_translation || value.translation);
+				const translation = textValue(
+					value.indonesian_translation || value.translation,
+				);
 				if (term.trim() && translation.trim()) {
 					rules.set(term.toLocaleLowerCase(), {
 						term,
@@ -296,31 +362,125 @@ function dataFiles(): DataFile[] {
 	return files.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 }
 
-function dataSignature(files: DataFile[]): string {
-	const parts = [
-		`rules:${TRANSLATION_QA_RULE_VERSION}`,
-		`scanner:${TRANSLATION_QA_SCANNER_VERSION}`,
-		...files.map((file) => {
-		try {
-			const stats = fs.statSync(file.filePath);
-			return `${file.relativePath}:${stats.mtimeMs}:${stats.ctimeMs}:${stats.size}:${stats.ino}`;
-		} catch {
-			return `${file.relativePath}:missing`;
-		}
-		}),
-	];
-	if (fs.existsSync(GLOSSARY_FILE)) {
-		const stats = fs.statSync(GLOSSARY_FILE);
-		parts.push(`glossary:${stats.mtimeMs}:${stats.ctimeMs}:${stats.size}:${stats.ino}`);
+// ponytail: signatures are content-backed and memoized per stat key, so warm
+// requests stay stat-only while same-size or preserved-mtime edits still rescan.
+const contentDigestCache = new Map<
+	string,
+	{ statKey: string; digest: string }
+>();
+
+function contentDigest(filePath: string): string {
+	let stats: fs.Stats;
+	try {
+		stats = fs.statSync(filePath);
+	} catch {
+		return "missing";
 	}
+	const statKey = `${stats.size}:${stats.mtimeMs}:${stats.ctimeMs}:${stats.ino}`;
+	const cached = contentDigestCache.get(filePath);
+	if (cached && cached.statKey === statKey) return cached.digest;
+	const digest = hash(fs.readFileSync(filePath));
+	contentDigestCache.set(filePath, { statKey, digest });
+	return digest;
+}
+
+// Rule/scanner identity includes the actual QA module bytes, so implementation
+// changes invalidate caches without manual version bumps; env overrides remain
+// as an ops escape hatch. The rules module lives in src/lib (shared with the
+// WebUI) while the scanner modules are server siblings; both source (.ts, tsx)
+// and compiled (tsc rootDir=. → dist/server + dist/src) layouts resolve via
+// ../src/lib/.
+const QA_CODE_MODULES = [
+	{ moduleName: "translationQa", searchPaths: ["./"] },
+	{ moduleName: "translationQaAlignment", searchPaths: ["./"] },
+	{ moduleName: "translationQaRules", searchPaths: ["../src/lib/", "./"] },
+];
+
+function qaCodeDigest(moduleName: string): string {
+	const spec = QA_CODE_MODULES.find(
+		(module) => module.moduleName === moduleName,
+	);
+	if (!spec) return "unavailable";
+	for (const searchPath of spec.searchPaths) {
+		for (const extension of [".ts", ".js"]) {
+			try {
+				const moduleUrl = new URL(
+					`${searchPath}${moduleName}${extension}`,
+					import.meta.url,
+				);
+				const filePath = fileURLToPath(moduleUrl);
+				if (fs.existsSync(filePath)) return contentDigest(filePath);
+			} catch {
+				// Try the next candidate path.
+			}
+		}
+	}
+	return "unavailable";
+}
+
+function fileSignature(file: DataFile): string {
+	return `${file.relativePath}:${contentDigest(file.filePath)}`;
+}
+
+function scanConfigFingerprint(): string {
+	const ruleVersion =
+		process.env.WUWAID_QA_RULE_VERSION || TRANSLATION_QA_RULE_VERSION;
+	const scannerVersion =
+		process.env.WUWAID_QA_SCANNER_VERSION || TRANSLATION_QA_SCANNER_VERSION;
+	const parts = [
+		`rules:${ruleVersion}`,
+		`scanner:${scannerVersion}`,
+		...QA_CODE_MODULES.map(
+			(module) => `code:${module.moduleName}:${qaCodeDigest(module.moduleName)}`,
+		),
+	];
+	parts.push(`glossary:${contentDigest(GLOSSARY_FILE)}`);
 	return hash(parts.join("|"));
+}
+
+function dataSignature(files: DataFile[]): string {
+	return hash([scanConfigFingerprint(), ...files.map(fileSignature)].join("|"));
+}
+
+const PROGRESS_RANGES: Record<
+	TranslationQAScanStage,
+	readonly [number, number]
+> = {
+	prepare: [0, 5],
+	parse: [5, 35],
+	alignment: [35, 75],
+	snapshot: [75, 98],
+	finalize: [98, 100],
+};
+
+function createProgressReporter(
+	reporter?: ScanProgressReporter,
+): ScanProgressReporter {
+	let lastPercent = 0;
+	return (progress) => {
+		const [start, end] = PROGRESS_RANGES[progress.stage];
+		const ratio =
+			progress.total > 0
+				? Math.max(0, Math.min(1, progress.current / progress.total))
+				: 0;
+		const percent = Math.max(
+			lastPercent,
+			Math.round(start + (end - start) * ratio),
+		);
+		lastPercent = percent;
+		reporter?.({ ...progress, percent });
+	};
 }
 
 function addIssue(
 	issues: TranslationQAIssue[],
 	item: TranslationQAIssue,
 ): void {
-	if (!issues.some((issue) => issue.code === item.code && issue.message === item.message)) {
+	if (
+		!issues.some(
+			(issue) => issue.code === item.code && issue.message === item.message,
+		)
+	) {
 		issues.push(item);
 	}
 }
@@ -373,9 +533,9 @@ function rowUnits(
 				units.push({
 					item: option as Record<string, unknown>,
 					lineNo,
-				lineId: `${lineId}:option:${optionIndex + 1}`,
-				speaker: "Player",
-				unitKind: "option",
+					lineId: `${lineId}:option:${optionIndex + 1}`,
+					speaker: "Player",
+					unitKind: "option",
 				});
 			});
 		}
@@ -392,9 +552,7 @@ function rowUnits(
 		targetVariant: textValue(unit.item.text_id_mt || unit.item.mt) || undefined,
 		previousText: index > 0 ? sourceText(units[index - 1].item) : undefined,
 		nextText:
-			index < units.length - 1
-				? sourceText(units[index + 1].item)
-				: undefined,
+			index < units.length - 1 ? sourceText(units[index + 1].item) : undefined,
 		targetVariants: targetVariants(unit.item),
 		unitKind: unit.unitKind,
 	}));
@@ -426,8 +584,12 @@ function itemFromGroup(
 		}
 	}
 
-	const sourceVariants = new Set(group.occurrences.map((occurrence) => occurrence.sourceText.trim()));
-	const targetVariants = new Set(group.occurrences.map((occurrence) => occurrence.targetText.trim()));
+	const sourceVariants = new Set(
+		group.occurrences.map((occurrence) => occurrence.sourceText.trim()),
+	);
+	const targetVariants = new Set(
+		group.occurrences.map((occurrence) => occurrence.targetText.trim()),
+	);
 	if (sourceVariants.size > 1) {
 		addIssue(issues, {
 			code: "source_variant_mismatch",
@@ -465,12 +627,9 @@ function itemFromGroup(
 	}
 
 	const autoStatus: "pass" | "review" = issues.length > 0 ? "review" : "pass";
-	const status: TranslationQAStatus =
-		review && review.fingerprint === fingerprint
-			? review.status
-			: staleReview
-				? "review"
-				: autoStatus;
+	let status: TranslationQAStatus = autoStatus;
+	if (staleReview) status = "review";
+	else if (review && review.fingerprint === fingerprint) status = review.status;
 
 	const contexts: TranslationQAContext[] = group.occurrences
 		.slice(0, MAX_CONTEXTS)
@@ -511,12 +670,12 @@ function itemFromGroup(
 		status,
 		review: review
 			? {
-				status: review.status,
-				comment: review.comment,
-				reviewer: review.reviewer,
-				updatedAt: review.updatedAt,
-				fingerprint: review.fingerprint,
-			}
+					status: review.status,
+					comment: review.comment,
+					reviewer: review.reviewer,
+					updatedAt: review.updatedAt,
+					fingerprint: review.fingerprint,
+				}
 			: undefined,
 		fingerprint,
 	};
@@ -558,7 +717,17 @@ function parseDataFile(file: DataFile): {
 	sourceFile: DataFile;
 	groups: Map<string, RawGroup>;
 } {
-	const document = JSON.parse(fs.readFileSync(file.filePath, "utf8")) as Record<string, unknown>;
+	let document: Record<string, unknown>;
+	try {
+		document = JSON.parse(fs.readFileSync(file.filePath, "utf8")) as Record<
+			string,
+			unknown
+		>;
+	} catch (error) {
+		throw new Error(
+			`Invalid QA JSON ${file.relativePath}: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
 	let sourceFile = file;
 	if (file.sourceKind === "quest") {
 		const questId = textValue(document.quest_id);
@@ -570,31 +739,37 @@ function parseDataFile(file: DataFile): {
 			chapterTitle: textValue(document.chapter_name) || undefined,
 		};
 	}
-	const units = sourceFile.sourceKind === "quest"
-		? rowUnits(dialogueRows(document), file.sourceKind)
-		: Object.entries(document).map(([key, value], index, entries) => {
-			const item = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-			const previous = entries[index - 1]?.[1];
-			const next = entries[index + 1]?.[1];
-			return {
-				id: key,
-				key,
-				lineNo: index + 1,
-				lineId: key,
-				speaker: "UI",
-				unitKind: "category" as const,
-				sourceText: sourceText(item),
-				targetText: effectiveTarget(item, true),
-				targetVariant: textValue(item.text_id_mt || item.mt) || undefined,
-				previousText: previous && typeof previous === "object"
-					? sourceText(previous as Record<string, unknown>)
-					: undefined,
-				nextText: next && typeof next === "object"
-					? sourceText(next as Record<string, unknown>)
-					: undefined,
-				targetVariants: targetVariants(item, true),
-			};
-		});
+	const units =
+		sourceFile.sourceKind === "quest"
+			? rowUnits(dialogueRows(document), file.sourceKind)
+			: Object.entries(document).map(([key, value], index, entries) => {
+					const item =
+						value && typeof value === "object"
+							? (value as Record<string, unknown>)
+							: {};
+					const previous = entries[index - 1]?.[1];
+					const next = entries[index + 1]?.[1];
+					return {
+						id: key,
+						key,
+						lineNo: index + 1,
+						lineId: key,
+						speaker: "UI",
+						unitKind: "category" as const,
+						sourceText: sourceText(item),
+						targetText: effectiveTarget(item, true),
+						targetVariant: textValue(item.text_id_mt || item.mt) || undefined,
+						previousText:
+							previous && typeof previous === "object"
+								? sourceText(previous as Record<string, unknown>)
+								: undefined,
+						nextText:
+							next && typeof next === "object"
+								? sourceText(next as Record<string, unknown>)
+								: undefined,
+						targetVariants: targetVariants(item, true),
+					};
+				});
 
 	const groups = new Map<string, RawGroup>();
 	for (const unit of units) {
@@ -705,8 +880,11 @@ function prepareLiveSnapshotSwap(): void {
 function cleanupTemporarySnapshots(): void {
 	if (!fs.existsSync(QA_DATA_DIR)) return;
 	for (const name of fs.readdirSync(QA_DATA_DIR)) {
+		const filePath = path.join(QA_DATA_DIR, name);
 		if (name.startsWith(path.basename(QA_DB_TEMP_PREFIX))) {
-			removeSqliteArtifacts(path.join(QA_DATA_DIR, name));
+			removeSqliteArtifacts(filePath);
+		} else if (name.startsWith(path.basename(QA_CACHE_TEMP_PREFIX))) {
+			removeCacheArtifacts(filePath);
 		}
 	}
 }
@@ -714,6 +892,102 @@ function cleanupTemporarySnapshots(): void {
 function temporaryDatabasePath(): string {
 	ensureDatabaseDir();
 	return `${QA_DB_TEMP_PREFIX}${process.pid}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+}
+
+function temporaryCachePath(): string {
+	ensureDatabaseDir();
+	return `${QA_CACHE_TEMP_PREFIX}${process.pid}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+}
+
+function removeCacheArtifacts(filePath: string): void {
+	try {
+		fs.rmSync(filePath, { force: true });
+	} catch {
+		// Best-effort cleanup; a later scan can overwrite the cache.
+	}
+}
+
+function loadPersistentScanCache(): PersistentScanCache | null {
+	if (!fs.existsSync(QA_CACHE_FILE)) return null;
+	try {
+		const cache = JSON.parse(
+			gunzipSync(fs.readFileSync(QA_CACHE_FILE)).toString("utf8"),
+		) as PersistentScanCache;
+		if (cache.version !== QA_CACHE_VERSION || !cache.files) return null;
+		for (const entry of Object.values(cache.files)) {
+			if (
+				typeof entry?.signature !== "string" ||
+				entry.signature === "" ||
+				(entry.sourceKind !== "quest" && entry.sourceKind !== "category") ||
+				!Array.isArray(entry.groups)
+			) {
+				return null;
+			}
+		}
+		return cache;
+	} catch {
+		console.warn(
+			"[TranslationQA] Failed loading incremental cache; using full scan.",
+		);
+		return null;
+	}
+}
+
+function writePersistentScanCache(
+	cache: PersistentScanCache,
+	filePath: string,
+): void {
+	fs.writeFileSync(filePath, gzipSync(JSON.stringify(cache), { level: 6 }));
+}
+
+// ponytail: every reuse fully validates the persistent cache — gzip, JSON,
+// schema (per-entry signature/sourceKind/groups), fingerprints, and file
+// coverage. The verdict is memoized by the cache file's stat key so warm
+// requests skip the parse only while the file bytes are provably unchanged
+// (ctime cannot be reset from userspace), keeping correctness intact.
+interface CacheValidationMemo {
+	statKey: string;
+	fingerprint: string;
+	configFingerprint: string;
+}
+
+let cacheValidationMemo: CacheValidationMemo | null = null;
+
+function cacheCoversFiles(
+	cache: PersistentScanCache,
+	files: DataFile[],
+): boolean {
+	return files.every((file) => cache.files[file.relativePath] !== undefined);
+}
+
+function validatedCacheUsable(files: DataFile[], fingerprint: string): boolean {
+	let stats: fs.Stats;
+	try {
+		stats = fs.statSync(QA_CACHE_FILE);
+	} catch {
+		cacheValidationMemo = null;
+		return false;
+	}
+	const statKey = `${stats.size}:${stats.mtimeMs}:${stats.ctimeMs}:${stats.ino}`;
+	const configFingerprint = scanConfigFingerprint();
+	if (
+		cacheValidationMemo &&
+		cacheValidationMemo.statKey === statKey &&
+		cacheValidationMemo.fingerprint === fingerprint &&
+		cacheValidationMemo.configFingerprint === configFingerprint
+	) {
+		return true;
+	}
+	const cache = loadPersistentScanCache();
+	const usable =
+		cache !== null &&
+		cache.configFingerprint === configFingerprint &&
+		cache.dataFingerprint === fingerprint &&
+		cacheCoversFiles(cache, files);
+	cacheValidationMemo = usable
+		? { statKey, fingerprint, configFingerprint }
+		: null;
+	return usable;
 }
 
 function workerExecArgv(extension: "ts" | "js"): string[] {
@@ -726,7 +1000,11 @@ function workerExecArgv(extension: "ts" | "js"): string[] {
 			const value = process.execArgv[index + 1];
 			if (value) args.push(argument, value);
 			index++;
-		} else if (["--require=", "--import=", "--loader="].some((prefix) => argument.startsWith(prefix))) {
+		} else if (
+			["--require=", "--import=", "--loader="].some((prefix) =>
+				argument.startsWith(prefix),
+			)
+		) {
 			args.push(argument);
 		}
 	}
@@ -735,10 +1013,14 @@ function workerExecArgv(extension: "ts" | "js"): string[] {
 
 function hasQaTable(database: DatabaseSync): boolean {
 	const row = database
-		.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'qa_items'")
+		.prepare(
+			"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'qa_items'",
+		)
 		.get() as { name?: string } | undefined;
 	if (row?.name !== "qa_items") return false;
-	const columns = database.prepare("PRAGMA table_info(qa_items)").all() as Array<{ name?: string }>;
+	const columns = database
+		.prepare("PRAGMA table_info(qa_items)")
+		.all() as Array<{ name?: string }>;
 	return columns.some((column) => column.name === "attachment_evidence_json");
 }
 
@@ -751,7 +1033,10 @@ function parseJson<T>(value: unknown, fallback: T): T {
 }
 
 function rowToItem(row: Record<string, unknown>): TranslationQAItem {
-	const reviewStatus = textValue(row.review_status) as "review" | "approved" | "";
+	const reviewStatus = textValue(row.review_status) as
+		| "review"
+		| "approved"
+		| "";
 	const review = reviewStatus
 		? {
 				status: reviewStatus,
@@ -790,6 +1075,15 @@ function rowToItem(row: Record<string, unknown>): TranslationQAItem {
 function issueCodes(issues: TranslationQAIssue[]): string {
 	return issues.map((item) => item.code).join(" ");
 }
+
+const QA_ITEM_INSERT_SQL = `
+	INSERT INTO qa_items (
+		id, key, source_kind, source_ref, source_path, quest_id, quest_title, chapter_title,
+		line_no, speaker, source_text, target_text, target_variant, occurrences, contexts_json,
+		issues_json, glossary_json, attachment_evidence_json, auto_status, status, fingerprint,
+		review_status, review_comment, review_reviewer, review_updated_at, review_fingerprint, issue_codes
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
 function bindReview(item: TranslationQAItem): Array<string | number | null> {
 	const review = reviewFromItem(item);
@@ -854,8 +1148,12 @@ export class TranslationQAService {
 			const meta = database
 				.prepare("SELECT value FROM qa_meta WHERE key = ?")
 				.get("summary") as { value?: string } | undefined;
-			const summary = parseJson(meta?.value, { dataFingerprint: "", generatedAt: "" });
-			if (expectedFingerprint && summary.dataFingerprint !== expectedFingerprint) return false;
+			const summary = parseJson(meta?.value, {
+				dataFingerprint: "",
+				generatedAt: "",
+			});
+			if (expectedFingerprint && summary.dataFingerprint !== expectedFingerprint)
+				return false;
 			this.cachedScan = {
 				dataFingerprint: textValue(summary.dataFingerprint),
 				generatedAt: textValue(summary.generatedAt),
@@ -873,24 +1171,362 @@ export class TranslationQAService {
 		return this.hydrateSnapshot(fingerprint);
 	}
 
-	private ensureScanned(force = false): void {
+	private ensureScanned(
+		force = false,
+		progressReporter?: ScanProgressReporter,
+	): void {
 		const files = dataFiles();
 		const fingerprint = dataSignature(files);
 		if (!force && this.activeScanJob?.status === "running") {
 			if (this.cachedScan && fs.existsSync(QA_DB_FILE)) return;
+			// ponytail: mid-scan we serve the previous snapshot without cache
+			// revalidation; results stay correct and polling stays cheap.
 			if (this.hydrateSnapshot()) return;
 			throw new TranslationQAScanInProgressError();
 		}
-		if (!force && this.cachedScan?.dataFingerprint === fingerprint) return;
-		if (!force && this.hydrateCachedScan(fingerprint)) return;
-		this.scan(files, fingerprint);
+		if (!force && this.cachedScan?.dataFingerprint === fingerprint) {
+			if (validatedCacheUsable(files, fingerprint)) return;
+			console.warn("[TranslationQA] Persistent cache invalid; forcing full scan.");
+		} else if (
+			!force &&
+			validatedCacheUsable(files, fingerprint) &&
+			this.hydrateCachedScan(fingerprint)
+		) {
+			return;
+		}
+		this.scan(files, fingerprint, progressReporter, !force);
 	}
 
-	private scan(files: DataFile[], fingerprint: string): void {
+	private scanIncremental(
+		files: DataFile[],
+		fingerprint: string,
+		cache: PersistentScanCache,
+		glossary: GlossaryRule[],
+		reviews: Record<string, StoredReview>,
+		reporter: ScanProgressReporter,
+	): boolean {
+		if (
+			!fs.existsSync(QA_DB_FILE) ||
+			cache.configFingerprint !== scanConfigFingerprint() ||
+			// Defense in depth: partial coverage means the cache cannot be
+			// trusted for incremental reuse regardless of the caller's gating.
+			!cacheCoversFiles(cache, files)
+		) {
+			return false;
+		}
+
+		const currentFiles = new Map(files.map((file) => [file.relativePath, file]));
+		const changedFiles = files.filter(
+			(file) => cache.files[file.relativePath]?.signature !== fileSignature(file),
+		);
+		const removedPaths = Object.keys(cache.files).filter(
+			(relativePath) => !currentFiles.has(relativePath),
+		);
+		const changedPaths = [
+			...changedFiles.map((file) => file.relativePath),
+			...removedPaths,
+		];
+		if (changedPaths.length === 0) return false;
+		// ponytail: quest changes fall back to full scan because attachment dependencies
+		// cross quest boundaries; persist an occurrence dependency index before narrowing this.
+		if (
+			removedPaths.some(
+				(relativePath) => cache.files[relativePath]?.sourceKind === "quest",
+			) ||
+			changedFiles.some((file) => file.sourceKind === "quest")
+		) {
+			return false;
+		}
+
+		const parsedChanged = new Map<
+			string,
+			{ sourceFile: DataFile; groups: Map<string, RawGroup> }
+		>();
+		for (const [index, file] of changedFiles.entries()) {
+			try {
+				parsedChanged.set(file.relativePath, parseDataFile(file));
+			} catch (error) {
+				console.warn(
+					`[TranslationQA] Incremental parse fallback for ${file.filePath}:`,
+					error,
+				);
+				return false;
+			}
+			reporter({
+				stage: "parse",
+				current: index + 1,
+				total: Math.max(changedFiles.length, 1),
+				percent: 0,
+				detail: file.relativePath,
+			});
+		}
+
+		const placeholders = changedPaths.map(() => "?").join(",");
+		let oldDatabase: DatabaseSync | null = null;
+		let oldRows: Array<Record<string, unknown>> = [];
+		let oldSummary: StoredScanSummary;
+		try {
+			oldDatabase = new DatabaseSync(QA_DB_FILE, { readOnly: true });
+			if (!hasQaTable(oldDatabase)) return false;
+			const meta = oldDatabase
+				.prepare("SELECT value FROM qa_meta WHERE key = ?")
+				.get("summary") as { value?: string } | undefined;
+			oldSummary = parseJson<StoredScanSummary>(meta?.value, {
+				generatedAt: "",
+				dataFingerprint: "",
+				totalItems: 0,
+				totalOccurrences: 0,
+				parseErrors: 0,
+				issueCounts: {},
+				sourceKindCounts: { quest: 0, category: 0 },
+			});
+			if (
+				oldSummary.dataFingerprint !== cache.dataFingerprint ||
+				oldSummary.parseErrors > 0
+			) {
+				return false;
+			}
+			oldRows = oldDatabase
+				.prepare(
+					`SELECT source_kind, occurrences, issues_json FROM qa_items WHERE source_path IN (${placeholders})`,
+				)
+				.all(...changedPaths) as Array<Record<string, unknown>>;
+		} catch (error) {
+			console.warn("[TranslationQA] Incremental cache read failed:", error);
+			return false;
+		} finally {
+			oldDatabase?.close();
+		}
+
+		const countRows = (rows: Array<Record<string, unknown>>): ScanCounts => {
+			const counts: ScanCounts = {
+				totalItems: 0,
+				totalOccurrences: 0,
+				issueCounts: {},
+				sourceKindCounts: { quest: 0, category: 0 },
+			};
+			for (const row of rows) {
+				counts.totalItems++;
+				counts.totalOccurrences += Number(row.occurrences || 0);
+				const sourceKind = textValue(row.source_kind) as TranslationQASourceKind;
+				if (sourceKind === "quest" || sourceKind === "category") {
+					counts.sourceKindCounts[sourceKind]++;
+				}
+				for (const issue of parseJson<TranslationQAIssue[]>(row.issues_json, [])) {
+					counts.issueCounts[issue.code] = (counts.issueCounts[issue.code] || 0) + 1;
+				}
+			}
+			return counts;
+		};
+		const countItems = (items: TranslationQAItem[]): ScanCounts => {
+			const rows = items.map((item) => ({
+				source_kind: item.sourceKind,
+				occurrences: item.occurrences,
+				issues_json: JSON.stringify(item.issues),
+			}));
+			return countRows(rows);
+		};
+		const subtractCounts = (base: ScanCounts, delta: ScanCounts): ScanCounts => ({
+			totalItems: base.totalItems - delta.totalItems,
+			totalOccurrences: base.totalOccurrences - delta.totalOccurrences,
+			issueCounts: Object.fromEntries(
+				Object.entries(base.issueCounts).map(([code, count]) => [
+					code,
+					count - (delta.issueCounts[code] || 0),
+				]),
+			),
+			sourceKindCounts: {
+				quest: base.sourceKindCounts.quest - delta.sourceKindCounts.quest,
+				category: base.sourceKindCounts.category - delta.sourceKindCounts.category,
+			},
+		});
+		const oldCounts = countRows(oldRows);
+		const changedItems: TranslationQAItem[] = [];
+		for (const parsed of parsedChanged.values()) {
+			for (const group of parsed.groups.values()) {
+				changedItems.push(
+					itemFromGroup(
+						group,
+						glossary,
+						reviews[group.id],
+						[] as TranslationQAAttachmentEvidence[],
+					).item,
+				);
+			}
+		}
+		const newCounts = countItems(changedItems);
+		const remainingCounts = subtractCounts(
+			{
+				totalItems: oldSummary.totalItems,
+				totalOccurrences: oldSummary.totalOccurrences,
+				issueCounts: oldSummary.issueCounts,
+				sourceKindCounts: oldSummary.sourceKindCounts,
+			},
+			oldCounts,
+		);
+		const issueCounts = { ...remainingCounts.issueCounts };
+		for (const [code, count] of Object.entries(newCounts.issueCounts)) {
+			issueCounts[code] = (issueCounts[code] || 0) + count;
+		}
+		for (const [code, count] of Object.entries(issueCounts)) {
+			if (count <= 0) delete issueCounts[code];
+		}
+		const nextSummary: StoredScanSummary = {
+			generatedAt: new Date().toISOString(),
+			dataFingerprint: fingerprint,
+			totalItems: remainingCounts.totalItems + newCounts.totalItems,
+			totalOccurrences:
+				remainingCounts.totalOccurrences + newCounts.totalOccurrences,
+			parseErrors: 0,
+			issueCounts,
+			sourceKindCounts: {
+				quest:
+					remainingCounts.sourceKindCounts.quest + newCounts.sourceKindCounts.quest,
+				category:
+					remainingCounts.sourceKindCounts.category +
+					newCounts.sourceKindCounts.category,
+			},
+		};
+
+		const temporaryFile = temporaryDatabasePath();
+		const temporaryCache = temporaryCachePath();
+		let database: DatabaseSync | null = null;
+		let transactionOpen = false;
+		try {
+			fs.copyFileSync(QA_DB_FILE, temporaryFile);
+			database = new DatabaseSync(temporaryFile, { timeout: 5000 });
+			database.exec("PRAGMA journal_mode = DELETE");
+			database.exec("BEGIN IMMEDIATE");
+			transactionOpen = true;
+			database
+				.prepare(`DELETE FROM qa_items WHERE source_path IN (${placeholders})`)
+				.run(...changedPaths);
+			const insert = database.prepare(QA_ITEM_INSERT_SQL);
+			for (const item of changedItems) insert.run(...bindReview(item));
+			database
+				.prepare("UPDATE qa_meta SET value = ? WHERE key = ?")
+				.run(JSON.stringify(nextSummary), "summary");
+			database.exec("COMMIT");
+			transactionOpen = false;
+
+			const nextFiles = { ...cache.files };
+			for (const relativePath of removedPaths) delete nextFiles[relativePath];
+			for (const file of changedFiles) {
+				const parsed = parsedChanged.get(file.relativePath);
+				if (!parsed) continue;
+				nextFiles[file.relativePath] = {
+					signature: fileSignature(file),
+					sourceKind: parsed.sourceFile.sourceKind,
+					groups: [...parsed.groups.values()],
+				};
+			}
+			writePersistentScanCache(
+				{
+					version: QA_CACHE_VERSION,
+					configFingerprint: cache.configFingerprint,
+					dataFingerprint: fingerprint,
+					files: nextFiles,
+				},
+				temporaryCache,
+			);
+			reporter({
+				stage: "alignment",
+				current: 1,
+				total: 1,
+				percent: 0,
+				detail: "Alignment tidak berubah",
+			});
+			reporter({
+				stage: "snapshot",
+				current: 0,
+				total: 1,
+				percent: 0,
+				detail: "Memperbarui item terdampak",
+			});
+			reporter({
+				stage: "snapshot",
+				current: 1,
+				total: 1,
+				percent: 0,
+				detail: `${changedItems.length.toLocaleString()} item diperbarui`,
+			});
+			database.close();
+			database = null;
+			prepareLiveSnapshotSwap();
+			fs.renameSync(temporaryFile, QA_DB_FILE);
+			fs.renameSync(temporaryCache, QA_CACHE_FILE);
+			reporter({
+				stage: "finalize",
+				current: 1,
+				total: 1,
+				percent: 0,
+				detail: "Scan incremental selesai",
+			});
+			this.cachedScan = {
+				dataFingerprint: fingerprint,
+				generatedAt: nextSummary.generatedAt,
+			};
+			return true;
+		} catch (error) {
+			if (transactionOpen && database) {
+				try {
+					database.exec("ROLLBACK");
+				} catch {
+					// The transaction may already be closed.
+				}
+			}
+			database?.close();
+			removeSqliteArtifacts(temporaryFile);
+			removeCacheArtifacts(temporaryCache);
+			console.warn("[TranslationQA] Incremental scan fallback:", error);
+			return false;
+		}
+	}
+
+	private scan(
+		files: DataFile[],
+		fingerprint: string,
+		progressReporter?: ScanProgressReporter,
+		allowIncremental = true,
+	): void {
+		const report = createProgressReporter(progressReporter);
+		const previousCache = loadPersistentScanCache();
+		const cacheAvailable =
+			previousCache !== null &&
+			previousCache.configFingerprint === scanConfigFingerprint() &&
+			// ponytail: incremental reuse requires COMPLETE coverage; a partial
+			// cache is an invalid cache and must fall back to a full scan.
+			cacheCoversFiles(previousCache, files);
+		report({
+			stage: "prepare",
+			current: 0,
+			total: 1,
+			percent: 0,
+			detail:
+				allowIncremental && cacheAvailable
+					? "Cache incremental tersedia"
+					: "Menyiapkan scan penuh",
+		});
 		const reviews = readReviews();
 		const glossary = loadGlossary();
+		if (
+			allowIncremental &&
+			previousCache &&
+			cacheAvailable &&
+			this.scanIncremental(
+				files,
+				fingerprint,
+				previousCache,
+				glossary,
+				reviews,
+				report,
+			)
+		) {
+			return;
+		}
 		cleanupTemporarySnapshots();
 		const temporaryFile = temporaryDatabasePath();
+		const temporaryCache = temporaryCachePath();
 		let database: DatabaseSync | null = null;
 		let transactionOpen = false;
 		const generatedAt = new Date().toISOString();
@@ -902,13 +1538,22 @@ export class TranslationQAService {
 		let totalItems = 0;
 		let totalOccurrences = 0;
 		let parseErrors = 0;
-		const parsedFiles: Array<{ sourceFile: DataFile; groups: Map<string, RawGroup> }> = [];
+		const parsedFiles: Array<{
+			sourceFile: DataFile;
+			groups: Map<string, RawGroup>;
+		}> = [];
+		const cacheFiles: Record<string, CachedFile> = {};
 		const alignmentOccurrences: TranslationQAAlignmentOccurrence[] = [];
 
-		for (const file of files) {
+		for (const [index, file] of files.entries()) {
 			try {
 				const parsed = parseDataFile(file);
 				parsedFiles.push(parsed);
+				cacheFiles[parsed.sourceFile.relativePath] = {
+					signature: fileSignature(file),
+					sourceKind: parsed.sourceFile.sourceKind,
+					groups: [...parsed.groups.values()],
+				};
 				for (const group of parsed.groups.values()) {
 					for (const occurrence of group.occurrences) {
 						alignmentOccurrences.push(toAlignmentOccurrence(group, occurrence));
@@ -918,8 +1563,40 @@ export class TranslationQAService {
 				parseErrors++;
 				console.warn(`[TranslationQA] Failed reading ${file.filePath}:`, error);
 			}
+			report({
+				stage: "parse",
+				current: index + 1,
+				total: files.length,
+				percent: 0,
+				detail: file.relativePath,
+			});
 		}
-		const attachmentEvidence = findAttachmentEvidence(alignmentOccurrences, glossary);
+		report({
+			stage: "alignment",
+			current: 0,
+			total: 1,
+			percent: 0,
+			detail: `${alignmentOccurrences.length.toLocaleString()} occurrence sedang disejajarkan`,
+		});
+		const attachmentEvidence = findAttachmentEvidence(
+			alignmentOccurrences,
+			glossary,
+			(current, total) =>
+				report({
+					stage: "alignment",
+					current,
+					total,
+					percent: 0,
+					detail: `${current.toLocaleString()}/${total.toLocaleString()} alignment`,
+				}),
+		);
+		report({
+			stage: "alignment",
+			current: 1,
+			total: 1,
+			percent: 0,
+			detail: "Alignment selesai",
+		});
 
 		try {
 			database = new DatabaseSync(temporaryFile, { timeout: 5000 });
@@ -962,21 +1639,28 @@ export class TranslationQAService {
 			CREATE TABLE qa_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 			`);
 
-			const insert = database.prepare(`
-			INSERT INTO qa_items (
-				id, key, source_kind, source_ref, source_path, quest_id, quest_title, chapter_title,
-				line_no, speaker, source_text, target_text, target_variant, occurrences, contexts_json,
-				issues_json, glossary_json, attachment_evidence_json, auto_status, status, fingerprint,
-				review_status, review_comment, review_reviewer, review_updated_at, review_fingerprint, issue_codes
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			`);
+			const insert = database.prepare(QA_ITEM_INSERT_SQL);
 
+			const totalGroups = parsedFiles.reduce(
+				(total, parsed) => total + parsed.groups.size,
+				0,
+			);
+			let writtenGroups = 0;
 			for (const parsed of parsedFiles) {
 				for (const group of parsed.groups.values()) {
 					const groupEvidence = group.occurrences
-						.map((occurrence) => attachmentEvidence.get(`${group.sourcePath}::${occurrence.id}`))
-						.filter((evidence): evidence is TranslationQAAttachmentEvidence => Boolean(evidence));
-					const result = itemFromGroup(group, glossary, reviews[group.id], groupEvidence);
+						.map((occurrence) =>
+							attachmentEvidence.get(`${group.sourcePath}::${occurrence.id}`),
+						)
+						.filter((evidence): evidence is TranslationQAAttachmentEvidence =>
+							Boolean(evidence),
+						);
+					const result = itemFromGroup(
+						group,
+						glossary,
+						reviews[group.id],
+						groupEvidence,
+					);
 					insert.run(...bindReview(result.item));
 					totalItems++;
 					totalOccurrences += result.item.occurrences;
@@ -984,6 +1668,14 @@ export class TranslationQAService {
 					for (const [code, count] of result.rawIssueCounts) {
 						issueCounts.set(code, (issueCounts.get(code) || 0) + count);
 					}
+					writtenGroups++;
+					report({
+						stage: "snapshot",
+						current: writtenGroups,
+						total: totalGroups,
+						percent: 0,
+						detail: `${writtenGroups.toLocaleString()}/${totalGroups.toLocaleString()} item`,
+					});
 				}
 			}
 
@@ -996,16 +1688,39 @@ export class TranslationQAService {
 				issueCounts: Object.fromEntries(issueCounts),
 				sourceKindCounts,
 			};
-			database.prepare("INSERT INTO qa_meta VALUES (?, ?)").run(
-				"summary",
-				JSON.stringify(rawSummary),
-			);
+			database
+				.prepare("INSERT INTO qa_meta VALUES (?, ?)")
+				.run("summary", JSON.stringify(rawSummary));
 			database.exec("COMMIT");
 			transactionOpen = false;
+			writePersistentScanCache(
+				{
+					version: QA_CACHE_VERSION,
+					configFingerprint: scanConfigFingerprint(),
+					dataFingerprint: fingerprint,
+					files: cacheFiles,
+				},
+				temporaryCache,
+			);
 			database.close();
 			database = null;
+			report({
+				stage: "finalize",
+				current: 0,
+				total: 1,
+				percent: 0,
+				detail: "Snapshot lama dipersiapkan",
+			});
 			prepareLiveSnapshotSwap();
 			fs.renameSync(temporaryFile, QA_DB_FILE);
+			fs.renameSync(temporaryCache, QA_CACHE_FILE);
+			report({
+				stage: "finalize",
+				current: 1,
+				total: 1,
+				percent: 0,
+				detail: "Scan selesai",
+			});
 			this.cachedScan = { dataFingerprint: fingerprint, generatedAt };
 		} catch (error) {
 			if (transactionOpen && database) {
@@ -1023,6 +1738,7 @@ export class TranslationQAService {
 				}
 			}
 			removeSqliteArtifacts(temporaryFile);
+			removeCacheArtifacts(temporaryCache);
 			throw error;
 		}
 	}
@@ -1049,7 +1765,11 @@ export class TranslationQAService {
 			approved: 0,
 		};
 		for (const row of statusRows) {
-			if (row.status === "pass" || row.status === "review" || row.status === "approved") {
+			if (
+				row.status === "pass" ||
+				row.status === "review" ||
+				row.status === "approved"
+			) {
 				statusCounts[row.status] = Number(row.count || 0);
 			}
 		}
@@ -1061,26 +1781,32 @@ export class TranslationQAService {
 			parseErrors: Number(raw.parseErrors || 0),
 			statusCounts,
 			issueCounts: (raw.issueCounts || {}) as Record<string, number>,
-			sourceKindCounts: (raw.sourceKindCounts || { quest: 0, category: 0 }) as Record<
-				TranslationQASourceKind,
-				number
-			>,
+			sourceKindCounts: (raw.sourceKindCounts || {
+				quest: 0,
+				category: 0,
+			}) as Record<TranslationQASourceKind, number>,
 		};
 	}
 
-	private readyDatabase(force = false): DatabaseSync {
-		this.ensureScanned(force);
+	private readyDatabase(
+		force = false,
+		progressReporter?: ScanProgressReporter,
+	): DatabaseSync {
+		this.ensureScanned(force, progressReporter);
 		const database = openDatabase();
 		if (!hasQaTable(database)) {
 			database.close();
-			this.ensureScanned(true);
+			this.ensureScanned(true, progressReporter);
 			return openDatabase();
 		}
 		return database;
 	}
 
-	public getSummary(force = false): TranslationQASummary {
-		const database = this.readyDatabase(force);
+	public getSummary(
+		force = false,
+		progressReporter?: ScanProgressReporter,
+	): TranslationQASummary {
+		const database = this.readyDatabase(force, progressReporter);
 		try {
 			return this.getSummaryFromDatabase(database);
 		} finally {
@@ -1094,6 +1820,7 @@ export class TranslationQAService {
 			status: job.status,
 			startedAt: job.startedAt,
 			finishedAt: job.finishedAt,
+			progress: job.progress,
 			summary: job.summary,
 			error: job.error,
 		};
@@ -1122,30 +1849,67 @@ export class TranslationQAService {
 			id: `qa_scan_${now}_${crypto.randomBytes(4).toString("hex")}`,
 			status: "running",
 			startedAt: new Date(now).toISOString(),
+			progress: {
+				stage: "prepare",
+				current: 0,
+				total: 1,
+				percent: 0,
+				detail: "Menunggu worker scan",
+			},
 		};
 		this.activeScanJob = job;
 
 		try {
-			const extension = fileURLToPath(import.meta.url).endsWith(".ts") ? "ts" : "js";
+			const extension = fileURLToPath(import.meta.url).endsWith(".ts")
+				? "ts"
+				: "js";
 			const worker = new Worker(
 				new URL(`./translationQaWorker.${extension}`, import.meta.url),
 				{ execArgv: workerExecArgv(extension) },
 			);
 			job.worker = worker;
-			worker.on("message", (message: { ok?: boolean; summary?: TranslationQASummary; error?: string }) => {
-				if (job.status !== "running") return;
-				job.finishedAt = new Date().toISOString();
-				if (message.ok && message.summary) {
-					job.status = "completed";
-					job.summary = message.summary;
-					this.cachedScan = null;
-				} else {
-					job.status = "failed";
-					job.error = message.error || "Translation QA scan failed.";
-					this.lastForcedScanAt = 0;
-				}
-				void worker.terminate();
-			});
+			worker.on(
+				"message",
+				(message: {
+					type?: "progress";
+					progress?: TranslationQAScanProgress;
+					ok?: boolean;
+					summary?: TranslationQASummary;
+					error?: string;
+				}) => {
+					if (job.status !== "running") return;
+					if (message.type === "progress" && message.progress) {
+						job.progress = {
+							...message.progress,
+							percent: Math.max(job.progress.percent, message.progress.percent),
+						};
+						return;
+					}
+					job.finishedAt = new Date().toISOString();
+					if (message.ok && message.summary) {
+						job.status = "completed";
+						job.progress = {
+							stage: "finalize",
+							current: 1,
+							total: 1,
+							percent: 100,
+							detail: "Scan selesai",
+						};
+						job.summary = message.summary;
+						this.cachedScan = null;
+					} else {
+						job.status = "failed";
+						job.progress = {
+							...job.progress,
+							stage: "finalize",
+							detail: message.error || "Translation QA scan failed.",
+						};
+						job.error = message.error || "Translation QA scan failed.";
+						this.lastForcedScanAt = 0;
+					}
+					void worker.terminate();
+				},
+			);
 			worker.on("error", (error) => {
 				if (job.status !== "running") return;
 				job.status = "failed";
@@ -1166,7 +1930,8 @@ export class TranslationQAService {
 			this.lastForcedScanAt = 0;
 			job.status = "failed";
 			job.finishedAt = new Date().toISOString();
-			job.error = error instanceof Error ? error.message : "Translation QA worker failed.";
+			job.error =
+				error instanceof Error ? error.message : "Translation QA worker failed.";
 			return this.publicScanJob(job);
 		}
 	}
@@ -1217,7 +1982,10 @@ export class TranslationQAService {
 		},
 	): TranslationQAItem[] {
 		const filter = this.filterParts(options);
-		const limit = options.limit == null ? undefined : Math.max(1, Math.min(500000, options.limit));
+		const limit =
+			options.limit == null
+				? undefined
+				: Math.max(1, Math.min(500000, options.limit));
 		const sql = `
 			SELECT * FROM qa_items
 			${filter.where}
@@ -1232,19 +2000,24 @@ export class TranslationQAService {
 			.map((row) => rowToItem(row as Record<string, unknown>));
 	}
 
-	public listItems(options: {
-		status?: TranslationQAStatus | "all";
-		kind?: TranslationQASourceKind | "all";
-		query?: string;
-		issue?: string;
-		sample?: boolean;
-		page?: number;
-		pageSize?: number;
-	} = {}): TranslationQAListResponse {
+	public listItems(
+		options: {
+			status?: TranslationQAStatus | "all";
+			kind?: TranslationQASourceKind | "all";
+			query?: string;
+			issue?: string;
+			sample?: boolean;
+			page?: number;
+			pageSize?: number;
+		} = {},
+	): TranslationQAListResponse {
 		const database = this.readyDatabase();
 		try {
 			const page = Math.max(1, Math.floor(options.page || 1));
-			const pageSize = Math.max(1, Math.min(100, Math.floor(options.pageSize || 25)));
+			const pageSize = Math.max(
+				1,
+				Math.min(100, Math.floor(options.pageSize || 25)),
+			);
 			const filter = this.filterParts(options);
 			const countRow = database
 				.prepare(`SELECT COUNT(*) AS count FROM qa_items ${filter.where}`)
@@ -1272,9 +2045,9 @@ export class TranslationQAService {
 	public getItem(id: string): TranslationQAItem | null {
 		const database = this.readyDatabase();
 		try {
-			const row = database.prepare("SELECT * FROM qa_items WHERE id = ?").get(id) as
-				| Record<string, unknown>
-				| undefined;
+			const row = database
+				.prepare("SELECT * FROM qa_items WHERE id = ?")
+				.get(id) as Record<string, unknown> | undefined;
 			return row ? rowToItem(row) : null;
 		} finally {
 			database.close();
@@ -1294,9 +2067,9 @@ export class TranslationQAService {
 		}
 		const database = this.readyDatabase();
 		try {
-			const row = database.prepare("SELECT * FROM qa_items WHERE id = ?").get(id) as
-				| Record<string, unknown>
-				| undefined;
+			const row = database
+				.prepare("SELECT * FROM qa_items WHERE id = ?")
+				.get(id) as Record<string, unknown> | undefined;
 			if (!row) return null;
 			const item = rowToItem(row);
 			const reviews = readReviews();
@@ -1370,7 +2143,10 @@ export class TranslationQAService {
 			const total = Number(countRow?.count || 0);
 			const limit = Math.max(
 				1,
-				Math.min(QA_EXPORT_MAX_ITEMS, Math.floor(options.limit || QA_EXPORT_DEFAULT_LIMIT)),
+				Math.min(
+					QA_EXPORT_MAX_ITEMS,
+					Math.floor(options.limit || QA_EXPORT_DEFAULT_LIMIT),
+				),
 			);
 			const offset = Math.max(0, Math.floor(options.offset || 0));
 			const items = this.queryItems(database, { ...options, limit, offset });
@@ -1402,12 +2178,16 @@ export class TranslationQAService {
 							item.lineNo,
 							item.speaker,
 							item.issues.map((issue) => issue.code).join(" | "),
-							item.attachmentEvidence.map((evidence) => evidence.confidence).join(" | "),
+							item.attachmentEvidence
+								.map((evidence) => evidence.confidence)
+								.join(" | "),
 							JSON.stringify(item.attachmentEvidence),
 							item.sourceText,
 							item.targetText,
 							item.review?.comment,
-						].map(csvCell).join(","),
+						]
+							.map(csvCell)
+							.join(","),
 					),
 				].join("\n");
 				return {
@@ -1420,14 +2200,18 @@ export class TranslationQAService {
 				};
 			}
 			return {
-				content: JSON.stringify({
-					summary: this.getSummaryFromDatabase(database),
-					total,
-					returned: items.length,
-					offset,
-					truncated,
-					items,
-				}, null, 2),
+				content: JSON.stringify(
+					{
+						summary: this.getSummaryFromDatabase(database),
+						total,
+						returned: items.length,
+						offset,
+						truncated,
+						items,
+					},
+					null,
+					2,
+				),
 				contentType: "application/json; charset=utf-8",
 				filename: "wuwaid-translation-qa.json",
 				total,

@@ -69,38 +69,235 @@ const MAX_CURRENT_ALIGNMENT_FOR_ATTACHMENT = 1.4;
 // These are detector anchors, not translation glossary entries. They only provide
 // high-signal bilingual clues when no local language model is available.
 const BILINGUAL_ANCHORS: BilingualAnchor[] = [
-	{ code: "pirate", source: ["pirate", "pirates"], target: ["bajak laut"], weight: 2.2, message: "Istilah pirate cocok dengan padanan bajak laut." },
-	{ code: "rule", source: ["rule", "rules"], target: ["aturan"], weight: 1.4, message: "Istilah rule cocok dengan padanan aturan." },
-	{ code: "greed", source: ["greed"], target: ["keserakahan"], weight: 1.6, message: "Istilah greed cocok dengan padanan keserakahan." },
-	{ code: "life", source: ["life", "lives"], target: ["nyawa"], weight: 1.2, message: "Istilah life cocok dengan padanan nyawa." },
-	{ code: "main-course", source: ["main course"], target: ["menu utama"], weight: 1.8, message: "Frasa main course cocok dengan padanan menu utama." },
-	{ code: "gold-tooth", source: ["gold tooth"], target: ["gigi emas"], weight: 3.2, message: "Frasa gold tooth cocok dengan padanan gigi emas." },
-	{ code: "hope", source: ["hope"], target: ["harapan"], weight: 1.3, message: "Istilah hope cocok dengan padanan harapan." },
-	{ code: "pray", source: ["pray"], target: ["berdoa"], weight: 1.1, message: "Istilah pray cocok dengan padanan berdoa." },
-	{ code: "end", source: ["end"], target: ["berakhir"], weight: 1.1, message: "Istilah end cocok dengan padanan berakhir." },
-	{ code: "rumor", source: ["rumor", "rumors"], target: ["rumor"], weight: 1.2, message: "Istilah rumor cocok dengan padanan rumor." },
-	{ code: "trip-back", source: ["trip back"], target: ["perjalanan pulang"], weight: 1.8, message: "Frasa trip back cocok dengan padanan perjalanan pulang." },
-	{ code: "tell", source: ["tell you", "tell"], target: ["menceritakan", "ceritakan"], weight: 1.1, message: "Konteks tell cocok dengan padanan menceritakan." },
-	{ code: "wager", source: ["wager", "bet", "betting"], target: ["taruhan", "bertaruh"], weight: 1.1, message: "Konteks taruhan cocok dengan wager atau bet." },
-	{ code: "fish", source: ["fish"], target: ["ikan"], weight: 0.8, message: "Istilah fish cocok dengan padanan ikan." },
-	{ code: "drink", source: ["drink", "drinks"], target: ["minuman"], weight: 0.8, message: "Istilah drink cocok dengan padanan minuman." },
-	{ code: "treasure", source: ["treasure", "treasures"], target: ["harta", "harta karun"], weight: 1.1, message: "Istilah treasure cocok dengan padanan harta." },
-	{ code: "key", source: ["key", "keys"], target: ["kunci"], weight: 0.9, message: "Istilah key cocok dengan padanan kunci." },
-	{ code: "captain", source: ["captain"], target: ["kapten"], weight: 0.7, message: "Istilah captain cocok dengan padanan kapten." },
-	{ code: "crew", source: ["crew"], target: ["kru"], weight: 0.8, message: "Istilah crew cocok dengan padanan kru." },
-	{ code: "coin", source: ["coin", "coins"], target: ["koin"], weight: 0.9, message: "Istilah coin cocok dengan padanan koin." },
-	{ code: "curse", source: ["curse", "curses"], target: ["kutukan"], weight: 1, message: "Istilah curse cocok dengan padanan kutukan." },
-	{ code: "map", source: ["map"], target: ["peta"], weight: 0.8, message: "Istilah map cocok dengan padanan peta." },
-	{ code: "adventure", source: ["adventure", "adventures"], target: ["petualangan"], weight: 0.8, message: "Istilah adventure cocok dengan padanan petualangan." },
-	{ code: "sail", source: ["sail", "sailing", "sailed"], target: ["berlayar", "pelayaran"], weight: 0.8, message: "Konteks sail cocok dengan padanan berlayar." },
-	{ code: "friend", source: ["friend", "friends"], target: ["teman"], weight: 0.7, message: "Istilah friend cocok dengan padanan teman." },
+	{
+		code: "pirate",
+		source: ["pirate", "pirates"],
+		target: ["bajak laut"],
+		weight: 2.2,
+		message: "Istilah pirate cocok dengan padanan bajak laut.",
+	},
+	{
+		code: "rule",
+		source: ["rule", "rules"],
+		target: ["aturan"],
+		weight: 1.4,
+		message: "Istilah rule cocok dengan padanan aturan.",
+	},
+	{
+		code: "greed",
+		source: ["greed"],
+		target: ["keserakahan"],
+		weight: 1.6,
+		message: "Istilah greed cocok dengan padanan keserakahan.",
+	},
+	{
+		code: "life",
+		source: ["life", "lives"],
+		target: ["nyawa"],
+		weight: 1.2,
+		message: "Istilah life cocok dengan padanan nyawa.",
+	},
+	{
+		code: "main-course",
+		source: ["main course"],
+		target: ["menu utama"],
+		weight: 1.8,
+		message: "Frasa main course cocok dengan padanan menu utama.",
+	},
+	{
+		code: "gold-tooth",
+		source: ["gold tooth"],
+		target: ["gigi emas"],
+		weight: 3.2,
+		message: "Frasa gold tooth cocok dengan padanan gigi emas.",
+	},
+	{
+		code: "hope",
+		source: ["hope"],
+		target: ["harapan"],
+		weight: 1.3,
+		message: "Istilah hope cocok dengan padanan harapan.",
+	},
+	{
+		code: "pray",
+		source: ["pray"],
+		target: ["berdoa"],
+		weight: 1.1,
+		message: "Istilah pray cocok dengan padanan berdoa.",
+	},
+	{
+		code: "end",
+		source: ["end"],
+		target: ["berakhir"],
+		weight: 1.1,
+		message: "Istilah end cocok dengan padanan berakhir.",
+	},
+	{
+		code: "rumor",
+		source: ["rumor", "rumors"],
+		target: ["rumor"],
+		weight: 1.2,
+		message: "Istilah rumor cocok dengan padanan rumor.",
+	},
+	{
+		code: "trip-back",
+		source: ["trip back"],
+		target: ["perjalanan pulang"],
+		weight: 1.8,
+		message: "Frasa trip back cocok dengan padanan perjalanan pulang.",
+	},
+	{
+		code: "tell",
+		source: ["tell you", "tell"],
+		target: ["menceritakan", "ceritakan"],
+		weight: 1.1,
+		message: "Konteks tell cocok dengan padanan menceritakan.",
+	},
+	{
+		code: "wager",
+		source: ["wager", "bet", "betting"],
+		target: ["taruhan", "bertaruh"],
+		weight: 1.1,
+		message: "Konteks taruhan cocok dengan wager atau bet.",
+	},
+	{
+		code: "fish",
+		source: ["fish"],
+		target: ["ikan"],
+		weight: 0.8,
+		message: "Istilah fish cocok dengan padanan ikan.",
+	},
+	{
+		code: "drink",
+		source: ["drink", "drinks"],
+		target: ["minuman"],
+		weight: 0.8,
+		message: "Istilah drink cocok dengan padanan minuman.",
+	},
+	{
+		code: "treasure",
+		source: ["treasure", "treasures"],
+		target: ["harta", "harta karun"],
+		weight: 1.1,
+		message: "Istilah treasure cocok dengan padanan harta.",
+	},
+	{
+		code: "key",
+		source: ["key", "keys"],
+		target: ["kunci"],
+		weight: 0.9,
+		message: "Istilah key cocok dengan padanan kunci.",
+	},
+	{
+		code: "captain",
+		source: ["captain"],
+		target: ["kapten"],
+		weight: 0.7,
+		message: "Istilah captain cocok dengan padanan kapten.",
+	},
+	{
+		code: "crew",
+		source: ["crew"],
+		target: ["kru"],
+		weight: 0.8,
+		message: "Istilah crew cocok dengan padanan kru.",
+	},
+	{
+		code: "coin",
+		source: ["coin", "coins"],
+		target: ["koin"],
+		weight: 0.9,
+		message: "Istilah coin cocok dengan padanan koin.",
+	},
+	{
+		code: "curse",
+		source: ["curse", "curses"],
+		target: ["kutukan"],
+		weight: 1,
+		message: "Istilah curse cocok dengan padanan kutukan.",
+	},
+	{
+		code: "map",
+		source: ["map"],
+		target: ["peta"],
+		weight: 0.8,
+		message: "Istilah map cocok dengan padanan peta.",
+	},
+	{
+		code: "adventure",
+		source: ["adventure", "adventures"],
+		target: ["petualangan"],
+		weight: 0.8,
+		message: "Istilah adventure cocok dengan padanan petualangan.",
+	},
+	{
+		code: "sail",
+		source: ["sail", "sailing", "sailed"],
+		target: ["berlayar", "pelayaran"],
+		weight: 0.8,
+		message: "Konteks sail cocok dengan padanan berlayar.",
+	},
+	{
+		code: "friend",
+		source: ["friend", "friends"],
+		target: ["teman"],
+		weight: 0.7,
+		message: "Istilah friend cocok dengan padanan teman.",
+	},
 ];
 
 const ENGLISH_SIGNAL_STOPWORDS = new Set([
-	"a", "ah", "all", "an", "and", "are", "as", "at", "be", "but", "by", "can", "captain",
-	"come", "do", "for", "from", "get", "he", "i", "if", "in", "is", "it", "me", "my", "no",
-	"of", "oh", "on", "or", "our", "so", "that", "the", "their", "them", "there", "they", "this",
-	"to", "us", "was", "we", "what", "when", "where", "who", "with", "you", "your",
+	"a",
+	"ah",
+	"all",
+	"an",
+	"and",
+	"are",
+	"as",
+	"at",
+	"be",
+	"but",
+	"by",
+	"can",
+	"captain",
+	"come",
+	"do",
+	"for",
+	"from",
+	"get",
+	"he",
+	"i",
+	"if",
+	"in",
+	"is",
+	"it",
+	"me",
+	"my",
+	"no",
+	"of",
+	"oh",
+	"on",
+	"or",
+	"our",
+	"so",
+	"that",
+	"the",
+	"their",
+	"them",
+	"there",
+	"they",
+	"this",
+	"to",
+	"us",
+	"was",
+	"we",
+	"what",
+	"when",
+	"where",
+	"who",
+	"with",
+	"you",
+	"your",
 ]);
 
 function normalize(value: string): string {
@@ -110,19 +307,22 @@ function normalize(value: string): string {
 function containsTerm(value: string, term: string): boolean {
 	const normalizedTerm = normalize(term);
 	if (!normalizedTerm) return false;
-	const valueWords = normalize(value).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+	const valueWords = normalize(value)
+		.split(/[^\p{L}\p{N}]+/u)
+		.filter(Boolean);
 	const termWords = normalizedTerm.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 	if (termWords.length > 1) {
 		return valueWords.some((_, index) =>
 			termWords.every((word, offset) => valueWords[index + offset] === word),
 		);
 	}
-	return valueWords.some((word) =>
-		word === normalizedTerm ||
-		word === `${normalizedTerm}'s` ||
-		word === `${normalizedTerm}s` ||
-		word === `${normalizedTerm}es` ||
-		word.startsWith(`${normalizedTerm}nya`),
+	return valueWords.some(
+		(word) =>
+			word === normalizedTerm ||
+			word === `${normalizedTerm}'s` ||
+			word === `${normalizedTerm}s` ||
+			word === `${normalizedTerm}es` ||
+			word.startsWith(`${normalizedTerm}nya`),
 	);
 }
 
@@ -153,7 +353,9 @@ function properNames(value: string): string[] {
 		.filter((word) => !ENGLISH_SIGNAL_STOPWORDS.has(word));
 }
 
-function compileGlossary(glossary: readonly TranslationQAGlossaryRule[]): CompiledGlossary {
+function compileGlossary(
+	glossary: readonly TranslationQAGlossaryRule[],
+): CompiledGlossary {
 	const byFirstWord = new Map<string, TranslationQAGlossaryRule[]>();
 	for (const rule of glossary) {
 		const firstWord = words(rule.term)[0];
@@ -165,7 +367,10 @@ function compileGlossary(glossary: readonly TranslationQAGlossaryRule[]): Compil
 	return { byFirstWord };
 }
 
-function relevantGlossary(value: string, glossary: CompiledGlossary): TranslationQAGlossaryRule[] {
+function relevantGlossary(
+	value: string,
+	glossary: CompiledGlossary,
+): TranslationQAGlossaryRule[] {
 	const rules = new Map<string, TranslationQAGlossaryRule>();
 	for (const word of words(value)) {
 		const lookupWords = new Set([word, word.replace(/['’]s$/i, "")]);
@@ -186,7 +391,10 @@ function addSignal(signals: Map<string, Signal>, signal: Signal): void {
 	if (!signals.has(signal.key)) signals.set(signal.key, signal);
 }
 
-function sourceSignals(sourceText: string, glossary: CompiledGlossary): Map<string, Signal> {
+function sourceSignals(
+	sourceText: string,
+	glossary: CompiledGlossary,
+): Map<string, Signal> {
 	const signals = new Map<string, Signal>();
 	for (const anchor of BILINGUAL_ANCHORS) {
 		if (containsAny(sourceText, anchor.source)) {
@@ -202,7 +410,10 @@ function sourceSignals(sourceText: string, glossary: CompiledGlossary): Map<stri
 			addSignal(signals, {
 				key: `glossary:${normalize(rule.term)}`,
 				weight: 1.5,
-				reason: { code: "glossary_anchor", message: `Istilah glossary ${rule.term} ditemukan pada kandidat source.` },
+				reason: {
+					code: "glossary_anchor",
+					message: `Istilah glossary ${rule.term} ditemukan pada kandidat source.`,
+				},
 			});
 		}
 	}
@@ -210,7 +421,10 @@ function sourceSignals(sourceText: string, glossary: CompiledGlossary): Map<stri
 		addSignal(signals, {
 			key: `token:${normalize(token)}`,
 			weight: 2.5,
-			reason: { code: "protected_token", message: `Token kontrol ${token} cocok.` },
+			reason: {
+				code: "protected_token",
+				message: `Token kontrol ${token} cocok.`,
+			},
 		});
 	}
 	for (const number of numbers(sourceText)) {
@@ -224,21 +438,30 @@ function sourceSignals(sourceText: string, glossary: CompiledGlossary): Map<stri
 		addSignal(signals, {
 			key: `name:${name}`,
 			weight: 1.4,
-			reason: { code: "shared_named_entity", message: `Nama atau proper noun ${name} dipertahankan.` },
+			reason: {
+				code: "shared_named_entity",
+				message: `Nama atau proper noun ${name} dipertahankan.`,
+			},
 		});
 	}
 	return signals;
 }
 
-function targetSignals(targetText: string, glossary: CompiledGlossary): Set<string> {
+function targetSignals(
+	targetText: string,
+	glossary: CompiledGlossary,
+): Set<string> {
 	const signals = new Set<string>();
 	for (const anchor of BILINGUAL_ANCHORS) {
-		if (containsAny(targetText, anchor.target)) signals.add(`anchor:${anchor.code}`);
+		if (containsAny(targetText, anchor.target))
+			signals.add(`anchor:${anchor.code}`);
 	}
 	for (const rule of relevantGlossary(targetText, glossary)) {
-		if (containsTerm(targetText, rule.translation)) signals.add(`glossary:${normalize(rule.term)}`);
+		if (containsTerm(targetText, rule.translation))
+			signals.add(`glossary:${normalize(rule.term)}`);
 	}
-	for (const token of protectedTokens(targetText)) signals.add(`token:${normalize(token)}`);
+	for (const token of protectedTokens(targetText))
+		signals.add(`token:${normalize(token)}`);
 	for (const number of numbers(targetText)) signals.add(`number:${number}`);
 	for (const name of properNames(targetText)) signals.add(`name:${name}`);
 	return signals;
@@ -278,14 +501,23 @@ function combinedCandidateScore(candidates: RankedCandidate[]): {
 		for (const [key, weight] of candidate.signalWeights) {
 			weights.set(key, Math.max(weights.get(key) || 0, weight));
 		}
-		for (const reason of candidate.reasons) reasons.set(`${reason.code}:${reason.message}`, reason);
+		for (const reason of candidate.reasons)
+			reasons.set(`${reason.code}:${reason.message}`, reason);
 	}
 	const topScore = candidates[0]?.score || 0;
-	const score = [...weights.values()].reduce((total, weight) => total + weight, 0);
-	if (candidates.length > 1 && score >= HIGH_MIN_SCORE && score - topScore >= 0.8) {
+	const score = [...weights.values()].reduce(
+		(total, weight) => total + weight,
+		0,
+	);
+	if (
+		candidates.length > 1 &&
+		score >= HIGH_MIN_SCORE &&
+		score - topScore >= 0.8
+	) {
 		reasons.set("combined_candidate_coverage", {
 			code: "combined_candidate_coverage",
-			message: "Beberapa source candidate bersama-sama menjelaskan sinyal target yang tidak ada pada source saat ini.",
+			message:
+				"Beberapa source candidate bersama-sama menjelaskan sinyal target yang tidak ada pada source saat ini.",
 		});
 	}
 	return {
@@ -301,16 +533,14 @@ function candidateConfidence(
 	gap: number,
 	currentScore: number,
 ): TranslationQAAttachmentConfidence {
-	const requiredMargin = Math.max(
-		HIGH_MIN_MARGIN,
-		currentScore * 0.5,
-	);
+	const requiredMargin = Math.max(HIGH_MIN_MARGIN, currentScore * 0.5);
 	if (
 		score >= HIGH_MIN_SCORE &&
 		margin >= requiredMargin &&
 		gap >= HIGH_MIN_GAP &&
 		(sameQuest || score >= GLOBAL_MIN_SCORE)
-	) return "high";
+	)
+		return "high";
 	if (score >= MEDIUM_MIN_SCORE && margin >= MEDIUM_MIN_MARGIN) return "medium";
 	return "low";
 }
@@ -360,17 +590,38 @@ function toCandidate(
 export function findAttachmentEvidence(
 	occurrences: readonly TranslationQAAlignmentOccurrence[],
 	glossary: readonly TranslationQAGlossaryRule[],
+	onProgress?: (current: number, total: number) => void,
+	targetIds?: ReadonlySet<string>,
 ): Map<string, TranslationQAAttachmentEvidence> {
 	const compiledGlossary = compileGlossary(glossary);
 	const questOccurrences = occurrences.filter(
-		(occurrence) => occurrence.sourceKind === "quest" && occurrence.unitKind !== "category" && occurrence.sourceText.trim(),
+		(occurrence) =>
+			occurrence.sourceKind === "quest" &&
+			occurrence.unitKind !== "category" &&
+			occurrence.sourceText.trim(),
 	);
 	const sourceIndex = new Map<string, TranslationQAAlignmentOccurrence[]>();
 	const sourceFrequency = new Map<string, number>();
-	const sourceIndexByQuest = new Map<string, Map<string, TranslationQAAlignmentOccurrence[]>>();
+	const sourceIndexByQuest = new Map<
+		string,
+		Map<string, TranslationQAAlignmentOccurrence[]>
+	>();
 	const sourceFrequencyByQuest = new Map<string, Map<string, number>>();
 	const sourceSignalsById = new Map<string, Map<string, Signal>>();
-	for (const occurrence of questOccurrences) {
+	const targetOccurrences = targetIds
+		? questOccurrences.filter((occurrence) =>
+				targetIds.has(candidateId(occurrence)),
+			)
+		: questOccurrences;
+	const totalWork = Math.max(
+		1,
+		questOccurrences.length + targetOccurrences.length,
+	);
+	const reportProgress = (current: number) => {
+		if (!onProgress || (current !== totalWork && current % 250 !== 0)) return;
+		onProgress(current, totalWork);
+	};
+	for (const [index, occurrence] of questOccurrences.entries()) {
 		const signals = sourceSignals(occurrence.sourceText, compiledGlossary);
 		sourceSignalsById.set(candidateId(occurrence), signals);
 		for (const key of signals.keys()) {
@@ -380,7 +631,8 @@ export function findAttachmentEvidence(
 			sourceFrequency.set(key, (sourceFrequency.get(key) || 0) + 1);
 			if (occurrence.questId) {
 				const questIndex = sourceIndexByQuest.get(occurrence.questId) || new Map();
-				const questFrequency = sourceFrequencyByQuest.get(occurrence.questId) || new Map();
+				const questFrequency =
+					sourceFrequencyByQuest.get(occurrence.questId) || new Map();
 				const questValues = questIndex.get(key) || [];
 				questValues.push(occurrence);
 				questIndex.set(key, questValues);
@@ -389,6 +641,7 @@ export function findAttachmentEvidence(
 				sourceFrequencyByQuest.set(occurrence.questId, questFrequency);
 			}
 		}
+		reportProgress(index + 1);
 	}
 	const candidatesFromIndex = (
 		index: Map<string, TranslationQAAlignmentOccurrence[]> | undefined,
@@ -400,14 +653,16 @@ export function findAttachmentEvidence(
 		for (const key of keys) {
 			if ((frequency?.get(key) || 0) > MAX_SIGNAL_FREQUENCY) continue;
 			for (const candidate of index?.get(key) || []) {
-				if (candidateId(candidate) !== candidateId(current)) candidates.set(candidateId(candidate), candidate);
+				if (candidateId(candidate) !== candidateId(current))
+					candidates.set(candidateId(candidate), candidate);
 			}
 		}
 		return [...candidates.values()];
 	};
 
 	const evidence = new Map<string, TranslationQAAttachmentEvidence>();
-	for (const occurrence of questOccurrences) {
+	for (const [index, occurrence] of targetOccurrences.entries()) {
+		reportProgress(questOccurrences.length + index + 1);
 		const targetTexts = [occurrence.targetText, ...occurrence.targetVariants]
 			.map((value) => value.trim())
 			.filter((value, index, values) => value && values.indexOf(value) === index);
@@ -430,31 +685,33 @@ export function findAttachmentEvidence(
 		if (!Number.isFinite(currentScore)) currentScore = 0;
 		if (currentScore >= MAX_CURRENT_ALIGNMENT_FOR_ATTACHMENT) continue;
 
-		const rankCandidates = (candidates: TranslationQAAlignmentOccurrence[]): RankedCandidate[] => candidates
-			.filter(
-				(candidate) =>
-					candidate.unitKind === occurrence.unitKind &&
-					normalize(candidate.sourceText) !== normalize(occurrence.sourceText),
-			)
-			.map((candidate) => {
-				const candidateSignals = sourceSignalsById.get(candidateId(candidate)) || new Map();
-				const signals = normalize(candidate.speaker || "") === normalize(occurrence.speaker || "")
-					? withoutSpeakerSignals(candidateSignals, occurrence.speaker)
-					: candidateSignals;
-				const scored = scoreSignals(
-					signals,
-					targetSignalKeys,
-				);
-				return {
-					occurrence: candidate,
-					score: scored.score,
-					reasons: scored.reasons,
-					signalWeights: scored.signalWeights,
-					sameQuest: candidate.questId === occurrence.questId,
-				};
-			})
-			.filter((candidate) => candidate.score >= MIN_CANDIDATE_SCORE)
-			.sort((left, right) => right.score - left.score);
+		const rankCandidates = (
+			candidates: TranslationQAAlignmentOccurrence[],
+		): RankedCandidate[] =>
+			candidates
+				.filter(
+					(candidate) =>
+						candidate.unitKind === occurrence.unitKind &&
+						normalize(candidate.sourceText) !== normalize(occurrence.sourceText),
+				)
+				.map((candidate) => {
+					const candidateSignals =
+						sourceSignalsById.get(candidateId(candidate)) || new Map();
+					const signals =
+						normalize(candidate.speaker || "") === normalize(occurrence.speaker || "")
+							? withoutSpeakerSignals(candidateSignals, occurrence.speaker)
+							: candidateSignals;
+					const scored = scoreSignals(signals, targetSignalKeys);
+					return {
+						occurrence: candidate,
+						score: scored.score,
+						reasons: scored.reasons,
+						signalWeights: scored.signalWeights,
+						sameQuest: candidate.questId === occurrence.questId,
+					};
+				})
+				.filter((candidate) => candidate.score >= MIN_CANDIDATE_SCORE)
+				.sort((left, right) => right.score - left.score);
 		const localRanked = rankCandidates(
 			candidatesFromIndex(
 				sourceIndexByQuest.get(occurrence.questId || ""),
@@ -466,8 +723,16 @@ export function findAttachmentEvidence(
 
 		let selected = localRanked;
 		if (!selected[0] || selected[0].score < MEDIUM_MIN_SCORE) {
-			selected = rankCandidates(candidatesFromIndex(sourceIndex, sourceFrequency, targetSignalKeys, occurrence))
-				.filter((candidate) => !candidate.sameQuest && candidate.score >= GLOBAL_MIN_SCORE);
+			selected = rankCandidates(
+				candidatesFromIndex(
+					sourceIndex,
+					sourceFrequency,
+					targetSignalKeys,
+					occurrence,
+				),
+			).filter(
+				(candidate) => !candidate.sameQuest && candidate.score >= GLOBAL_MIN_SCORE,
+			);
 		}
 		const top = selected[0];
 		if (!top) continue;
@@ -475,7 +740,13 @@ export function findAttachmentEvidence(
 		const combined = combinedCandidateScore(selected);
 		const margin = combined.score - currentScore;
 		const gap = top.score - (second?.score || 0);
-		const confidence = candidateConfidence(combined.score, margin, top.sameQuest, gap, currentScore);
+		const confidence = candidateConfidence(
+			combined.score,
+			margin,
+			top.sameQuest,
+			gap,
+			currentScore,
+		);
 		if (confidence === "low") continue;
 
 		const candidates = selected.slice(0, 3).map((candidate, index) => {
@@ -498,7 +769,8 @@ export function findAttachmentEvidence(
 			if (candidate.score > currentScore) {
 				reasons.push({
 					code: "candidate_alignment_advantage",
-					message: "Sinyal target lebih cocok dengan source kandidat daripada source saat ini.",
+					message:
+						"Sinyal target lebih cocok dengan source kandidat daripada source saat ini.",
 				});
 			}
 			return toCandidate({ ...candidate, reasons }, candidateConfidenceValue);
@@ -511,7 +783,8 @@ export function findAttachmentEvidence(
 			lineId: occurrence.lineId,
 			sourceText: occurrence.sourceText,
 			targetText: bestVariant,
-			targetVariant: bestVariant === occurrence.targetText ? undefined : bestVariant,
+			targetVariant:
+				bestVariant === occurrence.targetText ? undefined : bestVariant,
 			currentScore: Math.round(currentScore * 100) / 100,
 			score: Math.round(combined.score * 100) / 100,
 			margin: Math.round(margin * 100) / 100,

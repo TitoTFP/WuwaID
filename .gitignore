@@ -227,6 +227,7 @@ data/quests/
 data/version_history.db*
 data/translation_qa.db*
 data/translation_qa_reviews.json*
+data/translation_qa_cache.json.gz*
 webui/data/db_uploads/
 webui/data/database_jobs/
 webui/data/version_history.json
