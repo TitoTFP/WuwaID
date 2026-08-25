@@ -23,9 +23,12 @@ npm run build
 git diff --check
 ```
 
-The integration suite must report zero failed and zero skipped tests. The committed
-fixture under `webui/server/test-fixtures/export-data/` keeps exporter coverage
-available in a clean checkout; real game data is not required for the gate.
+The QA suite and all deterministic integration tests must report zero failed and
+zero skipped tests. The committed fixture under
+`webui/server/test-fixtures/export-data/` keeps exporter, authorization, job, and
+version coverage available in a clean checkout. Reader pagination/search checks
+that require the full game corpus are conditional when that corpus is not present;
+they must run and pass whenever the release data bundle is available.
 
 ## Environment and secrets
 
@@ -109,6 +112,9 @@ Known limitations that must remain visible during release review:
 - The filesystem lock protects one canonical writer directory, not a distributed
   multi-replica deployment.
 - Structured ZIP export requires `zip` on the host.
+- Reader integration checks requiring the full game corpus are not a substitute
+  for validating the release data bundle; they are skipped only when that bundle
+  is absent from a clean checkout.
 - Windows CI validates x64 PE build outputs; game-runtime behavior, code signing,
   and live deployment are outside this gate.
 
@@ -116,7 +122,8 @@ Known limitations that must remain visible during release review:
 
 - [ ] Required production secrets are present in the secret manager.
 - [ ] Backup and restore evidence is timestamped and readable.
-- [ ] Linux WebUI workflow is green with zero skipped tests.
+- [ ] Linux WebUI workflow is green; QA and deterministic integration tests have
+  zero skipped tests, and corpus-dependent reader checks ran when data was present.
 - [ ] Windows x64 DLL workflow is green and both PE artifacts are present.
 - [ ] `npm run check`, QA, integration, Python, build, and diff hygiene gates pass.
 - [ ] Health, metrics, job recovery, telemetry, and rollback owner are verified.

@@ -15,9 +15,10 @@ const REPO_ROOT = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../..",
 );
-const hasRealQuestData = fs.existsSync(
-	path.join(REPO_ROOT, "data/quests/index.db"),
-);
+const hasRealQuestData =
+	fs.existsSync(path.join(REPO_ROOT, "data/quests/index.db")) &&
+	Boolean(realDataLoader.getQuestSourceFile(QUEST_ID)) &&
+	fs.existsSync(path.join(REPO_ROOT, "data/quests/categories/UI.json"));
 let server: Server;
 let baseUrl = "";
 
