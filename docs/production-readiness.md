@@ -54,7 +54,12 @@ and state paths: `data/quests/`, `data/version_history.db`,
 - Editors may create/review drafts, update QA review status, and inspect or create
   text versions and their exports.
 - Only admins may apply drafts to canonical data, import/reset/rebuild databases,
-  start or poll QA scans, and request operational dataset exports.
+  start or poll QA scans, poll database job status, and request operational
+  dataset exports (`/api/ops/databases/export*` returns generated `.db` bytes and
+  is admin-gated).
+- Database job input validation fails closed: any malformed quest or category JSON
+  aborts the job before mutation, persists a `failed` job record, and leaves the
+  previous index and canonical data untouched.
 - Remote log ingestion requires `X-WuwaID-Telemetry-Token` matching
   `WUWAID_TELEMETRY_TOKEN` in production. Heartbeat acknowledgement is stateless.
 - Missing or invalid bearer credentials return `401`; a valid session with an

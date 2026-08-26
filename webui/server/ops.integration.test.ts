@@ -13,10 +13,7 @@ import {
 	DatabaseJobManager,
 	type DatabaseJobView,
 } from "./databaseJobManager.js";
-import {
-	readCategoryDocument,
-	resolveCategoryFile,
-} from "./categoryStore.js";
+import { readCategoryDocument, resolveCategoryFile } from "./categoryStore.js";
 import { buildReaderIndex } from "./readerIndexStore.js";
 
 const REPO_ROOT = path.resolve(
@@ -88,6 +85,7 @@ after(async () => {
 test("exports a committed fixture quest stored in a nested dialogue.json file", async () => {
 	const response = await fetch(
 		`${fixtureBaseUrl}/api/ops/databases/export/quest/155000000?mode=id`,
+		{ headers: adminHeaders() },
 	);
 	const body = Buffer.from(await response.arrayBuffer());
 
@@ -132,6 +130,7 @@ test("per-source fixture exports add Name without changing templates", async () 
 		for (const mode of modes) {
 			const questResponse = await fetch(
 				`${fixtureBaseUrl}/api/ops/databases/export/quest/155000000?mode=${mode}`,
+				{ headers: adminHeaders() },
 			);
 			const questBody = Buffer.from(await questResponse.arrayBuffer());
 			assert.equal(questResponse.status, 200, questBody.toString("utf8"));
@@ -162,6 +161,7 @@ test("per-source fixture exports add Name without changing templates", async () 
 
 			const categoryResponse = await fetch(
 				`${fixtureBaseUrl}/api/ops/databases/export/category/export_name_test/Text?mode=${mode}`,
+				{ headers: adminHeaders() },
 			);
 			const categoryBody = Buffer.from(await categoryResponse.arrayBuffer());
 			assert.equal(categoryResponse.status, 200, categoryBody.toString("utf8"));
@@ -188,7 +188,9 @@ test("per-source fixture exports add Name without changing templates", async () 
 
 async function waitForDatabaseJob(id: string) {
 	for (let attempt = 0; attempt < 100; attempt++) {
-		const response = await fetch(`${baseUrl}/api/ops/jobs/${id}`);
+		const response = await fetch(`${baseUrl}/api/ops/jobs/${id}`, {
+			headers: adminHeaders(),
+		});
 		assert.equal(response.status, 200);
 		const job = (await response.json()) as {
 			status: string;
@@ -531,7 +533,9 @@ test("HTTP valid import and reset jobs keep health responsive while polling", as
 		const progress: number[] = [];
 		for (let attempt = 0; attempt < 400; attempt++) {
 			const [jobResponse, healthResponse] = await Promise.all([
-				fetch(`${fixtureBaseUrl}/api/ops/jobs/${id}`),
+				fetch(`${fixtureBaseUrl}/api/ops/jobs/${id}`, {
+					headers: adminHeaders(),
+				}),
 				fetch(`${fixtureBaseUrl}/api/health`),
 			]);
 			assert.equal(jobResponse.status, 200);
@@ -699,6 +703,134 @@ test("rolls back source JSON and preserves the previous index on rebuild failure
 	}
 });
 
+test("malformed category JSON fails the import job closed without mutating data", async () => {
+	const fixture = createJobFixture();
+	buildReaderIndex(fixture.indexDbFile, {
+		force: true,
+		questsJsonDir: fixture.questsJsonDir,
+		categoriesJsonDir: fixture.categoriesJsonDir,
+	});
+	const originalIndex = fs.readFileSync(fixture.indexDbFile);
+	const questBefore = fs.readFileSync(fixture.questFile);
+	const malformedCategory = Buffer.from(
+		"{ \"Broken_Key\": { \"en\": \"Broken\" },", // truncated: invalid JSON
+		"utf8",
+	);
+	fs.writeFileSync(fixture.categoryFile, malformedCategory);
+
+	try {
+		const manager = fixture.manager();
+		const job = manager.enqueueSingleImport(
+			"translations.db",
+			fs.readFileSync(fixture.databaseFile),
+		);
+		const result = await waitForManagerJob(manager, job.id);
+		assert.equal(result.job.status, "failed");
+		assert.match(result.job.error || "", /Gagal memproses sumber kategori 'Text'/);
+		assert.match(result.job.error || "", /JSON/i);
+		assert.deepEqual(fs.readFileSync(fixture.categoryFile), malformedCategory);
+		assert.deepEqual(fs.readFileSync(fixture.questFile), questBefore);
+		assert.deepEqual(fs.readFileSync(fixture.indexDbFile), originalIndex);
+	} finally {
+		fs.rmSync(fixture.root, { recursive: true, force: true });
+	}
+});
+
+test("malformed quest JSON fails the import job closed without mutating data", async () => {
+	const fixture = createJobFixture();
+	const malformedQuest = Buffer.from(
+		"{ \"dialogue\": [", // truncated: invalid JSON
+		"utf8",
+	);
+	fs.writeFileSync(fixture.questFile, malformedQuest);
+
+	try {
+		const manager = fixture.manager();
+		const job = manager.enqueueSingleImport(
+			"translations.db",
+			fs.readFileSync(fixture.databaseFile),
+		);
+		const result = await waitForManagerJob(manager, job.id);
+		assert.equal(result.job.status, "failed");
+		assert.match(result.job.error || "", /Gagal memproses sumber quest '1\.json'/);
+		assert.match(result.job.error || "", /JSON/i);
+		assert.deepEqual(fs.readFileSync(fixture.questFile), malformedQuest);
+	} finally {
+		fs.rmSync(fixture.root, { recursive: true, force: true });
+	}
+});
+
+test("database job polling and dataset exports require admin access", async () => {
+	const viewer = db.createSession("reader", "Ops Boundary Viewer");
+	const translator = db.createSession("translator", "Ops Boundary Translator");
+	const editor = db.createSession("editor", "Ops Boundary Editor");
+	try {
+		const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+		// Job polling: unauthenticated 401, insufficient roles 403, admin reaches route.
+		assert.equal(
+			(await fetch(`${baseUrl}/api/ops/jobs/no-such-job`)).status,
+			401,
+		);
+		assert.equal(
+			(
+				await fetch(`${baseUrl}/api/ops/jobs/no-such-job`, {
+					headers: bearer(viewer.token),
+				})
+			).status,
+			403,
+		);
+		assert.equal(
+			(
+				await fetch(`${baseUrl}/api/ops/jobs/no-such-job`, {
+					headers: bearer(translator.token),
+				})
+			).status,
+			403,
+		);
+		assert.equal(
+			(
+				await fetch(`${baseUrl}/api/ops/jobs/no-such-job`, {
+					headers: bearer(editor.token),
+				})
+			).status,
+			403,
+		);
+		assert.equal(
+			(
+				await fetch(`${baseUrl}/api/ops/jobs/no-such-job`, {
+					headers: adminHeaders(),
+				})
+			).status,
+			404,
+		);
+
+		// Dataset exports follow the documented admin-only policy.
+		const exportPath = "/api/ops/databases/export/quest/155000000?mode=id";
+		assert.equal((await fetch(`${fixtureBaseUrl}${exportPath}`)).status, 401);
+		assert.equal(
+			(
+				await fetch(`${fixtureBaseUrl}${exportPath}`, {
+					headers: bearer(editor.token),
+				})
+			).status,
+			403,
+		);
+		const adminExport = await fetch(`${fixtureBaseUrl}${exportPath}`, {
+			headers: adminHeaders(),
+		});
+		assert.equal(adminExport.status, 200);
+		assert.deepEqual(
+			Buffer.from(await adminExport.arrayBuffer()).subarray(0, 16),
+			Buffer.from("SQLite format 3\0"),
+		);
+	} finally {
+		db.sessions.delete(viewer.token);
+		db.sessions.delete(translator.token);
+		db.sessions.delete(editor.token);
+	}
+});
+
 test("queues a single import and keeps health responsive", async () => {
 	const response = await fetch(
 		`${baseUrl}/api/ops/databases/import?filename=invalid-job.db`,
@@ -818,7 +950,11 @@ test("database job manager waits for an active writer lock and reclaims stale lo
 	try {
 		fs.writeFileSync(
 			lockPath,
-			JSON.stringify({ pid: process.pid, token: "active-owner", startedAt: new Date().toISOString() }),
+			JSON.stringify({
+				pid: process.pid,
+				token: "active-owner",
+				startedAt: new Date().toISOString(),
+			}),
 		);
 		const manager = new DatabaseJobManager(temporaryRoot);
 		const waiting = manager.enqueueSingleImport("waiting.db", invalidDatabase);
@@ -834,7 +970,11 @@ test("database job manager waits for an active writer lock and reclaims stale lo
 
 		fs.writeFileSync(
 			lockPath,
-			JSON.stringify({ pid: 999999999, token: "dead-owner", startedAt: new Date(0).toISOString() }),
+			JSON.stringify({
+				pid: 999999999,
+				token: "dead-owner",
+				startedAt: new Date(0).toISOString(),
+			}),
 		);
 		fs.utimesSync(lockPath, new Date(0), new Date(0));
 		const stale = manager.enqueueSingleImport("stale.db", invalidDatabase);
@@ -922,6 +1062,7 @@ test("global ConfigDB export uses the committed SQLite read model fixture", asyn
 	try {
 		const response = await fetch(
 			`${fixtureBaseUrl}/api/ops/databases/export/lang_multi_text.db?mode=id`,
+			{ headers: adminHeaders() },
 		);
 		const body = Buffer.from(await response.arrayBuffer());
 		assert.equal(response.status, 200, body.toString("utf8"));

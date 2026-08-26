@@ -35,7 +35,8 @@ export function createOpsRouter(
 	const INDEX_DB_FILE = path.join(REPO_ROOT, "data/quests/index.db");
 	const SOURCE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_/-]*$/;
 	const getQuestSourceFile =
-		options.getQuestSourceFile || ((id: string) => realDataLoader.getQuestSourceFile(id));
+		options.getQuestSourceFile ||
+		((id: string) => realDataLoader.getQuestSourceFile(id));
 	const resolveCategory = options.resolveCategoryFile || resolveCategoryFile;
 	const readCategory = options.readCategoryDocument || readCategoryDocument;
 
@@ -377,6 +378,10 @@ export function createOpsRouter(
 
 	// GET /api/ops/databases/export/:name - Generate a database from the English template
 	opsRouter.get("/databases/export/:name", (req: Request, res: Response) => {
+		if (
+			!requireAdmin(req, res, "Admin login is required to export databases.")
+		)
+			return;
 		const name = getExportDbName(req.params.name);
 		const mode = getExportMode(req.query.mode);
 		if (!name || !fs.existsSync(path.join(DB_EXPORT_TEMPLATE_DIR, name))) {
@@ -403,6 +408,10 @@ export function createOpsRouter(
 
 	// GET /api/ops/databases/export/quest/:id - Export one quest's text IDs
 	opsRouter.get("/databases/export/quest/:id", (req: Request, res: Response) => {
+		if (
+			!requireAdmin(req, res, "Admin login is required to export databases.")
+		)
+			return;
 		const mode = getExportMode(req.query.mode);
 		if (!mode) {
 			res.status(400).json({ error: "mode must be id, untranslated, or en" });
@@ -430,6 +439,14 @@ export function createOpsRouter(
 	opsRouter.get(
 		"/databases/export/category/*",
 		(req: Request, res: Response) => {
+			if (
+				!requireAdmin(
+					req,
+					res,
+					"Admin login is required to export databases.",
+				)
+			)
+				return;
 			const mode = getExportMode(req.query.mode);
 			if (!mode) {
 				res.status(400).json({ error: "mode must be id, untranslated, or en" });
@@ -462,7 +479,8 @@ export function createOpsRouter(
 			limit: "256mb",
 		}),
 		(req: Request, res: Response) => {
-			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
+			if (!requireAdmin(req, res, "Admin login is required to import databases."))
+				return;
 			const name = getImportDbName(req.query.filename);
 			if (!name) {
 				res.status(400).json({ error: "filename must be a simple .db filename" });
@@ -486,7 +504,8 @@ export function createOpsRouter(
 
 	// POST /api/ops/databases/import-batch - Start a durable folder import batch.
 	opsRouter.post("/databases/import-batch", (req: Request, res: Response) => {
-		if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
+		if (!requireAdmin(req, res, "Admin login is required to import databases."))
+			return;
 		try {
 			const expectedFiles = Number(req.body?.expectedFiles);
 			res.status(201).json(databaseJobManager.startImportBatch(expectedFiles));
@@ -505,7 +524,8 @@ export function createOpsRouter(
 			limit: "256mb",
 		}),
 		(req: Request, res: Response) => {
-			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
+			if (!requireAdmin(req, res, "Admin login is required to import databases."))
+				return;
 			const name = getImportDbName(req.query.filename);
 			const index = Number(req.query.index);
 			if (!name) {
@@ -534,7 +554,8 @@ export function createOpsRouter(
 	opsRouter.post(
 		"/databases/import-batch/:id/finish",
 		(req: Request, res: Response) => {
-			if (!requireAdmin(req, res, "Admin login is required to import databases.")) return;
+			if (!requireAdmin(req, res, "Admin login is required to import databases."))
+				return;
 			try {
 				res.status(202).json(databaseJobManager.finishImportBatch(req.params.id));
 			} catch (error) {
@@ -547,6 +568,14 @@ export function createOpsRouter(
 
 	// GET /api/ops/jobs/:id - Poll an import/reset job.
 	opsRouter.get("/jobs/:id", (req: Request, res: Response) => {
+		if (
+			!requireAdmin(
+				req,
+				res,
+				"Admin login is required to inspect database jobs.",
+			)
+		)
+			return;
 		const job = databaseJobManager.getJob(req.params.id);
 		if (!job) {
 			res.status(404).json({ error: "Job tidak ditemukan" });
@@ -557,7 +586,8 @@ export function createOpsRouter(
 
 	// POST /api/ops/databases/reset-id - Queue removal of all Indonesian translations.
 	opsRouter.post("/databases/reset-id", (req: Request, res: Response) => {
-		if (!requireAdmin(req, res, "Admin login is required to reset translations.")) return;
+		if (!requireAdmin(req, res, "Admin login is required to reset translations."))
+			return;
 		try {
 			res.status(202).json(databaseJobManager.enqueueReset());
 		} catch (error) {

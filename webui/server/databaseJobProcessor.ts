@@ -398,7 +398,14 @@ async function applyIdTranslations(
 				updatedQuestLines += changed;
 			}
 		} catch (error) {
-			console.warn(`[ops] Skipping quest translation import for ${name}:`, error);
+			// Fail closed: a source document we cannot process must abort the job so
+			// the transaction rolls back instead of silently dropping translations.
+			throw new Error(
+				`Gagal memproses sumber quest '${name}': ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+				{ cause: error },
+			);
 		}
 		current++;
 		report({
@@ -435,9 +442,12 @@ async function applyIdTranslations(
 				updatedCategoryItems += changed;
 			}
 		} catch (error) {
-			console.warn(
-				`[ops] Skipping category translation import for ${file.name}:`,
-				error,
+			// Fail closed: see the quest loop above.
+			throw new Error(
+				`Gagal memproses sumber kategori '${file.name}': ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+				{ cause: error },
 			);
 		}
 		current++;
@@ -507,9 +517,12 @@ async function clearIdTranslations(
 				updatedQuestLines += changed;
 			}
 		} catch (error) {
-			console.warn(
-				`[ops] Skipping quest translation reset for ${filePath}:`,
-				error,
+			// Fail closed: see applyIdTranslations above.
+			throw new Error(
+				`Gagal memproses sumber quest '${path.basename(filePath)}': ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+				{ cause: error },
 			);
 		}
 		current++;
@@ -545,9 +558,12 @@ async function clearIdTranslations(
 				updatedCategoryItems += changed;
 			}
 		} catch (error) {
-			console.warn(
-				`[ops] Skipping category translation reset for ${file.name}:`,
-				error,
+			// Fail closed: see applyIdTranslations above.
+			throw new Error(
+				`Gagal memproses sumber kategori '${file.name}': ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+				{ cause: error },
 			);
 		}
 		current++;
